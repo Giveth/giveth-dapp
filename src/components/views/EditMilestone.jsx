@@ -27,7 +27,7 @@ import {
   ZERO_ADDRESS,
 } from '../../lib/helpers';
 import {
-  authenticateIfPossible,
+  authenticateUser,
   checkBalance,
   checkForeignNetwork,
   checkProfile,
@@ -567,7 +567,7 @@ class EditMilestone extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true)
       .then(async () => {
         if (!this.props.isProposed && !this.props.currentUser) {
           historyBackWFallback();
@@ -705,7 +705,7 @@ class EditMilestone extends Component {
     milestone.campaignId = this.state.campaignId;
     milestone.status =
       isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
-    if (milestone.isCapped) {
+    if (milestone.isCapped && !milestone.itemizeState) {
       milestone.conversionRate = currentRate.rates[milestone.selectedFiatType];
     }
     milestone.parentProjectId = this.state.campaignProjectId;
@@ -716,8 +716,8 @@ class EditMilestone extends Component {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           if (created) {
-            if (isProposed) {
-              const url = res ? `/campaigns/${res.campaign._id}/milestones/${res._id}` : undefined;
+            if (isNew) {
+              const url = res ? `/milestone/${res._slug}` : undefined;
               React.toast.info(
                 <Fragment>
                   <p>Your Milestone has been proposed to the Campaign Owner.</p>
@@ -753,7 +753,11 @@ class EditMilestone extends Component {
           this.setState({
             isSaving: false,
           });
-          this.props.history.goBack();
+          if (this.props.isNew) {
+            this.props.history.goBack();
+          } else {
+            history.push(`/campaigns/${milestone.campaignId}/milestones/${milestone.id}`);
+          }
         },
         afterMined: (created, txUrl) => {
           React.toast.success(

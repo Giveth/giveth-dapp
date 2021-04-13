@@ -18,7 +18,13 @@ import MilestoneItem from 'components/MilestoneItem';
 import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
-import { convertEthHelper, getUserAvatar, getUserName, history } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getReadableStatus,
+  getUserAvatar,
+  getUserName,
+  history,
+} from '../../lib/helpers';
 import MilestoneService from '../../services/MilestoneService';
 import DACService from '../../services/DACService';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
@@ -35,13 +41,14 @@ import { Context as ConversionRateContext } from '../../contextProviders/Convers
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import ProjectSubscription from '../ProjectSubscription';
 
 /**
-  Loads and shows a single milestone
+ Loads and shows a single milestone
 
-  @route params:
-    milestoneId (string): id of a milestone
-* */
+ @route params:
+ milestoneId (string): id of a milestone
+ * */
 
 const helmetContext = {};
 
@@ -56,7 +63,7 @@ const ViewMilestone = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { nativeCurrencyWhitelist, activeTokenWhitelist },
+    state: { nativeCurrencyWhitelist, activeTokenWhitelist, minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -68,16 +75,17 @@ const ViewMilestone = props => {
   const [dacTitle, setDacTitle] = useState('');
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
+  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
+  const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
   const editMilestoneButtonRef = useRef();
   const cancelMilestoneButtonRef = useRef();
   const deleteMilestoneButtonRef = useRef();
+  const donationsObserver = useRef();
 
   const donationsPerBatch = 50;
-  let donationsObserver;
-  let _milestoneId = null;
 
   const getDacTitle = async dacId => {
     if (dacId === 0) return;
@@ -86,14 +94,14 @@ const ViewMilestone = props => {
       .catch(() => {});
   };
 
-  function loadMoreDonations() {
+  function loadMoreDonations(loadFromScratch = false) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
-      _milestoneId,
+      milestone.id,
       donationsPerBatch,
-      donations.length,
+      loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
-        setDonations(donations.concat(_donations));
+        setDonations(loadFromScratch ? _donations : donations.concat(_donations));
         setLoadingDonations(false);
       },
       err => {
@@ -109,64 +117,94 @@ const ViewMilestone = props => {
       ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
       : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    getFunction().then(_milestone => {
-      if (!_milestone) {
+    getFunction()
+      .then(_milestone => {
+        if (milestoneId) {
+          history.push(`/milestone/${_milestone.slug}`);
+        }
+        setMilestone(_milestone);
+        setCampaign(new Campaign(_milestone.campaign));
+        setRecipient(
+          _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
+        );
+        getDacTitle(_milestone.dacId);
+        setLoading(false);
+      })
+      .catch(() => {
         setNotFound(true);
-        return;
-      }
-      if (milestoneId) {
-        history.push(`/milestone/${_milestone.slug}`);
-      }
-      _milestoneId = _milestone.id;
-      setMilestone(_milestone);
-      setCampaign(new Campaign(_milestone.campaign));
-      setRecipient(
-        _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
-      );
-      getDacTitle(_milestone.dacId);
-      loadMoreDonations();
-      setLoading(false);
-    });
-
-    // subscribe to donation count
-    donationsObserver = MilestoneService.subscribeNewDonations(
-      milestoneId,
-      _newDonations => setNewDonations(_newDonations),
-      () => setNewDonations(0),
-    );
-
-    return () => {
-      if (donationsObserver) {
-        donationsObserver.unsubscribe();
-      }
-    };
+      });
   }, []);
 
   useEffect(() => {
+    if (milestone.id) {
+      loadMoreDonations(true);
+
+      // subscribe to donation count
+      donationsObserver.current = MilestoneService.subscribeNewDonations(
+        milestone.id,
+        _newDonations => setNewDonations(_newDonations),
+        () => setNewDonations(0),
+      );
+    }
+
+    return () => {
+      if (donationsObserver.current) {
+        donationsObserver.current.unsubscribe();
+        donationsObserver.current = null;
+      }
+    };
+  }, [milestone]);
+
+  const calculateMilestoneCurrentBalanceValue = async () => {
     if (
       currentUser.address &&
       !currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
     ) {
-      // eslint-disable-next-line
       setCurrency(currentUser.currency);
-      convertMultipleRates(
-        null,
-        currentUser.currency,
-        milestone.donationCounters.map(dc => {
+      try {
+        const rateArray = milestone.donationCounters.map(dc => {
           return {
             value: dc.currentBalance,
             currency: dc.symbol,
           };
-        }),
-      ).then(result => setCurrentBalanceValue(result.total));
+        });
+        const userCurrencyValueResult = await convertMultipleRates(
+          null,
+          currentUser.currency,
+          rateArray,
+        );
+        setCurrentBalanceValue(userCurrencyValueResult.total);
+        setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
+      } catch (e) {
+        console.log('convertMultipleRates error', e);
+      }
     }
+  };
+  useEffect(() => {
+    calculateMilestoneCurrentBalanceValue();
   });
+
+  useEffect(() => {
+    if (!currentBalanceUsdValue) {
+      return;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const currencyUsdValue of currentBalanceUsdValue) {
+      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
+      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
+      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
+        setIsAmountEnoughForWithdraw(false);
+        return;
+      }
+    }
+    setIsAmountEnoughForWithdraw(true);
+  }, [currentBalanceUsdValue]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
-    return status === 'InProgress' && !fullyFunded;
+    return status === Milestone.IN_PROGRESS && !fullyFunded;
   };
 
   const renderDescription = () => DescriptionRender(milestone.description);
@@ -265,6 +303,9 @@ const ViewMilestone = props => {
       : undefined,
   };
 
+  const detailsCardElmnt = document.getElementById('detailsCard');
+  const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
+
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -298,7 +339,9 @@ const ViewMilestone = props => {
                 <h6>Milestone</h6>
                 <h1>{milestone.title}</h1>
 
-                {!milestone.status === 'InProgress' && <p>This Milestone is not active anymore</p>}
+                {!milestone.status === Milestone.IN_PROGRESS && (
+                  <p>This Milestone is not active anymore</p>
+                )}
 
                 {renderTitleHelper()}
 
@@ -317,6 +360,11 @@ const ViewMilestone = props => {
                 backButtonTitle={`Campaign: ${campaign.title}`}
                 inPageLinks={goBackSectionLinks}
               />
+
+              <div className=" col-md-8 m-auto">
+                <h5 className="title">Subscribe to updates </h5>
+                <ProjectSubscription projectTypeId={milestone._id} projectType="milestone" />
+              </div>
 
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
@@ -343,7 +391,12 @@ const ViewMilestone = props => {
               <div className="container-fluid mt-4">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
+                    <ViewMilestoneAlerts
+                      milestone={milestone}
+                      campaign={campaign}
+                      minimumPayoutUsdValue={minimumPayoutUsdValue}
+                      isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                    />
 
                     <div id="description">
                       <div className="about-section-header">
@@ -378,7 +431,7 @@ const ViewMilestone = props => {
                       <div id="details" className="col-md-6">
                         <h4>Details</h4>
 
-                        <div className="card details-card">
+                        <div id="detailsCard" className="card details-card">
                           <div className="form-group">
                             <DetailLabel
                               id="reviewer"
@@ -587,18 +640,19 @@ const ViewMilestone = props => {
                           <div className="form-group">
                             <span className="label">Status</span>
                             <br />
-                            {milestone.status}
+                            {getReadableStatus(milestone.status)}
                           </div>
                         </div>
                       </div>
 
                       <div id="status-updates" className="col-md-6">
                         <h4>Status updates</h4>
-
                         <MilestoneConversations
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
+                          isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                          maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
                     </div>
@@ -644,18 +698,23 @@ const ViewMilestone = props => {
                     )}
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{donationsTitle}</h5>
-                        {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
-                      </div>
-                      <DonationList
-                        donations={donations}
-                        isLoading={isLoadingDonations}
-                        total={donations.length}
-                        loadMore={loadMoreDonations}
-                        newDonations={newDonations}
-                        useAmountRemaining
-                      />
+                      {milestone.status !== Milestone.PROPOSED && (
+                        <React.Fragment>
+                          <div className="section-header">
+                            <h5>{donationsTitle}</h5>
+                            {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
+                          </div>
+                          <DonationList
+                            donations={donations}
+                            isLoading={isLoadingDonations}
+                            total={donations.length}
+                            loadMore={loadMoreDonations}
+                            newDonations={newDonations}
+                            useAmountRemaining
+                            status={milestone.status}
+                          />
+                        </React.Fragment>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -13,6 +13,7 @@ import ErrorPopup from '../components/ErrorPopup';
 import ErrorModel from '../models/ErrorModel';
 import ErrorHandler from '../lib/ErrorHandler';
 
+const etherScanUrl = config.etherscan;
 const campaigns = feathersClient.service('campaigns');
 
 class CampaignService {
@@ -54,6 +55,23 @@ class CampaignService {
         })
         .catch(err => reject(err));
     });
+  }
+
+  /**
+   * Resolves whether a campaign exists with provided slug
+   *
+   * @param slug   Slug of the campaign to be retrieved
+   */
+  static async getActiveCampaignExistsBySlug(slug) {
+    const resp = await campaigns.find({
+      query: {
+        slug,
+        status: Campaign.ACTIVE,
+        $limit: 0,
+      },
+    });
+
+    return resp.total > 0;
   }
 
   /**
@@ -101,6 +119,18 @@ class CampaignService {
         );
       })
       .catch(onError);
+  }
+
+  static async getCampaignsByIdArray(campaignIds) {
+    const query = {
+      _id: { $in: campaignIds }, // 0 is a pending campaign
+      status: Campaign.ACTIVE,
+      $sort: { updatedAt: -1 },
+    };
+    const result = await feathersClient.service('campaigns').find({
+      query,
+    });
+    return result.data.map(c => new Campaign(c));
   }
 
   /**
@@ -187,20 +217,16 @@ class CampaignService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
-      .find(
-        paramsForServer({
-          query: {
-            status: { $ne: Donation.FAILED },
-            $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
-            ownerTypeId: id,
-            isReturn: false,
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit: 0,
-          },
-          schema: 'includeTypeAndGiverDetails',
-        }),
-      )
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          status: { $ne: Donation.FAILED },
+          $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
+          ownerTypeId: id,
+          isReturn: false,
+          $limit: 0,
+        },
+      })
       .subscribe(resp => {
         if (initalTotal === undefined) {
           initalTotal = resp.total;
@@ -260,7 +286,6 @@ class CampaignService {
     }
 
     let txHash;
-    let etherScanUrl;
     try {
       let profileHash;
       try {
@@ -270,7 +295,6 @@ class CampaignService {
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherscan;
 
       // nothing to update or failed ipfs upload
       if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
@@ -412,11 +436,9 @@ class CampaignService {
    */
   static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
     let txHash;
-    let etherScanUrl;
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
+    getWeb3()
+      .then(web3 => {
         const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
-        etherScanUrl = network.etherscan;
 
         lppCampaign
           .cancelCampaign({ from, $extraGas: extraGas() })

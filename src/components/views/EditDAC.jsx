@@ -11,7 +11,7 @@ import FormsyImageUploader from '../FormsyImageUploader';
 import GoBackButton from '../GoBackButton';
 import { getTruncatedText, history, isOwner } from '../../lib/helpers';
 import {
-  authenticateIfPossible,
+  authenticateUser,
   checkBalance,
   checkForeignNetwork,
   checkProfile,
@@ -24,6 +24,7 @@ import User from '../../models/User';
 import ErrorPopup from '../ErrorPopup';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 
 /**
  * View to create or edit a DAC
@@ -79,7 +80,7 @@ class EditDAC extends Component {
               }
             });
         } else {
-          if (!this.props.currentUser.isDelegator) {
+          if (!this.props.currentUser.isDelegator && this.props.delegateWhitelistEnabled) {
             history.goBack();
           }
 
@@ -103,7 +104,11 @@ class EditDAC extends Component {
         if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
           history.goBack();
       });
-    } else if (this.props.isNew && !this.props.currentUser.isDelegator) {
+    } else if (
+      this.props.isNew &&
+      !this.props.currentUser.isDelegator &&
+      this.props.delegateWhitelistEnabled
+    ) {
       history.goBack();
     } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
       checkBalance(this.props.balance);
@@ -126,7 +131,7 @@ class EditDAC extends Component {
       return Promise.reject();
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true)
       .then(() => {
         if (!this.props.currentUser) {
           throw new Error('not authorized');
@@ -360,6 +365,7 @@ EditDAC.propTypes = {
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
+  delegateWhitelistEnabled: PropTypes.bool.isRequired,
 };
 
 EditDAC.defaultProps = {
@@ -368,12 +374,22 @@ EditDAC.defaultProps = {
 };
 
 export default props => (
-  <UserConsumer>
-    {({ state: { currentUser, isLoading: userIsLoading } }) => (
-      <Fragment>
-        {userIsLoading && <Loader className="fixed" />}
-        {!userIsLoading && <EditDAC currentUser={currentUser} {...props} />}
-      </Fragment>
+  <WhiteListConsumer>
+    {({ state: { delegateWhitelistEnabled } }) => (
+      <UserConsumer>
+        {({ state: { currentUser, isLoading: userIsLoading } }) => (
+          <Fragment>
+            {userIsLoading && <Loader className="fixed" />}
+            {!userIsLoading && (
+              <EditDAC
+                currentUser={currentUser}
+                delegateWhitelistEnabled={delegateWhitelistEnabled}
+                {...props}
+              />
+            )}
+          </Fragment>
+        )}
+      </UserConsumer>
     )}
-  </UserConsumer>
+  </WhiteListConsumer>
 );

@@ -6,7 +6,9 @@ import ErrorHandler from '../lib/ErrorHandler';
 import IPFSService from './IPFSService';
 import extraGas from '../lib/blockchain/extraGas';
 import { ZERO_ADDRESS } from '../lib/helpers';
+import config from '../configuration';
 
+const etherScanUrl = config.etherscan;
 const users = feathersClient.service('users');
 
 class UserService {
@@ -31,7 +33,6 @@ class UserService {
     }
 
     let txHash;
-    let etherScanUrl;
 
     const { currency } = user;
     delete user._currency;
@@ -45,7 +46,7 @@ class UserService {
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherscan;
+
       const { liquidPledging } = network;
       const from = user.address;
 
@@ -94,6 +95,26 @@ class UserService {
       ErrorHandler(err, message);
       reset();
     }
+  }
+
+  static async getReviewers() {
+    let reviewers = [];
+    while (true) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await users.find({
+        query: {
+          isReviewer: true,
+          $select: ['address', 'name'],
+          $skip: reviewers.length,
+          $sort: { address: 1 },
+        },
+      });
+
+      const { data = [], total = 0 } = result || {};
+      reviewers = reviewers.concat(data);
+      if (reviewers.length >= total) break;
+    }
+    return reviewers;
   }
 }
 

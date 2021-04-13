@@ -5,7 +5,6 @@ import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import DAC from '../models/DAC';
-import Campaign from '../models/Campaign';
 import Donation from '../models/Donation';
 import IPFSService from './IPFSService';
 import config from '../configuration';
@@ -18,6 +17,7 @@ import { ZERO_ADDRESS } from '../lib/helpers';
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
 const dacs = feathersClient.service('dacs');
+const etherScanUrl = config.etherscan;
 
 class DACService {
   /**
@@ -127,46 +127,6 @@ class DACService {
   }
 
   /**
-   * Lazy-load DAC Campaigns by subscribing to campaigns listener
-   *
-   * @param delegateId Dekegate ID of the DAC which campaigns should be retrieved
-   * @param onSuccess  Callback function once response is obtained successfylly
-   * @param onError    Callback function if error is encountered
-   */
-  static subscribeCampaigns(delegateId, onSuccess, onError) {
-    return feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          $select: ['delegateId', 'intendedProjectId', 'amount'],
-          delegateId,
-          $limit: 200,
-        },
-      })
-      .subscribe(async resp => {
-        const projectIDs = {};
-        resp.data.forEach(d => {
-          if (d.intendedProjectId && d.amount) {
-            projectIDs[d.intendedProjectId] = (
-              projectIDs[d.intendedProjectId] || new BigNumber(0)
-            ).plus(new BigNumber(d.amount));
-          }
-        });
-
-        const campaignsResp = await feathersClient.service('campaigns').find({
-          query: {
-            projectId: { $in: Object.keys(projectIDs) },
-            $limit: 200,
-          },
-        });
-
-        const campaigns = campaignsResp.data.map(d => new Campaign(d));
-        onSuccess(campaigns);
-      }, onError);
-  }
-
-  /**
    * Get DAC donations
    *
    * @param id        ID of the DAC which donations should be retrieved
@@ -214,20 +174,16 @@ class DACService {
     let initalTotal;
     return feathersClient
       .service('donations')
-      .watch()
-      .find(
-        paramsForServer({
-          query: {
-            status: { $ne: Donation.FAILED },
-            delegateTypeId: id,
-            isReturn: false,
-            intendedProjectId: { $exists: false },
-            $sort: { usdValue: -1, createdAt: -1 },
-            $limit: 0,
-          },
-          schema: 'includeTypeAndGiverDetails',
-        }),
-      )
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          status: { $ne: Donation.FAILED },
+          delegateTypeId: id,
+          isReturn: false,
+          intendedProjectId: { $exists: false },
+          $limit: 0,
+        },
+      })
       .subscribe(resp => {
         if (initalTotal === undefined) {
           initalTotal = resp.total;
@@ -304,7 +260,6 @@ class DACService {
     }
 
     let txHash;
-    let etherScanUrl;
 
     const sendError = err => {
       const showMessageInPopup = err.data && err.data.showMessageInPopup;
@@ -329,7 +284,6 @@ class DACService {
       }
 
       const network = await getNetwork();
-      etherScanUrl = network.etherscan;
       const { liquidPledging } = network;
 
       // nothing to update or failed ipfs upload

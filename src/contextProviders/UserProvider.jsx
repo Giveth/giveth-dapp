@@ -2,7 +2,7 @@ import React, { Component, createContext } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
-import { authenticateIfPossible } from 'lib/middleware';
+import { authenticateUser } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
 import ErrorHandler from '../lib/ErrorHandler';
@@ -145,7 +145,7 @@ class UserProvider extends Component {
     const { currentUser } = this.state;
 
     if (currentUser.address) {
-      authenticateIfPossible(currentUser, redirectOnFail).then(isAuthenticated => {
+      authenticateUser(currentUser, redirectOnFail).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
           this.setState({

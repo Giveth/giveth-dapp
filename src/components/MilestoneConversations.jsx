@@ -7,10 +7,13 @@ import Loader from './Loader';
 import { feathersClient } from '../lib/feathersClient';
 import MilestoneConversationComment from './MilestoneConversationComment';
 import MilestoneConversationItem from './MilestoneConversationItem';
+import LoadMore from './LoadMore';
 
-const MilestoneConversations = ({ milestone }) => {
+const MilestoneConversations = ({ milestone, maxHeight, isAmountEnoughForWithdraw }) => {
+  const conversationsNumPerLoad = 5;
   const [conversations, setConversations] = useState({});
   const [isLoading, setLoading] = useState(true);
+  const [conversationsNum, setConversationsNum] = useState(conversationsNumPerLoad);
 
   const conversationObserver = useRef();
 
@@ -22,6 +25,7 @@ const MilestoneConversations = ({ milestone }) => {
         query: {
           milestoneId: milestone.id,
           $sort: { createdAt: -1 },
+          $limit: conversationsNum,
         },
       })
       .subscribe(resp => {
@@ -40,10 +44,14 @@ const MilestoneConversations = ({ milestone }) => {
         conversationObserver.current = null;
       }
     };
-  }, []);
+  }, [conversationsNum]);
+
+  const handleLoadMore = () => {
+    setConversationsNum(conversationsNum + conversationsNumPerLoad);
+  };
 
   return (
-    <div id="milestone-conversations">
+    <div id="milestone-conversations" style={{ maxHeight }}>
       {isLoading && <Loader className="fixed" />}
 
       {!isLoading && (
@@ -54,9 +62,13 @@ const MilestoneConversations = ({ milestone }) => {
                 key={conversation._id}
                 conversation={conversation}
                 milestone={milestone}
+                isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
               />
             ))}
           </div>
+          {conversations.length >= conversationsNum && (
+            <LoadMore onClick={handleLoadMore} disabled={isLoading} className="w-100 btn-sm" />
+          )}
           <MilestoneConversationComment milestone={milestone} />
         </div>
       )}
@@ -66,6 +78,12 @@ const MilestoneConversations = ({ milestone }) => {
 
 MilestoneConversations.propTypes = {
   milestone: PropTypes.instanceOf(Milestone).isRequired,
+  maxHeight: PropTypes.string,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+};
+
+MilestoneConversations.defaultProps = {
+  maxHeight: 'unset',
 };
 
 export default React.memo(MilestoneConversations);

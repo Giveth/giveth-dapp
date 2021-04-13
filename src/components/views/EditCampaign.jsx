@@ -1,31 +1,43 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import BigNumber from 'bignumber.js';
 import 'react-input-token/lib/style.css';
 
-import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
-import Loader from '../Loader';
-import QuillFormsy from '../QuillFormsy';
-import SelectFormsy from '../SelectFormsy';
-import FormsyImageUploader from '../FormsyImageUploader';
-import GoBackButton from '../GoBackButton';
-import { isOwner, getTruncatedText, history } from '../../lib/helpers';
 import {
-  checkForeignNetwork,
-  checkBalance,
-  authenticateIfPossible,
-  checkProfile,
-} from '../../lib/middleware';
-import LoaderButton from '../LoaderButton';
-import User from '../../models/User';
-import Campaign from '../../models/Campaign';
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  notification,
+  PageHeader,
+  Row,
+  Select,
+  Typography,
+  Upload,
+} from 'antd';
+import { DeleteTwoTone } from '@ant-design/icons';
+import ImgCrop from 'antd-img-crop';
+import Loader from '../Loader';
+import { getHtmlText, history, isOwner } from '../../lib/helpers';
+import { authenticateUser, checkProfile } from '../../lib/middleware';
 import CampaignService from '../../services/CampaignService';
-import ErrorPopup from '../ErrorPopup';
-import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
-import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
+
+import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
+
+import Web3ConnectWarning from '../Web3ConnectWarning';
+import Editor from '../Editor';
+
+import { IPFSService } from '../../services';
+import config from '../../configuration';
+import Campaign from '../../models/Campaign';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import GA from '../../lib/GoogleAnalytics';
+import useReviewers from '../../hooks/useReviewers';
+
+const { Title, Text } = Typography;
 
 /**
  * View to create or edit a Campaign
@@ -34,367 +46,441 @@ import ErrorHandler from '../../lib/ErrorHandler';
  *                 Otherwise component expects an id param and will load a campaign object
  * @param id       URL parameter which is an id of a campaign object
  */
-class EditCampaign extends Component {
-  constructor(props) {
-    super(props);
+const EditCampaign = ({ isNew, match }) => {
+  const {
+    state: { currentUser, isLoading: userIsLoading },
+  } = useContext(UserContext);
 
-    this.state = {
-      isLoading: true,
-      isSaving: false,
-      formIsValid: false,
-      // Campaign model
-      campaign: new Campaign({
-        owner: props.currentUser,
-      }),
-      isBlocking: false,
+  const {
+    state: { projectOwnersWhitelistEnabled, isLoading: whitelistIsLoading },
+  } = useContext(WhiteListContext);
+
+  const {
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+
+  const reviewers = useReviewers();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [campaign, setCampaign] = useState({});
+
+  const campaignObject = useRef(
+    new Campaign({
+      owner: currentUser,
+      ownerAddress: currentUser.address,
+    }),
+  );
+  const mounted = useRef();
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
     };
+  }, []);
 
-    this.form = React.createRef();
+  useEffect(() => {
+    if (userIsLoading || whitelistIsLoading || !currentUser.address) return () => {};
 
-    this.submit = this.submit.bind(this);
-    this.setImage = this.setImage.bind(this);
-  }
+    if (isNew) {
+      if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
+        const modal = Modal.error({
+          title: 'Permission Denied',
+          content: 'You are not allowed to create a campaign',
+          closable: false,
+          centered: true,
+          onOk: () => history.replace('/'),
+        });
 
-  componentDidMount() {
-    this.mounted = true;
-    const { isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
-    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
-      .then(() => this.checkUser())
-      .then(() => {
-        // Load this Campaign
-        if (!this.props.isNew) {
-          CampaignService.get(this.props.match.params.id)
-            .then(campaign => {
-              if (isOwner(campaign.ownerAddress, this.props.currentUser)) {
-                this.setState({ campaign, isLoading: false });
-              } else history.goBack();
-            })
-            .catch(err => {
-              if (err.status === 404) {
-                history.push('/notfound');
-              } else {
-                this.setState({ isLoading: false });
-                ErrorHandler(
-                  err,
-                  'There has been a problem loading the Campaign. Please refresh the page and try again.',
-                );
-              }
+        return () => {
+          modal.destroy();
+        };
+      }
+
+      checkProfile(currentUser).then(() => {
+        setCampaign({
+          owner: currentUser,
+          ownerAddress: currentUser.address,
+        });
+        setIsLoading(false);
+      });
+    } else {
+      CampaignService.get(match.params.id)
+        .then(camp => {
+          if (isOwner(camp.ownerAddress, currentUser)) {
+            setCampaign({
+              title: camp.title,
+              description: camp.description,
+              communityUrl: camp.communityUrl,
+              reviewerAddress: camp.reviewerAddress,
+              picture: camp.image.match(/\/ipfs\/.*/)[0],
             });
-        } else {
-          if (!this.props.currentUser.isProjectOwner) {
-            history.goBack();
+            campaignObject.current = camp;
+            setIsLoading(false);
+          } else history.goBack();
+        })
+        .catch(err => {
+          if (err.status === 404) {
+            history.push('/notfound');
+          } else {
+            setIsLoading(false);
+            ErrorHandler(
+              err,
+              'There has been a problem loading the Campaign. Please refresh the page and try again.',
+            );
           }
-          this.setState({ isLoading: false });
-        }
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined && err.message !== 'wrongNetwork') {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.currentUser !== this.props.currentUser) {
-      this.checkUser().then(() => {
-        if (!this.props.isNew && !isOwner(this.state.campaign.ownerAddress, this.props.currentUser))
-          history.goBack();
-      });
-    } else if (this.props.isNew && !this.props.currentUser.isProjectOwner) {
-      history.goBack();
-    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
-      checkBalance(this.props.balance);
-    }
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  setImage(image) {
-    const { campaign } = this.state;
-    campaign.image = image;
-    this.setState({ campaign });
-  }
-
-  checkUser() {
-    if (!this.props.currentUser) {
-      history.push('/');
-      return Promise.reject();
+        });
     }
 
-    return authenticateIfPossible(this.props.currentUser, true)
-      .then(() => {
-        if (!this.props.currentUser.isProjectOwner && !this.props.projectOwnersWhitelistEnabled) {
-          throw new Error('not whitelisted');
-        }
-      })
-      .then(() => checkProfile(this.props.currentUser))
-      .then(() => checkBalance(this.props.balance));
+    return () => {};
+  }, [userIsLoading, currentUser]);
+
+  // TODO: Check if user Changes (in Class components checked in didUpdate)
+
+  const handleInputChange = event => {
+    const { name, value } = event.target;
+    setCampaign({ ...campaign, [name]: value });
+    setIsBlocking(true);
+  };
+
+  const onDescriptionChange = description => {
+    handleInputChange({ target: { name: 'description', value: description } });
+  };
+
+  function setPicture(address) {
+    handleInputChange({ target: { name: 'picture', value: address } });
   }
 
-  submit() {
-    const afterMined = url => {
-      if (url) {
-        const msg = (
-          <p>
-            Your Campaign has been created!
-            <br />
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        React.toast.success(msg);
-      } else {
-        if (this.mounted) this.setState({ isSaving: false });
-        React.toast.success('Your Campaign has been updated!');
-        history.push(`/campaigns/${this.state.campaign.id}`);
-      }
-    };
+  useEffect(() => {
+    if (campaign.image) {
+      const picture = campaign.image.match(/\/ipfs\/.*/)[0];
+      setPicture(picture);
+    }
+  }, [campaign]);
 
-    const afterCreate = (err, url, id) => {
-      if (this.mounted) this.setState({ isSaving: false });
-      if (!err) {
-        const msg = (
-          <p>
-            Your Campaign is pending....
-            <br />
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        React.toast.info(msg);
-        GA.trackEvent({
-          category: 'Campaign',
-          action: 'created',
-          label: id,
-        });
-        history.push('/my-campaigns');
-      }
-    };
-
-    this.setState(
-      {
-        isSaving: true,
-        isBlocking: false,
-      },
-      () => {
-        // Save the campaign
-        this.state.campaign.save(afterCreate, afterMined).finally(() => {
-          this.setState({ isSaving: false });
-        });
-      },
-    );
-  }
-
-  toggleFormValid(state) {
-    this.setState({ formIsValid: state });
-  }
-
-  triggerRouteBlocking() {
-    const form = this.form.current.formsyForm;
-    // we only block routing if the form state is not submitted
-    this.setState({
-      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
+  const setReviewer = (_, option) => {
+    handleInputChange({
+      target: { name: 'reviewerAddress', value: option.value },
     });
-  }
+  };
 
-  render() {
-    const { isNew, reviewers } = this.props;
-    const { isLoading, isSaving, campaign, formIsValid, isBlocking } = this.state;
+  const uploadProps = {
+    multiple: false,
+    accept: 'image/png, image/jpeg',
+    fileList: [],
+    customRequest: options => {
+      const { onSuccess, onError, file, onProgress } = options;
+      onProgress(0);
+      IPFSService.upload(file)
+        .then(address => {
+          onSuccess(address);
+          onProgress(100);
+        })
+        .catch(err => {
+          onError('Failed!', err);
+        });
+    },
+    onChange(info) {
+      const { status } = info.file;
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (status === 'done') {
+        console.log('file uploaded successfully.', info.file.response);
+        setPicture(info.file.response);
+      } else if (status === 'error') {
+        console.log(`${info.file.name} file upload failed.`);
+        const args = {
+          message: 'Error',
+          description: 'Cannot upload picture to IPFS',
+        };
+        notification.error(args);
+      }
+    },
+  };
 
-    return (
-      <div id="edit-campaign-view">
-        <div className="container-fluid page-layout edit-view">
-          <div>
-            <div className="col-md-8 m-auto">
-              {isLoading && <Loader className="fixed" />}
+  const removePicture = () => {
+    setPicture('');
+  };
 
-              {!isLoading && (
-                <div>
-                  <GoBackButton
-                    history={history}
-                    title={isNew ? 'Back' : `Campaign: ${campaign.title}`}
+  const goBack = () => {
+    history.goBack();
+  };
+
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
+
+    if (authenticated) {
+      if (!isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
+
+      Object.assign(campaignObject.current, {
+        ...campaign,
+        image: campaign.picture,
+      });
+
+      const afterMined = url => {
+        if (url) {
+          const msg = (
+            <p>
+              Your Campaign has been created!
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          notification.success({ message: '', description: msg });
+        } else {
+          if (mounted.current) setIsSaving(false);
+          notification.success({
+            message: '',
+            description: 'Your Campaign has been updated!',
+          });
+          history.push(`/campaigns/${campaignObject.current.id}`);
+        }
+      };
+
+      const afterCreate = (err, url, id) => {
+        if (mounted.current) setIsSaving(false);
+        if (!err) {
+          const msg = (
+            <p>
+              Your Campaign is pending....
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          notification.info({ description: msg });
+          GA.trackEvent({
+            category: 'Campaign',
+            action: 'created',
+            label: id,
+          });
+          history.push('/my-campaigns');
+        }
+      };
+
+      setIsSaving(true);
+      setIsBlocking(false);
+      campaignObject.current.save(afterCreate, afterMined).finally(() => {
+        setIsSaving(false);
+      });
+    }
+  };
+
+  return (
+    <Fragment>
+      <Web3ConnectWarning />
+      <Prompt
+        when={isBlocking}
+        message={() =>
+          `You have unsaved changes. Are you sure you want to navigate from this page?`
+        }
+      />
+      {isLoading ? (
+        <Loader className="fixed" />
+      ) : (
+        <div id="create-Campaint-view">
+          <Row>
+            <Col span={24}>
+              <PageHeader
+                className="site-page-header"
+                onBack={goBack}
+                title={isNew ? 'Create New Campaign' : `Edit Campaign ${campaign.title}`}
+                ghost={false}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <div className="card-form-container">
+              <Form
+                className="card-form"
+                requiredMark
+                onFinish={submit}
+                initialValues={{
+                  title: campaign.title,
+                  description: campaign.description,
+                  reviewerAddress: campaign.reviewerAddress,
+                  communityUrl: campaign.communityUrl,
+                }}
+              >
+                {isNew && (
+                  <Fragment>
+                    <Title level={3}>Start a new Campaign!</Title>
+                    <Text>
+                      A Campaign solves a specific cause by executing a project via its Milestones.
+                      Funds raised by a Campaign need to be delegated to its Milestones in order to
+                      be paid out.
+                    </Text>
+                  </Fragment>
+                )}
+                <Form.Item
+                  name="title"
+                  label="What are you working on?"
+                  className="custom-form-item"
+                  extra="Describe your Campaign in 1 sentence."
+                  rules={[
+                    {
+                      required: true,
+                      type: 'string',
+                      min: 3,
+                      message: 'Please provide at least 3 characters',
+                    },
+                  ]}
+                >
+                  <Input
+                    name="title"
+                    placeholder="e.g. Support continued Development"
+                    onChange={handleInputChange}
                   />
-
-                  <div className="form-header">
-                    {isNew && <h3>Start a new Campaign!</h3>}
-
-                    {!isNew && <h3>Edit Campaign {campaign.title}</h3>}
-                    <p>
-                      <i className="fa fa-question-circle" />A Campaign solves a specific cause by
-                      executing a project via its Milestones. Funds raised by a Campaign need to be
-                      delegated to its Milestones in order to be paid out.
-                    </p>
-                  </div>
-
-                  <Form
-                    onSubmit={this.submit}
-                    ref={this.form}
-                    mapping={inputs => {
-                      campaign.title = inputs.title;
-                      campaign.description = inputs.description;
-                      campaign.communityUrl = inputs.communityUrl;
-                      campaign.reviewerAddress = inputs.reviewerAddress;
-                      campaign.summary = getTruncatedText(inputs.description, 100);
-                    }}
-                    onValid={() => this.toggleFormValid(true)}
-                    onInvalid={() => this.toggleFormValid(false)}
-                    onChange={e => this.triggerRouteBlocking(e)}
-                    layout="vertical"
-                  >
-                    <Prompt
-                      when={isBlocking}
-                      message={() =>
-                        `You have unsaved changes. Are you sure you want to navigate from this page?`
-                      }
-                    />
-
-                    <Input
-                      name="title"
-                      id="title-input"
-                      label="What are you working on?"
-                      type="text"
-                      value={campaign.title}
-                      placeholder="E.g. Installing 1000 solar panels."
-                      help="Describe your Campaign in 1 sentence."
-                      validations="minLength:3"
-                      validationErrors={{
-                        minLength: 'Please provide at least 3 characters.',
-                      }}
-                      required
-                      autoFocus
-                    />
-
-                    <QuillFormsy
-                      name="description"
-                      label="Explain how you are going to do this successfully."
-                      helpText="Make it as extensive as necessary.
-                      Your goal is to build trust, so that people donate Ether to your Campaign."
-                      value={campaign.description}
-                      placeholder="Describe how you're going to execute your Campaign successfully..."
-                      validations="minLength:20"
-                      help="Describe your Campaign."
-                      validationErrors={{
-                        minLength: 'Please provide at least 10 characters.',
-                      }}
-                      required
-                    />
-
-                    <div className="form-group">
-                      <FormsyImageUploader
-                        setImage={this.setImage}
-                        previewImage={campaign.image}
-                        isRequired={isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="communityUrl"
-                        id="community-url"
-                        label="Url to join your Community"
-                        type="text"
-                        value={campaign.communityUrl}
-                        placeholder="https://slack.giveth.com"
-                        help="Where can people join your Community? Giveth redirects people there."
-                        validations="isUrl"
-                        validationErrors={{ isUrl: 'Please provide a url.' }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <SelectFormsy
-                        name="reviewerAddress"
-                        id="reviewer-select"
-                        label="Select a reviewer"
-                        helpText="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
-                        value={campaign.reviewerAddress}
-                        cta="--- Select a reviewer ---"
-                        options={reviewers}
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please select a reviewer.',
-                        }}
-                        required
-                        disabled={!isNew}
-                      />
-                    </div>
-
-                    <div className="form-group row">
-                      <div className="col-4">
-                        <GoBackButton
-                          history={history}
-                          title={isNew ? 'Back' : `Campaign: ${campaign.title}`}
+                </Form.Item>
+                <Form.Item
+                  name="description"
+                  label="Explain how you are going to do this successfully."
+                  className="custom-form-item"
+                  extra="Make it as extensive as necessary. Your goal is to build trust, so that people donate Ether to your Campaign."
+                  rules={[
+                    {
+                      required: true,
+                      type: 'string',
+                      message: 'Description is required',
+                    },
+                    {
+                      validator: async (_, val) => {
+                        if (val && getHtmlText(val).length <= 10) {
+                          throw new Error(
+                            'Please provide at least 10 characters and do not edit the template keywords.',
+                          );
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  <Editor
+                    name="description"
+                    onChange={onDescriptionChange}
+                    value={campaign.description}
+                    placeholder="Describe how you're going to execute your Campaign successfully..."
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="Picture"
+                  label="Add a picture"
+                  className="custom-form-item"
+                  rules={[
+                    {
+                      validator: async () => {
+                        if (!campaign.picture) {
+                          throw new Error('Picture is required');
+                        }
+                      },
+                    },
+                  ]}
+                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
+                    aspect ratio."
+                >
+                  <Fragment>
+                    {campaign.picture ? (
+                      <div className="picture-upload-preview">
+                        <img
+                          src={
+                            campaign.picture.startsWith('/ipfs/')
+                              ? `${config.ipfsGateway}${campaign.picture.slice(6)}`
+                              : campaign.picture
+                          }
+                          alt={campaign.title}
                         />
+                        <DeleteTwoTone onClick={removePicture} />
                       </div>
-                      <div className="col-4 offset-4">
-                        <LoaderButton
-                          className="btn btn-success pull-right"
-                          formNoValidate
-                          type="submit"
-                          disabled={isSaving || !formIsValid}
-                          isLoading={isSaving}
-                          network="Foreign"
-                          loadingText="Saving..."
-                        >
-                          {isNew ? 'Create' : 'Update'} Campaign
-                        </LoaderButton>
-                      </div>
-                    </div>
-                  </Form>
-                </div>
-              )}
+                    ) : (
+                      <ImgCrop>
+                        <Upload.Dragger {...uploadProps}>
+                          <p className="ant-upload-text">
+                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
+                          </p>
+                        </Upload.Dragger>
+                      </ImgCrop>
+                    )}
+                  </Fragment>
+                </Form.Item>
+                <Form.Item
+                  name="communityUrl"
+                  label="Url to join your Community"
+                  className="custom-form-item"
+                  extra="Where can people join your Community? Giveth redirects people there."
+                  rules={[
+                    {
+                      type: 'string',
+                      min: 3,
+                      message: 'Please provide at least 3 characters',
+                    },
+                  ]}
+                >
+                  <Input
+                    value={campaign.communityUrl}
+                    name="communityUrl"
+                    placeholder="https://slack.giveth.com"
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="reviewerAddress"
+                  label="Select a reviewer"
+                  rules={[{ required: true }]}
+                  extra="This person or smart contract will be reviewing your Campaign to increase trust for Givers."
+                  className="custom-form-item"
+                >
+                  <Select
+                    showSearch
+                    placeholder="Select a reviewer"
+                    optionFilterProp="children"
+                    name="reviewerAddress"
+                    onSelect={setReviewer}
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    value={campaign.reviewerAddress}
+                  >
+                    {reviewers.map(({ name, address }) => (
+                      <Select.Option key={address} value={address}>
+                        {`${name} - ${address}`}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" loading={isSaving}>
+                    {isNew ? 'Create' : 'Update'} Campaign
+                  </Button>
+                </Form.Item>
+              </Form>
             </div>
-          </div>
+          </Row>
         </div>
-      </div>
-    );
-  }
-}
+      )}
+    </Fragment>
+  );
+};
 
 EditCampaign.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
-  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  projectOwnersWhitelistEnabled: PropTypes.bool.isRequired,
 };
 
 EditCampaign.defaultProps = {
-  currentUser: undefined,
   isNew: false,
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ state: { isLoading: whitelistIsLoading, reviewers, projectOwnersWhitelistEnabled } }) => (
-      <UserConsumer>
-        {({ state: { currentUser, isLoading: userIsLoading } }) => (
-          <Fragment>
-            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
-            {!(whitelistIsLoading || userIsLoading) && (
-              <EditCampaign
-                reviewers={reviewers}
-                projectOwnersWhitelistEnabled={projectOwnersWhitelistEnabled}
-                currentUser={currentUser}
-                {...props}
-              />
-            )}
-          </Fragment>
-        )}
-      </UserConsumer>
-    )}
-  </WhiteListConsumer>
-);
+export default EditCampaign;
