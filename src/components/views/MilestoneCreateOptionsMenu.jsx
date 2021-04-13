@@ -1,9 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Col, PageHeader, Row } from 'antd';
+import { history } from '../../lib/helpers';
 
 function MilestoneCreateOptionsMenu() {
+  function goBack() {
+    history.goBack();
+  }
+
   return (
     <div id="campaign-create-new-view">
+      <Row>
+        <Col span={24}>
+          <PageHeader
+            className="site-page-header"
+            onBack={goBack}
+            title="Create New"
+            ghost={false}
+          />
+        </Col>
+      </Row>
       <div className="link-card-container">
         <Link className="link-card" to="new/payment">
           <img
