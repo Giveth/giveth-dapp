@@ -227,14 +227,14 @@ const DelegateMultipleButton = props => {
             const _delegationOptions =
               milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
                 ? dacs.concat([
-                  {
-                    id: campaign._id,
-                    name: campaign.title,
-                    projectId: campaign.projectId,
-                    ownerEntity: milestone.ownerEntity,
-                    type: 'campaign',
-                  },
-                ])
+                    {
+                      id: campaign._id,
+                      name: campaign.title,
+                      projectId: campaign.projectId,
+                      ownerEntity: milestone.ownerEntity,
+                      type: 'campaign',
+                    },
+                  ])
                 : dacs;
 
             setDelegationOptions(_delegationOptions);
