@@ -35,7 +35,7 @@ const getReadableMessageContext = conversation => {
   let { owner } = conversation;
   owner = owner || { address: ownerAddress };
   const userName = getUserName(owner);
-  const userLink = owner && <Link to={`/profile/${owner.address}`}>{userName}</Link>;
+  const userLink = <Link to={`/profile/${owner.address}`}>{userName}</Link>;
 
   if (messageContext === 'proposed') return <Fragment>{userLink} proposed Milestone</Fragment>;
   if (messageContext === 'rejected') return <Fragment>{userLink} rejected completion</Fragment>;
