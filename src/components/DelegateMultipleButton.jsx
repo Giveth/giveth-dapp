@@ -43,7 +43,7 @@ const modalStyles = {
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
     overflowY: 'auto',
-    maxHeight: '64%',
+    height: '64%',
   },
 };
 
@@ -64,13 +64,13 @@ const closeButtonStyle = {
  */
 const DelegateMultipleButton = props => {
   const {
-    state: { tokenWhitelist },
+    state: { tokenWhitelist, isLoading: whiteListIsLoading },
   } = useContext(WhiteListContext);
   const {
-    state: { currentUser },
+    state: { currentUser, isLoading: userContextIsLoading },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, validProvider, balance },
+    state: { isForeignNetwork, validProvider, balance, isEnabled: Web3ContextIsEnabled },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -227,14 +227,14 @@ const DelegateMultipleButton = props => {
             const _delegationOptions =
               milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
                 ? dacs.concat([
-                    {
-                      id: campaign._id,
-                      name: campaign.title,
-                      projectId: campaign.projectId,
-                      ownerEntity: milestone.ownerEntity,
-                      type: 'campaign',
-                    },
-                  ])
+                  {
+                    id: campaign._id,
+                    name: campaign.title,
+                    projectId: campaign.projectId,
+                    ownerEntity: milestone.ownerEntity,
+                    type: 'campaign',
+                  },
+                ])
                 : dacs;
 
             setDelegationOptions(_delegationOptions);
@@ -350,6 +350,142 @@ const DelegateMultipleButton = props => {
   sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
   const { decimals } = selectedToken;
 
+  const modalContent = (
+    <Fragment>
+      {' '}
+      <p>
+        You are delegating donations to
+        {!milestone && <strong> {campaign.title}</strong>}
+        {milestone && <strong> {milestone.title}</strong>}
+      </p>
+      <Fragment>
+        {totalDonations > delegations.length && (
+          <div className="alert alert-warning">
+            <p>
+              <strong>Note:</strong> Due to the current gas limitations you may be required to
+              delegate multiple times. You cannot delegate from more than{' '}
+              <strong>{config.donationDelegateCountLimit}</strong> sources on each transaction. In
+              this try, you are allowed to delegate money of <strong>{delegations.length}</strong>{' '}
+              donations of total <strong>{totalDonations}</strong> available in{' '}
+              {delegateFromType === 'dac' ? 'DAC' : 'Campaign'}.
+            </p>
+          </div>
+        )}
+        <Form
+          onSubmit={submit}
+          layout="vertical"
+          onValid={() => toggleFormIsValid(true)}
+          onInvalid={() => toggleFormIsValid(false)}
+        >
+          <div className="form-group">
+            <span className="label">Delegate from:</span>
+            <InputToken
+              name="delegateFrom"
+              label="Delegate from:"
+              placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
+              value={objectToDelegateFrom}
+              options={delegationOptions}
+              onSelect={v => selectedObject(v, amount)}
+              maxLength={1}
+            />
+          </div>
+
+          {objectToDelegateFrom.length !== 1 && (
+            <p>
+              Please select entity from which you want to delegate money to the{' '}
+              {milestone ? milestone.title : campaign.title}{' '}
+            </p>
+          )}
+          {objectToDelegateFrom.length === 1 && isLoadingDonations && (
+            <Loader className="small btn-loader" />
+          )}
+          {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
+            <div>
+              {(!props.milestone || !props.milestone.acceptsSingleToken) && (
+                <SelectFormsy
+                  name="token"
+                  id="token-select"
+                  label={`Select token or ${config.nativeTokenName} to delegate`}
+                  helpText=""
+                  value={selectedToken && selectedToken.address}
+                  options={tokenWhitelistOptions}
+                  onChange={address => setToken(address)}
+                />
+              )}
+
+              {delegations.length === 0 || maxAmount.isZero() ? (
+                <p>
+                  The amount available to delegate is 0 {selectedToken.symbol}
+                  <br />
+                  Please select{' '}
+                  {!props.milestone || !props.milestone.acceptsSingleToken
+                    ? 'a different currency or '
+                    : ''}
+                  different source {milestone ? 'DAC/Campaign' : 'DAC'}
+                </p>
+              ) : (
+                <div>
+                  <span className="label">Amount {selectedToken.symbol} to delegate:</span>
+
+                  <div className="form-group" id="amount_slider">
+                    <Slider
+                      min={0}
+                      max={maxAmount.toNumber()}
+                      onChange={num => setAmount(num.toString())}
+                      value={amount}
+                      step={decimals ? 1 / 10 ** decimals : 1}
+                      marks={sliderMarks}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <NumericInput
+                      onChange={setAmount}
+                      token={selectedToken}
+                      value={amount}
+                      lteMessage={`The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`}
+                      id="amount-input"
+                      maxAmount={maxAmount}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <Textarea name="comment" id="comment-input" value="" placeholder="Comment" />
+                  </div>
+                  <button
+                    className="btn btn-success"
+                    formNoValidate
+                    type="submit"
+                    disabled={isSaving || !isForeignNetwork || !formIsValid}
+                  >
+                    {isSaving ? 'Delegating...' : 'Delegate here'}
+                  </button>
+                  <button
+                    className="btn btn-light float-right"
+                    type="button"
+                    onClick={() => {
+                      setModalVisible(false);
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </Form>
+      </Fragment>
+    </Fragment>
+  );
+
+  const modalLoading = (
+    <div>
+      <h2>Please wait while data is loading</h2>
+      <Loader />
+    </div>
+  );
+
+  const isContextReady = !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled;
+
   return (
     <span style={style}>
       <button
@@ -396,138 +532,7 @@ const DelegateMultipleButton = props => {
             networkName={config.foreignNetworkName}
           />
         )}{' '}
-        {validProvider && isForeignNetwork && (
-          <Fragment>
-            {' '}
-            <p>
-              You are delegating donations to
-              {!milestone && <strong> {campaign.title}</strong>}
-              {milestone && <strong> {milestone.title}</strong>}
-            </p>
-            <Fragment>
-              {totalDonations > delegations.length && (
-                <div className="alert alert-warning">
-                  <p>
-                    <strong>Note:</strong> Due to the current gas limitations you may be required to
-                    delegate multiple times. You cannot delegate from more than{' '}
-                    <strong>{config.donationDelegateCountLimit}</strong> sources on each
-                    transaction. In this try, you are allowed to delegate money of{' '}
-                    <strong>{delegations.length}</strong> donations of total{' '}
-                    <strong>{totalDonations}</strong> available in{' '}
-                    {delegateFromType === 'dac' ? 'DAC' : 'Campaign'}.
-                  </p>
-                </div>
-              )}
-              <Form
-                onSubmit={submit}
-                layout="vertical"
-                onValid={() => toggleFormIsValid(true)}
-                onInvalid={() => toggleFormIsValid(false)}
-              >
-                <div className="form-group">
-                  <span className="label">Delegate from:</span>
-                  <InputToken
-                    name="delegateFrom"
-                    label="Delegate from:"
-                    placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
-                    value={objectToDelegateFrom}
-                    options={delegationOptions}
-                    onSelect={v => selectedObject(v, amount)}
-                    maxLength={1}
-                  />
-                </div>
-
-                {objectToDelegateFrom.length !== 1 && (
-                  <p>
-                    Please select entity from which you want to delegate money to the{' '}
-                    {milestone ? milestone.title : campaign.title}{' '}
-                  </p>
-                )}
-                {objectToDelegateFrom.length === 1 && isLoadingDonations && (
-                  <Loader className="small btn-loader" />
-                )}
-                {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
-                  <div>
-                    {(!props.milestone || !props.milestone.acceptsSingleToken) && (
-                      <SelectFormsy
-                        name="token"
-                        id="token-select"
-                        label={`Select token or ${config.nativeTokenName} to delegate`}
-                        helpText=""
-                        value={selectedToken && selectedToken.address}
-                        options={tokenWhitelistOptions}
-                        onChange={address => setToken(address)}
-                      />
-                    )}
-
-                    {delegations.length === 0 || maxAmount.isZero() ? (
-                      <p>
-                        The amount available to delegate is 0 {selectedToken.symbol}
-                        <br />
-                        Please select{' '}
-                        {!props.milestone || !props.milestone.acceptsSingleToken
-                          ? 'a different currency or '
-                          : ''}
-                        different source {milestone ? 'DAC/Campaign' : 'DAC'}
-                      </p>
-                    ) : (
-                      <div>
-                        <span className="label">Amount {selectedToken.symbol} to delegate:</span>
-
-                        <div className="form-group" id="amount_slider">
-                          <Slider
-                            min={0}
-                            max={maxAmount.toNumber()}
-                            onChange={num => setAmount(num.toString())}
-                            value={amount}
-                            step={decimals ? 1 / 10 ** decimals : 1}
-                            marks={sliderMarks}
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <NumericInput
-                            onChange={setAmount}
-                            token={selectedToken}
-                            value={amount}
-                            lteMessage={`The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`}
-                            id="amount-input"
-                            maxAmount={maxAmount}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <Textarea
-                            name="comment"
-                            id="comment-input"
-                            value=""
-                            placeholder="Comment"
-                          />
-                        </div>
-                        <button
-                          className="btn btn-success"
-                          formNoValidate
-                          type="submit"
-                          disabled={isSaving || !isForeignNetwork || !formIsValid}
-                        >
-                          {isSaving ? 'Delegating...' : 'Delegate here'}
-                        </button>
-                        <button
-                          className="btn btn-light float-right"
-                          type="button"
-                          onClick={() => {
-                            setModalVisible(false);
-                          }}
-                        >
-                          Close
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Form>
-            </Fragment>
-          </Fragment>
-        )}
+        {isContextReady ? validProvider && isForeignNetwork && modalContent : modalLoading}
       </Modal>
     </span>
   );
