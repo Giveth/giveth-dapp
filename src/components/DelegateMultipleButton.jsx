@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import 'react-rangeslider/lib/index.css';
 import InputToken from 'react-input-token';
+import { Slider } from 'antd';
 
 import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
@@ -18,7 +19,6 @@ import Loader from './Loader';
 import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
-import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 
 import DonationService from '../services/DonationService';
@@ -344,6 +344,12 @@ const DelegateMultipleButton = props => {
     delegateFromType = delegationOptions.find(c => c.id === objectToDelegateFrom[0]).type;
   }
 
+  const sliderMarks = {
+    0: '0',
+  };
+  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
+  const { decimals } = selectedToken;
+
   return (
     <span style={style}>
       <button
@@ -468,12 +474,14 @@ const DelegateMultipleButton = props => {
                       <div>
                         <span className="label">Amount {selectedToken.symbol} to delegate:</span>
 
-                        <div className="form-group">
-                          <RangeSlider
-                            onChange={setAmount}
-                            token={selectedToken}
+                        <div className="form-group" id="amount_slider">
+                          <Slider
+                            min={0}
+                            max={maxAmount.toNumber()}
+                            onChange={num => setAmount(num.toString())}
                             value={amount}
-                            maxAmount={maxAmount}
+                            step={decimals ? 1 / 10 ** decimals : 1}
+                            marks={sliderMarks}
                           />
                         </div>
 

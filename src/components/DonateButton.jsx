@@ -18,7 +18,8 @@ import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import ReactTooltip from 'react-tooltip';
-import { Button } from 'antd';
+import { Slider, Button } from 'antd';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';
@@ -36,7 +37,6 @@ import SelectFormsy from './SelectFormsy';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
-import RangeSlider from './RangeSlider';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
@@ -717,6 +717,11 @@ const DonateButton = forwardRef((props, ref) => {
 
   const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
 
+  const sliderMarks = {
+    0: '0',
+  };
+  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
+
   return (
     <span style={style}>
       <Button type="primary" onClick={doDonate} ref={ref} className={className}>
@@ -821,16 +826,17 @@ const DonateButton = forwardRef((props, ref) => {
                   <span className="label">How much {symbol} do you want to donate?</span>
 
                   {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                    <div className="form-group">
-                      <RangeSlider
-                        onChange={setAmount}
-                        token={selectedToken}
+                    <div className="form-group" id="amount_slider">
+                      <Slider
+                        min={0}
+                        max={maxAmount.toNumber()}
+                        onChange={num => setAmount(num.toString())}
                         value={amount}
-                        maxAmount={maxAmount}
+                        step={decimals ? 1 / 10 ** decimals : 1}
+                        marks={sliderMarks}
                       />
                     </div>
                   )}
-
                   <div className="form-group">
                     <NumericInput
                       token={selectedToken}
@@ -845,7 +851,6 @@ const DonateButton = forwardRef((props, ref) => {
                       )} ${symbol}.`}
                     />
                   </div>
-
                   {showCustomAddress && (
                     <div className="alert alert-success">
                       <i className="fa fa-exclamation-triangle" />

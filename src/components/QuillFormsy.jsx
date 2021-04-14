@@ -7,7 +7,7 @@ import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
-import VideoPopup from './VideoPopup.old';
+import VideoPopup from './VideoPopup';
 import Loader from './Loader';
 
 class QuillFormsy extends Component {
@@ -21,23 +21,20 @@ class QuillFormsy extends Component {
     this.imageHandler = this.imageHandler.bind(this);
     this.templateHandler = this.templateHandler.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
+    this.handleVideoModalCancel = this.handleVideoModalCancel.bind(this);
+    this.showVideoModal = this.showVideoModal.bind(this);
+    this.videoHandler = this.videoHandler.bind(this);
 
     this.state = {
       uploading: false,
+      isVideoModalVisible: false,
     };
   }
 
   componentDidMount() {
     const toolbar = this.reactQuillRef.getEditor().getModule('toolbar');
     toolbar.addHandler('image', this.imageHandler);
-    toolbar.addHandler('video', () => {
-      const quill = this.reactQuillRef.getEditor();
-      const index = quill.getLength() - 1;
-      VideoPopup(url => {
-        quill.insertEmbed(index, 'video', url);
-        React.swal.close();
-      });
-    });
+    toolbar.addHandler('video', this.videoHandler);
     if (this.props.templatesDropdown) {
       const placeholderPickerItems = Array.prototype.slice.call(
         document.querySelectorAll('.ql-template .ql-picker-item'),
@@ -54,6 +51,18 @@ class QuillFormsy extends Component {
         document.querySelector('.ql-template .ql-picker-label').innerHTML
       }`;
     }
+  }
+
+  handleVideoModalCancel() {
+    this.setState({ isVideoModalVisible: false });
+  }
+
+  showVideoModal() {
+    this.setState({ isVideoModalVisible: true });
+  }
+
+  videoHandler() {
+    this.showVideoModal();
   }
 
   templateHandler(value) {
@@ -144,7 +153,7 @@ class QuillFormsy extends Component {
       getErrorMessage,
     } = this.props;
 
-    const { uploading } = this.state;
+    const { uploading, isVideoModalVisible } = this.state;
 
     // Set a specific className based on the validation
     // state of this component. showRequired() is true
@@ -244,6 +253,11 @@ class QuillFormsy extends Component {
           />
         </div>
         <span className="help-block validation-message">{errorMessage}</span>
+        <VideoPopup
+          visible={isVideoModalVisible}
+          handleClose={this.handleVideoModalCancel}
+          reactQuillRef={this.reactQuillRef}
+        />
       </div>
     );
   }

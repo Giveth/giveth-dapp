@@ -601,7 +601,7 @@ export default class Milestone extends BasicModel {
 
   canUserCancel(user) {
     return (
-      user &&
+      user.address &&
       [this.reviewerAddress, this.ownerAddress].includes(user.address) &&
       [Milestone.IN_PROGRESS, Milestone.NEEDS_REVIEW].includes(this.status) &&
       this.mined

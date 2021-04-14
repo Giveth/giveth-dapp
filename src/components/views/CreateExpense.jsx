@@ -270,7 +270,16 @@ function CreateExpense(props) {
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form className="card-form" form={form} requiredMark onFinish={submit}>
+            <Form
+              className="card-form"
+              form={form}
+              requiredMark
+              onFinish={submit}
+              scrollToFirstError={{
+                block: 'center',
+                behavior: 'smooth',
+              }}
+            >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/expense.png`} alt="expense-logo" />
                 <div className="title">Expense</div>

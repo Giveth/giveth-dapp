@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
+import { Slider } from 'antd';
 
 import { utils } from 'web3';
 import { Form, Textarea } from 'formsy-react-components';
@@ -15,12 +16,10 @@ import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, checkBalance } from '../lib/middleware';
-import RangeSlider from './RangeSlider';
 import DonationService from '../services/DonationService';
 import User from '../models/User';
 import NumericInput from './NumericInput';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
-// import NumericInput from './NumericInput';
 
 const modalStyles = {
   content: {
@@ -32,6 +31,8 @@ const modalStyles = {
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
     overflowY: 'scroll',
+    maxHeight: '80%',
+    marginTop: '10px',
   },
 };
 
@@ -297,6 +298,8 @@ class DelegateButton extends Component {
   render() {
     const { types, milestoneOnly, donation } = this.props;
     const { token } = donation;
+    const { decimals } = token;
+
     const {
       isSaving,
       objectsToDelegateToMilestone,
@@ -334,6 +337,11 @@ class DelegateButton extends Component {
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
+
+    const sliderMarks = {
+      0: '0',
+    };
+    sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
 
     return (
       <span style={style}>
@@ -405,14 +413,16 @@ class DelegateButton extends Component {
 
             <span className="label">Amount to delegate:</span>
 
-            <div className="form-group">
-              <RangeSlider
+            <div className="form-group" id="amount_slider">
+              <Slider
+                min={0}
+                max={maxAmount.toNumber()}
                 onChange={newAmount => {
-                  this.setState({ amount: newAmount });
+                  this.setState({ amount: newAmount.toString() });
                 }}
-                token={token}
                 value={amount}
-                maxAmount={maxAmount}
+                marks={sliderMarks}
+                step={decimals ? 1 / 10 ** decimals : 1}
               />
             </div>
 

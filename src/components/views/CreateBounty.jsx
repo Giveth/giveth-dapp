@@ -170,7 +170,15 @@ function CreateBounty(props) {
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form className="card-form" requiredMark onFinish={submit}>
+            <Form
+              className="card-form"
+              requiredMark
+              onFinish={submit}
+              scrollToFirstError={{
+                block: 'center',
+                behavior: 'smooth',
+              }}
+            >
               <div className="card-form-header">
                 <img src={`${process.env.PUBLIC_URL}/img/bounty.png`} alt="bounty-logo" />
                 <div className="title">Bounty</div>
@@ -192,6 +200,7 @@ function CreateBounty(props) {
                   onChange={handleInputChange}
                   extra="Explain the requirements and what success looks like."
                   placeholder="Describe the Bounty and define the acceptance criteria..."
+                  id="description"
                 />
 
                 <MilestoneDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />

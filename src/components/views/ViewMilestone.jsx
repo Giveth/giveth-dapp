@@ -44,11 +44,11 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 
 /**
-  Loads and shows a single milestone
+ Loads and shows a single milestone
 
-  @route params:
-    milestoneId (string): id of a milestone
-* */
+ @route params:
+ milestoneId (string): id of a milestone
+ * */
 
 const helmetContext = {};
 
@@ -63,7 +63,7 @@ const ViewMilestone = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { nativeCurrencyWhitelist, activeTokenWhitelist },
+    state: { nativeCurrencyWhitelist, activeTokenWhitelist, minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -75,8 +75,10 @@ const ViewMilestone = props => {
   const [dacTitle, setDacTitle] = useState('');
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
+  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
+  const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
   const editMilestoneButtonRef = useRef();
   const cancelMilestoneButtonRef = useRef();
@@ -153,27 +155,52 @@ const ViewMilestone = props => {
     };
   }, [milestone]);
 
-  useEffect(() => {
+  const calculateMilestoneCurrentBalanceValue = async () => {
     if (
       currentUser.address &&
       !currency &&
       milestone.donationCounters &&
       milestone.donationCounters.length
     ) {
-      // eslint-disable-next-line
       setCurrency(currentUser.currency);
-      convertMultipleRates(
-        null,
-        currentUser.currency,
-        milestone.donationCounters.map(dc => {
+      try {
+        const rateArray = milestone.donationCounters.map(dc => {
           return {
             value: dc.currentBalance,
             currency: dc.symbol,
           };
-        }),
-      ).then(result => setCurrentBalanceValue(result.total));
+        });
+        const userCurrencyValueResult = await convertMultipleRates(
+          null,
+          currentUser.currency,
+          rateArray,
+        );
+        setCurrentBalanceValue(userCurrencyValueResult.total);
+        setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
+      } catch (e) {
+        console.log('convertMultipleRates error', e);
+      }
     }
-  }, [milestone.donationCounters]);
+  };
+  useEffect(() => {
+    calculateMilestoneCurrentBalanceValue();
+  });
+
+  useEffect(() => {
+    if (!currentBalanceUsdValue) {
+      return;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const currencyUsdValue of currentBalanceUsdValue) {
+      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
+      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
+      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
+        setIsAmountEnoughForWithdraw(false);
+        return;
+      }
+    }
+    setIsAmountEnoughForWithdraw(true);
+  }, [currentBalanceUsdValue]);
 
   const isActiveMilestone = () => {
     const { fullyFunded, status } = milestone;
@@ -364,7 +391,12 @@ const ViewMilestone = props => {
               <div className="container-fluid mt-4">
                 <div className="row">
                   <div className="col-md-8 m-auto">
-                    <ViewMilestoneAlerts milestone={milestone} campaign={campaign} />
+                    <ViewMilestoneAlerts
+                      milestone={milestone}
+                      campaign={campaign}
+                      minimumPayoutUsdValue={minimumPayoutUsdValue}
+                      isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                    />
 
                     <div id="description">
                       <div className="about-section-header">
@@ -619,6 +651,7 @@ const ViewMilestone = props => {
                           milestone={milestone}
                           currentUser={currentUser}
                           balance={balance}
+                          isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                           maxHeight={`${detailsCardHeight}px`}
                         />
                       </div>
