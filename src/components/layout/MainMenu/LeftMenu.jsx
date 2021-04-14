@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useRouteMatch } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, Grid } from 'antd';
 
 const { useBreakpoint } = Grid;
@@ -8,22 +8,29 @@ const LeftMenu = () => {
   const { lg } = useBreakpoint();
   const [selectedKeys, setSelectedKeys] = useState();
 
-  const isDac1 = useRouteMatch('/dac/:slug');
-  const isDac2 = useRouteMatch('/dacs');
-  const isCamp1 = useRouteMatch('/campaign/:slug');
-  const isCamp2 = useRouteMatch('/campaigns');
-  const isMilestone1 = useRouteMatch('/milestone/:slug');
-  const isMilestone2 = useRouteMatch('/milestones');
-
-  let selectedKey;
-  if (isDac1 || isDac2) selectedKey = 'Communities';
-  else if (isCamp1 || isCamp2) selectedKey = 'Campaigns';
-  else if (isMilestone1 || isMilestone2) selectedKey = 'Milestones';
-  else selectedKey = '';
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    setSelectedKeys(selectedKey);
-  }, [selectedKey]);
+    switch (true) {
+      case pathname === '/dacs':
+      case pathname.startsWith('/dac/'):
+        setSelectedKeys('Communities');
+        break;
+
+      case pathname === '/campaigns':
+      case pathname.startsWith('/campaign/'):
+        setSelectedKeys('Campaigns');
+        break;
+
+      case pathname === '/milestones':
+      case pathname.startsWith('/milestone/'):
+        setSelectedKeys('Milestones');
+        break;
+
+      default:
+        setSelectedKeys('');
+    }
+  }, [pathname]);
 
   return (
     <Menu mode={lg ? 'horizontal' : 'inline'} selectedKeys={[selectedKeys]}>
@@ -40,4 +47,4 @@ const LeftMenu = () => {
   );
 };
 
-export default LeftMenu;
+export default React.memo(LeftMenu);
