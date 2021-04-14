@@ -41,13 +41,14 @@ function MenuBarCreateButton() {
       }
     }
   };
-  if (!match) return null;
   const { slug } = match.params;
   useEffect(() => {
     if (slug) {
       getCampaign(slug);
     }
   }, [slug]);
+
+  if (!match) return null;
 
   if (campaignIsActive && currentUser.address) {
     return (
