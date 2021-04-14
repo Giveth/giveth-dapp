@@ -41,7 +41,9 @@ function MenuBarCreateButton() {
       }
     }
   };
-  const { slug } = match.params;
+
+  const { slug } = match ? match.params : {};
+
   useEffect(() => {
     if (slug) {
       getCampaign(slug);
