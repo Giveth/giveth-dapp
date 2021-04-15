@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -43,7 +43,8 @@ const modalStyles = {
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
     overflowY: 'auto',
-    height: '64%',
+    maxHeight: '64%',
+    minHeight: '350px',
   },
 };
 
@@ -94,8 +95,6 @@ const DelegateMultipleButton = props => {
       ? props.milestone.token
       : tokenWhitelist[0],
   );
-
-  const dacsObserver = useRef(null);
 
   const loadDonations = async ids => {
     if (ids.length !== 1) return;
@@ -192,81 +191,66 @@ const DelegateMultipleButton = props => {
     setLoadingDonations(true);
   };
 
+  useEffect(() => {
+    loadDonations(objectToDelegateFrom).then();
+  }, [selectedToken]);
+
   function selectedObject({ target }) {
     setObjectToDelegateFrom(target.value);
     setLoadingDonations(true);
     loadDonations(target.value).then();
   }
 
-  useEffect(() => {
-    if (modalVisible && !dacsObserver.current) {
-      const { milestone, campaign } = props;
-      const userAddress = currentUser ? currentUser.address : '';
-      dacsObserver.current = feathersClient
-        .service('dacs')
-        .watch({ listStrategy: 'always' })
-        .find({
-          query: {
-            delegateId: { $gt: '0' },
-            ownerAddress: userAddress,
-            $select: ['ownerAddress', 'title', '_id', 'delegateId', 'delegateEntity', 'delegate'],
-          },
-        })
-        .subscribe(
-          resp => {
-            const dacs = resp.data.map(c => ({
-              name: c.title,
-              id: c._id,
-              ownerAddress: c.ownerAddress,
-              delegateId: c.delegateId,
-              delegateEntity: c.delegateEntity,
-              delegate: c.delegate,
-              type: 'dac',
-            }));
+  const getDacs = () => {
+    const { milestone, campaign } = props;
+    const userAddress = currentUser ? currentUser.address : '';
+    feathersClient
+      .service('dacs')
+      .find({
+        query: {
+          delegateId: { $gt: '0' },
+          ownerAddress: userAddress,
+          $select: ['ownerAddress', 'title', '_id', 'delegateId', 'delegateEntity', 'delegate'],
+        },
+      })
+      .then(resp => {
+        const dacs = resp.data.map(c => ({
+          name: c.title,
+          id: c._id,
+          ownerAddress: c.ownerAddress,
+          delegateId: c.delegateId,
+          delegateEntity: c.delegateEntity,
+          delegate: c.delegate,
+          type: 'dac',
+        }));
 
-            const _delegationOptions =
-              milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
-                ? dacs.concat([
-                    {
-                      id: campaign._id,
-                      name: campaign.title,
-                      projectId: campaign.projectId,
-                      ownerEntity: milestone.ownerEntity,
-                      type: 'campaign',
-                    },
-                  ])
-                : dacs;
+        const _delegationOptions =
+          milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
+            ? dacs.concat([
+                {
+                  id: campaign._id,
+                  name: campaign.title,
+                  projectId: campaign.projectId,
+                  ownerEntity: milestone.ownerEntity,
+                  type: 'campaign',
+                },
+              ])
+            : dacs;
 
-            setDelegationOptions(_delegationOptions);
-          },
-          () => {},
-        );
-    }
-  }, [modalVisible]);
-
-  useEffect(() => {
-    return () => {
-      if (dacsObserver.current) {
-        dacsObserver.current.unsubscribe();
-        dacsObserver.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (delegationOptions.length === 1) {
-      selectedObject({ target: { value: [delegationOptions[0].id] } }, new BigNumber(0));
-    }
-  }, [delegationOptions]);
-
-  useEffect(() => {
-    loadDonations(objectToDelegateFrom).then();
-  }, [selectedToken]);
+        setDelegationOptions(_delegationOptions);
+        if (_delegationOptions.length === 1) {
+          selectedObject({ target: { value: [_delegationOptions[0].id] } });
+        }
+      });
+  };
 
   function openDialog() {
     isLoggedIn(currentUser)
       .then(() => checkBalance(balance))
-      .then(() => setModalVisible(true));
+      .then(() => {
+        setModalVisible(true);
+        getDacs();
+      });
   }
 
   function submit({ comment }) {
@@ -385,7 +369,7 @@ const DelegateMultipleButton = props => {
               placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
               value={objectToDelegateFrom}
               options={delegationOptions}
-              onSelect={v => selectedObject(v, amount)}
+              onSelect={v => selectedObject(v)}
               maxLength={1}
             />
           </div>
@@ -396,9 +380,7 @@ const DelegateMultipleButton = props => {
               {milestone ? milestone.title : campaign.title}{' '}
             </p>
           )}
-          {objectToDelegateFrom.length === 1 && isLoadingDonations && (
-            <Loader className="small btn-loader" />
-          )}
+          {objectToDelegateFrom.length === 1 && isLoadingDonations && <Loader />}
           {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
             <div>
               {(!props.milestone || !props.milestone.acceptsSingleToken) && (
