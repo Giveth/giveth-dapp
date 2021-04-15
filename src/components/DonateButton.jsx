@@ -18,7 +18,8 @@ import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import ReactTooltip from 'react-tooltip';
-import { Button, Slider } from 'antd';
+import { Slider, Button } from 'antd';
+
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import pollEvery from '../lib/pollEvery';

@@ -80,7 +80,13 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   }
 
   function insertToEditor(videURL) {
-    const quill = reactQuillRef.current.getEditor();
+    // TODO: Remove This if after edit milestone conrt to FC;
+    let quill;
+    if (reactQuillRef.current) {
+      quill = reactQuillRef.current.getEditor();
+    } else {
+      quill = reactQuillRef.getEditor();
+    }
     const index = quill.getLength() - 1;
     quill.insertEmbed(index, 'video', videURL);
   }
