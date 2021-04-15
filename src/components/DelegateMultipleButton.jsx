@@ -43,7 +43,8 @@ const modalStyles = {
     transform: 'translate(-50%, -50%)',
     boxShadow: '0 0 40px #ccc',
     overflowY: 'auto',
-    height: '64%',
+    maxHeight: '64%',
+    minHeight: '350px',
   },
 };
 
@@ -187,6 +188,31 @@ const DelegateMultipleButton = props => {
     setLoadingDonations(false);
   };
 
+  const calcPledges = () => {
+    let sum = 0;
+    const sorted = [...delegations];
+    sorted.sort((a, b) => {
+      return b._amountRemaining.toNumber() - a._amountRemaining.toNumber();
+    });
+
+    if (sorted.length >= config.donationDelegateCountLimit) {
+      for (let i = 0; i < config.donationDelegateCountLimit; i += 1) {
+        sum += sorted[i]._amountRemaining.toNumber();
+      }
+    }
+    return sum;
+  };
+
+  const isLimitedDelegateCount = () => {
+    if (props.milestone && props.milestone.isCapped) {
+      return (
+        totalDonations > delegations.length && calcPledges() < props.milestone._maxAmount.toNumber()
+      );
+    }
+
+    return totalDonations > delegations.length;
+  };
+
   const setToken = address => {
     setSelectedToken(tokenWhitelist.find(t => t.address === address));
     setLoadingDonations(true);
@@ -242,16 +268,14 @@ const DelegateMultipleButton = props => {
           () => {},
         );
     }
-  }, [modalVisible]);
 
-  useEffect(() => {
     return () => {
       if (dacsObserver.current) {
         dacsObserver.current.unsubscribe();
         dacsObserver.current = null;
       }
     };
-  }, []);
+  }, [modalVisible]);
 
   useEffect(() => {
     if (delegationOptions.length === 1) {
@@ -359,7 +383,7 @@ const DelegateMultipleButton = props => {
         {milestone && <strong> {milestone.title}</strong>}
       </p>
       <Fragment>
-        {totalDonations > delegations.length && (
+        {isLimitedDelegateCount() && (
           <div className="alert alert-warning">
             <p>
               <strong>Note:</strong> Due to the current gas limitations you may be required to
@@ -396,9 +420,7 @@ const DelegateMultipleButton = props => {
               {milestone ? milestone.title : campaign.title}{' '}
             </p>
           )}
-          {objectToDelegateFrom.length === 1 && isLoadingDonations && (
-            <Loader className="small btn-loader" />
-          )}
+          {objectToDelegateFrom.length === 1 && isLoadingDonations && <Loader />}
           {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
             <div>
               {(!props.milestone || !props.milestone.acceptsSingleToken) && (
