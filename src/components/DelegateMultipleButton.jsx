@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -95,6 +95,8 @@ const DelegateMultipleButton = props => {
       ? props.milestone.token
       : tokenWhitelist[0],
   );
+
+  const delegateFromType = useRef();
 
   const loadDonations = async ids => {
     if (ids.length !== 1) return;
@@ -238,11 +240,14 @@ const DelegateMultipleButton = props => {
             : dacs;
 
         setDelegationOptions(_delegationOptions);
-        if (_delegationOptions.length === 1) {
-          selectedObject({ target: { value: [_delegationOptions[0].id] } });
-        }
       });
   };
+
+  useEffect(() => {
+    if (delegationOptions.length === 1) {
+      selectedObject({ target: { value: [delegationOptions[0].id] } });
+    }
+  }, [delegationOptions]);
 
   function openDialog() {
     isLoggedIn(currentUser)
@@ -323,10 +328,16 @@ const DelegateMultipleButton = props => {
   const style = { display: 'inline-block', ...props.style };
   const { campaign, milestone } = props;
 
-  let delegateFromType;
-  if (objectToDelegateFrom.length > 0) {
-    delegateFromType = delegationOptions.find(c => c.id === objectToDelegateFrom[0]).type;
-  }
+  useEffect(() => {
+    setModalVisible(false);
+    setDelegationOptions([]);
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (objectToDelegateFrom.length > 0) {
+      delegateFromType.current = delegationOptions.find(c => c.id === objectToDelegateFrom[0]).type;
+    }
+  }, [objectToDelegateFrom]);
 
   const sliderMarks = {
     0: '0',
@@ -351,7 +362,7 @@ const DelegateMultipleButton = props => {
               <strong>{config.donationDelegateCountLimit}</strong> sources on each transaction. In
               this try, you are allowed to delegate money of <strong>{delegations.length}</strong>{' '}
               donations of total <strong>{totalDonations}</strong> available in{' '}
-              {delegateFromType === 'dac' ? 'DAC' : 'Campaign'}.
+              {delegateFromType.current === 'dac' ? 'DAC' : 'Campaign'}.
             </p>
           </div>
         )}
