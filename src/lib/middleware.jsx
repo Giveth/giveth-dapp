@@ -7,6 +7,8 @@ import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
 import ErrorPopup from '../components/ErrorPopup';
 
+const jwtDecode = require('jwt-decode');
+
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
  *
@@ -54,12 +56,11 @@ const authenticate = async (address, redirectOnFail) => {
     strategy: 'web3',
     address,
   };
-
-  const accessToken = await feathersClient.passport.getJWT();
+  const accessToken = await feathersClient.authentication.getAccessToken();
   if (accessToken) {
-    const payload = await feathersClient.passport.verifyJWT(accessToken);
+    const payload = jwtDecode(accessToken);
     if (address === payload.userId) {
-      await feathersClient.authenticate(); // authenticate the socket connection
+      await feathersClient.reAuthenticate(); // authenticate the socket connection
       return true;
     }
     await feathersClient.logout();
@@ -71,8 +72,8 @@ const authenticate = async (address, redirectOnFail) => {
   } catch (response) {
     // normal flow will issue a 401 with a challenge message we need to sign and send to
     // verify our identity
-    if (response.code === 401 && response.data.startsWith('Challenge =')) {
-      const msg = response.data.replace('Challenge =', '').trim();
+    if (response.code === 401 && response.message.startsWith('Challenge =')) {
+      const msg = response.message.replace('Challenge =', '').trim();
 
       const res = await new Promise(resolve =>
         Modal.confirm({
