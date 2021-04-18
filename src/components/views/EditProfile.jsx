@@ -14,6 +14,7 @@ import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import SelectFormsy from '../SelectFormsy';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import Web3ConnectWarning from '../Web3ConnectWarning';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -184,138 +185,141 @@ class EditProfile extends Component {
     const { currentUser } = this.props;
 
     return (
-      <div id="edit-cause-view" className="container-fluid page-layout">
-        <div className="row">
-          <div className="col-md-8 m-auto">
-            {isLoading && <Loader className="fixed" />}
+      <Fragment>
+        <Web3ConnectWarning />
+        <div id="edit-cause-view" className="container-fluid page-layout">
+          <div className="row">
+            <div className="col-md-8 m-auto">
+              {isLoading && <Loader className="fixed" />}
 
-            {!isLoading && (
-              <div>
-                <h3>Edit your profile</h3>
-                <p>
-                  <i className="fa fa-question-circle" />
-                  Trust is important to run successful Communities or Campaigns. Without trust you
-                  will likely not receive donations. Therefore, we strongly recommend that you{' '}
-                  <strong>fill out your profile </strong>
-                  when you want to start Communities or Campaigns on Giveth.
-                </p>
-                <div className="alert alert-warning">
-                  <i className="fa fa-exclamation-triangle" />
-                  Please note that all the information entered will be stored on a publicly
-                  accessible permanent storage like blockchain. We are not able to erase or alter
-                  any of the information. Do not input anything that you do not have permission to
-                  share or you are not comfortable with being forever accessible.
-                </div>
-
-                <Form
-                  onSubmit={this.submit}
-                  mapping={inputs => {
-                    user.name = inputs.name;
-                    user.email = inputs.email;
-                    user.linkedin = inputs.linkedin;
-                    user.currency = inputs.currency;
-                  }}
-                  onValid={this.enableFormSubmit}
-                  onInvalid={this.disableFormSubmit}
-                  onChange={this.togglePristine}
-                  layout="vertical"
-                >
-                  <div className="form-group">
-                    <Input
-                      name="name"
-                      autoComplete="name"
-                      id="name-input"
-                      label="Your name"
-                      type="text"
-                      value={user.name}
-                      placeholder="John Doe."
-                      validations="minLength:3"
-                      validationErrors={{
-                        minLength: 'Please enter your name',
-                      }}
-                      required
-                      autoFocus
-                    />
+              {!isLoading && (
+                <div>
+                  <h3>Edit your profile</h3>
+                  <p>
+                    <i className="fa fa-question-circle" />
+                    Trust is important to run successful Communities or Campaigns. Without trust you
+                    will likely not receive donations. Therefore, we strongly recommend that you{' '}
+                    <strong>fill out your profile </strong>
+                    when you want to start Communities or Campaigns on Giveth.
+                  </p>
+                  <div className="alert alert-warning">
+                    <i className="fa fa-exclamation-triangle" />
+                    Please note that all the information entered will be stored on a publicly
+                    accessible permanent storage like blockchain. We are not able to erase or alter
+                    any of the information. Do not input anything that you do not have permission to
+                    share or you are not comfortable with being forever accessible.
                   </div>
 
-                  <div className="form-group">
-                    <Input
-                      name="email"
-                      autoComplete="email"
-                      label="Email"
-                      value={user.email}
-                      placeholder="email@example.com"
-                      validations="isEmail"
-                      help="Please enter your email address."
-                      validationErrors={{
-                        isEmail: "Oops, that's not a valid email address.",
-                      }}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <WhiteListConsumer>
-                      {({ state: { nativeCurrencyWhitelist } }) => (
-                        <SelectFormsy
-                          name="currency"
-                          id="currency-select"
-                          label="Native Currency"
-                          helpText="Please enter your native currency."
-                          value={user.currency}
-                          options={nativeCurrencyWhitelist.map(f => {
-                            return {
-                              title: f.symbol,
-                              value: f.symbol,
-                            };
-                          })}
-                        />
-                      )}
-                    </WhiteListConsumer>
-                  </div>
-
-                  <FormsyImageUploader
-                    setImage={this.setImage}
-                    avatar={user.avatar}
-                    aspectRatio={1}
-                  />
-
-                  <div className="form-group">
-                    <Input
-                      name="linkedin"
-                      label="Your Profile"
-                      type="text"
-                      value={user.linkedin}
-                      placeholder="Your profile url"
-                      help="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
-                      validations="isUrl"
-                      validationErrors={{
-                        isUrl: 'Please enter a valid url',
-                      }}
-                    />
-                  </div>
-
-                  <LoaderButton
-                    className="btn btn-success"
-                    formNoValidate
-                    type="submit"
-                    network="Foreign"
-                    disabled={
-                      !isValid ||
-                      isSaving ||
-                      isPristine ||
-                      (currentUser.address && currentUser.giverId === 0)
-                    }
-                    isLoading={isSaving}
-                    loadingText="Saving..."
+                  <Form
+                    onSubmit={this.submit}
+                    mapping={inputs => {
+                      user.name = inputs.name;
+                      user.email = inputs.email;
+                      user.linkedin = inputs.linkedin;
+                      user.currency = inputs.currency;
+                    }}
+                    onValid={this.enableFormSubmit}
+                    onInvalid={this.disableFormSubmit}
+                    onChange={this.togglePristine}
+                    layout="vertical"
                   >
-                    Save profile
-                  </LoaderButton>
-                </Form>
-              </div>
-            )}
+                    <div className="form-group">
+                      <Input
+                        name="name"
+                        autoComplete="name"
+                        id="name-input"
+                        label="Your name"
+                        type="text"
+                        value={user.name}
+                        placeholder="John Doe."
+                        validations="minLength:3"
+                        validationErrors={{
+                          minLength: 'Please enter your name',
+                        }}
+                        required
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <Input
+                        name="email"
+                        autoComplete="email"
+                        label="Email"
+                        value={user.email}
+                        placeholder="email@example.com"
+                        validations="isEmail"
+                        help="Please enter your email address."
+                        validationErrors={{
+                          isEmail: "Oops, that's not a valid email address.",
+                        }}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <WhiteListConsumer>
+                        {({ state: { nativeCurrencyWhitelist } }) => (
+                          <SelectFormsy
+                            name="currency"
+                            id="currency-select"
+                            label="Native Currency"
+                            helpText="Please enter your native currency."
+                            value={user.currency}
+                            options={nativeCurrencyWhitelist.map(f => {
+                              return {
+                                title: f.symbol,
+                                value: f.symbol,
+                              };
+                            })}
+                          />
+                        )}
+                      </WhiteListConsumer>
+                    </div>
+
+                    <FormsyImageUploader
+                      setImage={this.setImage}
+                      avatar={user.avatar}
+                      aspectRatio={1}
+                    />
+
+                    <div className="form-group">
+                      <Input
+                        name="linkedin"
+                        label="Your Profile"
+                        type="text"
+                        value={user.linkedin}
+                        placeholder="Your profile url"
+                        help="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
+                        validations="isUrl"
+                        validationErrors={{
+                          isUrl: 'Please enter a valid url',
+                        }}
+                      />
+                    </div>
+
+                    <LoaderButton
+                      className="btn btn-success"
+                      formNoValidate
+                      type="submit"
+                      network="Foreign"
+                      disabled={
+                        !isValid ||
+                        isSaving ||
+                        isPristine ||
+                        (currentUser.address && currentUser.giverId === 0)
+                      }
+                      isLoading={isSaving}
+                      loadingText="Saving..."
+                    >
+                      Save profile
+                    </LoaderButton>
+                  </Form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }
