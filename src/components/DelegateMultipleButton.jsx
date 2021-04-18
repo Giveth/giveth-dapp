@@ -80,6 +80,7 @@ const DelegateMultipleButton = props => {
     title: t.name,
   }));
 
+  const [isDacsFetched, setIsDacsFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
@@ -238,7 +239,7 @@ const DelegateMultipleButton = props => {
                 },
               ])
             : dacs;
-
+        setIsDacsFetched(true);
         setDelegationOptions(_delegationOptions);
       });
   };
@@ -254,6 +255,7 @@ const DelegateMultipleButton = props => {
       .then(() => checkBalance(balance))
       .then(() => {
         setModalVisible(true);
+        setIsDacsFetched(false);
         getDacs();
       });
   }
@@ -331,6 +333,7 @@ const DelegateMultipleButton = props => {
   useEffect(() => {
     setModalVisible(false);
     setDelegationOptions([]);
+    setObjectToDelegateFrom([]);
   }, [currentUser]);
 
   useEffect(() => {
@@ -477,7 +480,8 @@ const DelegateMultipleButton = props => {
     </div>
   );
 
-  const isContextReady = !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled;
+  const isContextReady =
+    !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isDacsFetched;
 
   return (
     <span style={style}>
