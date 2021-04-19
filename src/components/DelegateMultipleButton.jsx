@@ -80,6 +80,7 @@ const DelegateMultipleButton = props => {
     title: t.name,
   }));
 
+  const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isDacsFetched, setIsDacsFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
@@ -160,23 +161,26 @@ const DelegateMultipleButton = props => {
     // start watching donations, this will re-run when donations change or are added
 
     const _delegations = donations.map(d => new Donation(d));
-    let newAmount = _delegations.reduce(
+    let delegationSum = _delegations.reduce(
       (sum, d) => sum.plus(d.amountRemaining),
       new BigNumber('0'),
     );
 
-    let localMax = newAmount;
+    let localMax = delegationSum;
 
     if (props.milestone && props.milestone.isCapped) {
-      const maxDonationAmount = props.milestone.maxAmount.minus(
+      const milestoneMaxDonationAmount = props.milestone.maxAmount.minus(
         props.milestone.totalDonatedSingleToken,
       );
 
-      if (maxDonationAmount.lt(newAmount)) {
-        newAmount = maxDonationAmount;
-        localMax = maxDonationAmount;
-      } else if (maxDonationAmount.lt(localMax)) {
-        localMax = maxDonationAmount;
+      if (milestoneMaxDonationAmount.lt(delegationSum)) {
+        delegationSum = milestoneMaxDonationAmount;
+        localMax = milestoneMaxDonationAmount;
+        setIsDelegationLimited(false);
+      } else if (milestoneMaxDonationAmount.lt(localMax)) {
+        localMax = milestoneMaxDonationAmount;
+      } else if (!milestoneMaxDonationAmount.lt(delegationSum)) {
+        setIsDelegationLimited(true);
       }
     }
 
@@ -184,9 +188,17 @@ const DelegateMultipleButton = props => {
     setTotalDonations(total);
     setMaxAmount(roundBigNumber(localMax, selectedToken.decimals));
     setLoadingDonations(false);
-    setAmount(convertEthHelper(newAmount, selectedToken.decimals));
+    setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
 
     setLoadingDonations(false);
+  };
+
+  const isLimitedDelegateCount = () => {
+    if (props.milestone && props.milestone.isCapped) {
+      return totalDonations > delegations.length && isDelegationLimited;
+    }
+
+    return totalDonations > delegations.length;
   };
 
   const setToken = address => {
@@ -357,7 +369,7 @@ const DelegateMultipleButton = props => {
         {milestone && <strong> {milestone.title}</strong>}
       </p>
       <Fragment>
-        {totalDonations > delegations.length && (
+        {isLimitedDelegateCount() && (
           <div className="alert alert-warning">
             <p>
               <strong>Note:</strong> Due to the current gas limitations you may be required to
