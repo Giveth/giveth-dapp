@@ -28,6 +28,7 @@ import GoBackSection from '../GoBackSection';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import Donation from '../../models/Donation';
 
 /**
  * The DAC detail view mapped to /dacs/id
@@ -48,10 +49,11 @@ const ViewDAC = ({ match }) => {
 
   const [dac, setDac] = useState({});
   const [isLoading, setLoading] = useState(true);
-  const [isLoadingDonations, setLoadingDonatinos] = useState(true);
+  const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
   const [aggregateDonations, setAggregateDonations] = useState([]);
+  const [aggregateDonationsTotal, setAggregateDonationsTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
@@ -68,21 +70,38 @@ const ViewDAC = ({ match }) => {
   };
 
   const loadMoreAggregateDonations = (loadFromScratch = false) => {
-    setLoadingDonatinos(true);
+    setLoadingDonations(true);
     AggregateDonationService.get(
       dac.id,
       donationsPerBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
         setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
-        setDonationsTotal(_donationsTotal);
-        setLoadingDonatinos(false);
+        setAggregateDonationsTotal(_donationsTotal);
+        setLoadingDonations(false);
       },
       err => {
-        setLoadingDonatinos(false);
+        setLoadingDonations(false);
         ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
       },
     );
+  };
+
+  const loadDonations = dacId => {
+    if (dacId) {
+      DACService.getDonations(
+        dacId,
+        0,
+        0,
+        (_donations, _donationsTotal) => {
+          setDonationsTotal(_donationsTotal);
+        },
+        err => {
+          ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
+        },
+        Donation.WAITING,
+      );
+    }
   };
 
   useEffect(() => {
@@ -105,25 +124,35 @@ const ViewDAC = ({ match }) => {
       });
 
     return cleanUp;
-  }, []);
+  }, [donationsTotal]);
 
-  useEffect(async () => {
-    if (dac.id) {
-      const relatedCampaigns = await CampaignService.getCampaignsByIdArray(dac.campaigns || []);
-      setCampaigns(relatedCampaigns);
-      setLoadingCampaigns(false);
+  useEffect(() => {
+    const subscribeFunc = async () => {
+      if (dac.id && donationsObserver.current === undefined) {
+        const relatedCampaigns = await CampaignService.getCampaignsByIdArray(dac.campaigns || []);
+        setCampaigns(relatedCampaigns);
+        setLoadingCampaigns(false);
+        loadMoreAggregateDonations(true);
+        loadDonations(dac.id);
+        // subscribe to donation count
+        donationsObserver.current = DACService.subscribeNewDonations(
+          dac.id,
+          _newDonations => {
+            setNewDonations(_newDonations);
+            if (_newDonations > 0) {
+              loadDonations(dac.id);
+              loadMoreAggregateDonations(true);
+            }
+          },
+          err => {
+            ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
+            setNewDonations(0);
+          },
+        );
+      }
+    };
+    subscribeFunc().then();
 
-      // subscribe to donation count
-      donationsObserver.current = DACService.subscribeNewDonations(
-        dac.id,
-        _newDonations => setNewDonations(_newDonations),
-        err => {
-          ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
-          setNewDonations(0);
-        },
-      );
-      loadMoreAggregateDonations(true);
-    }
     return cleanUp;
   }, [dac]);
 
@@ -152,7 +181,9 @@ const ViewDAC = ({ match }) => {
   const userIsOwner = dac && dac.owner && dac.owner.address === currentUser.address;
 
   const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
-  const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
+  const leaderBoardTitle = `Leaderboard${
+    aggregateDonationsTotal ? ` (${aggregateDonationsTotal})` : ''
+  }`;
 
   const goBackSectionLinks = [
     { title: 'About', inPageId: 'description' },
@@ -166,6 +197,7 @@ const ViewDAC = ({ match }) => {
       inPageId: 'campaigns',
     },
   ];
+
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -265,7 +297,7 @@ const ViewDAC = ({ match }) => {
                       <LeaderBoard
                         aggregateDonations={aggregateDonations}
                         isLoading={isLoadingDonations}
-                        total={donationsTotal}
+                        total={aggregateDonationsTotal}
                         loadMore={loadMoreAggregateDonations}
                         newDonations={newDonations}
                       />
