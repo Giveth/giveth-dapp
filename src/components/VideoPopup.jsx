@@ -5,8 +5,9 @@ import IPFSService from '../services/IPFSService';
 
 const VideoPopup = ({ visible, handleClose }) => {
   const [type, setType] = useState(1);
-  const [url, setURL] = useState(1);
+  const [url, setURL] = useState('');
   const [fileList, setFileList] = useState([]);
+  const [youTube, setYouTube] = useState('');
   const [form] = Form.useForm();
 
   const onTypeChange = e => {
@@ -135,6 +136,37 @@ const VideoPopup = ({ visible, handleClose }) => {
               />
               <p className="ant-upload-text">Click or drag file to this area to upload</p>
             </Upload.Dragger>
+          </Form.Item>
+        )}
+        {type === 3 && (
+          <Form.Item
+            name="youtube"
+            rules={[
+              {
+                required: true,
+                message: 'Please enter a youtube address.',
+              },
+              () => ({
+                validator(_, value) {
+                  const match =
+                    value.match(
+                      /^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/,
+                    ) ||
+                    value.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+                    value.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
+                  if (match && match[2].length === 11) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Please enter a valid youtube address.'));
+                },
+              }),
+            ]}
+          >
+            <Input
+              placeholder="YouTube URL"
+              onChange={e => setYouTube(e.target.value)}
+              value={youTube}
+            />
           </Form.Item>
         )}
       </Form>
