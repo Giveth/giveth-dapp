@@ -142,7 +142,10 @@ const ViewMilestone = props => {
       // subscribe to donation count
       donationsObserver.current = MilestoneService.subscribeNewDonations(
         milestone.id,
-        _newDonations => setNewDonations(_newDonations),
+        _newDonations => {
+          setNewDonations(_newDonations);
+          if (_newDonations > 0) loadMoreDonations(true);
+        },
         () => setNewDonations(0),
       );
     }
