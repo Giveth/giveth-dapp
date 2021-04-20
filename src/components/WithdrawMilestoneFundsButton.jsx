@@ -4,7 +4,6 @@ import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -13,6 +12,7 @@ import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
@@ -111,7 +111,7 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
                 onError: (err, txUrl) => {
                   let msg;
                   if (err === 'patch-error') {
-                    ErrorPopup('Something went wrong with withdrawing your funds', err);
+                    ErrorHandler(err, 'Issue on connecting server and pushing updates');
                   } else if (err.message === 'no-donations') {
                     msg = <p>Nothing to withdraw. There are no donations to this Milestone.</p>;
                   } else if (txUrl) {
@@ -142,9 +142,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
         })
         .catch(err => {
           if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
+            ErrorHandler(err, 'There is no balance left on the account.', true);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorHandler(err, 'Something went wrong.', true);
           }
         }),
     );
