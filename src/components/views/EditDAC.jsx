@@ -1,395 +1,450 @@
-import React, { Component, Fragment } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { Form, Input } from 'formsy-react-components';
-import BigNumber from 'bignumber.js';
+import 'react-input-token/lib/style.css';
 
-import GA from 'lib/GoogleAnalytics';
-import Loader from '../Loader';
-import QuillFormsy from '../QuillFormsy';
-import FormsyImageUploader from '../FormsyImageUploader';
-import GoBackButton from '../GoBackButton';
-import { getTruncatedText, history, isOwner } from '../../lib/helpers';
 import {
-  authenticateUser,
-  checkBalance,
-  checkForeignNetwork,
-  checkProfile,
-} from '../../lib/middleware';
-import LoaderButton from '../LoaderButton';
-
-import DACservice from '../../services/DACService';
-import DAC from '../../models/DAC';
-import User from '../../models/User';
-import ErrorPopup from '../ErrorPopup';
+  Button,
+  Col,
+  Form,
+  Input,
+  Modal,
+  notification,
+  PageHeader,
+  Row,
+  Typography,
+  Upload,
+} from 'antd';
+import { DeleteTwoTone } from '@ant-design/icons';
+import ImgCrop from 'antd-img-crop';
+import Loader from '../Loader';
+import { getHtmlText, history, isOwner } from '../../lib/helpers';
+import { authenticateUser, checkProfile } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
-import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
+
+import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
+
+import Web3ConnectWarning from '../Web3ConnectWarning';
+import Editor from '../Editor';
+
+import { IPFSService, DACService } from '../../services';
+import config from '../../configuration';
+import DAC from '../../models/DAC';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import GA from '../../lib/GoogleAnalytics';
+
+const { Title, Text } = Typography;
 
 /**
  * View to create or edit a DAC
  *
  * @param isNew    If set, component will load an empty model.
  *                 Otherwise component expects an id param and will load a DAC object
- * @param id       URL parameter which is an id of a campaign object
- * @param history  Browser history object
+ * @param id       URL parameter which is an id of a DAC object
  */
-class EditDAC extends Component {
-  constructor(props) {
-    super(props);
+const EditDAC = ({ isNew, match }) => {
+  const {
+    state: { currentUser, isLoading: userIsLoading },
+  } = useContext(UserContext);
 
-    this.state = {
-      isLoading: true,
-      isSaving: false,
-      formIsValid: false,
+  const {
+    state: { projectOwnersWhitelistEnabled, isLoading: whitelistIsLoading },
+  } = useContext(WhiteListContext);
 
-      // DAC model
-      dac: new DAC({
-        owner: props.currentUser,
-      }),
-      isBlocking: false,
+  const {
+    state: { isForeignNetwork },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [dac, setDac] = useState({});
+
+  const dacObject = useRef(
+    new DAC({
+      owner: currentUser,
+      ownerAddress: currentUser.address,
+    }),
+  );
+  const mounted = useRef();
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
     };
+  }, []);
 
-    this.form = React.createRef();
+  useEffect(() => {
+    if (userIsLoading || whitelistIsLoading || !currentUser.address) return () => {};
 
-    this.submit = this.submit.bind(this);
-    this.setImage = this.setImage.bind(this);
-  }
-
-  componentDidMount() {
-    const { isForeignNetwork, displayForeignNetRequiredWarning, match } = this.props;
-    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
-      .then(() => this.checkUser())
-      .then(() => {
-        if (!this.props.isNew) {
-          DACservice.get(match.params.id)
-            .then(dac => {
-              // The user is not an owner, hence can not change the DAC
-              if (!isOwner(dac.ownerAddress, this.props.currentUser)) {
-                // TODO: Not really user friendly
-                history.goBack();
-              } else {
-                this.setState({ isLoading: false, dac });
-              }
-            })
-            .catch(err => {
-              if (err.status === 404) history.push('/notfound');
-              else {
-                const message = `Sadly we were unable to load the DAC. Please refresh the page and try again.`;
-                ErrorHandler(err, message);
-              }
-            });
-        } else {
-          if (!this.props.currentUser.isDelegator && this.props.delegateWhitelistEnabled) {
-            history.goBack();
-          }
-
-          this.setState({ isLoading: false });
-        }
-      })
-      .catch(err => {
-        if (err.message !== 'wrongNetwork') {
-          ErrorPopup(
-            'There has been a problem loading the DAC. Please refresh the page and try again.',
-            err,
-          );
-        }
-      });
-    this.mounted = true;
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.currentUser !== this.props.currentUser) {
-      this.checkUser().then(() => {
-        if (!this.props.isNew && !isOwner(this.state.dac.ownerAddress, this.props.currentUser))
-          history.goBack();
-      });
-    } else if (
-      this.props.isNew &&
-      !this.props.currentUser.isDelegator &&
-      this.props.delegateWhitelistEnabled
-    ) {
-      history.goBack();
-    } else if (this.props.currentUser.address && !prevProps.balance.eq(this.props.balance)) {
-      checkBalance(this.props.balance);
-    }
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  setImage(image) {
-    const { dac } = this.state;
-    dac.image = image;
-    this.setState({ dac });
-  }
-
-  checkUser() {
-    if (!this.props.currentUser) {
-      history.push('/');
-      return Promise.reject();
-    }
-
-    return authenticateUser(this.props.currentUser, true)
-      .then(() => {
-        if (!this.props.currentUser) {
-          throw new Error('not authorized');
-        }
-      })
-      .then(() => checkProfile(this.props.currentUser))
-      .then(() => checkBalance(this.props.balance));
-  }
-
-  submit() {
-    // Save dac
-    const showToast = (msg, url, isSuccess = false) => {
-      const toast = url ? (
-        <p>
-          {msg}
-          <br />
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>
-      ) : (
-        msg
-      );
-
-      if (isSuccess) React.toast.success(toast);
-      else React.toast.info(toast);
-    };
-
-    const afterMined = (created, url, id) => {
-      const msg = `Your DAC has been ${created ? 'created' : 'updated'}`;
-      showToast(msg, url, true);
-
-      if (created) {
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'created',
-          label: id,
+    if (isNew) {
+      if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
+        const modal = Modal.error({
+          title: 'Permission Denied',
+          content: 'You are not allowed to create a DAC',
+          closable: false,
+          centered: true,
+          onOk: () => history.replace('/'),
         });
-      } else {
-        if (this.mounted) this.setState({ isSaving: false });
-        GA.trackEvent({
-          category: 'DAC',
-          action: 'updated',
-          label: id,
-        });
-        history.push(`/dacs/${id}`);
+
+        return () => {
+          modal.destroy();
+        };
       }
-    };
-    const afterSave = (err, created, url) => {
-      if (this.mounted) this.setState({ isSaving: false });
-      if (err) return;
-      const msg = created ? 'Your DAC is pending...' : 'Your DAC is being updated...';
-      showToast(msg, url);
 
-      if (created) history.push('/my-dacs');
-    };
-    const onError = err => {
-      if (err) React.toast.error(err);
-    };
-
-    this.setState(
-      {
-        isSaving: true,
-        isBlocking: false,
-      },
-      () => {
-        // Save the DAC
-        this.state.dac.save(afterSave, afterMined, onError).finally(() => {
-          this.setState({ isSaving: false });
+      checkProfile(currentUser).then(() => {
+        setDac({
+          owner: currentUser,
+          ownerAddress: currentUser.address,
         });
-      },
-    );
+        setIsLoading(false);
+      });
+    } else {
+      DACService.get(match.params.id)
+        .then(community => {
+          if (isOwner(community.ownerAddress, currentUser)) {
+            setDac({
+              title: community.title,
+              description: community.description,
+              communityUrl: community.communityUrl,
+              reviewerAddress: community.reviewerAddress,
+              picture: community.image.match(/\/ipfs\/.*/)[0],
+            });
+            dacObject.current = community;
+            setIsLoading(false);
+          } else history.goBack();
+        })
+        .catch(err => {
+          if (err.status === 404) {
+            history.push('/notfound');
+          } else {
+            setIsLoading(false);
+            ErrorHandler(
+              err,
+              'There has been a problem loading the DAC. Please refresh the page and try again.',
+            );
+          }
+        });
+    }
+
+    return () => {};
+  }, [userIsLoading, currentUser]);
+
+  // TODO: Check if user Changes (in Class components checked in didUpdate)
+
+  const handleInputChange = event => {
+    const { name, value } = event.target;
+    setDac({ ...dac, [name]: value });
+    setIsBlocking(true);
+  };
+
+  const onDescriptionChange = description => {
+    handleInputChange({ target: { name: 'description', value: description } });
+  };
+
+  function setPicture(address) {
+    handleInputChange({ target: { name: 'picture', value: address } });
   }
 
-  toggleFormValid(state) {
-    this.setState({ formIsValid: state });
-  }
+  useEffect(() => {
+    if (dac.image) {
+      const picture = dac.image.match(/\/ipfs\/.*/)[0];
+      setPicture(picture);
+    }
+  }, [dac]);
 
-  triggerRouteBlocking() {
-    const form = this.form.current.formsyForm;
-    // we only block routing if the form state is not submitted
-    this.setState({
-      isBlocking: form && (!form.state.formSubmitted || form.state.isSubmitting),
-    });
-  }
+  const uploadProps = {
+    multiple: false,
+    accept: 'image/png, image/jpeg',
+    fileList: [],
+    customRequest: options => {
+      const { onSuccess, onError, file, onProgress } = options;
+      onProgress(0);
+      IPFSService.upload(file)
+        .then(address => {
+          onSuccess(address);
+          onProgress(100);
+        })
+        .catch(err => {
+          onError('Failed!', err);
+        });
+    },
+    onChange(info) {
+      const { status } = info.file;
+      if (status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (status === 'done') {
+        console.log('file uploaded successfully.', info.file.response);
+        setPicture(info.file.response);
+      } else if (status === 'error') {
+        console.log(`${info.file.name} file upload failed.`);
+        const args = {
+          message: 'Error',
+          description: 'Cannot upload picture to IPFS',
+        };
+        notification.error(args);
+      }
+    },
+  };
 
-  render() {
-    const { isNew } = this.props;
-    const { isLoading, isSaving, dac, formIsValid, isBlocking } = this.state;
+  const removePicture = () => {
+    setPicture('');
+  };
 
-    return (
-      <div id="edit-dac-view">
-        <div className="container-fluid page-layout edit-view">
-          <div>
-            <div className="col-md-8 m-auto">
-              {isLoading && <Loader className="fixed" />}
+  const goBack = () => {
+    history.goBack();
+  };
 
-              {!isLoading && (
-                <div>
-                  <GoBackButton history={history} />
+  const submit = async () => {
+    const authenticated = await authenticateUser(currentUser, false);
 
-                  <div className="form-header">
-                    {isNew && <h3>Start a Decentralized Altruistic Community (DAC)</h3>}
+    if (authenticated) {
+      if (!isForeignNetwork) {
+        displayForeignNetRequiredWarning();
+        return;
+      }
 
-                    {!isNew && <h3>Edit DAC</h3>}
+      Object.assign(dacObject.current, {
+        ...dac,
+        image: dac.picture,
+      });
 
-                    <p>
-                      <i className="fa fa-question-circle" />A DAC unites Givers and Makers in
-                      building a community around their common vision to raise then delegate funds
-                      to Campaigns that deliver a positive impact to shared goals.
-                    </p>
-                  </div>
+      const afterMined = url => {
+        if (url) {
+          const msg = (
+            <p>
+              Your DAC has been created!
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          notification.success({ message: '', description: msg });
+        } else {
+          if (mounted.current) setIsSaving(false);
+          notification.success({
+            message: '',
+            description: 'Your DAC has been updated!',
+          });
+          history.push(`/dacs/${dacObject.current.id}`);
+        }
+      };
 
-                  <Form
-                    onSubmit={this.submit}
-                    ref={this.form}
-                    mapping={inputs => {
-                      dac.title = inputs.title;
-                      dac.description = inputs.description;
-                      dac.communityUrl = inputs.communityUrl;
-                      dac.summary = getTruncatedText(inputs.description, 100);
-                    }}
-                    onValid={() => this.toggleFormValid(true)}
-                    onInvalid={() => this.toggleFormValid(false)}
-                    onChange={e => this.triggerRouteBlocking(e)}
-                    layout="vertical"
-                  >
-                    <Prompt
-                      when={isBlocking}
-                      message={() =>
-                        `You have unsaved changes. Are you sure you want to navigate from this page?`
-                      }
-                    />
+      const afterCreate = (err, url, id) => {
+        if (mounted.current) setIsSaving(false);
+        if (!err) {
+          const msg = (
+            <p>
+              Your DAC is pending....
+              <br />
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+          notification.info({ description: msg });
+          GA.trackEvent({
+            category: 'DAC',
+            action: 'created',
+            label: id,
+          });
+          history.push('/my-dacs');
+        }
+      };
 
-                    <Input
-                      name="title"
-                      id="title-input"
-                      label="Name your Community"
-                      type="text"
-                      value={dac.title}
-                      placeholder="e.g. Hurricane relief."
-                      help="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
-                      validations="minLength:3"
-                      validationErrors={{
-                        minLength: 'Please provide at least 3 characters.',
-                      }}
-                      required
-                      autoFocus
-                    />
+      setIsSaving(true);
+      setIsBlocking(false);
+      dacObject.current.save(afterCreate, afterMined).finally(() => {
+        setIsSaving(false);
+      });
+    }
+  };
 
-                    <div className="form-group">
-                      <QuillFormsy
-                        name="description"
-                        label="Explain the cause of your community"
-                        helpText="Describe the shared vision and goals of your Community and the cause
-                        that you are collaborating to solve. Share links, insert media to convey your
-                        message and build trust so that people will join your Community and/or donate to the cause."
-                        value={dac.description}
-                        placeholder="Describe how you're going to solve your cause..."
-                        validations="minLength:20"
-                        help="Describe your DAC."
-                        validationErrors={{
-                          minLength: 'Please provide at least 10 characters.',
-                        }}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <FormsyImageUploader
-                        name="image"
-                        setImage={this.setImage}
-                        previewImage={dac.image}
-                        isRequired={isNew}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="communityUrl"
-                        id="community-url"
-                        label="Url to join your community"
-                        type="text"
-                        value={dac.communityUrl}
-                        placeholder="https://slack.giveth.com"
-                        help="Where can people join your Community? Paste a link here for your community's website, social or chatroom."
-                        validations="isUrl"
-                        validationErrors={{
-                          isUrl: 'Please provide a url.',
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group row">
-                      <div className="col-4">
-                        <GoBackButton history={history} />
+  return (
+    <Fragment>
+      <Web3ConnectWarning />
+      <Prompt
+        when={isBlocking}
+        message={() =>
+          `You have unsaved changes. Are you sure you want to navigate from this page?`
+        }
+      />
+      {isLoading ? (
+        <Loader className="fixed" />
+      ) : (
+        <div id="create-Campaint-view">
+          <Row>
+            <Col span={24}>
+              <PageHeader
+                className="site-page-header"
+                onBack={goBack}
+                title={isNew ? 'Create New DAC' : `Edit DAC ${dac.title}`}
+                ghost={false}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <div className="card-form-container">
+              <Form
+                className="card-form"
+                requiredMark
+                onFinish={submit}
+                initialValues={{
+                  title: dac.title,
+                  description: dac.description,
+                  reviewerAddress: dac.reviewerAddress,
+                  communityUrl: dac.communityUrl,
+                }}
+              >
+                {isNew && (
+                  <Fragment>
+                    <Title level={3}>Start a Decentralized Altruistic Community (DAC)</Title>
+                    <Text>
+                      A DAC unites Givers and Makers in building a community around their common
+                      vision to raise then delegate funds to Campaigns that deliver a positive
+                      impact to shared goals.
+                    </Text>
+                  </Fragment>
+                )}
+                <Form.Item
+                  name="title"
+                  label="Name your Community"
+                  className="custom-form-item"
+                  extra="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
+                  rules={[
+                    {
+                      required: true,
+                      type: 'string',
+                      min: 3,
+                      message: 'Please provide at least 3 characters',
+                    },
+                  ]}
+                >
+                  <Input
+                    name="title"
+                    placeholder="e.g. Hurricane relief"
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="description"
+                  label="Explain the cause of your community"
+                  className="custom-form-item"
+                  extra="Describe the shared vision and goals of your Community and the cause that you are collaborating to solve. Share links, insert media to convey your message and build trust so that people will join your Community and/or donate to the cause."
+                  rules={[
+                    {
+                      required: true,
+                      type: 'string',
+                      message: 'Description is required',
+                    },
+                    {
+                      validator: async (_, val) => {
+                        if (val && getHtmlText(val).length <= 10) {
+                          throw new Error(
+                            'Please provide at least 10 characters and do not edit the template keywords.',
+                          );
+                        }
+                      },
+                    },
+                  ]}
+                >
+                  <Editor
+                    name="description"
+                    onChange={onDescriptionChange}
+                    value={dac.description}
+                    placeholder="Describe how you're going to solve your cause..."
+                  />
+                </Form.Item>
+                <Form.Item
+                  name="Picture"
+                  label="Add a picture"
+                  className="custom-form-item"
+                  rules={[
+                    {
+                      validator: async () => {
+                        if (!dac.picture) {
+                          throw new Error('Picture is required');
+                        }
+                      },
+                    },
+                  ]}
+                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
+                    aspect ratio."
+                >
+                  <Fragment>
+                    {dac.picture ? (
+                      <div className="picture-upload-preview">
+                        <img
+                          src={
+                            dac.picture.startsWith('/ipfs/')
+                              ? `${config.ipfsGateway}${dac.picture.slice(6)}`
+                              : dac.picture
+                          }
+                          alt={dac.title}
+                        />
+                        <DeleteTwoTone onClick={removePicture} />
                       </div>
-                      <div className="col-4 offset-4">
-                        <LoaderButton
-                          className="btn btn-success pull-right"
-                          formNoValidate
-                          type="submit"
-                          disabled={isSaving || !formIsValid || (dac.id && dac.delegateId === 0)}
-                          isLoading={isSaving}
-                          network="Foreign"
-                          loadingText="Saving..."
-                        >
-                          {isNew ? 'Create DAC' : 'Update DAC'}
-                        </LoaderButton>
-                      </div>
-                    </div>
-                  </Form>
-                </div>
-              )}
+                    ) : (
+                      <ImgCrop>
+                        <Upload.Dragger {...uploadProps}>
+                          <p className="ant-upload-text">
+                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
+                          </p>
+                        </Upload.Dragger>
+                      </ImgCrop>
+                    )}
+                  </Fragment>
+                </Form.Item>
+                <Form.Item
+                  name="communityUrl"
+                  label="Url to join your Community"
+                  className="custom-form-item"
+                  extra="Where can people join your Community? Giveth redirects people there."
+                  rules={[
+                    {
+                      type: 'string',
+                      min: 3,
+                      message: 'Please provide at least 3 characters',
+                    },
+                  ]}
+                >
+                  <Input
+                    value={dac.communityUrl}
+                    name="communityUrl"
+                    placeholder="https://slack.giveth.com"
+                    onChange={handleInputChange}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" loading={isSaving}>
+                    {isNew ? 'Create' : 'Update'} DAC
+                  </Button>
+                </Form.Item>
+              </Form>
             </div>
-          </div>
+          </Row>
         </div>
-      </div>
-    );
-  }
-}
+      )}
+    </Fragment>
+  );
+};
 
 EditDAC.propTypes = {
-  currentUser: PropTypes.instanceOf(User),
   isNew: PropTypes.bool,
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
-  isForeignNetwork: PropTypes.bool.isRequired,
-  displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
     }).isRequired,
   }).isRequired,
-  delegateWhitelistEnabled: PropTypes.bool.isRequired,
 };
 
 EditDAC.defaultProps = {
-  currentUser: undefined,
   isNew: false,
 };
 
-export default props => (
-  <WhiteListConsumer>
-    {({ state: { delegateWhitelistEnabled } }) => (
-      <UserConsumer>
-        {({ state: { currentUser, isLoading: userIsLoading } }) => (
-          <Fragment>
-            {userIsLoading && <Loader className="fixed" />}
-            {!userIsLoading && (
-              <EditDAC
-                currentUser={currentUser}
-                delegateWhitelistEnabled={delegateWhitelistEnabled}
-                {...props}
-              />
-            )}
-          </Fragment>
-        )}
-      </UserConsumer>
-    )}
-  </WhiteListConsumer>
-);
+export default EditDAC;
