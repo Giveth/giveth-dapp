@@ -144,7 +144,7 @@ const ViewMilestone = props => {
         milestone.id,
         _newDonations => {
           setNewDonations(_newDonations);
-          if (_newDonations > 0) loadMoreDonations(true, donations.length); // load how many donations that was previously loaded
+          if (_newDonations > 0) loadMoreDonations(true, donations.length); // Load how many donations that was previously loaded
         },
         () => setNewDonations(0),
       );
