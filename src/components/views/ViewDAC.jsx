@@ -144,7 +144,7 @@ const ViewDAC = ({ match }) => {
             setNewDonations(_newDonations);
             if (_newDonations > 0) {
               loadDonations(dac.id);
-              loadMoreAggregateDonations(true, aggregateDonations.length);
+              loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
             }
           },
           err => {
