@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Radio, Upload, notification } from 'antd';
 import IPFSService from '../services/IPFSService';
+import config from '../configuration';
 
-const VideoPopup = ({ visible, handleClose }) => {
+const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   const [type, setType] = useState(1);
   const [url, setURL] = useState('');
   const [fileList, setFileList] = useState([]);
@@ -23,8 +24,8 @@ const VideoPopup = ({ visible, handleClose }) => {
       const { onSuccess, onError, file, onProgress } = options;
       onProgress(0);
       IPFSService.upload(file)
-        .then(address => {
-          onSuccess(address);
+        .then(hash => {
+          onSuccess(config.ipfsGateway + hash.slice(6));
           onProgress(100);
         })
         .catch(err => {
@@ -50,6 +51,42 @@ const VideoPopup = ({ visible, handleClose }) => {
     },
   };
 
+  function clearStates() {
+    // if (file.current) {
+    //   file.current.value = null;
+    // }
+    // setLoading(false);
+    setURL(false);
+  }
+
+  function closeModal() {
+    clearStates();
+    handleClose();
+  }
+
+  function insertToEditor(videURL) {
+    // TODO: Remove This if after edit milestone convert to FC;
+    let quill;
+    if (reactQuillRef.current) {
+      quill = reactQuillRef.current.getEditor();
+    } else {
+      quill = reactQuillRef.getEditor();
+    }
+    const index = quill.getLength() - 1;
+    quill.insertEmbed(index, 'video', videURL);
+  }
+
+  function getVideoUrl(tempUrl) {
+    const match =
+      tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
+      tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
+      tempUrl.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}?showinfo=0`;
+    }
+    return null;
+  }
+
   return (
     <Modal
       visible={visible}
@@ -61,6 +98,26 @@ const VideoPopup = ({ visible, handleClose }) => {
         form
           .validateFields()
           .then(_ => {
+            let tempURL;
+            switch (type) {
+              case 1:
+                insertToEditor(url);
+                closeModal();
+                break;
+              case 2:
+                insertToEditor(fileList[0].response);
+                closeModal();
+                break;
+              case 3:
+                tempURL = getVideoUrl(youTube);
+                if (tempURL) {
+                  insertToEditor(tempURL);
+                  closeModal();
+                }
+                break;
+              default:
+                break;
+            }
             // form.resetFields();
             // onCreate(values);
           })
@@ -148,13 +205,8 @@ const VideoPopup = ({ visible, handleClose }) => {
               },
               () => ({
                 validator(_, value) {
-                  const match =
-                    value.match(
-                      /^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/,
-                    ) ||
-                    value.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
-                    value.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
-                  if (match && match[2].length === 11) {
+                  const finalURL = getVideoUrl(value);
+                  if (finalURL) {
                     return Promise.resolve();
                   }
                   return Promise.reject(new Error('Please enter a valid youtube address.'));
