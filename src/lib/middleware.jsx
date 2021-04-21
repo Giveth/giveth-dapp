@@ -1,13 +1,13 @@
 // TO DO: move all this to UserProvider
 import React from 'react';
 import { Modal, message } from 'antd';
+// eslint-disable-next-line camelcase
+import jwt_decode from 'jwt-decode';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
 import ErrorPopup from '../components/ErrorPopup';
-
-const jwtDecode = require('jwt-decode');
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -58,7 +58,7 @@ const authenticate = async (address, redirectOnFail) => {
   };
   const accessToken = await feathersClient.authentication.getAccessToken();
   if (accessToken) {
-    const payload = jwtDecode(accessToken);
+    const payload = jwt_decode(accessToken);
     if (address === payload.userId) {
       await feathersClient.reAuthenticate(); // authenticate the socket connection
       return true;
