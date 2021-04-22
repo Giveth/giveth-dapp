@@ -681,6 +681,15 @@ const DonateButton = forwardRef((props, ref) => {
   const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
   const maxAmount = getMaxAmount();
   const zeroBalance = balance && balance.eq(0);
+  const sliderMarks = {};
+  if (maxAmount && decimals) {
+    const maxNum = maxAmount.toNumber();
+    sliderMarks[0] = '0%';
+    sliderMarks[(maxNum / 4).toFixed(decimals)] = '25%';
+    sliderMarks[(maxNum / 2).toFixed(decimals)] = '50%';
+    sliderMarks[((3 * maxNum) / 4).toFixed(decimals)] = '75%';
+    sliderMarks[maxNum] = '100%';
+  }
 
   const submitDefault = () => {
     allowanceApprovalType.current = AllowanceApprovalType.Default;
@@ -716,11 +725,6 @@ const DonateButton = forwardRef((props, ref) => {
   };
 
   const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
-
-  const sliderMarks = {
-    0: '0',
-  };
-  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
 
   return (
     <span style={style}>

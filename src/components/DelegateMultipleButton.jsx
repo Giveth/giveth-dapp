@@ -80,6 +80,7 @@ const DelegateMultipleButton = props => {
     title: t.name,
   }));
 
+  const [sliderMarks, setSliderMarks] = useState({});
   const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isDacsFetched, setIsDacsFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
@@ -104,8 +105,8 @@ const DelegateMultipleButton = props => {
     if (ids.length !== 1) return;
 
     const entity = delegationOptions.find(c => c.id === ids[0]);
-
     const options = {};
+    const { decimals } = selectedToken;
 
     switch (entity.type) {
       case 'dac':
@@ -184,12 +185,25 @@ const DelegateMultipleButton = props => {
       }
     }
 
+    const max = roundBigNumber(localMax, decimals);
+    const sliderMark = {};
+    sliderMark[0] = '0%';
+    sliderMark[max.dividedBy(4).toFixed(decimals)] = '25%';
+    sliderMark[max.dividedBy(2).toFixed(decimals)] = '50%';
+    sliderMark[
+      max
+        .dividedBy(4)
+        .multipliedBy(3)
+        .toFixed(decimals)
+    ] = '75%';
+    sliderMark[max.toFixed(decimals)] = '100%';
+
+    setSliderMarks(sliderMark);
     setDelegations(_delegations);
     setTotalDonations(total);
-    setMaxAmount(roundBigNumber(localMax, selectedToken.decimals));
+    setMaxAmount(max);
     setLoadingDonations(false);
-    setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
-
+    setAmount(convertEthHelper(delegationSum, decimals));
     setLoadingDonations(false);
   };
 
@@ -354,12 +368,6 @@ const DelegateMultipleButton = props => {
     }
   }, [objectToDelegateFrom]);
 
-  const sliderMarks = {
-    0: '0',
-  };
-  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
-  const { decimals } = selectedToken;
-
   const modalContent = (
     <Fragment>
       {' '}
@@ -441,7 +449,7 @@ const DelegateMultipleButton = props => {
                       max={maxAmount.toNumber()}
                       onChange={num => setAmount(num.toString())}
                       value={amount}
-                      step={decimals ? 1 / 10 ** decimals : 1}
+                      step={selectedToken.decimals ? 1 / 10 ** selectedToken.decimals : 1}
                       marks={sliderMarks}
                     />
                   </div>
