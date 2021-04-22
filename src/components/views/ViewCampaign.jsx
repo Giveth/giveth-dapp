@@ -82,7 +82,7 @@ const ViewCampaign = ({ match }) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
       campaign.id,
-      donationsBatch || donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
         setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));

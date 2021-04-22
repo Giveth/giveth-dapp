@@ -76,7 +76,7 @@ const ViewDAC = ({ match }) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
       dac.id,
-      donationsBatch || donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
         setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));

@@ -98,7 +98,7 @@ const ViewMilestone = props => {
     setLoadingDonations(true);
     MilestoneService.getDonations(
       milestone.id,
-      donationsBatch || donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
         setDonations(loadFromScratch ? _donations : donations.concat(_donations));
