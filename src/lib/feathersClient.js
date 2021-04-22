@@ -1,7 +1,6 @@
 import localforage from 'localforage';
 import rx from 'feathers-reactive';
 import config from '../configuration';
-import matcher from './matcher';
 
 const feathers = require('@feathersjs/feathers');
 const socketio = require('@feathersjs/socketio-client');
@@ -27,7 +26,6 @@ export const feathersRest = feathers()
   .configure(
     rx({
       idField: '_id',
-      matcher,
     }),
   );
 
@@ -43,7 +41,6 @@ export const feathersClient = feathers()
   .configure(
     rx({
       idField: '_id',
-      matcher,
     }),
   );
 // .on('authenticated', feathersRest.passport.setJWT); // set token on feathersRest whenever it is changed
