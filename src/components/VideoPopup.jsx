@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react';
-import { Modal, Form, Input, Radio, Upload, notification } from 'antd';
+import { Modal, Form, Input, Radio, Upload, notification, Row, Col } from 'antd';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
@@ -25,8 +25,10 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
       onProgress(0);
       IPFSService.upload(file)
         .then(hash => {
-          onSuccess(config.ipfsGateway + hash.slice(6));
-          onProgress(100);
+          if (visible) {
+            onSuccess(config.ipfsGateway + hash.slice(6));
+            onProgress(100);
+          }
         })
         .catch(err => {
           onError('Failed!', err);
@@ -34,7 +36,10 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
     },
     onChange(info) {
       const { status } = info.file;
-      setFileList(info.fileList);
+      console.log('status :>> ', status);
+      if (visible) {
+        setFileList(info.fileList);
+      }
       if (status === 'uploading') {
         console.log(info.fileList);
       }
@@ -52,11 +57,8 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   };
 
   function clearStates() {
-    // if (file.current) {
-    //   file.current.value = null;
-    // }
-    // setLoading(false);
-    setURL(false);
+    setFileList([]);
+    form.resetFields();
   }
 
   function closeModal() {
@@ -77,6 +79,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   }
 
   function getVideoUrl(tempUrl) {
+    if (!tempUrl) return null;
     const match =
       tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
       tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
@@ -93,7 +96,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
       title="Attach a video to description"
       okText="Add"
       cancelText="Cancel"
-      onCancel={handleClose}
+      onCancel={closeModal}
       onOk={() => {
         form
           .validateFields()
@@ -118,7 +121,6 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
               default:
                 break;
             }
-            // form.resetFields();
             // onCreate(values);
           })
           .catch(info => {
@@ -126,102 +128,106 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
           });
       }}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        name="form_in_modal"
-        initialValues={{
-          type: 1,
-        }}
-      >
-        <Form.Item name="type" className="collection-create-form_last-form-item">
+      <Row style={{ marginBottom: '32px' }}>
+        <Col span="24">
           <Radio.Group onChange={onTypeChange} value={type}>
             <Radio value={1}>Link</Radio>
             <Radio value={2}>File</Radio>
             <Radio value={3}>Youtube</Radio>
           </Radio.Group>
-        </Form.Item>
-        {type === 1 && (
-          <Form.Item
-            name="URL"
-            rules={[
-              {
-                required: true,
-                type: 'string',
-                min: 10,
-                message: 'Please provide at least 10 characters',
-              },
-            ]}
-          >
-            <Input placeholder="Video URL" onChange={e => setURL(e.target.value)} value={url} />
-          </Form.Item>
-        )}
-        {type === 2 && (
-          <Form.Item
-            name="File"
-            rules={[
-              {
-                required: true,
-                message: 'Please upload video.',
-              },
-              () => ({
-                validator(_, value) {
-                  if (!value || !value.fileList || !value.fileList[0]) {
-                    return Promise.reject(new Error('Something wrong'));
-                  }
-                  if (value.fileList[0].status === 'uploading') {
-                    return Promise.reject(new Error('Please Wait to video upload Completely'));
-                  }
-                  if (value.fileList[0].status === 'error') {
-                    return Promise.reject(new Error('Something wrong'));
-                  }
-                  if (value.fileList[0].status === 'done' && value.fileList[0].response) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error('The two passwords that you entered do not match!'),
-                  );
-                },
-              }),
-            ]}
-          >
-            <Upload.Dragger {...uploadProps}>
-              <img
-                src="/img/ipfs-logo1.svg"
-                alt="ipfs"
-                style={{ width: '100px', padding: '20px' }}
-              />
-              <p className="ant-upload-text">Click or drag file to this area to upload</p>
-            </Upload.Dragger>
-          </Form.Item>
-        )}
-        {type === 3 && (
-          <Form.Item
-            name="youtube"
-            rules={[
-              {
-                required: true,
-                message: 'Please enter a youtube address.',
-              },
-              () => ({
-                validator(_, value) {
-                  const finalURL = getVideoUrl(value);
-                  if (finalURL) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error('Please enter a valid youtube address.'));
-                },
-              }),
-            ]}
-          >
-            <Input
-              placeholder="YouTube URL"
-              onChange={e => setYouTube(e.target.value)}
-              value={youTube}
-            />
-          </Form.Item>
-        )}
-      </Form>
+        </Col>
+      </Row>
+      <Row>
+        <Col span="24">
+          {visible && (
+            <Form
+              form={form}
+              layout="vertical"
+              name="form_in_modal"
+              initialValues={{
+                type: 1,
+                url: '',
+                file: [],
+                youTube: '',
+              }}
+            >
+              <Form.Item
+                name="url"
+                style={{ display: type === 1 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 1) return Promise.resolve();
+                      if (!value || value.length < 10) {
+                        return Promise.reject(new Error('Please provide at least 10 characters'));
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <Input placeholder="Video URL" onChange={e => setURL(e.target.value)} value={url} />
+              </Form.Item>
+              <Form.Item
+                name="file"
+                disabled
+                style={{ display: type === 2 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 2) return Promise.resolve();
+                      if (!value || !value.fileList || !value.fileList[0]) {
+                        return Promise.reject(new Error('Please upload a video'));
+                      }
+                      if (value.fileList[0].status === 'uploading') {
+                        return Promise.reject(new Error('Please Wait to video upload Completely.'));
+                      }
+                      if (value.fileList[0].status === 'error') {
+                        return Promise.reject(new Error('upload fails.'));
+                      }
+                      if (value.fileList[0].status === 'done' && value.fileList[0].response) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Something wrong.'));
+                    },
+                  }),
+                ]}
+              >
+                <Upload.Dragger {...uploadProps}>
+                  <img
+                    src="/img/ipfs-logo1.svg"
+                    alt="ipfs"
+                    style={{ width: '100px', padding: '20px' }}
+                  />
+                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                </Upload.Dragger>
+              </Form.Item>
+              <Form.Item
+                name="youtube"
+                style={{ display: type === 3 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 3) return Promise.resolve();
+                      const finalURL = getVideoUrl(value);
+                      if (finalURL) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Please enter a valid youtube address.'));
+                    },
+                  }),
+                ]}
+              >
+                <Input
+                  placeholder="YouTube URL"
+                  onChange={e => setYouTube(e.target.value)}
+                  value={youTube}
+                />
+              </Form.Item>
+            </Form>
+          )}
+        </Col>
+      </Row>
     </Modal>
   );
 };
