@@ -74,8 +74,9 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
     } else {
       quill = reactQuillRef.getEditor();
     }
-    const index = quill.getLength() - 1;
-    quill.insertEmbed(index, 'video', videURL);
+    quill.focus();
+    const range = quill.getSelection();
+    quill.insertEmbed(range.index, 'video', videURL);
   }
 
   function getVideoUrl(tempUrl) {
