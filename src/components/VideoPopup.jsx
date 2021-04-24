@@ -162,7 +162,10 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
                       if (!value || value.length < 10) {
                         return Promise.reject(new Error('Please provide at least 10 characters'));
                       }
-                      return Promise.resolve();
+                      if (/^https?:\/\//.test(value)) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Please provide a valid URL'));
                     },
                   }),
                 ]}
