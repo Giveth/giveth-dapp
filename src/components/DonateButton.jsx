@@ -42,6 +42,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import { checkProfileAfterDonation } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import AmountSliderMarks from './AmountSliderMarks';
 
 const POLL_DELAY_TOKENS = 2000;
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
@@ -681,14 +682,9 @@ const DonateButton = forwardRef((props, ref) => {
   const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
   const maxAmount = getMaxAmount();
   const zeroBalance = balance && balance.eq(0);
-  const sliderMarks = {};
+  let sliderMarks = {};
   if (maxAmount && decimals) {
-    const maxNum = maxAmount.toNumber();
-    sliderMarks[0] = '0%';
-    sliderMarks[(maxNum / 4).toFixed(decimals)] = '25%';
-    sliderMarks[(maxNum / 2).toFixed(decimals)] = '50%';
-    sliderMarks[((3 * maxNum) / 4).toFixed(decimals)] = '75%';
-    sliderMarks[maxNum] = '100%';
+    sliderMarks = AmountSliderMarks(maxAmount, decimals);
   }
 
   const submitDefault = () => {

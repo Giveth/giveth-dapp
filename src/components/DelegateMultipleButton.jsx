@@ -20,6 +20,7 @@ import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import NumericInput from './NumericInput';
+import AmountSliderMarks from './AmountSliderMarks';
 
 import DonationService from '../services/DonationService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -80,7 +81,7 @@ const DelegateMultipleButton = props => {
     title: t.name,
   }));
 
-  const [sliderMarks, setSliderMarks] = useState({});
+  const [sliderMarks, setSliderMarks] = useState();
   const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isDacsFetched, setIsDacsFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
@@ -186,17 +187,8 @@ const DelegateMultipleButton = props => {
     }
 
     const max = roundBigNumber(localMax, decimals);
-    const sliderMark = {};
-    sliderMark[0] = '0%';
-    sliderMark[max.dividedBy(4).toFixed(decimals)] = '25%';
-    sliderMark[max.dividedBy(2).toFixed(decimals)] = '50%';
-    sliderMark[
-      max
-        .dividedBy(4)
-        .multipliedBy(3)
-        .toFixed(decimals)
-    ] = '75%';
-    sliderMark[max.toFixed(decimals)] = '100%';
+    const maxNum = max.toNumber();
+    const sliderMark = AmountSliderMarks(maxNum, decimals);
 
     setSliderMarks(sliderMark);
     setDelegations(_delegations);

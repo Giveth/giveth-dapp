@@ -20,6 +20,7 @@ import DonationService from '../services/DonationService';
 import User from '../models/User';
 import NumericInput from './NumericInput';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
+import AmountSliderMarks from './AmountSliderMarks';
 
 const modalStyles = {
   content: {
@@ -144,18 +145,7 @@ class DelegateButton extends Component {
 
     const { decimals } = donation.token;
     const max = roundBigNumber(maxAmount, decimals);
-
-    const sliderMarks = {};
-    sliderMarks[0] = '0%';
-    sliderMarks[max.dividedBy(4).toFixed(decimals)] = '25%';
-    sliderMarks[max.dividedBy(2).toFixed(decimals)] = '50%';
-    sliderMarks[
-      max
-        .dividedBy(4)
-        .multipliedBy(3)
-        .toFixed(decimals)
-    ] = '75%';
-    sliderMarks[max.toFixed(decimals)] = '100%';
+    const sliderMarks = AmountSliderMarks(max, decimals);
 
     this.setState({
       maxAmount: max,
