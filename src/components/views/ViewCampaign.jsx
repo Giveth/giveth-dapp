@@ -383,13 +383,7 @@ const ViewCampaign = ({ match }) => {
                               )}
                               {campaign.isActive && (
                                 <Fragment>
-                                  {userIsDacOwner && (
-                                    <DelegateMultipleButton
-                                      campaign={campaign}
-                                      balance={balance}
-                                      currentUser={currentUser}
-                                    />
-                                  )}
+                                  {userIsDacOwner && <DelegateMultipleButton campaign={campaign} />}
                                   <DonateButton
                                     model={{
                                       type: Campaign.type,
