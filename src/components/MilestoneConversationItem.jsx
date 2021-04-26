@@ -31,9 +31,10 @@ const getPaymentsStr = payments => {
 };
 
 const getReadableMessageContext = conversation => {
-  const { messageContext, ownerAddress, recipient } = conversation;
-  let { owner } = conversation;
+  const { messageContext, ownerAddress, recipientAddress } = conversation;
+  let { owner, recipient } = conversation;
   owner = owner || { address: ownerAddress };
+  recipient = recipient || { address: recipientAddress };
   const userName = getUserName(owner);
   const userLink = <Link to={`/profile/${owner.address}`}>{userName}</Link>;
 
