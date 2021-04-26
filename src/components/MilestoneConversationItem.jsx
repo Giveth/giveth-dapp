@@ -98,9 +98,7 @@ const getReadableMessageContext = conversation => {
     return (
       <Fragment>
         {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
-        {userLink}
-        <span> </span>has changed recipient to<span> </span>
-        {recipientLink}
+        {userLink} has changed recipient to {recipientLink}
       </Fragment>
     );
   }
