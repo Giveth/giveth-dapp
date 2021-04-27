@@ -221,3 +221,26 @@
 .ant-checkbox-wrapper{
 	font-weight: normal;
 }
+
+.ant-btn-text {
+	color: #fff;
+	background: #9254de;
+	border-color: #9254de;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.075);
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.005);
+	&:hover, &:focus {
+		color: #fff;
+		background: #b37feb;
+		border-color: #b37feb;
+	}
+}
+
+.ant-btn-dangerous{
+	&.ant-btn-text {
+		color: #ff4d4f;
+		background: transparent;
+		border-color: transparent;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+	}
+}
