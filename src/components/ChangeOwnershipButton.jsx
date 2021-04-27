@@ -7,6 +7,7 @@ import 'react-rangeslider/lib/index.css';
 
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
+import { Button } from 'antd';
 import { ZERO_ADDRESS } from '../lib/helpers';
 import { isLoggedIn, checkBalance } from '../lib/middleware';
 import config from '../configuration';
@@ -97,9 +98,9 @@ const ChangeOwnershipButton = props => {
 
   return (
     <span style={style}>
-      <button type="button" className="btn btn-danger" onClick={() => openDialog()}>
+      <Button type="primary" danger onClick={() => openDialog()}>
         Change co-owner
-      </button>
+      </Button>
 
       <Modal
         isOpen={modalVisible}

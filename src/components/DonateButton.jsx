@@ -18,7 +18,7 @@ import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import ReactTooltip from 'react-tooltip';
-import { Slider } from 'antd';
+import { Slider, Button } from 'antd';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
@@ -724,9 +724,9 @@ const DonateButton = forwardRef((props, ref) => {
 
   return (
     <span style={style}>
-      <button ref={ref} type="button" className={`btn btn-success ${className}`} onClick={doDonate}>
+      <Button type="donate" onClick={doDonate} ref={ref} className={className}>
         Donate
-      </button>
+      </Button>
       <Modal
         isOpen={modalVisible}
         onRequestClose={() => closeDialog()}
