@@ -329,7 +329,7 @@ class MilestoneService {
                 $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
               },
             ],
-            $sort: { usdValue: -1, createdAt: -1 },
+            $sort: { createdAt: -1, usdValue: -1 },
             $limit,
             $skip,
           },
