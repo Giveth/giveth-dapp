@@ -31,7 +31,7 @@ const getPaymentsStr = payments => {
 };
 
 const getReadableMessageContext = conversation => {
-  const { messageContext, ownerAddress } = conversation;
+  const { messageContext, ownerAddress, recipient } = conversation;
   let { owner } = conversation;
   owner = owner || { address: ownerAddress };
   const userName = getUserName(owner);
@@ -50,7 +50,7 @@ const getReadableMessageContext = conversation => {
   if (messageContext === 'rePropose') return <Fragment>{userLink} re-proposed Milestone</Fragment>;
   if (messageContext === 'comment') return <Fragment>{userLink} wrote:</Fragment>;
   if (messageContext === 'payment') {
-    const { recipient, payments } = conversation;
+    const { payments } = conversation;
     if (payments) {
       const phrase = getPaymentsStr(payments);
       if (owner && recipient && owner.address === recipient.address) {
@@ -88,6 +88,17 @@ const getReadableMessageContext = conversation => {
       <Fragment>
         {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
         {`${paymentsStr} has been sent to recipient's wallet`}
+      </Fragment>
+    );
+  }
+  if (messageContext === 'recipientChanged') {
+    const recipientLink = (
+      <Link to={`/profile/${recipient.address}`}>{recipient.name || recipient.address}</Link>
+    );
+    return (
+      <Fragment>
+        {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
+        {userLink} has changed recipient to {recipientLink}
       </Fragment>
     );
   }

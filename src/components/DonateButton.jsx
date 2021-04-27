@@ -724,7 +724,7 @@ const DonateButton = forwardRef((props, ref) => {
 
   return (
     <span style={style}>
-      <Button type="primary" onClick={doDonate} ref={ref} className={className}>
+      <Button type="donate" onClick={doDonate} ref={ref} className={className}>
         Donate
       </Button>
       <Modal
