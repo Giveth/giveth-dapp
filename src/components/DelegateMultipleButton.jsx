@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import 'react-rangeslider/lib/index.css';
 import InputToken from 'react-input-token';
-import { Slider } from 'antd';
+import { Button, Slider } from 'antd';
 
 import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
@@ -497,9 +497,8 @@ const DelegateMultipleButton = props => {
 
   return (
     <span style={style}>
-      <button
-        type="button"
-        className="btn btn-info"
+      <Button
+        type="text"
         onClick={() => {
           if (validProvider && !isForeignNetwork) {
             displayForeignNetRequiredWarning();
@@ -509,7 +508,7 @@ const DelegateMultipleButton = props => {
         }}
       >
         Delegate funds here
-      </button>
+      </Button>
 
       <Modal
         isOpen={modalVisible}

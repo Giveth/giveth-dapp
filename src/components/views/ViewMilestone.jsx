@@ -94,11 +94,11 @@ const ViewMilestone = props => {
       .catch(() => {});
   };
 
-  function loadMoreDonations(loadFromScratch = false) {
+  function loadMoreDonations(loadFromScratch = false, donationsBatch = donationsPerBatch) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
       milestone.id,
-      donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
         setDonations(loadFromScratch ? _donations : donations.concat(_donations));
@@ -142,7 +142,10 @@ const ViewMilestone = props => {
       // subscribe to donation count
       donationsObserver.current = MilestoneService.subscribeNewDonations(
         milestone.id,
-        _newDonations => setNewDonations(_newDonations),
+        _newDonations => {
+          setNewDonations(_newDonations);
+          if (_newDonations > 0) loadMoreDonations(true, donations.length); // Load how many donations that was previously loaded
+        },
         () => setNewDonations(0),
       );
     }

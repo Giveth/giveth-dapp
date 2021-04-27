@@ -6,6 +6,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
+import { Button } from 'antd';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -24,6 +25,7 @@ import {
 
 import DescriptionRender from '../DescriptionRender';
 
+import Donation from '../../models/Donation';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
 
@@ -63,6 +65,7 @@ const ViewCampaign = ({ match }) => {
   const [milestones, setMilestones] = useState([]);
   const [milestonesTotal, setMilestonesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
+  const [aggregateDonationsTotal, setAggregateDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
@@ -73,15 +76,18 @@ const ViewCampaign = ({ match }) => {
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
 
-  const loadMoreAggregateDonations = (loadFromScratch = false) => {
+  const loadMoreAggregateDonations = (
+    loadFromScratch = false,
+    donationsBatch = donationsPerBatch,
+  ) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
       campaign.id,
-      donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
         setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
-        setDonationsTotal(_donationsTotal || 0);
+        setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
       err => {
@@ -90,6 +96,7 @@ const ViewCampaign = ({ match }) => {
       },
     );
   };
+
   const loadMoreMilestones = (loadFromScratch = false) => {
     setLoadingMilestones(true);
 
@@ -110,6 +117,23 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
+  const loadDonations = campaignId => {
+    if (campaignId) {
+      CampaignService.getDonations(
+        campaignId,
+        0,
+        0,
+        (_donations, _donationsTotal) => {
+          setDonationsTotal(_donationsTotal);
+        },
+        err => {
+          ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
+        },
+        Donation.COMMITTED,
+      );
+    }
+  };
+
   useEffect(() => {
     const { id, slug } = match.params;
     const getFunction = slug
@@ -127,18 +151,25 @@ const ViewCampaign = ({ match }) => {
       .catch(() => {
         setNotFound(true);
       });
-  }, []);
+  }, [donationsTotal]);
 
   useEffect(() => {
-    if (campaign.id) {
+    if (campaign._id && donationsObserver.current === undefined) {
       loadMoreMilestones(true);
+      loadDonations(campaign._id);
+      loadMoreAggregateDonations(true);
       // subscribe to donation count
       donationsObserver.current = CampaignService.subscribeNewDonations(
         campaign.id,
-        _newDonations => setNewDonations(_newDonations),
+        _newDonations => {
+          setNewDonations(_newDonations);
+          if (_newDonations > 0) {
+            loadDonations(campaign._id);
+            loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
+          }
+        },
         () => setNewDonations(0),
       );
-      loadMoreAggregateDonations(true);
     }
 
     return () => {
@@ -188,6 +219,10 @@ const ViewCampaign = ({ match }) => {
     return DescriptionRender(campaign.description);
   };
 
+  const gotoCreateMilestone = () => {
+    history.push(`/campaign/${campaign.slug}/new`);
+  };
+
   if (notFound) {
     return <NotFound projectType="Campaign" />;
   }
@@ -201,7 +236,9 @@ const ViewCampaign = ({ match }) => {
 
   const showDonateAddress = donationAddress || userIsOwner;
 
-  const leaderBoardTitle = `Leaderboard${donationsTotal ? ` (${donationsTotal})` : ''}`;
+  const leaderBoardTitle = `Leaderboard${
+    aggregateDonationsTotal ? ` (${aggregateDonationsTotal})` : ''
+  }`;
   const milestonesTitle = `Milestones${milestonesTotal ? ` (${milestonesTotal})` : ''}`;
 
   const goBackSectionLinks = [
@@ -353,7 +390,7 @@ const ViewCampaign = ({ match }) => {
                           <LeaderBoard
                             aggregateDonations={aggregateDonations}
                             isLoading={isLoadingDonations}
-                            total={donationsTotal}
+                            total={aggregateDonationsTotal}
                             loadMore={loadMoreAggregateDonations}
                             newDonations={newDonations}
                           />
@@ -363,24 +400,12 @@ const ViewCampaign = ({ match }) => {
                           <div className="section-header">
                             <h5>Funding</h5>
                             <span>
-                              {downloadingCsv && (
-                                <button
-                                  type="button"
-                                  className="btn btn-info disabled"
-                                  onClick={() => {}}
-                                >
-                                  Please wait...
-                                </button>
-                              )}
-                              {!downloadingCsv && (
-                                <button
-                                  type="button"
-                                  className="btn btn-info"
-                                  onClick={() => downloadCsv(campaign.id)}
-                                >
-                                  Download this Campaign&apos;s Financial History
-                                </button>
-                              )}
+                              <Button
+                                onClick={() => downloadCsv(campaign.id)}
+                                loading={downloadingCsv}
+                              >
+                                Download this Campaign&apos;s Financial History
+                              </Button>
                               {campaign.isActive && (
                                 <Fragment>
                                   {userIsDacOwner && (
@@ -408,7 +433,7 @@ const ViewCampaign = ({ match }) => {
                               )}
                             </span>
                           </div>
-                          <Balances entity={campaign} currentUser={currentUser} />
+                          <Balances entity={campaign} />
                         </div>
 
                         <div>
@@ -428,12 +453,7 @@ const ViewCampaign = ({ match }) => {
                               {campaign.projectId > 0 &&
                                 campaign.isActive &&
                                 (userIsOwner || currentUser) && (
-                                  <Link
-                                    className="btn btn-primary"
-                                    to={`/campaign/${campaign.slug}/new`}
-                                  >
-                                    Create New
-                                  </Link>
+                                  <Button onClick={gotoCreateMilestone}>Create New</Button>
                                 )}
 
                               {campaign.isActive && (
