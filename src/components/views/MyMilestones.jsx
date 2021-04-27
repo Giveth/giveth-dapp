@@ -32,12 +32,14 @@ const reviewDue = updatedAt =>
 /**
  * The my milestones view
  */
-function MyMilestones() {
+const MyMilestones = () => {
+  const milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
+
   const [isLoading, setLoading] = useState(true);
   const [milestones, setMilestones] = useState([]);
   const [skipPages, setSkipPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
-  const [milestoneStatus, setMilestoneStatus] = useState('Active');
+  const [milestoneStatus, setMilestoneStatus] = useState(milestoneTabs[0]);
 
   const itemsPerPage = 10;
   const visiblePages = 10;
@@ -52,14 +54,12 @@ function MyMilestones() {
     state: { tokenWhitelist },
   } = useContext(WhiteListContext);
 
-  const milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
   function cleanUp() {
     MilestoneService.unsubscribe();
   }
 
   function loadMileStones() {
     const myAddress = currentUser.address;
-
     if (myAddress) {
       MilestoneService.subscribeMyMilestones({
         milestoneStatus,
@@ -86,17 +86,6 @@ function MyMilestones() {
     }
   }
 
-  useEffect(() => {
-    loadMileStones();
-    return cleanUp;
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    cleanUp();
-    loadMileStones();
-  }, [currentUser, milestoneStatus]);
-
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
       return tokenWhitelist.map(t => t.symbol).join(', ');
@@ -104,21 +93,37 @@ function MyMilestones() {
     return token.symbol;
   }
 
-  useEffect(() => {
-    loadMileStones();
-    return cleanUp();
-  }, [skipPages]);
-
   function handlePageChanged(newPage) {
     setLoading(true);
     setSkipPages(newPage - 1);
   }
 
   function changeTab(newStatus) {
-    setLoading(true);
-    setSkipPages(0);
-    setMilestoneStatus(newStatus);
+    // Skip rerendering for same tab
+    if (newStatus !== milestoneStatus) {
+      setLoading(true);
+      setSkipPages(0);
+      setMilestoneStatus(newStatus);
+    }
   }
+
+  useEffect(() => {
+    // To skip initial render
+    if (skipPages) {
+      loadMileStones();
+    }
+    return cleanUp();
+  }, [skipPages]);
+
+  useEffect(() => {
+    // To skip initial render
+    if (currentUser.address) {
+      setLoading(true);
+      cleanUp();
+      loadMileStones();
+    }
+    return cleanUp;
+  }, [currentUser.address, milestoneStatus]);
 
   return (
     <div id="milestones-view">
@@ -272,7 +277,7 @@ function MyMilestones() {
       </div>
     </div>
   );
-}
+};
 
 MyMilestones.defaultProps = {};
 

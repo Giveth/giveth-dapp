@@ -268,18 +268,7 @@ const Routes = () => {
           />
         )}
       />
-      <Route
-        exact
-        path="/my-milestones"
-        render={props => (
-          <MyMilestones
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/my-milestones" render={() => <MyMilestones />} />
 
       {/* <Route
                                         exact
