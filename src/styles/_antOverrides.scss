@@ -222,6 +222,19 @@
 	font-weight: normal;
 }
 
+.ant-btn-donate {
+  color: #fff;
+  background: #38954d;
+  border-color: #38954d;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.075);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.005);
+  &:hover, &:focus {
+    color: #fff;
+    background: #73c954;
+    border-color: #73c954;
+  }
+}
+
 .ant-btn-text {
 	color: #fff;
 	background: #9254de;
