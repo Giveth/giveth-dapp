@@ -311,6 +311,10 @@ const EditCampaign = ({ isNew, match }) => {
                   reviewerAddress: campaign.reviewerAddress,
                   communityUrl: campaign.communityUrl,
                 }}
+                scrollToFirstError={{
+                  block: 'center',
+                  behavior: 'smooth',
+                }}
               >
                 {isNew && (
                   <Fragment>
