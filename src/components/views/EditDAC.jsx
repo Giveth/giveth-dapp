@@ -300,6 +300,10 @@ const EditDAC = ({ isNew, match }) => {
                   reviewerAddress: dac.reviewerAddress,
                   communityUrl: dac.communityUrl,
                 }}
+                scrollToFirstError={{
+                  block: 'center',
+                  behavior: 'smooth',
+                }}
               >
                 {isNew && (
                   <Fragment>

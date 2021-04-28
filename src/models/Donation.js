@@ -38,7 +38,8 @@ class Donation extends Model {
   }
 
   static get CANCELED() {
-    return 'Cancelled';
+    // The Canceled is misspelled but we have no choice because in db and backend side it's misspelled
+    return 'Canceled';
   }
 
   static get REJECTED() {
