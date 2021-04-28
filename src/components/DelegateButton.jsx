@@ -20,6 +20,7 @@ import DonationService from '../services/DonationService';
 import User from '../models/User';
 import NumericInput from './NumericInput';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
+import AmountSliderMarks from './AmountSliderMarks';
 
 const modalStyles = {
   content: {
@@ -32,6 +33,7 @@ const modalStyles = {
     boxShadow: '0 0 40px #ccc',
     overflowY: 'scroll',
     maxHeight: '80%',
+    minHeight: '400px',
     marginTop: '10px',
   },
 };
@@ -142,10 +144,13 @@ class DelegateButton extends Component {
     }
 
     const { decimals } = donation.token;
+    const max = roundBigNumber(maxAmount, decimals);
+    const sliderMarks = AmountSliderMarks(max, decimals);
 
     this.setState({
-      maxAmount: roundBigNumber(maxAmount, decimals),
+      maxAmount: max,
       amount: convertEthHelper(BigNumber.min(amount, maxAmount), decimals),
+      sliderMarks,
     });
 
     if (type === Milestone.type) {
@@ -309,7 +314,9 @@ class DelegateButton extends Component {
       amount,
       comment,
       formIsValid,
+      sliderMarks,
     } = this.state;
+
     const style = { display: 'inline-block' };
     const pStyle = { whiteSpace: 'normal' };
 
@@ -337,11 +344,6 @@ class DelegateButton extends Component {
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
-
-    const sliderMarks = {
-      0: '0',
-    };
-    sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
 
     return (
       <span style={style}>
@@ -411,38 +413,49 @@ class DelegateButton extends Component {
               </div>
             </div>
 
-            <span className="label">Amount to delegate:</span>
+            {formIsValid && (
+              <React.Fragment>
+                <span className="label">Amount to delegate:</span>
 
-            <div className="form-group" id="amount_slider">
-              <Slider
-                min={0}
-                max={maxAmount.toNumber()}
-                onChange={newAmount => {
-                  this.setState({ amount: newAmount.toString() });
-                }}
-                value={amount}
-                marks={sliderMarks}
-                step={decimals ? 1 / 10 ** decimals : 1}
-              />
-            </div>
+                <div className="form-group" id="amount_slider">
+                  <Slider
+                    min={0}
+                    max={maxAmount.toNumber()}
+                    onChange={newAmount => {
+                      this.setState({ amount: newAmount.toString() });
+                    }}
+                    value={amount}
+                    marks={sliderMarks}
+                    step={decimals ? 1 / 10 ** decimals : 1}
+                  />
+                </div>
 
-            <div className="form-group">
-              <NumericInput
-                token={token}
-                maxAmount={maxAmount}
-                id="amount-input"
-                value={amount}
-                onChange={newAmount => this.setState({ amount: newAmount })}
-                lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
-                  maxAmount,
-                  token.decimals,
-                )}. Do not input higher amount.`}
-                autoFocus
-              />
-            </div>
-            <div className="form-group">
-              <Textarea name="comment" id="comment-input" value={comment} placeholder="Comment" />
-            </div>
+                <div className="form-group">
+                  <NumericInput
+                    token={token}
+                    maxAmount={maxAmount}
+                    id="amount-input"
+                    value={amount}
+                    onChange={newAmount => this.setState({ amount: newAmount })}
+                    lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
+                      maxAmount,
+                      token.decimals,
+                    )}. Do not input higher amount.`}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="form-group">
+                  <Textarea
+                    name="comment"
+                    id="comment-input"
+                    value={comment}
+                    placeholder="Comment"
+                  />
+                </div>
+              </React.Fragment>
+            )}
+
             <button
               className="btn btn-success"
               formNoValidate
