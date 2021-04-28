@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { withRouter } from 'react-router';
+import { Button } from 'antd';
 
 import config from '../configuration';
 import DACService from '../services/DACService';
@@ -70,9 +71,9 @@ const DonateButton = forwardRef((props, ref) => {
 
   return (
     <span style={style}>
-      <button ref={ref} type="button" className={`btn btn-success ${className}`} onClick={doDonate}>
+      <Button ref={ref} type="donate" className={className} onClick={doDonate}>
         Donate
-      </button>
+      </Button>
       <Modal
         isOpen={modalVisible}
         onRequestClose={() => setModalVisible(false)}

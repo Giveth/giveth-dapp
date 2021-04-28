@@ -16,6 +16,7 @@ import ReactTooltip from 'react-tooltip';
 import DonationService from '../services/DonationService';
 import NumericInput from './NumericInput';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
+import AmountSliderMarks from './AmountSliderMarks';
 
 function getFilterType(types, donation) {
   return types.filter(
@@ -87,10 +88,13 @@ class DelegateButtonModal extends Component {
     }
 
     const { decimals } = donation.token;
+    const max = roundBigNumber(maxAmount, decimals);
+    const sliderMarks = AmountSliderMarks(max, decimals);
 
     this.setState({
-      maxAmount: roundBigNumber(maxAmount, decimals),
+      maxAmount: max,
       amount: convertEthHelper(BigNumber.min(amount, maxAmount), decimals),
+      sliderMarks,
     });
 
     if (type === Milestone.type) {
@@ -259,6 +263,7 @@ class DelegateButtonModal extends Component {
       amount,
       comment,
       formIsValid,
+      sliderMarks,
     } = this.state;
 
     const pStyle = { whiteSpace: 'normal' };
@@ -287,11 +292,6 @@ class DelegateButtonModal extends Component {
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
-
-    const sliderMarks = {
-      0: '0',
-    };
-    sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
 
     return (
       <React.Fragment>
@@ -350,38 +350,44 @@ class DelegateButtonModal extends Component {
             </div>
           </div>
 
-          <span className="label">Amount to delegate:</span>
+          {formIsValid && (
+            <React.Fragment>
+              <span className="label">Amount to delegate:</span>
 
-          <div className="form-group" id="amount_slider">
-            <Slider
-              min={0}
-              max={maxAmount.toNumber()}
-              onChange={newAmount => {
-                this.setState({ amount: newAmount.toString() });
-              }}
-              value={amount}
-              marks={sliderMarks}
-              step={decimals ? 1 / 10 ** decimals : 1}
-            />
-          </div>
+              <div className="form-group" id="amount_slider">
+                <Slider
+                  min={0}
+                  max={maxAmount.toNumber()}
+                  onChange={newAmount => {
+                    this.setState({ amount: newAmount.toString() });
+                  }}
+                  value={amount}
+                  marks={sliderMarks}
+                  step={decimals ? 1 / 10 ** decimals : 1}
+                />
+              </div>
 
-          <div className="form-group">
-            <NumericInput
-              token={token}
-              maxAmount={maxAmount}
-              id="amount-input"
-              value={amount}
-              onChange={newAmount => this.setState({ amount: newAmount })}
-              lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
-                maxAmount,
-                token.decimals,
-              )}. Do not input higher amount.`}
-              autoFocus
-            />
-          </div>
-          <div className="form-group">
-            <Textarea name="comment" id="comment-input" value={comment} placeholder="Comment" />
-          </div>
+              <div className="form-group">
+                <NumericInput
+                  token={token}
+                  maxAmount={maxAmount}
+                  id="amount-input"
+                  value={amount}
+                  onChange={newAmount => this.setState({ amount: newAmount })}
+                  lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
+                    maxAmount,
+                    token.decimals,
+                  )}. Do not input higher amount.`}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group">
+                <Textarea name="comment" id="comment-input" value={comment} placeholder="Comment" />
+              </div>
+            </React.Fragment>
+          )}
+
           <button
             className="btn btn-success"
             formNoValidate

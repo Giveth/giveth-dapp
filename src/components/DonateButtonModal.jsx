@@ -31,6 +31,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import pollEvery from '../lib/pollEvery';
+import AmountSliderMarks from './AmountSliderMarks';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -628,6 +629,10 @@ const DonateButtonModal = props => {
   const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
   const maxAmount = getMaxAmount();
   const zeroBalance = balance && balance.eq(0);
+  let sliderMarks = {};
+  if (maxAmount && decimals) {
+    sliderMarks = AmountSliderMarks(maxAmount, decimals);
+  }
 
   const submitDefault = () => {
     allowanceApprovalType.current = AllowanceApprovalType.Default;
@@ -663,11 +668,6 @@ const DonateButtonModal = props => {
   };
 
   const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
-
-  const sliderMarks = {
-    0: '0',
-  };
-  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
 
   return (
     <Fragment>

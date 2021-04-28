@@ -18,6 +18,7 @@ import config from '../configuration';
 import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import NumericInput from './NumericInput';
+import AmountSliderMarks from './AmountSliderMarks';
 
 import DonationService from '../services/DonationService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -46,6 +47,7 @@ const ModalContent = props => {
 
   const { campaign, milestone, setModalVisible } = props;
 
+  const [sliderMarks, setSliderMarks] = useState();
   const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isDacsFetched, setIsDacsFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
@@ -71,6 +73,7 @@ const ModalContent = props => {
     const entity = delegationOptions.find(c => c.id === ids[0]);
 
     const options = {};
+    const { decimals } = selectedToken;
 
     switch (entity.type) {
       case 'dac':
@@ -149,9 +152,14 @@ const ModalContent = props => {
       }
     }
 
+    const max = roundBigNumber(localMax, decimals);
+    const maxNum = max.toNumber();
+    const sliderMark = AmountSliderMarks(maxNum, decimals);
+
+    setSliderMarks(sliderMark);
     setDelegations(_delegations);
     setTotalDonations(total);
-    setMaxAmount(roundBigNumber(localMax, selectedToken.decimals));
+    setMaxAmount(max);
     setLoadingDonations(false);
     setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
     setLoadingDonations(false);
@@ -317,10 +325,6 @@ const ModalContent = props => {
     }
   }, [currentUser]);
 
-  const sliderMarks = {
-    0: '0',
-  };
-  sliderMarks[maxAmount.toNumber()] = maxAmount.toNumber();
   const { decimals } = selectedToken;
 
   const modalContent = (

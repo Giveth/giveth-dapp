@@ -22,6 +22,7 @@ const modalStyles = {
     boxShadow: '0 0 40px #ccc',
     overflowY: 'scroll',
     maxHeight: '80%',
+    minHeight: '400px',
     marginTop: '10px',
   },
 };

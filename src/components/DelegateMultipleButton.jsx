@@ -3,6 +3,7 @@ import React, { useContext, useState } from 'react';
 import Modal from 'react-modal';
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
+import { Button } from 'antd';
 
 import { checkBalance, isLoggedIn } from '../lib/middleware';
 import ModalContent from './DelegateMultipleButtonModal';
@@ -67,9 +68,8 @@ const DelegateMultipleButton = props => {
 
   return (
     <span style={style}>
-      <button
-        type="button"
-        className="btn btn-info"
+      <Button
+        type="text"
         onClick={() => {
           if (validProvider && !isForeignNetwork) {
             displayForeignNetRequiredWarning();
@@ -79,7 +79,7 @@ const DelegateMultipleButton = props => {
         }}
       >
         Delegate funds here
-      </button>
+      </Button>
 
       <Modal
         isOpen={modalVisible}
