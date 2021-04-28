@@ -304,75 +304,109 @@ const ViewCampaign = ({ match }) => {
                     inPageLinks={goBackSectionLinks}
                   />
 
-                  <div className="container-fluid mt-4">
-                    <div className="row">
-                      <div className="col-md-8 m-auto">
-                        <div>
-                          <div>
-                            <h5 className="title">Subscribe to updates </h5>
-                            <ProjectSubscription
-                              projectTypeId={campaign._id}
-                              projectType="campaign"
-                            />
-                          </div>
+                  <div className="container mt-4">
+                    <div>
+                      <div>
+                        <h5 className="title">Subscribe to updates </h5>
+                        <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                      </div>
 
-                          {showDonateAddress && (
-                            <ProjectViewActionAlert message="Send money to an address to contribute">
-                              <CreateDonationAddressButton
-                                campaignTitle={campaign.title}
-                                campaignOwner={ownerAddress}
-                                campaignId={campaign.id}
-                                receiverId={campaign.projectId}
-                                giverId={(campaign._owner || {}).giverId}
-                                currentUser={currentUser}
-                              />
-                            </ProjectViewActionAlert>
-                          )}
+                      {showDonateAddress && (
+                        <ProjectViewActionAlert message="Send money to an address to contribute">
+                          <CreateDonationAddressButton
+                            campaignTitle={campaign.title}
+                            campaignOwner={ownerAddress}
+                            campaignId={campaign.id}
+                            receiverId={campaign.projectId}
+                            giverId={(campaign._owner || {}).giverId}
+                            currentUser={currentUser}
+                          />
+                        </ProjectViewActionAlert>
+                      )}
 
-                          {userIsDacOwner && (
-                            <ProjectViewActionAlert message="Delegate some donation to this project">
-                              <DelegateMultipleButton campaign={campaign} />
-                            </ProjectViewActionAlert>
-                          )}
+                      {userIsDacOwner && (
+                        <ProjectViewActionAlert message="Delegate some donation to this project">
+                          <DelegateMultipleButton campaign={campaign} />
+                        </ProjectViewActionAlert>
+                      )}
 
-                          {userIsOwner && (
-                            <ProjectViewActionAlert message="Change Co-Owner of Campaign">
-                              <ChangeOwnershipButton campaign={campaign} />
-                            </ProjectViewActionAlert>
-                          )}
+                      {userIsOwner && (
+                        <ProjectViewActionAlert message="Change Co-Owner of Campaign">
+                          <ChangeOwnershipButton campaign={campaign} />
+                        </ProjectViewActionAlert>
+                      )}
+                    </div>
+
+                    <div id="description">
+                      <div className="about-section-header">
+                        <h5 className="title">About</h5>
+                        <div className="text-center">
+                          <Link to={`/profile/${ownerAddress}`}>
+                            <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                            <p className="small">{getUserName(campaign.owner)}</p>
+                          </Link>
                         </div>
+                      </div>
 
-                        <div id="description">
-                          <div className="about-section-header">
-                            <h5 className="title">About</h5>
-                            <div className="text-center">
-                              <Link to={`/profile/${ownerAddress}`}>
-                                <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                                <p className="small">{getUserName(campaign.owner)}</p>
-                              </Link>
-                            </div>
+                      <div className="card content-card ">
+                        <div className="card-body content">{renderDescription()}</div>
+
+                        {campaign.communityUrl && (
+                          <div className="pl-3 pb-4">
+                            <CommunityButton
+                              className="btn btn-secondary"
+                              url={campaign.communityUrl}
+                            >
+                              Join our Community
+                            </CommunityButton>
                           </div>
+                        )}
+                      </div>
+                    </div>
 
-                          <div className="card content-card ">
-                            <div className="card-body content">{renderDescription()}</div>
+                    <div id="donations" className="spacer-top-50">
+                      <div className="section-header">
+                        <h5>{leaderBoardTitle}</h5>
+                        {campaign.isActive && (
+                          <DonateButton
+                            model={{
+                              type: Campaign.type,
+                              title: campaign.title,
+                              id: campaign.id,
+                              adminId: campaign.projectId,
+                              customThanksMessage: campaign.customThanksMessage,
+                              token: { symbol: config.nativeTokenName },
+                            }}
+                            currentUser={currentUser}
+                            history={history}
+                          />
+                        )}
+                      </div>
+                      <LeaderBoard
+                        aggregateDonations={aggregateDonations}
+                        isLoading={isLoadingDonations}
+                        total={aggregateDonationsTotal}
+                        loadMore={loadMoreAggregateDonations}
+                        newDonations={newDonations}
+                      />
+                    </div>
 
-                            {campaign.communityUrl && (
-                              <div className="pl-3 pb-4">
-                                <CommunityButton
-                                  className="btn btn-secondary"
-                                  url={campaign.communityUrl}
-                                >
-                                  Join our Community
-                                </CommunityButton>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div id="donations" className="spacer-top-50">
-                          <div className="section-header">
-                            <h5>{leaderBoardTitle}</h5>
-                            {campaign.isActive && (
+                    <div id="funding" className="spacer-top-50">
+                      <div className="section-header">
+                        <h5>Funding</h5>
+                        <span>
+                          <Button onClick={() => downloadCsv(campaign.id)} loading={downloadingCsv}>
+                            Download this Campaign&apos;s Financial History
+                          </Button>
+                          {campaign.isActive && (
+                            <Fragment>
+                              {userIsDacOwner && (
+                                <DelegateMultipleButton
+                                  campaign={campaign}
+                                  balance={balance}
+                                  currentUser={currentUser}
+                                />
+                              )}
                               <DonateButton
                                 model={{
                                   type: Campaign.type,
@@ -380,131 +414,87 @@ const ViewCampaign = ({ match }) => {
                                   id: campaign.id,
                                   adminId: campaign.projectId,
                                   customThanksMessage: campaign.customThanksMessage,
-                                  token: { symbol: config.nativeTokenName },
+                                  token: {
+                                    symbol: config.nativeTokenName,
+                                  },
                                 }}
                                 currentUser={currentUser}
                                 history={history}
                               />
-                            )}
-                          </div>
-                          <LeaderBoard
-                            aggregateDonations={aggregateDonations}
-                            isLoading={isLoadingDonations}
-                            total={aggregateDonationsTotal}
-                            loadMore={loadMoreAggregateDonations}
-                            newDonations={newDonations}
-                          />
-                        </div>
-
-                        <div id="funding" className="spacer-top-50">
-                          <div className="section-header">
-                            <h5>Funding</h5>
-                            <span>
-                              <Button
-                                onClick={() => downloadCsv(campaign.id)}
-                                loading={downloadingCsv}
-                              >
-                                Download this Campaign&apos;s Financial History
-                              </Button>
-                              {campaign.isActive && (
-                                <Fragment>
-                                  {userIsDacOwner && (
-                                    <DelegateMultipleButton
-                                      campaign={campaign}
-                                      balance={balance}
-                                      currentUser={currentUser}
-                                    />
-                                  )}
-                                  <DonateButton
-                                    model={{
-                                      type: Campaign.type,
-                                      title: campaign.title,
-                                      id: campaign.id,
-                                      adminId: campaign.projectId,
-                                      customThanksMessage: campaign.customThanksMessage,
-                                      token: {
-                                        symbol: config.nativeTokenName,
-                                      },
-                                    }}
-                                    currentUser={currentUser}
-                                    history={history}
-                                  />
-                                </Fragment>
-                              )}
-                            </span>
-                          </div>
-                          <Balances entity={campaign} />
-                        </div>
-
-                        <div>
-                          <h5>Campaign Reviewer</h5>
-                          {campaign && campaign.reviewer && (
-                            <Link to={`/profile/${campaign.reviewerAddress}`}>
-                              {getUserName(campaign.reviewer)}
-                            </Link>
+                            </Fragment>
                           )}
-                          {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                        </div>
-
-                        <div id="milestones" className="spacer-bottom-50 spacer-top-50">
-                          <div className="section-header">
-                            <h5>{milestonesTitle}</h5>
-                            <span>
-                              {campaign.projectId > 0 &&
-                                campaign.isActive &&
-                                (userIsOwner || currentUser) && (
-                                  <Button onClick={gotoCreateMilestone}>Create New</Button>
-                                )}
-
-                              {campaign.isActive && (
-                                <span>
-                                  <DonateButton
-                                    model={{
-                                      type: Campaign.type,
-                                      title: campaign.title,
-                                      id: campaign.id,
-                                      adminId: campaign.projectId,
-                                      customThanksMessage: campaign.customThanksMessage,
-                                      token: {
-                                        symbol: config.nativeTokenName,
-                                      },
-                                    }}
-                                    currentUser={currentUser}
-                                    history={history}
-                                  />
-                                </span>
-                              )}
-                            </span>
-                          </div>
-
-                          {isLoadingMilestones && milestonesTotal === 0 && (
-                            <Loader className="relative" />
-                          )}
-                          <div className="milestone-cards-grid-container">
-                            {milestones.map(m => (
-                              <MilestoneCard milestone={m} key={m._id} history={history} />
-                            ))}
-                          </div>
-
-                          {milestones.length < milestonesTotal && (
-                            <div className="text-center">
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-info"
-                                onClick={() => loadMoreMilestones()}
-                                disabled={isLoadingMilestones}
-                              >
-                                {isLoadingMilestones && (
-                                  <span>
-                                    <i className="fa fa-circle-o-notch fa-spin" /> Loading
-                                  </span>
-                                )}
-                                {!isLoadingMilestones && <span>Load More</span>}
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                        </span>
                       </div>
+                      <Balances entity={campaign} />
+                    </div>
+
+                    <div>
+                      <h5>Campaign Reviewer</h5>
+                      {campaign && campaign.reviewer && (
+                        <Link to={`/profile/${campaign.reviewerAddress}`}>
+                          {getUserName(campaign.reviewer)}
+                        </Link>
+                      )}
+                      {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                    </div>
+
+                    <div id="milestones" className="spacer-bottom-50 spacer-top-50">
+                      <div className="section-header">
+                        <h5>{milestonesTitle}</h5>
+                        <span>
+                          {campaign.projectId > 0 &&
+                            campaign.isActive &&
+                            (userIsOwner || currentUser) && (
+                              <Button onClick={gotoCreateMilestone}>Create New</Button>
+                            )}
+
+                          {campaign.isActive && (
+                            <span>
+                              <DonateButton
+                                model={{
+                                  type: Campaign.type,
+                                  title: campaign.title,
+                                  id: campaign.id,
+                                  adminId: campaign.projectId,
+                                  customThanksMessage: campaign.customThanksMessage,
+                                  token: {
+                                    symbol: config.nativeTokenName,
+                                  },
+                                }}
+                                currentUser={currentUser}
+                                history={history}
+                              />
+                            </span>
+                          )}
+                        </span>
+                      </div>
+
+                      {isLoadingMilestones && milestonesTotal === 0 && (
+                        <Loader className="relative" />
+                      )}
+                      <div className="milestone-cards-grid-container">
+                        {milestones.map(m => (
+                          <MilestoneCard milestone={m} key={m._id} history={history} />
+                        ))}
+                      </div>
+
+                      {milestones.length < milestonesTotal && (
+                        <div className="text-center">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-info"
+                            onClick={() => loadMoreMilestones()}
+                            disabled={isLoadingMilestones}
+                          >
+                            {isLoadingMilestones && (
+                              <span>
+                                <i className="fa fa-circle-o-notch fa-spin" /> Loading
+                              </span>
+                            )}
+                            {!isLoadingMilestones && <span>Load More</span>}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
