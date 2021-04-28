@@ -6,7 +6,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { Button } from 'antd';
+import { Button, Input } from 'antd';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -70,6 +70,7 @@ const ViewCampaign = ({ match }) => {
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
   const [campaign, setCampaign] = useState({});
+  const [searchPhrase, setSearchPhrase] = useState('');
 
   const donationsObserver = useRef();
 
@@ -102,6 +103,7 @@ const ViewCampaign = ({ match }) => {
 
     CampaignService.getMilestones(
       campaign.id,
+      searchPhrase,
       milestonesPerBatch,
       loadFromScratch ? 0 : milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -179,6 +181,10 @@ const ViewCampaign = ({ match }) => {
       }
     };
   }, [campaign]);
+
+  useEffect(() => {
+    loadMoreMilestones(true);
+  }, [searchPhrase]);
 
   const downloadCsv = campaignId => {
     const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;
@@ -442,10 +448,22 @@ const ViewCampaign = ({ match }) => {
                       <div className="section-header">
                         <h5>{milestonesTitle}</h5>
                         <span>
+                          {campaign.projectId > 0 && (
+                            <span>
+                              <Input.Search
+                                placeholder="input search text"
+                                onSearch={setSearchPhrase}
+                                style={{ width: 200 }}
+                              />
+                            </span>
+                          )}
+
                           {campaign.projectId > 0 &&
                             campaign.isActive &&
                             (userIsOwner || currentUser) && (
-                              <Button onClick={gotoCreateMilestone}>Create New</Button>
+                              <span>
+                                <Button onClick={gotoCreateMilestone}>Create New</Button>
+                              </span>
                             )}
 
                           {campaign.isActive && (

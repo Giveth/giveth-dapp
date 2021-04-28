@@ -328,7 +328,7 @@ function CreateExpense(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                <Button type="project-submit" htmlType="submit" loading={loading || loadingAmount}>
                   {submitButtonText}
                 </Button>
               </Form.Item>

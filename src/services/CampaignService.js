@@ -136,29 +136,43 @@ class CampaignService {
   /**
    * Get Campaign milestones listener
    *
-   * @param id        ID of the Campaign which donations should be retrieved
-   * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of record to be skipped
-   * @param onSuccess Callback function once response is obtained successfully
-   * @param onError   Callback function if error is encountered
+   * @param id            ID of the Campaign which donations should be retrieved
+   * @param searchPhrase  Phrase to search milestones by
+   * @param $limit        Amount of records to be loaded
+   * @param $skip         Amounds of record to be skipped
+   * @param onSuccess     Callback function once response is obtained successfully
+   * @param onError       Callback function if error is encountered
    */
-  static getMilestones(id, $limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+  static getMilestones(
+    id,
+    searchPhrase = '',
+    $limit = 100,
+    $skip = 0,
+    onSuccess = () => {},
+    onError = () => {},
+  ) {
+    const query = {
+      campaignId: id,
+      status: {
+        $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
+      },
+      $or: [{ donationCounters: { $not: { $size: 0 } } }, { status: { $ne: Milestone.COMPLETED } }],
+      $limit,
+      $skip,
+    };
+
+    if (searchPhrase) {
+      query.$text = { $search: searchPhrase };
+      query.$sort = { score: { $meta: 'textScore' } };
+      query.$select = { score: { $meta: 'textScore' } };
+    } else {
+      query.$sort = { projectAddedAt: -1, projectId: -1 };
+    }
+
     return feathersClient
       .service('milestones')
       .find({
-        query: {
-          campaignId: id,
-          status: {
-            $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
-          },
-          $or: [
-            { donationCounters: { $not: { $size: 0 } } },
-            { status: { $ne: Milestone.COMPLETED } },
-          ],
-          $sort: { projectAddedAt: -1, projectId: -1 },
-          $limit,
-          $skip,
-        },
+        query,
       })
       .then(resp =>
         onSuccess(
