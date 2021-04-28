@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -43,6 +43,8 @@ const MyMilestones = () => {
 
   const itemsPerPage = 10;
   const visiblePages = 10;
+
+  const isInitialRender = useRef(true);
 
   const {
     state: { currentUser },
@@ -94,8 +96,11 @@ const MyMilestones = () => {
   }
 
   function handlePageChanged(newPage) {
-    setLoading(true);
-    setSkipPages(newPage - 1);
+    // Skip rerendering for same page
+    if (newPage - 1 !== skipPages) {
+      setLoading(true);
+      setSkipPages(newPage - 1);
+    }
   }
 
   function changeTab(newStatus) {
@@ -109,7 +114,9 @@ const MyMilestones = () => {
 
   useEffect(() => {
     // To skip initial render
-    if (skipPages) {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+    } else {
       loadMileStones();
     }
     return cleanUp();
