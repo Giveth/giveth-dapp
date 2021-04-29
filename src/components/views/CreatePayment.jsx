@@ -88,14 +88,6 @@ function CreatePayment(props) {
   }, [loadingAmount, userIsCampaignOwner]);
 
   useEffect(() => {
-    if (loadingAmount) {
-      setSubmitButtonText('Loading Amount');
-    } else {
-      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
-    }
-  }, [loadingAmount, userIsCampaignOwner]);
-
-  useEffect(() => {
     setUserIsOwner(
       campaign &&
         currentUser.address &&
