@@ -409,12 +409,12 @@ const ViewCampaign = ({ match }) => {
 
                     <div id="funding" className="spacer-top-50">
                       <Row justify="space-between" className="spacer-bottom-16">
-                        <Col lg={8}>
+                        <Col lg={4}>
                           <h5>Funding</h5>
                         </Col>
-                        <Col xs={24} lg={16}>
+                        <Col xs={24} lg={20}>
                           <Row gutter={[16, 16]} justify="end">
-                            <Col xs={24} sm={18} md={12}>
+                            <Col xs={24} md={13} lg={12} xl={10}>
                               <Button
                                 onClick={() => downloadCsv(campaign.id)}
                                 loading={downloadingCsv}
@@ -427,17 +427,11 @@ const ViewCampaign = ({ match }) => {
                             {campaign.isActive && (
                               <Fragment>
                                 {userIsDacOwner && (
-                                  <Col xs={12} sm={6}>
-                                    <DelegateMultipleButton
-                                      campaign={campaign}
-                                      balance={balance}
-                                      currentUser={currentUser}
-                                      block
-                                      size="large"
-                                    />
+                                  <Col xs={12} md={7} lg={7} xl={5}>
+                                    <DelegateMultipleButton size="large" campaign={campaign} />
                                   </Col>
                                 )}
-                                <Col xs={12} sm={6}>
+                                <Col xs={12} md={4} lg={5}>
                                   <DonateButton
                                     model={{
                                       type: Campaign.type,
