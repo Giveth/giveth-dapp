@@ -90,18 +90,11 @@ const ChangeOwnershipButton = props => {
     );
   };
 
-  const style = {
-    display: 'inline-block',
-    paddingRight: '10px',
-    ...props.style,
-  };
-
   return (
-    <span style={style}>
-      <Button type="primary" danger onClick={() => openDialog()}>
+    <Fragment>
+      <Button type="primary" block style={props.style} danger onClick={() => openDialog()}>
         Change co-owner
       </Button>
-
       <Modal
         isOpen={modalVisible}
         style={modalStyles}
@@ -173,7 +166,7 @@ const ChangeOwnershipButton = props => {
           </Fragment>
         )}
       </Modal>
-    </span>
+    </Fragment>
   );
 };
 
