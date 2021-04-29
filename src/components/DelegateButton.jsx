@@ -7,7 +7,7 @@ import 'react-rangeslider/lib/index.css';
 
 import Donation from 'models/Donation';
 import ErrorPopup from './ErrorPopup';
-import { actionWithLoggedIn, checkBalance } from '../lib/middleware';
+import { authenticateUser, checkBalance } from '../lib/middleware';
 import User from '../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
 
@@ -40,25 +40,27 @@ class DelegateButton extends Component {
     this.closeDialog = this.closeDialog.bind(this);
   }
 
-  openDialog() {
-    actionWithLoggedIn(this.props.currentUser).then(() =>
-      checkBalance(this.props.balance)
-        .then(() => {
-          this.setState({
-            modalVisible: true,
-          });
-        })
-        .catch(err => {
-          // error code 4001 means user has canceled the transaction
-          if (err.code !== 4001) {
-            if (err === 'noBalance') {
-              ErrorPopup('There is no balance left on the account.', err);
-            } else if (err !== undefined) {
-              ErrorPopup('Something went wrong.', err);
-            }
+  async openDialog() {
+    const authenticated = await authenticateUser(this.props.currentUser, false);
+    if (!authenticated) {
+      return;
+    }
+    checkBalance(this.props.balance)
+      .then(() => {
+        this.setState({
+          modalVisible: true,
+        });
+      })
+      .catch(err => {
+        // error code 4001 means user has canceled the transaction
+        if (err.code !== 4001) {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        }
+      });
   }
 
   closeDialog() {

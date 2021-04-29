@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
 import { Button } from 'antd';
 
-import { checkBalance, isLoggedIn } from '../lib/middleware';
+import { authenticateUser, checkBalance } from '../lib/middleware';
 import ModalContent from './DelegateMultipleButtonModal';
 
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -57,12 +57,14 @@ const DelegateMultipleButton = props => {
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  function openDialog() {
-    isLoggedIn(currentUser)
-      .then(() => checkBalance(balance))
-      .then(() => {
-        setModalVisible(true);
-      });
+  async function openDialog() {
+    const authenticated = await authenticateUser(currentUser, false);
+    if (!authenticated) {
+      return;
+    }
+    checkBalance(balance).then(() => {
+      setModalVisible(true);
+    });
   }
 
   return (
@@ -73,7 +75,7 @@ const DelegateMultipleButton = props => {
           if (validProvider && !isForeignNetwork) {
             displayForeignNetRequiredWarning();
           } else {
-            openDialog();
+            openDialog().then();
           }
         }}
         block

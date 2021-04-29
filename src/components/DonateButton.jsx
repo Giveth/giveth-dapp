@@ -18,7 +18,7 @@ import config from '../configuration';
 import DACService from '../services/DACService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DAC from '../models/DAC';
-import { checkProfileAfterDonation } from '../lib/middleware';
+import { authenticateUser, checkProfileAfterDonation } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import DonateButtonModal from './DonateButtonModal';
 
@@ -47,12 +47,19 @@ const DonateButton = forwardRef((props, ref) => {
     state: { isEnabled },
     actions: { enableProvider },
   } = useContext(Web3Context);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const doDonate = () => {
+  const doDonate = async () => {
     if (!isEnabled) {
       enableProvider();
+    }
+    const authenticated = await authenticateUser(currentUser, false);
+    if (!authenticated) {
+      return;
     }
     setModalVisible(true);
   };
@@ -60,7 +67,7 @@ const DonateButton = forwardRef((props, ref) => {
   useEffect(() => {
     setTimeout(() => {
       if (autoPopup && match && typeof match.url === 'string' && match.url.endsWith('/donate')) {
-        doDonate();
+        doDonate().then();
       }
     }, 1000);
   }, []);
