@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, Fragment } from 'react';
 import Modal from 'react-modal';
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
@@ -46,12 +46,11 @@ const closeButtonStyle = {
  * @prop {Object}       style       Styles added to the button
  */
 const DelegateMultipleButton = props => {
-  const style = { display: 'inline-block', ...props.style };
-
   const {
     state: { isForeignNetwork, validProvider, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -67,7 +66,7 @@ const DelegateMultipleButton = props => {
   }
 
   return (
-    <span style={style}>
+    <Fragment>
       <Button
         type="text"
         onClick={() => {
@@ -77,10 +76,12 @@ const DelegateMultipleButton = props => {
             openDialog();
           }
         }}
+        block
+        size={props.size}
+        style={props.style}
       >
         Delegate funds here
       </Button>
-
       <Modal
         isOpen={modalVisible}
         style={modalStyles}
@@ -101,15 +102,17 @@ const DelegateMultipleButton = props => {
         </button>
         <ModalContent {...props} setModalVisible={setModalVisible} />
       </Modal>
-    </span>
+    </Fragment>
   );
 };
 
 DelegateMultipleButton.propTypes = {
-  style: PropTypes.shape(undefined),
+  size: PropTypes.oneOf(['large', 'middle', 'small']),
+  style: PropTypes.shape(),
 };
 
 DelegateMultipleButton.defaultProps = {
+  size: 'middle',
   style: {},
 };
 

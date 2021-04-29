@@ -6,6 +6,7 @@ import Avatar from 'react-avatar';
 
 import Balances from 'components/Balances';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { Col, Row } from 'antd';
 import Loader from '../Loader';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -235,7 +236,7 @@ const ViewDAC = ({ match }) => {
                       currentUser={currentUser}
                       history={history}
                       autoPopup
-                      className="header-donate"
+                      size="large"
                     />
                   </div>
                 )}
@@ -280,23 +281,30 @@ const ViewDAC = ({ match }) => {
                     </div>
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{leaderBoardTitle}</h5>
-                        {dac.isActive && (
-                          <DonateButton
-                            model={{
-                              type: DAC.type,
-                              title: dac.title,
-                              id: dac.id,
-                              token: { symbol: config.nativeTokenName },
-                              adminId: dac.delegateId,
-                            }}
-                            currentUser={currentUser}
-                            history={history}
-                          />
-                        )}
-                      </div>
-
+                      <Row justify="space-between">
+                        <Col span={12}>
+                          <h5>{leaderBoardTitle}</h5>
+                        </Col>
+                        <Col span={12}>
+                          {dac.isActive && (
+                            <Row gutter={[16, 16]} justify="end">
+                              <Col xs={24} sm={12} lg={8}>
+                                <DonateButton
+                                  model={{
+                                    type: DAC.type,
+                                    title: dac.title,
+                                    id: dac.id,
+                                    token: { symbol: config.nativeTokenName },
+                                    adminId: dac.delegateId,
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                />
+                              </Col>
+                            </Row>
+                          )}
+                        </Col>
+                      </Row>
                       <LeaderBoard
                         aggregateDonations={aggregateDonations}
                         isLoading={isLoadingDonations}
@@ -307,42 +315,58 @@ const ViewDAC = ({ match }) => {
                     </div>
 
                     <div id="funding" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>Funding</h5>
-                        {dac.isActive && (
-                          <DonateButton
-                            model={{
-                              type: DAC.type,
-                              title: dac.title,
-                              id: dac.id,
-                              token: { symbol: config.nativeTokenName },
-                              adminId: dac.delegateId,
-                            }}
-                            currentUser={currentUser}
-                            history={history}
-                          />
-                        )}
-                      </div>
+                      <Row justify="space-between">
+                        <Col span={12}>
+                          <h5>Funding</h5>
+                        </Col>
+                        <Col span={12}>
+                          {dac.isActive && (
+                            <Row gutter={[16, 16]} justify="end">
+                              <Col xs={24} sm={12} lg={8}>
+                                <DonateButton
+                                  model={{
+                                    type: DAC.type,
+                                    title: dac.title,
+                                    id: dac.id,
+                                    token: { symbol: config.nativeTokenName },
+                                    adminId: dac.delegateId,
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                />
+                              </Col>
+                            </Row>
+                          )}
+                        </Col>
+                      </Row>
                       <Balances entity={dac} />
                     </div>
 
                     <div id="campaigns" className="spacer-top-50 spacer-bottom-50">
-                      <div className="section-header">
-                        <h5>{campaignsTitle}</h5>
-                        {dac.isActive && (
-                          <DonateButton
-                            model={{
-                              type: DAC.type,
-                              title: dac.title,
-                              id: dac.id,
-                              token: { symbol: config.nativeTokenName },
-                              adminId: dac.delegateId,
-                            }}
-                            currentUser={currentUser}
-                            history={history}
-                          />
-                        )}
-                      </div>
+                      <Row justify="space-between">
+                        <Col span={12}>
+                          <h5>{campaignsTitle}</h5>
+                        </Col>
+                        <Col span={12}>
+                          {dac.isActive && (
+                            <Row gutter={[16, 16]} justify="end">
+                              <Col xs={24} sm={12} lg={8}>
+                                <DonateButton
+                                  model={{
+                                    type: DAC.type,
+                                    title: dac.title,
+                                    id: dac.id,
+                                    token: { symbol: config.nativeTokenName },
+                                    adminId: dac.delegateId,
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                />
+                              </Col>
+                            </Row>
+                          )}
+                        </Col>
+                      </Row>
                       <p>
                         These Campaigns are working hard to solve the cause of this Community (DAC)
                       </p>

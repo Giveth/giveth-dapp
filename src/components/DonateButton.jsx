@@ -65,13 +65,17 @@ const DonateButton = forwardRef((props, ref) => {
     }, 1000);
   }, []);
 
-  const style = {
-    display: 'inline-block',
-  };
-
   return (
-    <span style={style}>
-      <Button ref={ref} type="donate" className={className} onClick={doDonate}>
+    <Fragment>
+      <Button
+        type="donate"
+        block
+        onClick={doDonate}
+        ref={ref}
+        className={className}
+        size={props.size}
+        style={props.style}
+      >
         Donate
       </Button>
       <Modal
@@ -83,7 +87,7 @@ const DonateButton = forwardRef((props, ref) => {
       >
         <DonateButtonModal {...props} setModalVisible={setModalVisible} />
       </Modal>
-    </span>
+    </Fragment>
   );
 });
 
@@ -109,6 +113,8 @@ DonateButton.propTypes = {
   }),
   autoPopup: PropTypes.bool,
   className: PropTypes.string,
+  size: PropTypes.oneOf(['large', 'middle', 'small']),
+  style: PropTypes.shape(),
 };
 
 DonateButton.defaultProps = {
@@ -117,6 +123,8 @@ DonateButton.defaultProps = {
   match: undefined,
   autoPopup: false,
   className: '',
+  size: 'middle',
+  style: {},
 };
 
 const DonateButtonWithRouter = withRouter(React.memo(DonateButton));

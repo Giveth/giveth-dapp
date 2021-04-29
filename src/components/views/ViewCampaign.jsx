@@ -6,7 +6,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { Button } from 'antd';
+import { Button, Input, Row, Col } from 'antd';
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -70,6 +70,7 @@ const ViewCampaign = ({ match }) => {
   const [notFound, setNotFound] = useState(false);
   const [downloadingCsv, setDownloadingCsv] = useState(false);
   const [campaign, setCampaign] = useState({});
+  const [searchPhrase, setSearchPhrase] = useState('');
 
   const donationsObserver = useRef();
 
@@ -102,6 +103,7 @@ const ViewCampaign = ({ match }) => {
 
     CampaignService.getMilestones(
       campaign.id,
+      searchPhrase,
       milestonesPerBatch,
       loadFromScratch ? 0 : milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -179,6 +181,10 @@ const ViewCampaign = ({ match }) => {
       }
     };
   }, [campaign]);
+
+  useEffect(() => {
+    loadMoreMilestones(true);
+  }, [searchPhrase]);
 
   const downloadCsv = campaignId => {
     const url = `${config.feathersConnection}/campaigncsv/${campaignId}`;
@@ -292,6 +298,7 @@ const ViewCampaign = ({ match }) => {
                           history={history}
                           autoPopup
                           className="header-donate"
+                          size="large"
                         />
                       </div>
                     )}
@@ -365,23 +372,32 @@ const ViewCampaign = ({ match }) => {
                     </div>
 
                     <div id="donations" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>{leaderBoardTitle}</h5>
-                        {campaign.isActive && (
-                          <DonateButton
-                            model={{
-                              type: Campaign.type,
-                              title: campaign.title,
-                              id: campaign.id,
-                              adminId: campaign.projectId,
-                              customThanksMessage: campaign.customThanksMessage,
-                              token: { symbol: config.nativeTokenName },
-                            }}
-                            currentUser={currentUser}
-                            history={history}
-                          />
-                        )}
-                      </div>
+                      <Row justify="space-between" className="spacer-bottom-16">
+                        <Col span={12}>
+                          <h5>{leaderBoardTitle}</h5>
+                        </Col>
+                        <Col span={12}>
+                          {campaign.isActive && (
+                            <Row gutter={[16, 16]} justify="end">
+                              <Col xs={24} sm={12} lg={8}>
+                                <DonateButton
+                                  model={{
+                                    type: Campaign.type,
+                                    title: campaign.title,
+                                    id: campaign.id,
+                                    adminId: campaign.projectId,
+                                    customThanksMessage: campaign.customThanksMessage,
+                                    token: { symbol: config.nativeTokenName },
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                  size="large"
+                                />
+                              </Col>
+                            </Row>
+                          )}
+                        </Col>
+                      </Row>
                       <LeaderBoard
                         aggregateDonations={aggregateDonations}
                         isLoading={isLoadingDonations}
@@ -392,39 +408,55 @@ const ViewCampaign = ({ match }) => {
                     </div>
 
                     <div id="funding" className="spacer-top-50">
-                      <div className="section-header">
-                        <h5>Funding</h5>
-                        <span>
-                          <Button onClick={() => downloadCsv(campaign.id)} loading={downloadingCsv}>
-                            Download this Campaign&apos;s Financial History
-                          </Button>
-                          {campaign.isActive && (
-                            <Fragment>
-                              {userIsDacOwner && (
-                                <DelegateMultipleButton campaign={campaign} />
-                              )}
-                              <DonateButton
-                                model={{
-                                  type: Campaign.type,
-                                  title: campaign.title,
-                                  id: campaign.id,
-                                  adminId: campaign.projectId,
-                                  customThanksMessage: campaign.customThanksMessage,
-                                  token: {
-                                    symbol: config.nativeTokenName,
-                                  },
-                                }}
-                                currentUser={currentUser}
-                                history={history}
-                              />
-                            </Fragment>
-                          )}
-                        </span>
-                      </div>
+                      <Row justify="space-between" className="spacer-bottom-16">
+                        <Col lg={4}>
+                          <h5>Funding</h5>
+                        </Col>
+                        <Col xs={24} lg={20}>
+                          <Row gutter={[16, 16]} justify="end">
+                            <Col xs={24} md={13} lg={12} xl={10}>
+                              <Button
+                                onClick={() => downloadCsv(campaign.id)}
+                                loading={downloadingCsv}
+                                block
+                                size="large"
+                              >
+                                Download this Campaign&apos;s Financial History
+                              </Button>
+                            </Col>
+                            {campaign.isActive && (
+                              <Fragment>
+                                {userIsDacOwner && (
+                                  <Col xs={12} md={7} lg={7} xl={5}>
+                                    <DelegateMultipleButton size="large" campaign={campaign} />
+                                  </Col>
+                                )}
+                                <Col xs={12} md={4} lg={5}>
+                                  <DonateButton
+                                    model={{
+                                      type: Campaign.type,
+                                      title: campaign.title,
+                                      id: campaign.id,
+                                      adminId: campaign.projectId,
+                                      customThanksMessage: campaign.customThanksMessage,
+                                      token: {
+                                        symbol: config.nativeTokenName,
+                                      },
+                                    }}
+                                    currentUser={currentUser}
+                                    history={history}
+                                    size="large"
+                                  />
+                                </Col>
+                              </Fragment>
+                            )}
+                          </Row>
+                        </Col>
+                      </Row>
                       <Balances entity={campaign} />
                     </div>
 
-                    <div>
+                    <Row justify="space-between" className="spacer-bottom-50 spacer-top-50">
                       <h5>Campaign Reviewer</h5>
                       {campaign && campaign.reviewer && (
                         <Link to={`/profile/${campaign.reviewerAddress}`}>
@@ -432,38 +464,57 @@ const ViewCampaign = ({ match }) => {
                         </Link>
                       )}
                       {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                    </div>
+                    </Row>
 
                     <div id="milestones" className="spacer-bottom-50 spacer-top-50">
-                      <div className="section-header">
-                        <h5>{milestonesTitle}</h5>
-                        <span>
-                          {campaign.projectId > 0 &&
-                            campaign.isActive &&
-                            (userIsOwner || currentUser) && (
-                              <Button onClick={gotoCreateMilestone}>Create New</Button>
+                      <Row justify="space-between" className="spacer-bottom-16">
+                        <Col lg={8}>
+                          <h5>{milestonesTitle}</h5>
+                        </Col>
+                        <Col xs={24} lg={16}>
+                          <Row gutter={[16, 16]}>
+                            {campaign.projectId > 0 && (
+                              <Col xs={24} sm={12}>
+                                <Input.Search
+                                  placeholder="input search text"
+                                  onSearch={setSearchPhrase}
+                                  size="large"
+                                />
+                              </Col>
                             )}
 
-                          {campaign.isActive && (
-                            <span>
-                              <DonateButton
-                                model={{
-                                  type: Campaign.type,
-                                  title: campaign.title,
-                                  id: campaign.id,
-                                  adminId: campaign.projectId,
-                                  customThanksMessage: campaign.customThanksMessage,
-                                  token: {
-                                    symbol: config.nativeTokenName,
-                                  },
-                                }}
-                                currentUser={currentUser}
-                                history={history}
-                              />
-                            </span>
-                          )}
-                        </span>
-                      </div>
+                            {campaign.projectId > 0 &&
+                              campaign.isActive &&
+                              (userIsOwner || currentUser) && (
+                                <Col xs={12} sm={6}>
+                                  <Button onClick={gotoCreateMilestone} block size="large">
+                                    Create New
+                                  </Button>
+                                </Col>
+                              )}
+
+                            {campaign.isActive && (
+                              <Col xs={12} sm={6}>
+                                <DonateButton
+                                  model={{
+                                    type: Campaign.type,
+                                    title: campaign.title,
+                                    id: campaign.id,
+                                    adminId: campaign.projectId,
+                                    customThanksMessage: campaign.customThanksMessage,
+                                    token: {
+                                      symbol: config.nativeTokenName,
+                                    },
+                                  }}
+                                  currentUser={currentUser}
+                                  history={history}
+                                  size="large"
+                                />
+                              </Col>
+                            )}
+                          </Row>
+                        </Col>
+                      </Row>
 
                       {isLoadingMilestones && milestonesTotal === 0 && (
                         <Loader className="relative" />

@@ -101,32 +101,6 @@
 	}
 }
 
-.ant-btn {
-	&.ant-btn-primary[type='submit'] {
-		width: 100%;
-		height: 52px;
-		background: $new-purple;
-		border-radius: 8px;
-		border: none;
-
-		font-family: Quicksand;
-		font-style: normal;
-		font-weight: bold;
-		font-size: 16px;
-		line-height: 20px;
-		/* identical to box height */
-
-		text-align: center;
-
-		/* White */
-
-		color: #ffffff;
-	}
-	margin-top: 6px;
-	margin-bottom: 6px;
-	height: unset;
-}
-
 .ant-picker {
 	width: 100%;
 	border: 2px solid #dfdae8;

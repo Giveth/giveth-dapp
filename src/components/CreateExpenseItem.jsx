@@ -152,7 +152,7 @@ function CreateExpenseItem({
       />
 
       {removeAble && (
-        <Button onClick={showRemoveModal} className="remove-expense-button">
+        <Button onClick={showRemoveModal} block size="large" danger>
           Remove Expense
         </Button>
       )}
