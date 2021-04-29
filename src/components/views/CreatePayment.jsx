@@ -400,7 +400,13 @@ function CreatePayment(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="project-submit" htmlType="submit" loading={loading || loadingAmount}>
+                <Button
+                  block
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading || loadingAmount}
+                >
                   {submitButtonText}
                 </Button>
               </Form.Item>
