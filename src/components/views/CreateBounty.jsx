@@ -219,7 +219,7 @@ function CreateBounty(props) {
               </div>
 
               <Form.Item>
-                <Button type="project-submit" htmlType="submit" loading={loading}>
+                <Button htmlType="submit" loading={loading} block size="large" type="primary">
                   {userIsCampaignOwner ? 'Create' : 'Propose'}
                 </Button>
               </Form.Item>
