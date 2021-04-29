@@ -349,8 +349,7 @@ class DelegateButtonModal extends Component {
               />
             </div>
           </div>
-
-          {formIsValid && (
+          {objectsToDelegateToMilestone.length + objectsToDelegateToCampaign.length !== 0 && (
             <React.Fragment>
               <span className="label">Amount to delegate:</span>
 
