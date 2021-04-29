@@ -674,10 +674,6 @@ const DonateButton = forwardRef((props, ref) => {
     setSaving(true);
   };
 
-  const style = {
-    display: 'inline-block',
-  };
-
   const { decimals, symbol } = selectedToken;
   const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
   const maxAmount = getMaxAmount();
@@ -723,8 +719,16 @@ const DonateButton = forwardRef((props, ref) => {
   const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
 
   return (
-    <span style={style}>
-      <Button type="donate" onClick={doDonate} ref={ref} className={className}>
+    <Fragment>
+      <Button
+        type="donate"
+        block
+        onClick={doDonate}
+        ref={ref}
+        className={className}
+        size={props.size}
+        style={props.style}
+      >
         Donate
       </Button>
       <Modal
@@ -953,7 +957,7 @@ const DonateButton = forwardRef((props, ref) => {
           </button>
         </Form>
       </Modal>
-    </span>
+    </Fragment>
   );
 });
 
@@ -979,6 +983,8 @@ DonateButton.propTypes = {
   }),
   autoPopup: PropTypes.bool,
   className: PropTypes.string,
+  size: PropTypes.oneOf(['large', 'middle', 'small']),
+  style: PropTypes.shape(),
 };
 
 DonateButton.defaultProps = {
@@ -987,6 +993,8 @@ DonateButton.defaultProps = {
   match: undefined,
   autoPopup: false,
   className: '',
+  size: 'middle',
+  style: {},
 };
 
 const DonateButtonWithRouter = withRouter(React.memo(DonateButton));
