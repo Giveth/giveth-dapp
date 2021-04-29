@@ -306,7 +306,7 @@ function CreateExpense(props) {
                     token={expenseForm.token}
                   />
                 ))}
-                <Button onClick={addExpense} className="add-expense-button">
+                <Button onClick={addExpense} block size="large" type="primary" ghost>
                   Add new Expense
                 </Button>
               </div>
@@ -328,7 +328,13 @@ function CreateExpense(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="project-submit" htmlType="submit" loading={loading || loadingAmount}>
+                <Button
+                  block
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading || loadingAmount}
+                >
                   {submitButtonText}
                 </Button>
               </Form.Item>
