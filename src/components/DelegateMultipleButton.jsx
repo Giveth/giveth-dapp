@@ -345,7 +345,6 @@ const DelegateMultipleButton = props => {
     setFormIsValid(state);
   };
 
-  const style = { display: 'inline-block', ...props.style };
   const { campaign, milestone } = props;
 
   useEffect(() => {
@@ -496,7 +495,7 @@ const DelegateMultipleButton = props => {
     !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isDacsFetched;
 
   return (
-    <span style={style}>
+    <Fragment>
       <Button
         type="text"
         onClick={() => {
@@ -506,10 +505,11 @@ const DelegateMultipleButton = props => {
             openDialog();
           }
         }}
+        block
+        style={props.style}
       >
         Delegate funds here
       </Button>
-
       <Modal
         isOpen={modalVisible}
         style={modalStyles}
@@ -542,7 +542,7 @@ const DelegateMultipleButton = props => {
         )}{' '}
         {isContextReady ? validProvider && isForeignNetwork && modalContent : modalLoading}
       </Modal>
-    </span>
+    </Fragment>
   );
 };
 
