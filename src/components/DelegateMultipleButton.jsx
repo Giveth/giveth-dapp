@@ -506,6 +506,7 @@ const DelegateMultipleButton = props => {
           }
         }}
         block
+        size={props.size}
         style={props.style}
       >
         Delegate funds here
@@ -549,12 +550,14 @@ const DelegateMultipleButton = props => {
 DelegateMultipleButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
   milestone: PropTypes.instanceOf(Milestone),
+  size: PropTypes.oneOf(['large', 'middle', 'small']),
   style: PropTypes.shape(),
 };
 
 DelegateMultipleButton.defaultProps = {
   campaign: undefined,
   milestone: undefined,
+  size: 'middle',
   style: {},
 };
 
