@@ -372,7 +372,7 @@ const ViewCampaign = ({ match }) => {
                     </div>
 
                     <div id="donations" className="spacer-top-50">
-                      <Row justify="space-between">
+                      <Row justify="space-between" className="spacer-bottom-16">
                         <Col span={12}>
                           <h5>{leaderBoardTitle}</h5>
                         </Col>
@@ -391,6 +391,7 @@ const ViewCampaign = ({ match }) => {
                                   }}
                                   currentUser={currentUser}
                                   history={history}
+                                  size="large"
                                 />
                               </Col>
                             </Row>
@@ -407,7 +408,7 @@ const ViewCampaign = ({ match }) => {
                     </div>
 
                     <div id="funding" className="spacer-top-50">
-                      <Row justify="space-between">
+                      <Row justify="space-between" className="spacer-bottom-16">
                         <Col lg={8}>
                           <h5>Funding</h5>
                         </Col>
@@ -418,6 +419,7 @@ const ViewCampaign = ({ match }) => {
                                 onClick={() => downloadCsv(campaign.id)}
                                 loading={downloadingCsv}
                                 block
+                                size="large"
                               >
                                 Download this Campaign&apos;s Financial History
                               </Button>
@@ -431,6 +433,7 @@ const ViewCampaign = ({ match }) => {
                                       balance={balance}
                                       currentUser={currentUser}
                                       block
+                                      size="large"
                                     />
                                   </Col>
                                 )}
@@ -448,6 +451,7 @@ const ViewCampaign = ({ match }) => {
                                     }}
                                     currentUser={currentUser}
                                     history={history}
+                                    size="large"
                                   />
                                 </Col>
                               </Fragment>
@@ -469,7 +473,7 @@ const ViewCampaign = ({ match }) => {
                     </Row>
 
                     <div id="milestones" className="spacer-bottom-50 spacer-top-50">
-                      <Row justify="space-between">
+                      <Row justify="space-between" className="spacer-bottom-16">
                         <Col lg={8}>
                           <h5>{milestonesTitle}</h5>
                         </Col>
@@ -480,6 +484,7 @@ const ViewCampaign = ({ match }) => {
                                 <Input.Search
                                   placeholder="input search text"
                                   onSearch={setSearchPhrase}
+                                  size="large"
                                 />
                               </Col>
                             )}
@@ -488,7 +493,7 @@ const ViewCampaign = ({ match }) => {
                               campaign.isActive &&
                               (userIsOwner || currentUser) && (
                                 <Col xs={12} sm={6}>
-                                  <Button onClick={gotoCreateMilestone} block>
+                                  <Button onClick={gotoCreateMilestone} block size="large">
                                     Create New
                                   </Button>
                                 </Col>
@@ -509,6 +514,7 @@ const ViewCampaign = ({ match }) => {
                                   }}
                                   currentUser={currentUser}
                                   history={history}
+                                  size="large"
                                 />
                               </Col>
                             )}
