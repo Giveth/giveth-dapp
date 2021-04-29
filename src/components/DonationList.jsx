@@ -79,7 +79,7 @@ class DonationListItem extends Component {
     }
 
     if (d.status === Donation.PAID && d.bridgeStatus === Donation.PAID) {
-      etherScanLink = `${homeEtherscan}tx/${d.bridgeTxHash}`;
+      etherScanLink = `${homeEtherscan}tx/${d.bridgePaymentExecutedTxHash}`;
     } else if (d.status === Donation.PAID || this.state.itemType === 'delegated') {
       etherScanLink = etherscan && d.txHash ? `${etherscan}tx/${d.txHash}` : '';
     } else if (this.state.itemType === 'direct') {
