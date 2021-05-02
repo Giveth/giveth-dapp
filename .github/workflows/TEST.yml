@@ -11,9 +11,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - name: remove node_modules
+        run:  yarn preci
       - name: install dependencies
-        run: npm ci
+        run:  yarn ci
       - name: run linter
-        run: npm run eslint
+        run: yarn eslint
       - name: test
-        run: npm run test
+        run: yarn test
