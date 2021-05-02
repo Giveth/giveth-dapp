@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 // eslint-disable-next-line max-classes-per-file
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
@@ -270,6 +271,7 @@ const DonateButtonModal = props => {
     return (
       !acceptsSingleToken ||
       tokenWhitelist.find(
+        // eslint-disable-next-line react/prop-types
         t => t.foreignAddress.toLocaleLowerCase() === token.foreignAddress.toLocaleLowerCase(),
       )
     );
@@ -905,6 +907,7 @@ const modelTypes = PropTypes.shape({
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,
   ownerAddress: PropTypes.string,
+  isCapped: PropTypes.bool,
 });
 
 DonateButtonModal.propTypes = {
