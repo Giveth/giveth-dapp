@@ -21,7 +21,7 @@
     "axios": "^0.21.1",
     "bignumber.js": "^8.1.1",
     "ethereumjs-abi": "^0.6.8",
-    "feathers-hooks-common": "^3.10.0",
+    "feathers-hooks-common": "^5.0.5",
     "feathers-reactive": "^0.8.2",
     "file-saver": "^2.0.5",
     "formsy-react": "^1.1.5",
