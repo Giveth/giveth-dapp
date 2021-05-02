@@ -11,8 +11,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      - name: remove node_modules
-        run:  yarn preci
       - name: install dependencies
         run:  yarn ci
       - name: run linter
