@@ -16,6 +16,7 @@ const ProjectViewActionAlert = props => {
 ProjectViewActionAlert.propTypes = {
   show: PropTypes.bool,
   message: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 ProjectViewActionAlert.defaultProps = {
