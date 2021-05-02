@@ -13,13 +13,16 @@
     "@feathersjs/socketio": "^4.5.11",
     "@feathersjs/socketio-client": "^4.5.11",
     "@metamask/detect-provider": "^1.1.0",
+    "@testing-library/jest-dom": "^5.12.0",
+    "@testing-library/react": "^11.2.6",
+    "@testing-library/user-event": "^12.8.3",
     "antd": "^4.12.2",
     "antd-img-crop": "^3.13.2",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "bignumber.js": "^8.1.1",
     "ethereumjs-abi": "^0.6.8",
     "feathers-hooks-common": "^3.10.0",
-    "feathers-reactive": "^0.5.2",
+    "feathers-reactive": "^0.8.2",
     "file-saver": "^2.0.5",
     "formsy-react": "^1.1.5",
     "formsy-react-components": "^1.1.0",
@@ -35,15 +38,15 @@
     "minimetoken": "^0.2.0",
     "moment": "^2.24.0",
     "node-fetch": "^2.6.1",
-    "node-sass-chokidar": "^0.0.3",
+    "node-sass-chokidar": "^1.5.0",
     "prop-types": "^15.7.2",
     "query-string": "^6.4.2",
-    "react": "^17.0.1",
+    "react": "^17.0.2",
     "react-addons-shallow-compare": "^15.6.0",
-    "react-avatar": "^2.3.0",
+    "react-avatar": "^3.10.0",
     "react-cropper": "^1.2.0",
     "react-datepicker": "1.4.1",
-    "react-dom": "^17.0.1",
+    "react-dom": "^17.0.2",
     "react-ga": "^2.5.7",
     "react-helmet": "^5.2.1",
     "react-helmet-async": "^1.0.2",
@@ -56,6 +59,7 @@
     "react-rangeslider": "^2.2.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
     "react-share": "^2.4.0",
     "react-toastify": "2.1.7",
     "react-toggle": "^4.0.2",
@@ -64,13 +68,14 @@
     "socket.io-client": "^2.4.0",
     "sweetalert": "^2.1.2",
     "uuid": "^8.3.2",
+    "web-vitals": "^1.1.1",
     "web3": "^1.2.2",
     "web3-eth-accounts": "^1.2.2",
     "web3-provider-engine": "^14.2.1",
     "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
-    "eslint": "^5.16.0",
+    "eslint": "^7.25.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-prettier": "^6.7.0",
     "eslint-plugin-import": "^2.18.2",
@@ -78,7 +83,6 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.16.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "giveth-react-scripts": "1.1.4",
     "husky": "^1.3.1",
     "jsdoc": "^3.5.5",
     "lint-staged": "^7.3.0",
@@ -116,5 +120,17 @@
     "email": "info@giveth.io",
     "url": "http://giveth.io"
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
