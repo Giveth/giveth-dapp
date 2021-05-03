@@ -38,7 +38,8 @@ class Donation extends Model {
   }
 
   static get CANCELED() {
-    return 'Cancelled';
+    // The Canceled is misspelled but we have no choice because in db and backend side it's misspelled
+    return 'Canceled';
   }
 
   static get REJECTED() {
@@ -105,7 +106,7 @@ class Donation extends Model {
     this._parentDonations = data.parentDonations;
     this._comment = data.comment;
     this._bridgeStatus = data.bridgeStatus;
-    this._bridgeTxHash = data.bridgeTxHash;
+    this._bridgePaymentExecutedTxHash = data.bridgePaymentExecutedTxHash;
 
     /**
      * Get the URL, name and type of the entity to which this donation has been donated to
@@ -530,12 +531,12 @@ class Donation extends Model {
     this._bridgeStatus = value;
   }
 
-  get bridgeTxHash() {
-    return this._bridgeTxHash;
+  get bridgePaymentExecutedTxHash() {
+    return this._bridgePaymentExecutedTxHash;
   }
 
-  set bridgeTxHash(value) {
-    this._bridgeTxHash = value;
+  set bridgePaymentExecutedTxHash(value) {
+    this._bridgePaymentExecutedTxHash = value;
   }
 }
 

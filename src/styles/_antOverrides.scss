@@ -101,29 +101,6 @@
 	}
 }
 
-.ant-btn {
-	&.ant-btn-primary[type='submit'] {
-		width: 100%;
-		height: 52px;
-		background: $new-purple;
-		border-radius: 8px;
-		border: none;
-
-		font-family: Quicksand;
-		font-style: normal;
-		font-weight: bold;
-		font-size: 16px;
-		line-height: 20px;
-		/* identical to box height */
-
-		text-align: center;
-
-		/* White */
-
-		color: #ffffff;
-	}
-}
-
 .ant-picker {
 	width: 100%;
 	border: 2px solid #dfdae8;
@@ -217,4 +194,40 @@
 
 .ant-checkbox-wrapper{
 	font-weight: normal;
+}
+
+.ant-btn-donate {
+  color: #fff;
+  background: #38954d;
+  border-color: #38954d;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.075);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.005);
+  &:hover, &:focus {
+    color: #fff;
+    background: #73c954;
+    border-color: #73c954;
+  }
+}
+
+.ant-btn-text {
+	color: #fff;
+	background: #9254de;
+	border-color: #9254de;
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.075);
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.005);
+	&:hover, &:focus {
+		color: #fff;
+		background: #b37feb;
+		border-color: #b37feb;
+	}
+}
+
+.ant-btn-dangerous{
+	&.ant-btn-text {
+		color: #ff4d4f;
+		background: transparent;
+		border-color: transparent;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+	}
 }

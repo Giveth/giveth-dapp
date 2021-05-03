@@ -311,6 +311,10 @@ const EditCampaign = ({ isNew, match }) => {
                   reviewerAddress: campaign.reviewerAddress,
                   communityUrl: campaign.communityUrl,
                 }}
+                scrollToFirstError={{
+                  block: 'center',
+                  behavior: 'smooth',
+                }}
               >
                 {isNew && (
                   <Fragment>
@@ -457,7 +461,7 @@ const EditCampaign = ({ isNew, match }) => {
                   </Select>
                 </Form.Item>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" loading={isSaving}>
+                  <Button block size="large" type="primary" htmlType="submit" loading={isSaving}>
                     {isNew ? 'Create' : 'Update'} Campaign
                   </Button>
                 </Form.Item>

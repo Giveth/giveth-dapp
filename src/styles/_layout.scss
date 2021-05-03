@@ -52,6 +52,15 @@
   margin-bottom: 50px;
 }
 
+.spacer-top-16 {
+  margin-top: 16px;
+}
+
+.spacer-bottom-16 {
+  margin-bottom: 16px;
+}
+
+
 @mixin quill-theme() {
   @include bullet-styling(8);
   ol {
@@ -134,10 +143,10 @@
     }
   }
 
-  button.header-donate {
-    font-size: 1.45rem;
-    padding: 7px 90px;
-  }
+  // button.header-donate {
+  //   font-size: 1.45rem;
+  //   padding: 7px 90px;
+  // }
 
   .section-header {
     @extend .vertical-align;

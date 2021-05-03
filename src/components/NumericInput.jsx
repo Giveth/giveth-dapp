@@ -6,6 +6,7 @@ import { Input } from 'formsy-react-components';
 const NumericInput = props => {
   const { maxAmount, token, id, value, autoFocus, onChange, lteMessage } = props;
   const { symbol, decimals } = token;
+
   return (
     <Input
       id={id}

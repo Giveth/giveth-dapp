@@ -18,6 +18,7 @@ import MilestoneItem from 'components/MilestoneItem';
 import DonationList from 'components/DonationList';
 import MilestoneConversations from 'components/MilestoneConversations';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { Col, Row } from 'antd';
 import {
   convertEthHelper,
   getReadableStatus,
@@ -94,11 +95,11 @@ const ViewMilestone = props => {
       .catch(() => {});
   };
 
-  function loadMoreDonations(loadFromScratch = false) {
+  function loadMoreDonations(loadFromScratch = false, donationsBatch = donationsPerBatch) {
     setLoadingDonations(true);
     MilestoneService.getDonations(
       milestone.id,
-      donationsPerBatch,
+      donationsBatch,
       loadFromScratch ? 0 : donations.length,
       (_donations, _donationsTotal) => {
         setDonations(loadFromScratch ? _donations : donations.concat(_donations));
@@ -142,7 +143,10 @@ const ViewMilestone = props => {
       // subscribe to donation count
       donationsObserver.current = MilestoneService.subscribeNewDonations(
         milestone.id,
-        _newDonations => setNewDonations(_newDonations),
+        _newDonations => {
+          setNewDonations(_newDonations);
+          if (_newDonations > 0) loadMoreDonations(true, donations.length); // Load how many donations that was previously loaded
+        },
         () => setNewDonations(0),
       );
     }
@@ -349,7 +353,12 @@ const ViewMilestone = props => {
 
                 {isActiveMilestone() && (
                   <div className="mt-4">
-                    <DonateButton {...donateButtonProps} autoPopup className="header-donate" />
+                    <DonateButton
+                      {...donateButtonProps}
+                      size="large"
+                      autoPopup
+                      className="header-donate"
+                    />
                   </div>
                 )}
               </BackgroundImageHeader>
@@ -700,10 +709,20 @@ const ViewMilestone = props => {
                     <div id="donations" className="spacer-top-50">
                       {milestone.status !== Milestone.PROPOSED && (
                         <React.Fragment>
-                          <div className="section-header">
-                            <h5>{donationsTitle}</h5>
-                            {isActiveMilestone() && <DonateButton {...donateButtonProps} />}
-                          </div>
+                          <Row justify="space-between">
+                            <Col span={12}>
+                              <h5>{donationsTitle}</h5>
+                            </Col>
+                            <Col span={12}>
+                              {isActiveMilestone() && (
+                                <Row gutter={[16, 16]} justify="end">
+                                  <Col xs={24} sm={12} lg={8}>
+                                    <DonateButton {...donateButtonProps} />
+                                  </Col>
+                                </Row>
+                              )}
+                            </Col>
+                          </Row>
                           <DonationList
                             donations={donations}
                             isLoading={isLoadingDonations}

@@ -169,7 +169,7 @@ class UserProvider extends Component {
           const payload = await feathersClient.passport.verifyJWT(token);
 
           if (currentUser.address === payload.userId) {
-            await feathersClient.authenticate(); // authenticate the socket connection
+            await feathersClient.reAuthenticate(); // authenticate the socket connection
             currentUser.authenticated = true;
             this.setState({ currentUser });
           } else {
