@@ -7,6 +7,13 @@ const NumericInput = props => {
   const { maxAmount, token, id, value, autoFocus, onChange, lteMessage } = props;
   const { symbol, decimals } = token;
 
+  const calculateMax = () => {
+    if (!BigNumber.isBigNumber(maxAmount) || Number.isNaN(Number(decimals))) {
+      return 0;
+    }
+    return maxAmount.decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN).toNumber();
+  };
+
   return (
     <Input
       id={id}
@@ -15,7 +22,7 @@ const NumericInput = props => {
       type="number"
       name="amount"
       min={0}
-      max={maxAmount.decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN).toNumber()}
+      max={calculateMax()}
       step={maxAmount
         .div(10)
         .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
