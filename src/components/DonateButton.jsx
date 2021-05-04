@@ -101,6 +101,7 @@ const modelTypes = PropTypes.shape({
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,
   ownerAddress: PropTypes.string,
+  customThanksMessage: PropTypes.string,
 });
 
 DonateButton.propTypes = {

@@ -100,7 +100,7 @@ class ConversationModal extends Component {
       }
     }
 
-    this.setState({ modalIsOpen: false });
+    this.setState({ modalIsOpen: false, message: '' });
   }
 
   toggleFormValid() {
@@ -133,30 +133,30 @@ class ConversationModal extends Component {
     const { milestone } = this.props;
 
     return (
-      <Form id="conversation" onSubmit={this.submit} requiredMark={required}>
-        <Modal
-          wrapClassName="vertical-center-modal"
-          visible={modalIsOpen}
-          onCancel={() => this.closeModal(true)}
-          title={title}
-          width={1000}
-          footer={[
-            <Button key="back" onClick={() => this.closeModal(true)}>
-              Cancel
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              loading={isSaving}
-              onClick={this.submit}
-              disabled={!formIsValid}
-            >
-              {CTA}
-            </Button>,
-          ]}
-        >
+      <Modal
+        wrapClassName="vertical-center-modal"
+        visible={modalIsOpen}
+        destroyOnClose
+        onCancel={() => this.closeModal(true)}
+        title={title}
+        width={1000}
+        footer={[
+          <Button key="back" onClick={() => this.closeModal(true)}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={isSaving}
+            onClick={this.submit}
+            disabled={!formIsValid}
+          >
+            {CTA}
+          </Button>,
+        ]}
+      >
+        <Form id="conversation" preserve={false} onSubmit={this.submit} requiredMark={required}>
           <p className="mb-4">{description}</p>
-
           <div className="row">
             <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
               <Form.Item
@@ -203,8 +203,8 @@ class ConversationModal extends Component {
               </div>
             )}
           </div>
-        </Modal>
-      </Form>
+        </Form>
+      </Modal>
     );
   }
 }

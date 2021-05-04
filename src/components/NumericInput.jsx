@@ -7,6 +7,9 @@ const NumericInput = props => {
   const { maxAmount, token, id, value, autoFocus, onChange, lteMessage } = props;
   const { symbol, decimals } = token;
 
+  if (!BigNumber.isBigNumber(maxAmount) || maxAmount.isZero() || Number.isNaN(Number(decimals)))
+    return null;
+
   return (
     <Input
       id={id}

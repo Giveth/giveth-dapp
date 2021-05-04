@@ -53,6 +53,10 @@ class MyDACs extends Component {
     if (this.dacsObserver) this.dacsObserver.unsubscribe();
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.loadDACs());
+  }
+
   loadDACs() {
     this.dacsObserver = DACservice.getUserDACs(
       this.props.currentUser.address,
@@ -75,10 +79,6 @@ class MyDACs extends Component {
           ErrorPopup('Something went wrong.', err);
         }
       });
-  }
-
-  handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadDACs());
   }
 
   render() {
