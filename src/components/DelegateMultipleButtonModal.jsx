@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Form, Textarea } from 'formsy-react-components';
@@ -66,9 +66,23 @@ const ModalContent = props => {
   );
 
   const delegateFromType = useRef();
+  const isMounted = useRef(false);
 
-  const loadDonations = async ids => {
-    if (ids.length !== 1) return;
+  useEffect(() => {
+    isMounted.current = true;
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const loadDonations = useCallback(async () => {
+    const ids = objectToDelegateFrom;
+    console.log('Load donations for ids: ', ids);
+    if (ids.length !== 1) {
+      setLoadingDonations(false);
+      return;
+    }
 
     const entity = delegationOptions.find(c => c.id === ids[0]);
 
@@ -124,9 +138,11 @@ const ModalContent = props => {
       donations = donations.concat(resp.data);
       total = resp.total;
       // We can collect donations from #donationDelegateCountLimit distinct pledges
-    } while (donations.length < total);
+    } while (donations.length < total && isMounted.current);
 
     // start watching donations, this will re-run when donations change or are added
+
+    if (!isMounted.current) return;
 
     const _delegations = donations.map(d => new Donation(d));
     let delegationSum = _delegations.reduce(
@@ -160,10 +176,9 @@ const ModalContent = props => {
     setDelegations(_delegations);
     setTotalDonations(total);
     setMaxAmount(max);
-    setLoadingDonations(false);
     setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
     setLoadingDonations(false);
-  };
+  }, [objectToDelegateFrom, props.milestone, selectedToken, delegationOptions]);
 
   const isLimitedDelegateCount = () => {
     if (props.milestone && props.milestone.isCapped) {
@@ -178,13 +193,16 @@ const ModalContent = props => {
     setLoadingDonations(true);
   };
 
+  useEffect(() => {
+    setLoadingDonations(true);
+    loadDonations().then();
+  }, [objectToDelegateFrom, loadDonations, selectedToken]);
+
   function selectedObject({ target }) {
     setObjectToDelegateFrom(target.value);
-    setLoadingDonations(true);
-    loadDonations(target.value).then();
   }
 
-  const getDacs = () => {
+  const getDacs = useCallback(() => {
     const userAddress = currentUser ? currentUser.address : '';
     feathersClient
       .service('dacs')
@@ -218,10 +236,13 @@ const ModalContent = props => {
                 },
               ])
             : dacs;
-        setIsDacsFetched(true);
-        setDelegationOptions(_delegationOptions);
+
+        if (isMounted.current) {
+          setIsDacsFetched(true);
+          setDelegationOptions(_delegationOptions);
+        }
       });
-  };
+  }, [currentUser, campaign, milestone]);
 
   function submit({ comment }) {
     setSaving(true);
@@ -232,7 +253,7 @@ const ModalContent = props => {
     const onCreated = txLink => {
       setSaving(false);
       setModalVisible(false);
-      setObjectToDelegateFrom([]);
+      loadDonations();
       React.swal({
         title: 'Delegated!',
         content: React.swal.msg(
@@ -290,12 +311,20 @@ const ModalContent = props => {
     setFormIsValid(state);
   };
 
-  const isFirstRun = useRef(true); // To skip unnecessary initial render
+  const prevUser = useRef({});
 
   useEffect(() => {
-    setIsDacsFetched(false);
-    getDacs();
-  }, []);
+    if (prevUser.current.address && prevUser.current.address !== currentUser.address) {
+      setModalVisible(false);
+    } else if (currentUser.address) {
+      setDelegationOptions([]);
+      setObjectToDelegateFrom([]);
+      setIsDacsFetched(false);
+      getDacs();
+    }
+    prevUser.current = currentUser;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
 
   useEffect(() => {
     if (delegationOptions.length === 1) {
@@ -308,22 +337,6 @@ const ModalContent = props => {
       delegateFromType.current = delegationOptions.find(c => c.id === objectToDelegateFrom[0]).type;
     }
   }, [objectToDelegateFrom]);
-
-  useEffect(() => {
-    if (!isFirstRun.current) {
-      loadDonations(objectToDelegateFrom).then();
-    }
-  }, [selectedToken]);
-
-  useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false; // Set initial render to false. This useEffect must be always the last one.
-    } else {
-      setModalVisible(false);
-      setDelegationOptions([]);
-      setObjectToDelegateFrom([]);
-    }
-  }, [currentUser]);
 
   const { decimals } = selectedToken;
 
@@ -492,4 +505,4 @@ ModalContent.defaultProps = {
   milestone: undefined,
 };
 
-export default ModalContent;
+export default React.memo(ModalContent);
