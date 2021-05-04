@@ -123,6 +123,38 @@ class Content extends Component {
     );
   }
 
+  handleScreenSharing() {
+    this.setState({ type: 'screen', currentState: '' });
+    window.getScreenId((err, sourceId, screenContraints) => {
+      if (err) {
+        console.log(err);
+      }
+      navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(audioStream => {
+        navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+        navigator.mediaDevices.getUserMedia(screenContraints).then(screenStream => {
+          screenStream.fullcanvas = false;
+          screenStream.width = window.screen.width; // or 3840
+          screenStream.height = window.screen.height; // or 2160
+          this.setState(
+            {
+              stream: new window.MultiStreamsMixer([screenStream, audioStream]),
+              audioStream,
+              screenStream,
+            },
+            () => {
+              this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
+              this.state.stream.startDrawingFrames();
+              window.setSrcObject(
+                this.state.stream.getMixedStream(),
+                document.getElementById('video'),
+              );
+            },
+          );
+        });
+      });
+    });
+  }
+
   startRecording() {
     const { stream } = this.state;
     this.setState({ currentState: 'recording' });
@@ -159,38 +191,6 @@ class Content extends Component {
     image.onerror = () => {
       this.setState({ currentState: 'missing extension' });
     };
-  }
-
-  handleScreenSharing() {
-    this.setState({ type: 'screen', currentState: '' });
-    window.getScreenId((err, sourceId, screenContraints) => {
-      if (err) {
-        console.log(err);
-      }
-      navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(audioStream => {
-        navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
-        navigator.mediaDevices.getUserMedia(screenContraints).then(screenStream => {
-          screenStream.fullcanvas = false;
-          screenStream.width = window.screen.width; // or 3840
-          screenStream.height = window.screen.height; // or 2160
-          this.setState(
-            {
-              stream: new window.MultiStreamsMixer([screenStream, audioStream]),
-              audioStream,
-              screenStream,
-            },
-            () => {
-              this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
-              this.state.stream.startDrawingFrames();
-              window.setSrcObject(
-                this.state.stream.getMixedStream(),
-                document.getElementById('video'),
-              );
-            },
-          );
-        });
-      });
-    });
   }
 
   render() {

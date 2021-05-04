@@ -12,8 +12,8 @@ jobs:
         with:
           node-version: 10.x
       - name: install dependencies
-        run: npm ci
+        run:  yarn ci
       - name: run linter
-        run: npm run eslint
+        run: yarn eslint
       - name: test
-        run: npm run test
+        run: yarn test

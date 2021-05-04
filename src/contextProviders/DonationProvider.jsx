@@ -60,6 +60,10 @@ class DonationProvider extends Component {
     if (this.donationsObserver) this.donationsObserver.unsubscribe();
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.loadDonations());
+  }
+
   // Function to fetch donations of the current user.
   loadDonations() {
     const { currentUser } = this.props;
@@ -268,10 +272,6 @@ class DonationProvider extends Component {
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       });
     });
-  }
-
-  handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadDonations());
   }
 
   render() {

@@ -57,25 +57,6 @@ class QuillFormsy extends Component {
     this.setState({ isVideoModalVisible: false });
   }
 
-  showVideoModal() {
-    this.setState({ isVideoModalVisible: true });
-  }
-
-  videoHandler() {
-    this.showVideoModal();
-  }
-
-  templateHandler(value) {
-    this.props.handleTemplateChange(value);
-    document.querySelector('.template-picker-text').innerHTML = document.querySelector(
-      '.ql-template .ql-picker-label',
-    ).dataset.value;
-  }
-
-  imageHandler() {
-    this.imageUploader.click();
-  }
-
   async handleImageUpload() {
     const file = this.imageUploader.files[0];
     if (!file) return;
@@ -101,6 +82,25 @@ class QuillFormsy extends Component {
     // else {
     //   console.warn('You could only upload images.');
     // }
+  }
+
+  showVideoModal() {
+    this.setState({ isVideoModalVisible: true });
+  }
+
+  videoHandler() {
+    this.showVideoModal();
+  }
+
+  templateHandler(value) {
+    this.props.handleTemplateChange(value);
+    document.querySelector('.template-picker-text').innerHTML = document.querySelector(
+      '.ql-template .ql-picker-label',
+    ).dataset.value;
+  }
+
+  imageHandler() {
+    this.imageUploader.click();
   }
 
   saveToServer(image, range) {
