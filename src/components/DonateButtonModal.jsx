@@ -264,7 +264,7 @@ const DonateButtonModal = props => {
     } else {
       clearUp();
     }
-  }, [selectedToken, isHomeNetwork]);
+  }, [selectedToken, isHomeNetwork, currentUser]);
 
   const canDonateToProject = () => {
     const { acceptsSingleToken, token } = model;

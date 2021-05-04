@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
 
-import { actionWithLoggedIn, checkBalance } from '../lib/middleware';
+import { authenticateUser, checkBalance } from '../lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import confirmationDialog from '../lib/confirmationDialog';
 import ErrorPopup from '../components/ErrorPopup';
@@ -108,7 +108,10 @@ class DonationProvider extends Component {
    */
   reject(donation) {
     const { currentUser, balance } = this.props;
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(authenticated => {
+      if (!authenticated) {
+        return;
+      }
       checkBalance(balance)
         .then(() =>
           React.swal({
@@ -157,8 +160,8 @@ class DonationProvider extends Component {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   }
 
   /**
@@ -168,7 +171,10 @@ class DonationProvider extends Component {
    */
   commit(donation) {
     const { currentUser, balance } = this.props;
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(authenticated => {
+      if (!authenticated) {
+        return;
+      }
       checkBalance(balance)
         .then(() =>
           React.swal({
@@ -218,8 +224,8 @@ class DonationProvider extends Component {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   }
 
   /**
@@ -229,7 +235,10 @@ class DonationProvider extends Component {
    */
   refund(donation) {
     const { currentUser, balance } = this.props;
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(authenticated => {
+      if (!authenticated) {
+        return;
+      }
       checkBalance(balance).then(() => {
         const confirmRefund = () => {
           const afterCreate = txLink => {
@@ -261,8 +270,8 @@ class DonationProvider extends Component {
           DonationService.refund(donation, currentUser.address, afterCreate, afterMined);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
-      }),
-    );
+      });
+    });
   }
 
   render() {
