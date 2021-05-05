@@ -2,7 +2,6 @@ import React, { memo, useContext, useEffect, useState, Fragment } from 'react';
 import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-import useCampaign from '../../hooks/useCampaign';
 import {
   MilestoneCampaignInfo,
   MilestoneDescription,
@@ -13,13 +12,14 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
+import { ANY_TOKEN, history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
 import config from '../../configuration';
 import { Milestone } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedMilestone from '../../models/BridgedMilestone';
+import CampaignService from '../../services/CampaignService';
 
 function CreateBounty(props) {
   const {
@@ -29,17 +29,80 @@ function CreateBounty(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-  const { id: campaignId, slug: campaignSlug } = props.match.params;
+  const { slug: campaignSlug, milestoneId } = props.match.params;
 
-  const campaign = useCampaign(campaignId, campaignSlug);
-  const [bounty, setBounty] = useState({
+  const [campaign, setCampaign] = useState();
+  const [donateToDac, setDonateToDac] = useState(true);
+  const [milestone, setMilestone] = useState({
     title: '',
     description: '',
-    recipientAddress: ZERO_ADDRESS,
-    picture: '/img/bountyProject.png',
     donateToDac: true,
     reviewerAddress: '',
   });
+  const [initialValues, setInitialValues] = useState({
+    title: '',
+    description: '',
+    donateToDac: true,
+    reviewerAddress: '',
+  });
+
+  const isNew = milestoneId === undefined;
+
+  function goBack() {
+    history.goBack();
+  }
+
+  const getCampaign = async slug => {
+    CampaignService.getBySlug(slug)
+      .then(res => {
+        setCampaign(res);
+      })
+      .catch(err => {
+        const message = `Sadly we were unable to load the requested Campaign details. Please try again.`;
+        ErrorHandler(err, message);
+      });
+  };
+
+  useEffect(() => {
+    if (isNew) {
+      getCampaign(campaignSlug).then();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isNew && currentUser.id) {
+      MilestoneService.get(milestoneId)
+        .then(res => {
+          if (
+            res.formType !== Milestone.BOUNTYTYPE ||
+            !(
+              isOwner(res.owner.address, currentUser) ||
+              isOwner(res.campaign.ownerAddress, currentUser) ||
+              res.donationCounters.length > 0
+            )
+          ) {
+            goBack();
+          } else {
+            getCampaign(res.campaign.slug).then();
+            const iValues = {
+              title: res.title,
+              description: res.description,
+              recipientAddress: res.recipientAddress,
+              reviewerAddress: res.reviewerAddress,
+              image: res.image,
+              donateToDac: !!res.dacId,
+            };
+            setInitialValues(iValues);
+            setDonateToDac(!!res.dacId);
+            setMilestone(res);
+          }
+        })
+        .catch(err => {
+          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          ErrorHandler(err, message);
+        });
+    }
+  }, [currentUser.id]);
 
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
@@ -54,10 +117,12 @@ function CreateBounty(props) {
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
+    const ms = milestone;
     if (type === 'checkbox') {
-      setBounty({ ...bounty, [name]: checked });
+      setDonateToDac(checked);
     } else {
-      setBounty({ ...bounty, [name]: value });
+      ms[name] = value;
+      setMilestone(ms);
     }
   };
 
@@ -67,73 +132,72 @@ function CreateBounty(props) {
     });
   }
 
-  function goBack() {
-    history.goBack();
-  }
-
   const submit = async () => {
     const authenticated = await authenticateUser(currentUser, false);
+    if (!authenticated) {
+      return;
+    }
 
-    if (authenticated) {
-      if (userIsCampaignOwner && !isForeignNetwork) {
-        displayForeignNetRequiredWarning();
-        return;
-      }
+    if (userIsCampaignOwner && !isForeignNetwork) {
+      displayForeignNetRequiredWarning();
+      return;
+    }
 
-      const { title, description, reviewerAddress, picture, recipientAddress } = bounty;
-      const ms = new BridgedMilestone({
-        title,
-        description,
-        reviewerAddress,
-        recipientAddress,
-        token: ANY_TOKEN,
-        image: picture,
-      });
+    const { description } = milestone;
+    const ms = new BridgedMilestone(milestone);
 
-      ms.ownerAddress = currentUser.address;
-      ms.campaignId = campaign._id;
-      ms.parentProjectId = campaign.projectId;
+    ms.token = ANY_TOKEN;
+    ms.image = '/img/bountyProject.png';
+    ms.campaignId = campaign._id;
+    ms.parentProjectId = campaign.projectId;
+    ms.dacId = donateToDac ? config.defaultDacId : 0;
+    ms.formType = Milestone.BOUNTYTYPE;
+    ms.ownerAddress = currentUser.address;
+    ms.recipientAddress = ZERO_ADDRESS;
 
-      if (bounty.donateToDac) {
-        ms.dacId = config.defaultDacId;
-      }
+    if (!userIsCampaignOwner && isNew) {
+      ms.status = Milestone.PROPOSED;
+    }
+    // make sure not to change status!
+    if (!isNew && milestone.status) {
+      ms.status =
+        !userIsCampaignOwner || milestone.status === Milestone.REJECTED
+          ? Milestone.PROPOSED
+          : milestone.status;
+    }
 
-      if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
-      }
-
-      setLoading(true);
-
-      await MilestoneService.save({
-        milestone: ms,
-        from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Bounty proposed to the Campaign Owner';
-            }
-          } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Bounty is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-          } else {
-            notificationDescription = 'Your Bounty has been updated!';
+    setLoading(true);
+    await MilestoneService.save({
+      milestone: ms,
+      from: currentUser.address,
+      afterSave: (created, txUrl, res) => {
+        let notificationDescription;
+        if (created) {
+          if (!userIsCampaignOwner) {
+            notificationDescription = 'Bounty proposed to the campaign owner';
           }
+        } else if (txUrl) {
+          notificationDescription = (
+            <p>
+              Your Bounty is pending....
+              <br />
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          );
+        } else {
+          notificationDescription = 'Your Bounty has been updated!';
+        }
 
-          if (description) {
-            notification.info({ description: notificationDescription });
-          }
-          setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
-        },
-        afterMined: (created, txUrl) => {
+        if (description) {
+          notification.info({ description: notificationDescription });
+        }
+        setLoading(false);
+        history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+      },
+      afterMined: (created, txUrl) => {
+        if (created) {
           notification.success({
             description: (
               <p>
@@ -145,14 +209,47 @@ function CreateBounty(props) {
               </p>
             ),
           });
-        },
-        onError(message, err) {
-          setLoading(false);
-          return ErrorHandler(err, message);
-        },
-      });
-    }
+        } else {
+          notification.success({
+            description: (
+              <p>
+                Your Bounty has been updated!
+                <br />
+                <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>
+            ),
+          });
+        }
+      },
+      onError(message, err) {
+        setLoading(false);
+        return ErrorHandler(err, message);
+      },
+    });
   };
+
+  // To set the correct initial values for the form in editing mode
+  const toLoadForm = isNew || (!isNew && campaign);
+
+  const btnText = () => {
+    if (!isNew) {
+      return 'Update Milestone';
+    }
+    if (userIsCampaignOwner) {
+      return 'Create';
+    }
+    return 'Propose';
+  };
+
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
 
   return (
     <Fragment>
@@ -163,67 +260,78 @@ function CreateBounty(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title="Create New Bounty"
+              title={isNew ? 'Create New Bounty' : 'Edit Bounty'}
               ghost={false}
             />
           </Col>
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form
-              className="card-form"
-              requiredMark
-              onFinish={submit}
-              scrollToFirstError={{
-                block: 'center',
-                behavior: 'smooth',
-              }}
-            >
-              <div className="card-form-header">
-                <img src={`${process.env.PUBLIC_URL}/img/bounty.png`} alt="bounty-logo" />
-                <div className="title">Bounty</div>
-              </div>
+            {toLoadForm && (
+              <Form
+                className="card-form"
+                requiredMark
+                onFinish={submit}
+                scrollToFirstError={{
+                  block: 'center',
+                  behavior: 'smooth',
+                }}
+                initialValues={initialValues}
+              >
+                <div className="card-form-header">
+                  <img src={`${process.env.PUBLIC_URL}/img/bounty.png`} alt="bounty-logo" />
+                  <div className="title">Bounty</div>
+                </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+                <MilestoneCampaignInfo campaign={campaign} />
 
-              <div className="section">
-                <div className="title">Bounty details</div>
+                <div className="section">
+                  <div className="title">Bounty details</div>
 
-                <MilestoneTitle
-                  value={bounty.title}
-                  onChange={handleInputChange}
-                  extra="What is this Bounty about?"
-                />
+                  <MilestoneTitle
+                    value={milestone.title}
+                    onChange={handleInputChange}
+                    extra="What is this Bounty about?"
+                    disabled={milestoneHasFunded}
+                  />
 
-                <MilestoneDescription
-                  value={bounty.description}
-                  onChange={handleInputChange}
-                  extra="Explain the requirements and what success looks like."
-                  placeholder="Describe the Bounty and define the acceptance criteria..."
-                  id="description"
-                />
+                  <MilestoneDescription
+                    value={milestone.description}
+                    onChange={handleInputChange}
+                    extra="Explain the requirements and what success looks like."
+                    placeholder="Describe the Bounty and define the acceptance criteria..."
+                    id="description"
+                    disabled={milestoneHasFunded}
+                  />
 
-                <MilestoneDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
+                  <MilestoneDonateToDac
+                    value={donateToDac}
+                    onChange={handleInputChange}
+                    disabled={!isNew && !isProposed}
+                  />
 
-                <MilestoneReviewer
-                  milestoneType="Bounty"
-                  setReviewer={setReviewer}
-                  hasReviewer
-                  milestoneReviewerAddress={bounty.reviewerAddress}
-                />
-              </div>
+                  <MilestoneReviewer
+                    milestoneType="Bounty"
+                    setReviewer={setReviewer}
+                    hasReviewer
+                    initialValue={!isNew ? initialValues.reviewerAddress : null}
+                    milestoneReviewerAddress={milestone.reviewerAddress}
+                    disabled={!isNew && !isProposed}
+                  />
+                </div>
 
-              <div className="milestone-desc">
-                Your bounty will collect funds in any currency. The total amount collected will be
-                the Bounty Reward.
-              </div>
+                <div className="milestone-desc">
+                  Your Bounty will collect funds in any currency. The total amount collected will be
+                  the Bounty Reward.
+                </div>
 
-              <Form.Item>
-                <Button htmlType="submit" loading={loading} block size="large" type="primary">
-                  {userIsCampaignOwner ? 'Create' : 'Propose'}
-                </Button>
-              </Form.Item>
-            </Form>
+                <Form.Item>
+                  <Button htmlType="submit" loading={loading} block size="large" type="primary">
+                    {btnText()}
+                  </Button>
+                </Form.Item>
+              </Form>
+            )}
           </div>
         </Row>
       </div>

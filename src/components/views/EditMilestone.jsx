@@ -11,6 +11,8 @@ import queryString from 'query-string';
 import Milestone from 'models/Milestone';
 import MilestoneFactory from 'models/MilestoneFactory';
 import { utils } from 'web3';
+import { notification } from 'antd';
+
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
 import SelectFormsy from '../SelectFormsy';
@@ -192,11 +194,12 @@ class EditMilestone extends Component {
           () => {},
         );
 
-        // load a single milestones (when editing)
+        // load a single milestone (when editing)
         if (!this.props.isNew) {
           try {
             const milestone = await MilestoneService.get(this.props.match.params.milestoneId);
             if (
+              milestone.formType ||
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||
                 isOwner(milestone.campaign.ownerAddress, this.props.currentUser) ||
@@ -697,10 +700,15 @@ class EditMilestone extends Component {
     this.timer = setTimeout(this.triggerChange, WAIT_INTERVAL);
   }
 
-  submit() {
+  async submit() {
+    const { currentUser, currentRate, isProposed, isNew } = this.props;
+    const authenticated = await authenticateUser(currentUser, false);
     const { milestone } = this.state;
 
-    const { currentUser, currentRate, isProposed, isNew } = this.props;
+    if (!authenticated) {
+      return;
+    }
+
     milestone.ownerAddress = currentUser.address;
     milestone.campaignId = this.state.campaignId;
     milestone.status =
@@ -760,15 +768,31 @@ class EditMilestone extends Component {
           }
         },
         afterMined: (created, txUrl) => {
-          React.toast.success(
-            <p>
-              Your Milestone has been created!
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>,
-          );
+          if (created) {
+            notification.success({
+              description: (
+                <p>
+                  Your Milestone has been created!
+                  <br />
+                  <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              ),
+            });
+          } else {
+            notification.success({
+              description: (
+                <p>
+                  Your Milestone has been updated!
+                  <br />
+                  <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                    View transaction
+                  </a>
+                </p>
+              ),
+            });
+          }
         },
         onError: errorMessage => {
           if (errorMessage) React.toast.error(errorMessage);

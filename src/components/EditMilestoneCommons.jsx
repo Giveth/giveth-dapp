@@ -24,7 +24,7 @@ import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const MilestoneTitle = ({ extra, onChange, value }) => (
+const MilestoneTitle = ({ extra, onChange, value, disabled }) => (
   <Form.Item
     name="title"
     label="Title"
@@ -41,6 +41,7 @@ const MilestoneTitle = ({ extra, onChange, value }) => (
   >
     <Input
       value={value}
+      disabled={disabled}
       name="title"
       placeholder="e.g. Support continued Development"
       onChange={onChange}
@@ -52,14 +53,16 @@ MilestoneTitle.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   extra: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 MilestoneTitle.defaultProps = {
   value: '',
   extra: '',
+  disabled: false,
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }) => {
+const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id, disabled }) => {
   const onDescriptionChange = useCallback(
     description => {
       onChange({ target: { name: 'description', value: description } });
@@ -96,10 +99,12 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }
         placeholder={placeholder}
         id={id}
         key={id}
+        disabled={disabled}
       />
     </Form.Item>
   );
 };
+
 MilestoneDescription.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
@@ -107,6 +112,7 @@ MilestoneDescription.propTypes = {
   placeholder: PropTypes.string,
   label: PropTypes.string,
   id: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 MilestoneDescription.defaultProps = {
@@ -114,6 +120,7 @@ MilestoneDescription.defaultProps = {
   placeholder: '',
   label: 'Description',
   id: '',
+  disabled: false,
 };
 
 const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
@@ -190,7 +197,7 @@ MilestonePicture.propTypes = {
   setPicture: PropTypes.func.isRequired,
 };
 
-const MilestoneDonateToDac = ({ onChange, value }) => (
+const MilestoneDonateToDac = ({ onChange, value, disabled }) => (
   <Form.Item
     className="custom-form-item milestone-donate-dac"
     valuePropName="checked"
@@ -204,7 +211,7 @@ const MilestoneDonateToDac = ({ onChange, value }) => (
       </div>
     }
   >
-    <Checkbox onChange={onChange} name="donateToDac" checked={value}>
+    <Checkbox onChange={onChange} name="donateToDac" checked={value} disabled={disabled}>
       Donate 3% to Giveth
     </Checkbox>
   </Form.Item>
@@ -213,6 +220,11 @@ const MilestoneDonateToDac = ({ onChange, value }) => (
 MilestoneDonateToDac.propTypes = {
   value: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+MilestoneDonateToDac.defaultProps = {
+  disabled: false,
 };
 
 const MilestoneReviewer = ({
@@ -220,7 +232,9 @@ const MilestoneReviewer = ({
   hasReviewer,
   milestoneReviewerAddress,
   setReviewer,
+  initialValue,
   toggleHasReviewer,
+  disabled,
 }) => {
   const reviewers = useReviewers();
   return (
@@ -240,6 +254,7 @@ const MilestoneReviewer = ({
         <Fragment>
           <Form.Item
             name="Reviewer Address"
+            initialValue={initialValue}
             rules={[{ required: true }]}
             extra={`The reviewer verifies that the ${milestoneType} is completed successfully.`}
           >
@@ -249,6 +264,7 @@ const MilestoneReviewer = ({
               optionFilterProp="children"
               name="reviewerAddress"
               onSelect={setReviewer}
+              disabled={disabled}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -274,12 +290,16 @@ MilestoneReviewer.propTypes = {
   toggleHasReviewer: PropTypes.func,
   setReviewer: PropTypes.func.isRequired,
   milestoneReviewerAddress: PropTypes.string,
+  initialValue: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 MilestoneReviewer.defaultProps = {
   milestoneType: 'Milestone',
   milestoneReviewerAddress: '',
   toggleHasReviewer: null,
+  initialValue: null,
+  disabled: false,
 };
 
 const MilestoneDatePicker = ({ onChange, value, disabled }) => {

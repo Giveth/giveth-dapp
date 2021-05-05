@@ -43,6 +43,7 @@ export default class Milestone extends BasicModel {
       pluginAddress = ZERO_ADDRESS,
       conversionRateTimestamp,
       slug,
+      formType,
     } = data;
 
     this._selectedFiatType = selectedFiatType;
@@ -76,6 +77,7 @@ export default class Milestone extends BasicModel {
     this._mined = mined;
     this._campaignId = campaignId;
     this._slug = slug;
+    this._formType = formType;
   }
 
   toIpfs() {
@@ -117,6 +119,7 @@ export default class Milestone extends BasicModel {
       pluginAddress: this._pluginAddress,
       token: this._token,
       type: this.milestoneType,
+      formType: this._formType,
     };
     if (this.isCapped) {
       Object.assign(milestone, {
@@ -197,6 +200,31 @@ export default class Milestone extends BasicModel {
       PAID: 'Paid',
       FAILED: 'Failed',
       ARCHIVED: 'Archived',
+    };
+  }
+
+  static get BOUNTYTYPE() {
+    return Milestone.formTypes.BOUNTY;
+  }
+
+  static get MILESTONETYPE() {
+    return Milestone.formTypes.MILESTONE;
+  }
+
+  static get EXPENSETYPE() {
+    return Milestone.formTypes.EXPENSE;
+  }
+
+  static get PAYMENTTYPE() {
+    return Milestone.formTypes.PAYMENT;
+  }
+
+  static get formTypes() {
+    return {
+      BOUNTY: 'bounty',
+      MILESTONE: 'milestone',
+      EXPENSE: 'expense',
+      PAYMENT: 'payment',
     };
   }
 
@@ -576,6 +604,14 @@ export default class Milestone extends BasicModel {
 
   set slug(value) {
     this._slug = value;
+  }
+
+  set formType(value) {
+    this._formType = value;
+  }
+
+  get formType() {
+    return this._formType;
   }
 
   canUserAcceptRejectProposal(user) {

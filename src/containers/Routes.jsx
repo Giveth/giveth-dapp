@@ -215,6 +215,46 @@ const Routes = () => {
           />
         )}
       />
+      <Route exact path="/bounty/:milestoneId/edit" render={props => <CreateBounty {...props} />} />
+      <Route
+        exact
+        path="/expense/:milestoneId/edit"
+        render={props => (
+          <CreateExpense
+            balance={balance}
+            isForeignNetwork={isForeignNetwork}
+            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
+            isProposed
+            {...props}
+          />
+        )}
+      />
+      <Route
+        exact
+        path="/payment/:milestoneId/edit"
+        render={props => (
+          <CreatePayment
+            balance={balance}
+            isForeignNetwork={isForeignNetwork}
+            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
+            isProposed
+            {...props}
+          />
+        )}
+      />
+      <Route
+        exact
+        path="/milestone/:milestoneId/edit"
+        render={props => (
+          <CreateMilestone
+            balance={balance}
+            isForeignNetwork={isForeignNetwork}
+            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
+            isProposed
+            {...props}
+          />
+        )}
+      />
       <Route
         exact
         path="/campaigns/:id/milestones"
