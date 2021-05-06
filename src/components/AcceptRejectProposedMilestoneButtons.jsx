@@ -9,6 +9,9 @@ import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
   const conversationModal = useRef();
@@ -147,7 +150,9 @@ const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
 };
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default React.memo(AcceptRejectProposedMilestoneButtons);

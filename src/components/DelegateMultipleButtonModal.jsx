@@ -26,6 +26,9 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import ErrorHandler from '../lib/ErrorHandler';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -496,7 +499,9 @@ const ModalContent = props => {
 
 ModalContent.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.instanceOf(Milestone),
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ),
   setModalVisible: PropTypes.func.isRequired,
 };
 

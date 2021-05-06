@@ -13,6 +13,8 @@ import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import ErrorHandler from '../lib/ErrorHandler';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
 
 const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
@@ -169,7 +171,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
 };
 
 WithdrawMilestoneFundsButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 

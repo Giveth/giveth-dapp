@@ -9,6 +9,9 @@ import MilestoneProof from 'components/MilestoneProof';
 import { Button, Form, Modal } from 'antd';
 import Editor from './Editor';
 import { getHtmlText } from '../lib/helpers';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 /**
   A promise modal to file proof when taking action on a milestone
@@ -210,7 +213,9 @@ class ConversationModal extends Component {
 }
 
 ConversationModal.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default ConversationModal;
