@@ -1,9 +1,10 @@
 import localforage from 'localforage';
 import rx from 'feathers-reactive';
+import socketio from 'feathers-socketio/client';
 import config from '../configuration';
 
 const feathers = require('@feathersjs/feathers');
-const socketio = require('@feathersjs/socketio-client');
+
 const io = require('socket.io-client');
 const auth = require('@feathersjs/authentication-client');
 const rest = require('@feathersjs/rest-client');
@@ -44,6 +45,5 @@ export const feathersClient = feathers()
     }),
   );
 // .on('authenticated', feathersRest.passport.setJWT); // set token on feathersRest whenever it is changed
-
 feathersClient.service('uploads').timeout = 10000;
 feathersRest.service('uploads').timeout = 10000;
