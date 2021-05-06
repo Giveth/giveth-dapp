@@ -16,6 +16,9 @@ import ChangeMilestoneRecipientButton from './ChangeMilestoneRecipientButton';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 function MilestoneActions({ milestone }) {
   const {
@@ -113,7 +116,9 @@ function MilestoneActions({ milestone }) {
 }
 
 MilestoneActions.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default MilestoneActions;

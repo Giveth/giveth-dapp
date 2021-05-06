@@ -6,6 +6,9 @@ import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
 import ConversationModal from './ConversationModal';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const MilestoneConversationComment = ({ milestone }) => {
   const conversationModal = useRef(null);
@@ -96,7 +99,9 @@ const MilestoneConversationComment = ({ milestone }) => {
 };
 
 MilestoneConversationComment.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default MilestoneConversationComment;

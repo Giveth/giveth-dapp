@@ -7,10 +7,15 @@ import Campaign from 'models/Campaign';
 import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { message } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const ArchiveMilestoneButton = ({ milestone }) => {
+const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -18,6 +23,10 @@ const ArchiveMilestoneButton = ({ milestone }) => {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
+  const {
+    state: { minimumPayoutUsdValue },
+  } = useContext(WhiteListContext);
 
   const archiveMilestone = () => {
     const status = milestone.donationCounters.some(dc => dc.currentBalance.gt(0))
@@ -27,6 +36,15 @@ const ArchiveMilestoneButton = ({ milestone }) => {
     actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(async () => {
+          if (!isAmountEnoughForWithdraw) {
+            message.error(
+              `Oh No!
+        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
+        before you can archive this milestone. This is a temporary
+        limitation due to Ethereum Mainnet issues.`,
+            );
+            return;
+          }
           const proceed = await React.swal({
             title: 'Archive Milestone?',
             text: `Are you sure you want to archive this Milestone? The milestone status will be set to ${status} and will no longer be able to accept donations.`,
@@ -118,7 +136,10 @@ const ArchiveMilestoneButton = ({ milestone }) => {
 };
 
 ArchiveMilestoneButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
+  isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 
 export default React.memo(ArchiveMilestoneButton);

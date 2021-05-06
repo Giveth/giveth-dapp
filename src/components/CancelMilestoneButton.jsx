@@ -9,6 +9,9 @@ import GA from 'lib/GoogleAnalytics';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const CancelMilestoneButton = forwardRef(({ milestone }, ref) => {
   const {
@@ -111,7 +114,9 @@ const CancelMilestoneButton = forwardRef(({ milestone }, ref) => {
 });
 
 CancelMilestoneButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default React.memo(CancelMilestoneButton);
