@@ -11,6 +11,9 @@ import MilestoneConversationAction from './MilestoneConversationAction';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
 import config from '../configuration';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const getPaymentsStr = payments => {
   let phrase = '';
@@ -209,7 +212,9 @@ function MilestoneConversationItem({ conversation, milestone, isAmountEnoughForW
 }
 
 MilestoneConversationItem.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };

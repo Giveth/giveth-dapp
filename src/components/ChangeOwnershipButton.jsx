@@ -18,6 +18,9 @@ import CampaignService from '../services/CampaignService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -172,7 +175,9 @@ const ChangeOwnershipButton = props => {
 
 ChangeOwnershipButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.instanceOf(Milestone),
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ),
   style: PropTypes.shape(),
 };
 

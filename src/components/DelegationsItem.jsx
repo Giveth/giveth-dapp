@@ -11,6 +11,9 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Provider } from '../contextProviders/Web3Provider';
 import { Milestone } from '../models';
 import Campaign from '../models/Campaign';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 function DelegationsItem({ campaigns, donation, milestones }) {
   const {
@@ -90,7 +93,11 @@ function DelegationsItem({ campaigns, donation, milestones }) {
 
 DelegationsItem.propTypes = {
   donation: PropTypes.instanceOf(Donation).isRequired,
-  milestones: PropTypes.arrayOf(PropTypes.instanceOf(Milestone)).isRequired,
+  milestones: PropTypes.arrayOf(
+    PropTypes.oneOfType(
+      [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+    ),
+  ).isRequired,
   campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
 };
 

@@ -8,6 +8,9 @@ import confirmationDialog from 'lib/confirmationDialog';
 
 import { actionWithLoggedIn } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const DeleteProposedMilestoneButton = forwardRef(({ milestone }, ref) => {
   const {
@@ -47,7 +50,9 @@ const DeleteProposedMilestoneButton = forwardRef(({ milestone }, ref) => {
 });
 
 DeleteProposedMilestoneButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default React.memo(DeleteProposedMilestoneButton);

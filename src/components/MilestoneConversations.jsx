@@ -8,6 +8,9 @@ import { feathersClient } from '../lib/feathersClient';
 import MilestoneConversationComment from './MilestoneConversationComment';
 import MilestoneConversationItem from './MilestoneConversationItem';
 import LoadMore from './LoadMore';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const MilestoneConversations = ({ milestone, maxHeight, isAmountEnoughForWithdraw }) => {
   const conversationsNumPerLoad = 5;
@@ -77,7 +80,9 @@ const MilestoneConversations = ({ milestone, maxHeight, isAmountEnoughForWithdra
 };
 
 MilestoneConversations.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   maxHeight: PropTypes.string,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };

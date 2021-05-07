@@ -11,6 +11,9 @@ import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
@@ -137,7 +140,9 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
 };
 
 RequestMarkMilestoneCompleteButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 

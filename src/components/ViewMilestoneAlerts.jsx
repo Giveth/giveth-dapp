@@ -14,6 +14,9 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import RequestMarkMilestoneCompleteButton from './RequestMarkMilestoneCompleteButton';
 import config from '../configuration';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw }) => {
   const {
@@ -95,7 +98,9 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
 };
 
 ViewMilestoneAlerts.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
