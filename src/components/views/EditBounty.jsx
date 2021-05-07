@@ -20,7 +20,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedMilestone from '../../models/BridgedMilestone';
 
-function CreateBounty(props) {
+function EditBounty(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -319,7 +319,7 @@ function CreateBounty(props) {
   );
 }
 
-CreateBounty.propTypes = {
+EditBounty.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -333,4 +333,4 @@ const isEqual = (prevProps, nextProps) =>
   prevProps.match.params.id === nextProps.match.params.id &&
   prevProps.match.params.slug === nextProps.match.params.slug;
 
-export default memo(CreateBounty, isEqual);
+export default memo(EditBounty, isEqual);

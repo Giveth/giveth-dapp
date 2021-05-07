@@ -202,9 +202,9 @@ class EditMilestone extends Component {
               milestone.formType ||
               !(
                 isOwner(milestone.owner.address, this.props.currentUser) ||
-                isOwner(milestone.campaign.ownerAddress, this.props.currentUser) ||
-                milestone.donationCounters.length > 0
-              )
+                isOwner(milestone.campaign.ownerAddress, this.props.currentUser)
+              ) ||
+              milestone.donationCounters.length < 1
             ) {
               return history.goBack();
             }

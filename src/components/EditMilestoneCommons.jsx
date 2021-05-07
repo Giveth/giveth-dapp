@@ -246,6 +246,7 @@ const MilestoneReviewer = ({
             name="hasReviewer"
             checked={hasReviewer}
             onChange={toggleHasReviewer}
+            disabled={disabled}
           />
         )}
         <span>{`${milestoneType} reviewer`}</span>

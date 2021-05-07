@@ -28,6 +28,7 @@ import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
+import EditBounty from '../components/views/EditBounty';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
@@ -215,45 +216,21 @@ const Routes = () => {
           />
         )}
       />
-      <Route exact path="/bounty/:milestoneId/edit" render={props => <CreateBounty {...props} />} />
+      <Route exact path="/bounty/:milestoneId/edit" render={props => <EditBounty {...props} />} />
       <Route
         exact
         path="/expense/:milestoneId/edit"
-        render={props => (
-          <CreateExpense
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            isProposed
-            {...props}
-          />
-        )}
+        render={props => <CreateExpense {...props} />}
       />
       <Route
         exact
         path="/payment/:milestoneId/edit"
-        render={props => (
-          <CreatePayment
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            isProposed
-            {...props}
-          />
-        )}
+        render={props => <CreatePayment {...props} />}
       />
       <Route
         exact
         path="/milestone/:milestoneId/edit"
-        render={props => (
-          <CreateMilestone
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            isProposed
-            {...props}
-          />
-        )}
+        render={props => <CreateMilestone {...props} />}
       />
       <Route
         exact
