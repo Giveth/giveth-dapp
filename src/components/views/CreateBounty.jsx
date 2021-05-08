@@ -93,6 +93,7 @@ function CreateBounty(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.BOUNTYTYPE;
 
       if (bounty.donateToDac) {
         ms.dacId = config.defaultDacId;

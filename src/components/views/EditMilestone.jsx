@@ -85,10 +85,11 @@ function EditMilestone(props) {
               image: res.image,
               donateToDac: !!res.dacId,
             };
+            const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
             setInitialValues(iValues);
             setDonateToDac(!!res.dacId);
             setMilestone(res);
-            setImage(res.image.match(/\/ipfs\/.*/)[0]);
+            setImage(imageUrl);
             setCampaign(res.campaign);
           }
         })
@@ -129,6 +130,7 @@ function EditMilestone(props) {
   }
 
   function setPicture(address) {
+    console.log(address);
     handleInputChange({ target: { name: 'image', value: address } });
   }
 

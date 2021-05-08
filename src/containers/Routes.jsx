@@ -30,6 +30,7 @@ import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
 import EditBounty from '../components/views/EditBounty';
 import EditMilestone from '../components/views/EditMilestone';
+import EditPayment from '../components/views/EditPayment';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
@@ -223,11 +224,7 @@ const Routes = () => {
         path="/expense/:milestoneId/edit"
         render={props => <CreateExpense {...props} />}
       />
-      <Route
-        exact
-        path="/payment/:milestoneId/edit"
-        render={props => <CreatePayment {...props} />}
-      />
+      <Route exact path="/payment/:milestoneId/edit" render={props => <EditPayment {...props} />} />
       <Route
         exact
         path="/milestone/:milestoneId/edit"
