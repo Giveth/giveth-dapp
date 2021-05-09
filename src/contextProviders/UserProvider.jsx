@@ -1,3 +1,5 @@
+// eslint-disable-next-line camelcase
+import jwt_decode from 'jwt-decode';
 import React, { Component, createContext } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
@@ -163,11 +165,9 @@ class UserProvider extends Component {
 
     if (currentUser.address) {
       try {
-        const token = await feathersClient.passport.getJWT();
-
+        const token = await feathersClient.authentication.getAccessToken();
         if (token) {
-          const payload = await feathersClient.passport.verifyJWT(token);
-
+          const payload = jwt_decode(token);
           if (currentUser.address === payload.userId) {
             await feathersClient.reAuthenticate(); // authenticate the socket connection
             currentUser.authenticated = true;
