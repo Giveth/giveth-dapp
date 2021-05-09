@@ -3,9 +3,7 @@ import { Button, Checkbox, Col, Form, notification, PageHeader, Row } from 'antd
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
-import useCampaign from '../../hooks/useCampaign';
-// import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
-import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
+
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   MilestoneCampaignInfo,
@@ -19,11 +17,10 @@ import {
   MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
-import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
+import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { authenticateUser } from '../../lib/middleware';
-import BridgedMilestone from '../../models/BridgedMilestone';
 import config from '../../configuration';
 import { Milestone } from '../../models';
 import { MilestoneService } from '../../services';
@@ -31,11 +28,7 @@ import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 const WAIT_INTERVAL = 1000;
 
-function CreatePayment(props) {
-  const {
-    state: { fiatWhitelist },
-  } = useContext(WhiteListContext);
-
+function EditPayment(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -51,23 +44,29 @@ function CreatePayment(props) {
 
   const [form] = Form.useForm();
 
-  const { id: campaignId, slug: campaignSlug } = props.match.params;
-  const campaign = useCampaign(campaignId, campaignSlug);
+  const { milestoneId } = props.match.params;
 
   const [payment, setPayment] = useState({
     title: '',
     fiatAmount: 0,
-    currency: '',
+    selectedFiatType: '',
     token: {},
     date: getStartOfDayUTC().subtract(1, 'd'),
     description: '',
-    picture: '',
-    donateToDac: true,
     recipientAddress: '',
-    notCapped: false,
     conversionRateTimestamp: undefined,
   });
 
+  const [initialValues, setInitialValues] = useState({
+    title: '',
+    description: '',
+    donateToDac: true,
+    token: {},
+    recipientAddress: '',
+  });
+
+  const [milestone, setMilestone] = useState();
+  const [campaign, setCampaign] = useState();
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
   const [maxAmount, setMaxAmount] = useState(new BigNumber(0));
@@ -83,7 +82,7 @@ function CreatePayment(props) {
     if (loadingAmount) {
       setSubmitButtonText('Loading Amount');
     } else {
-      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
+      setSubmitButtonText('Update Payment');
     }
   }, [loadingAmount, userIsCampaignOwner]);
 
@@ -102,20 +101,55 @@ function CreatePayment(props) {
     };
   }, []);
 
+  const goBack = () => {
+    props.history.goBack();
+  };
+
   useEffect(() => {
-    if (currentUser.address && !payment.recipientAddress) {
-      setPayment({
-        ...payment,
-        recipientAddress: currentUser.address,
-      });
-      form.setFieldsValue({ recipientAddress: currentUser.address });
+    if (currentUser.id) {
+      MilestoneService.get(milestoneId)
+        .then(res => {
+          if (
+            res.formType !== Milestone.PAYMENTTYPE ||
+            !(
+              isOwner(res.owner.address, currentUser) ||
+              isOwner(res.campaign.ownerAddress, currentUser)
+            ) ||
+            res.donationCounters.length > 0
+          ) {
+            goBack();
+          } else {
+            const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
+            const capped = !!res.maxAmount;
+            const iValues = {
+              title: res.title,
+              description: res.description,
+              donateToDac: !!res.dacId,
+              token: res.token,
+              fiatAmount: res.fiatAmount.toNumber(),
+              selectedFiatType: res.selectedFiatType,
+              recipientAddress: res.recipientAddress,
+              notCapped: !capped,
+              image: imageUrl,
+              date: res.date,
+            };
+            setInitialValues(iValues);
+            setPayment(iValues);
+            setMilestone(res);
+            setCampaign(res.campaign);
+          }
+        })
+        .catch(err => {
+          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          ErrorHandler(err, message);
+        });
     }
-  }, [currentUser]);
+  }, [currentUser.id]);
 
   // Update item of this item in milestone token
   const updateAmount = () => {
-    const { token, currency, date, fiatAmount, notCapped } = payment;
-    if (!token.symbol || !currency || notCapped) return;
+    const { token, selectedFiatType, date, fiatAmount } = payment;
+    if (!token.symbol || !selectedFiatType || payment.notCapped) return;
 
     setLoadingAmount(true);
     if (timer.current) {
@@ -125,8 +159,8 @@ function CreatePayment(props) {
     timer.current = setTimeout(async () => {
       try {
         setLoadingRate(true);
-        const res = await getConversionRates(date, token.symbol, currency);
-        const rate = res.rates[currency];
+        const res = await getConversionRates(date, token.symbol, selectedFiatType);
+        const rate = res.rates[selectedFiatType];
         if (rate && isMounted.current) {
           conversionRateTimestamp.current = res.timestamp;
           setMaxAmount(new BigNumber(fiatAmount).div(rate));
@@ -147,7 +181,7 @@ function CreatePayment(props) {
 
   useEffect(() => {
     updateAmount();
-  }, [payment.token, payment.fiatAmount, payment.date, payment.currency]);
+  }, [payment.token, payment.fiatAmount, payment.date, payment.selectedFiatType]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -159,7 +193,9 @@ function CreatePayment(props) {
   };
 
   const handleSelectCurrency = (_, option) => {
-    handleInputChange({ target: { name: 'currency', value: option.value } });
+    handleInputChange({
+      target: { name: 'selectedFiatType', value: option.value },
+    });
   };
 
   const handleSelectToken = token => {
@@ -173,11 +209,7 @@ function CreatePayment(props) {
   };
 
   const setPicture = address => {
-    handleInputChange({ target: { name: 'picture', value: address } });
-  };
-
-  const goBack = () => {
-    props.history.goBack();
+    handleInputChange({ target: { name: 'image', value: address } });
   };
 
   const submit = async () => {
@@ -192,49 +224,42 @@ function CreatePayment(props) {
       const {
         title,
         description,
-        picture,
+        image,
         recipientAddress,
         notCapped,
         fiatAmount,
-        currency,
+        selectedFiatType,
         token,
         date,
         donateToDac,
       } = payment;
 
-      const ms = new BridgedMilestone({
-        title,
-        description,
-        recipientAddress,
-        token,
-        image: picture,
-        reviewerAddress: ZERO_ADDRESS,
-      });
+      milestone.parentProjectId = campaign.projectId;
+      milestone.title = title;
+      milestone.description = description;
+      milestone.image = image;
+      milestone.recipientAddress = recipientAddress;
+      milestone.image = image;
+      milestone.token = token;
+      milestone.dacId = donateToDac ? config.defaultDacId : 0;
+      milestone.maxAmount = !notCapped ? maxAmount : undefined;
+      milestone.date = date;
+      // TODO: We should have ability to delete fiatAmount for uncapped milestones
+      milestone.fiatAmount = !notCapped ? new BigNumber(fiatAmount) : new BigNumber(0);
+      milestone.selectedFiatType = selectedFiatType;
+      milestone.conversionRateTimestamp = !notCapped ? conversionRateTimestamp.current : undefined;
 
-      ms.ownerAddress = currentUser.address;
-      ms.campaignId = campaign._id;
-      ms.parentProjectId = campaign.projectId;
-
-      if (donateToDac) {
-        ms.dacId = config.defaultDacId;
-      }
-
-      if (!notCapped) {
-        ms.maxAmount = maxAmount;
-        ms.date = date;
-        ms.fiatAmount = new BigNumber(fiatAmount);
-        ms.selectedFiatType = currency;
-        ms.conversionRateTimestamp = conversionRateTimestamp.current;
-      }
-
-      if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
+      if (milestone.status) {
+        milestone.status =
+          !userIsCampaignOwner || milestone.status === Milestone.REJECTED
+            ? Milestone.PROPOSED
+            : milestone.status;
       }
 
       setLoading(true);
 
       await MilestoneService.save({
-        milestone: ms,
+        milestone,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -266,7 +291,7 @@ function CreatePayment(props) {
           notification.success({
             description: (
               <p>
-                Your Payment has been created!
+                Your Payment has been updated!
                 <br />
                 <a href={txUrl} target="_blank" rel="noopener noreferrer">
                   View transaction
@@ -283,6 +308,14 @@ function CreatePayment(props) {
     }
   };
 
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+
   return (
     <Fragment>
       <Web3ConnectWarning />
@@ -292,117 +325,129 @@ function CreatePayment(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title="Create New Payment"
+              title="Edit Payment"
               ghost={false}
             />
           </Col>
         </Row>
         <Row>
           <div className="card-form-container">
-            <Form
-              className="card-form"
-              requiredMark
-              initialValues={{
-                currency: fiatWhitelist[0] || 'USD',
-              }}
-              onFinish={submit}
-              form={form}
-              scrollToFirstError={{
-                block: 'center',
-                behavior: 'smooth',
-              }}
-            >
-              <div className="card-form-header">
-                <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
-                <div className="title">Payment</div>
-              </div>
+            {campaign && (
+              <Form
+                className="card-form"
+                requiredMark
+                initialValues={initialValues}
+                onFinish={submit}
+                form={form}
+                scrollToFirstError={{
+                  block: 'center',
+                  behavior: 'smooth',
+                }}
+              >
+                <div className="card-form-header">
+                  <img src={`${process.env.PUBLIC_URL}/img/payment.png`} alt="payment-logo" />
+                  <div className="title">Payment</div>
+                </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+                <MilestoneCampaignInfo campaign={campaign} />
 
-              <MilestoneTitle
-                value={payment.title}
-                onChange={handleInputChange}
-                extra="What are you going to accomplish in this Milestone?"
-              />
-
-              <div className="section">
-                <div className="title">Payment details</div>
-
-                <Row>
-                  <Form.Item className="custom-form-item">
-                    <Checkbox
-                      name="notCapped"
-                      checked={payment.notCapped}
-                      onChange={handleInputChange}
-                    >
-                      No limits
-                    </Checkbox>
-                  </Form.Item>
-                </Row>
-
-                {!payment.notCapped && (
-                  <Fragment>
-                    <MilestoneFiatAmountCurrency
-                      onCurrencyChange={handleSelectCurrency}
-                      onAmountChange={handleInputChange}
-                      amount={payment.fiatAmount}
-                      currency={payment.currency}
-                      disabled={loadingRate}
-                    />
-                    <MilestoneDatePicker
-                      onChange={handleDatePicker}
-                      value={payment.date}
-                      disabled={loadingRate}
-                    />
-                  </Fragment>
-                )}
-
-                <MilestoneDescription
+                <MilestoneTitle
+                  value={payment.title}
                   onChange={handleInputChange}
-                  value={payment.description}
-                  extra="Describe how you are going to execute this milestone successfully..."
-                  placeholder="e.g. Monthly salary"
-                  id="description"
+                  extra="What are you going to accomplish in this Milestone?"
+                  disabled={milestoneHasFunded}
                 />
 
-                <MilestonePicture
-                  setPicture={setPicture}
-                  milestoneTitle={payment.title}
-                  picture={payment.picture}
-                />
+                <div className="section">
+                  <div className="title">Payment details</div>
 
-                <MilestoneDonateToDac value={payment.donateToDac} onChange={handleInputChange} />
-              </div>
+                  <Row>
+                    <Form.Item className="custom-form-item">
+                      <Checkbox
+                        name="notCapped"
+                        checked={payment.notCapped}
+                        onChange={handleInputChange}
+                        disabled={!isProposed}
+                      >
+                        No limits
+                      </Checkbox>
+                    </Form.Item>
+                  </Row>
 
-              <div className="section">
-                <div className="title">Payment options</div>
-                <MilestoneToken
-                  label="Payment currency"
-                  onChange={handleSelectToken}
-                  includeAnyToken={payment.notCapped}
-                  totalAmount={convertEthHelper(maxAmount, payment.token.decimals)}
-                  hideTotalAmount={payment.notCapped}
-                  value={payment.token}
-                />
+                  {!payment.notCapped && (
+                    <Fragment>
+                      <MilestoneFiatAmountCurrency
+                        onCurrencyChange={handleSelectCurrency}
+                        onAmountChange={handleInputChange}
+                        amount={payment.fiatAmount}
+                        currency={payment.selectedFiatType}
+                        disabled={loadingRate || !isProposed}
+                        initialValues={initialValues}
+                      />
+                      <MilestoneDatePicker
+                        onChange={handleDatePicker}
+                        value={payment.date}
+                        disabled={loadingRate || !isProposed}
+                      />
+                    </Fragment>
+                  )}
 
-                <MilestoneRecipientAddress
-                  label="Pay to wallet address"
-                  onChange={handleInputChange}
-                  value={payment.recipientAddress}
-                />
-              </div>
-              <Form.Item>
-                <Button
-                  block
-                  size="large"
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading || loadingAmount}
-                >
-                  {submitButtonText}
-                </Button>
-              </Form.Item>
-            </Form>
+                  <MilestoneDescription
+                    onChange={handleInputChange}
+                    value={payment.description}
+                    extra="Describe how you are going to execute this milestone successfully..."
+                    placeholder="e.g. Monthly salary"
+                    id="description"
+                    disabled={milestoneHasFunded}
+                  />
+
+                  <MilestonePicture
+                    setPicture={setPicture}
+                    milestoneTitle={payment.title}
+                    picture={payment.image}
+                  />
+
+                  <MilestoneDonateToDac
+                    value={payment.donateToDac}
+                    onChange={handleInputChange}
+                    disabled={!isProposed}
+                  />
+                </div>
+
+                <div className="section">
+                  <div className="title">Payment options</div>
+
+                  <MilestoneToken
+                    label="Payment currency"
+                    onChange={handleSelectToken}
+                    includeAnyToken={payment.notCapped}
+                    totalAmount={convertEthHelper(maxAmount, payment.token.decimals)}
+                    hideTotalAmount={payment.notCapped}
+                    value={payment.token}
+                    initialValue={initialValues.token}
+                    disabled={!isProposed}
+                  />
+
+                  <MilestoneRecipientAddress
+                    label="Pay to wallet address"
+                    onChange={handleInputChange}
+                    value={payment.recipientAddress}
+                    disabled={!isProposed}
+                  />
+                </div>
+                <Form.Item>
+                  <Button
+                    block
+                    size="large"
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading || loadingAmount}
+                  >
+                    {submitButtonText}
+                  </Button>
+                </Form.Item>
+              </Form>
+            )}
           </div>
         </Row>
       </div>
@@ -410,17 +455,16 @@ function CreatePayment(props) {
   );
 }
 
-CreatePayment.propTypes = {
+EditPayment.propTypes = {
   history: PropTypes.shape({
     goBack: PropTypes.func.isRequired,
     push: PropTypes.func.isRequired,
   }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
-      id: PropTypes.string,
-      slug: PropTypes.string,
+      milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
-export default CreatePayment;
+export default EditPayment;

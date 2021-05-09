@@ -179,6 +179,7 @@ function CreateExpense(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.EXPENSETYPE;
 
       if (donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -223,10 +224,12 @@ function CreateExpense(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Expense has been updated!';
+            const notificationError =
+              'It seems your Expense has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (description && notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);

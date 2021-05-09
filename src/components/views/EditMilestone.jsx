@@ -52,8 +52,6 @@ function EditMilestone(props) {
     image: '',
   });
 
-  const isNew = milestoneId === undefined;
-
   const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
@@ -64,7 +62,7 @@ function EditMilestone(props) {
   }
 
   useEffect(() => {
-    if (!isNew && currentUser.id) {
+    if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
           if (
@@ -130,7 +128,6 @@ function EditMilestone(props) {
   }
 
   function setPicture(address) {
-    console.log(address);
     handleInputChange({ target: { name: 'image', value: address } });
   }
 
@@ -158,11 +155,7 @@ function EditMilestone(props) {
     ms.parentProjectId = campaign.projectId;
     ms.dacId = donateToDac ? config.defaultDacId : 0;
 
-    if (!userIsCampaignOwner && isNew) {
-      ms.status = Milestone.PROPOSED;
-    }
-    // make sure not to change status!
-    if (!isNew && milestone.status) {
+    if (milestone.status) {
       ms.status =
         !userIsCampaignOwner || milestone.status === Milestone.REJECTED
           ? Milestone.PROPOSED
@@ -201,50 +194,23 @@ function EditMilestone(props) {
         history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
       },
       afterMined: (created, txUrl) => {
-        if (created) {
-          notification.success({
-            description: (
-              <p>
-                Your Milestone has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        } else {
-          notification.success({
-            description: (
-              <p>
-                Your Milestone has been updated!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        }
+        notification.success({
+          description: (
+            <p>
+              Your Milestone has been updated!
+              <br />
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          ),
+        });
       },
       onError(message, err) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
     });
-  };
-
-  // To set the correct initial values for the form in editing mode
-  const toLoadForm = isNew || (!isNew && campaign);
-
-  const btnText = () => {
-    if (!isNew) {
-      return 'Update Milestone';
-    }
-    if (userIsCampaignOwner) {
-      return 'Create';
-    }
-    return 'Propose';
   };
 
   const milestoneHasFunded =
@@ -265,14 +231,14 @@ function EditMilestone(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title={isNew ? 'Create New Milestone' : 'Edit Milestone'}
+              title="Edit Milestone"
               ghost={false}
             />
           </Col>
         </Row>
         <Row>
           <div className="card-form-container">
-            {toLoadForm && (
+            {campaign && (
               <Form
                 className="card-form"
                 requiredMark
@@ -319,7 +285,7 @@ function EditMilestone(props) {
                   <MilestoneDonateToDac
                     value={donateToDac}
                     onChange={handleInputChange}
-                    disabled={!isNew && !isProposed}
+                    disabled={!isProposed}
                   />
 
                   <MilestoneReviewer
@@ -328,8 +294,8 @@ function EditMilestone(props) {
                     hasReviewer={hasReviewer}
                     milestoneReviewerAddress={milestone.reviewerAddress}
                     milestoneType="Milestone"
-                    initialValue={!isNew ? initialValues.reviewerAddress : null}
-                    disabled={!isNew && !isProposed}
+                    initialValue={initialValues.reviewerAddress}
+                    disabled={!isProposed}
                   />
 
                   <div className="milestone-desc">
@@ -341,7 +307,7 @@ function EditMilestone(props) {
                 </div>
                 <Form.Item>
                   <Button block size="large" type="primary" htmlType="submit" loading={loading}>
-                    {btnText()}
+                    Update Milestone
                   </Button>
                 </Form.Item>
               </Form>
@@ -356,15 +322,12 @@ function EditMilestone(props) {
 EditMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      id: PropTypes.string,
-      slug: PropTypes.string,
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
 const isEqual = (prevProps, nextProps) =>
-  prevProps.match.params.id === nextProps.match.params.id &&
-  prevProps.match.params.slug === nextProps.match.params.slug;
+  prevProps.match.params.milestoneId === nextProps.match.params.milestoneId;
 
 export default memo(EditMilestone, isEqual);

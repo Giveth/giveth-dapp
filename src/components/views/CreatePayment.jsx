@@ -214,6 +214,7 @@ function CreatePayment(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.PAYMENTTYPE;
 
       if (donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -253,10 +254,12 @@ function CreatePayment(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Payment has been updated!';
+            const notificationError =
+              'It seems your Payment has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (description && notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);

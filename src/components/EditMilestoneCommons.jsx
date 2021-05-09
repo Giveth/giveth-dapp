@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useContext, useEffect } from 'react';
+import React, { Fragment, useCallback, useContext } from 'react';
 import {
   Checkbox,
   Col,
@@ -306,9 +306,6 @@ MilestoneReviewer.defaultProps = {
 const MilestoneDatePicker = ({ onChange, value, disabled }) => {
   const maxValue = getStartOfDayUTC().subtract(1, 'd');
 
-  useEffect(() => {
-    onChange(maxValue);
-  }, []);
   return (
     <Row gutter={16}>
       <Col className="gutter-row" span={10}>
@@ -365,6 +362,8 @@ const MilestoneToken = ({
   totalAmount,
   includeAnyToken,
   hideTotalAmount,
+  initialValue,
+  disabled,
 }) => {
   const {
     state: { activeTokenWhitelist },
@@ -385,6 +384,7 @@ const MilestoneToken = ({
           className="custom-form-item"
           extra="Select the token you want to be reimbursed in."
           rules={[{ required: true, message: 'Payment currency is required' }]}
+          initialValue={initialValue.symbol}
         >
           <Select
             showSearch
@@ -397,6 +397,7 @@ const MilestoneToken = ({
             }
             value={value && value.symbol}
             required
+            disabled={disabled}
           >
             {includeAnyToken && (
               <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.symbol}>
@@ -432,6 +433,10 @@ MilestoneToken.propTypes = {
   totalAmount: PropTypes.string,
   includeAnyToken: PropTypes.bool,
   hideTotalAmount: PropTypes.bool,
+  initialValue: PropTypes.shape({
+    symbol: PropTypes.string,
+  }),
+  disabled: PropTypes.bool,
 };
 
 MilestoneToken.defaultProps = {
@@ -439,9 +444,13 @@ MilestoneToken.defaultProps = {
   totalAmount: '0',
   includeAnyToken: false,
   hideTotalAmount: false,
+  initialValue: {
+    symbol: null,
+  },
+  disabled: false,
 };
 
-const MilestoneRecipientAddress = ({ label, onChange, value }) => (
+const MilestoneRecipientAddress = ({ label, onChange, value, disabled }) => (
   <Form.Item
     name="recipientAddress"
     label={label}
@@ -458,7 +467,14 @@ const MilestoneRecipientAddress = ({ label, onChange, value }) => (
       },
     ]}
   >
-    <Input value={value} name="recipientAddress" placeholder="0x" onChange={onChange} required />
+    <Input
+      value={value}
+      name="recipientAddress"
+      placeholder="0x"
+      onChange={onChange}
+      required
+      disabled={disabled}
+    />
   </Form.Item>
 );
 
@@ -466,9 +482,11 @@ MilestoneRecipientAddress.propTypes = {
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 MilestoneRecipientAddress.defaultProps = {
   value: '',
+  disabled: false,
 };
 
 const MilestoneFiatAmountCurrency = ({
@@ -478,6 +496,7 @@ const MilestoneFiatAmountCurrency = ({
   currency,
   id,
   disabled,
+  initialValues,
 }) => {
   const {
     state: { fiatWhitelist },
@@ -505,6 +524,7 @@ const MilestoneFiatAmountCurrency = ({
               },
             },
           ]}
+          initialValue={initialValues.fiatAmount}
         >
           <Input
             name="fiatAmount"
@@ -523,6 +543,7 @@ const MilestoneFiatAmountCurrency = ({
           className="custom-form-item"
           extra="Select the currency of this expense."
           rules={[{ required: true, message: 'Amount currency is required' }]}
+          initialValue={initialValues.selectedFiatType}
         >
           <Select
             showSearch
@@ -556,13 +577,22 @@ MilestoneFiatAmountCurrency.propTypes = {
   currency: PropTypes.string,
   id: PropTypes.string,
   disabled: PropTypes.bool,
+  initialValues: PropTypes.shape({
+    selectedFiatType: PropTypes.string,
+    fiatAmount: PropTypes.number,
+  }),
 };
 MilestoneFiatAmountCurrency.defaultProps = {
   amount: 0,
   currency: '',
   id: '',
   disabled: false,
+  initialValues: {
+    selectedFiatType: null,
+    fiatAmount: 0,
+  },
 };
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   MilestoneTitle,

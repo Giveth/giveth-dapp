@@ -127,7 +127,7 @@ function CreateBounty(props) {
           } else {
             const notificationError =
               'It seems your Bounty has been updated!, this should not be happened';
-            notification.info({ description: notificationError });
+            notification.error({ description: notificationError });
           }
 
           if (description && notificationDescription) {

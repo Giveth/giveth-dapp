@@ -45,14 +45,12 @@ function EditBounty(props) {
     reviewerAddress: '',
   });
 
-  const isNew = milestoneId === undefined;
-
   function goBack() {
     history.goBack();
   }
 
   useEffect(() => {
-    if (!isNew && currentUser.id) {
+    if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
           if (
@@ -135,11 +133,7 @@ function EditBounty(props) {
     ms.ownerAddress = currentUser.address;
     ms.recipientAddress = ZERO_ADDRESS;
 
-    if (!userIsCampaignOwner && isNew) {
-      ms.status = Milestone.PROPOSED;
-    }
-    // make sure not to change status!
-    if (!isNew && milestone.status) {
+    if (milestone.status) {
       ms.status =
         !userIsCampaignOwner || milestone.status === Milestone.REJECTED
           ? Milestone.PROPOSED
@@ -177,50 +171,23 @@ function EditBounty(props) {
         history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
       },
       afterMined: (created, txUrl) => {
-        if (created) {
-          notification.success({
-            description: (
-              <p>
-                Your Bounty has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        } else {
-          notification.success({
-            description: (
-              <p>
-                Your Bounty has been updated!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        }
+        notification.success({
+          description: (
+            <p>
+              Your Bounty has been updated!
+              <br />
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                View transaction
+              </a>
+            </p>
+          ),
+        });
       },
       onError(message, err) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
     });
-  };
-
-  // To set the correct initial values for the form in editing mode
-  const toLoadForm = isNew || (!isNew && campaign);
-
-  const btnText = () => {
-    if (!isNew) {
-      return 'Update Bounty';
-    }
-    if (userIsCampaignOwner) {
-      return 'Create';
-    }
-    return 'Propose';
   };
 
   const milestoneHasFunded =
@@ -240,14 +207,14 @@ function EditBounty(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title={isNew ? 'Create New Bounty' : 'Edit Bounty'}
+              title="Edit Bounty"
               ghost={false}
             />
           </Col>
         </Row>
         <Row>
           <div className="card-form-container">
-            {toLoadForm && (
+            {campaign && (
               <Form
                 className="card-form"
                 requiredMark
@@ -287,16 +254,16 @@ function EditBounty(props) {
                   <MilestoneDonateToDac
                     value={donateToDac}
                     onChange={handleInputChange}
-                    disabled={!isNew && !isProposed}
+                    disabled={!isProposed}
                   />
 
                   <MilestoneReviewer
                     milestoneType="Bounty"
                     setReviewer={setReviewer}
                     hasReviewer
-                    initialValue={!isNew ? initialValues.reviewerAddress : null}
+                    initialValue={initialValues.reviewerAddress}
                     milestoneReviewerAddress={milestone.reviewerAddress}
-                    disabled={!isNew && !isProposed}
+                    disabled={!isProposed}
                   />
                 </div>
 
@@ -307,7 +274,7 @@ function EditBounty(props) {
 
                 <Form.Item>
                   <Button htmlType="submit" loading={loading} block size="large" type="primary">
-                    {btnText()}
+                    Update Bounty
                   </Button>
                 </Form.Item>
               </Form>
@@ -322,15 +289,12 @@ function EditBounty(props) {
 EditBounty.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      id: PropTypes.string,
-      slug: PropTypes.string,
       milestoneId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
 const isEqual = (prevProps, nextProps) =>
-  prevProps.match.params.id === nextProps.match.params.id &&
-  prevProps.match.params.slug === nextProps.match.params.slug;
+  prevProps.match.params.milestoneId === nextProps.match.params.milestoneId;
 
 export default memo(EditBounty, isEqual);
