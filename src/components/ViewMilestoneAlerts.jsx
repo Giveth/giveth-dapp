@@ -66,7 +66,10 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
 
       {milestone.canUserArchive(currentUser) && (
         <ProjectViewActionAlert message="Archive milestone">
-          <ArchiveMilestoneButton milestone={milestone} />
+          <ArchiveMilestoneButton
+            milestone={milestone}
+            isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+          />
         </ProjectViewActionAlert>
       )}
 
