@@ -106,7 +106,7 @@ const MilestoneConversationComment = ({ milestone }) => {
               You can add comment to milestone status. Your message will be displayed in the updates
               of milestone status
             </p>
-            <Form form={form} name="form_in_modal">
+            <Form form={form} name="form_in_modal" preserve={false}>
               <Form.Item
                 name="message"
                 rules={[
