@@ -136,7 +136,7 @@ const EditCampaign = ({ isNew, match }) => {
     }
 
     return () => {};
-  }, [userIsLoading, currentUser]);
+  }, [userIsLoading, currentUser, whitelistIsLoading]);
 
   // TODO: Check if user Changes (in Class components checked in didUpdate)
 
@@ -169,16 +169,12 @@ const EditCampaign = ({ isNew, match }) => {
 
   const uploadProps = {
     multiple: false,
+    maxCount: 1,
     accept: 'image/png, image/jpeg',
-    fileList: [],
     customRequest: options => {
-      const { onSuccess, onError, file, onProgress } = options;
-      onProgress(0);
+      const { onSuccess, onError, file } = options;
       IPFSService.upload(file)
-        .then(address => {
-          onSuccess(address);
-          onProgress(100);
-        })
+        .then(onSuccess)
         .catch(err => {
           onError('Failed!', err);
         });
