@@ -68,8 +68,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
                 )}
                 {!(milestone instanceof LPMilestone) && (
                   <div className="alert alert-warning">
-                    Note: For security reasons, there is a delay of approximately 72 hrs before the
-                    funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
+                    Note: For security reasons and to save in fees, there is a delay of
+                    approximately 2-5 days before the crypto will appear in{' '}
+                    {isRecipient ? 'your' : "the recipient's"} wallet.
                   </div>
                 )}
               </div>,
