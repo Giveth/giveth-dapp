@@ -26,21 +26,28 @@ const MilestoneConversationComment = ({ milestone }) => {
     return authenticateUser(currentUser, false).then(() => checkProfile(currentUser));
   }
 
+  const closeModal = () => {
+    setVisible(false);
+  };
+
   function createMessage() {
-    feathersClient
-      .service('conversations')
-      .create({
-        milestoneId: milestone.id,
-        message,
-        messageContext: 'comment',
-      })
-      .catch(err => {
-        if (err.name === 'NotAuthenticated') {
-          console.log('NotAuthenticated');
-        } else {
-          ErrorPopup('Something went wrong with creating new milestone message ', err);
-        }
-      });
+    form.validateFields().then(_ => {
+      closeModal();
+      feathersClient
+        .service('conversations')
+        .create({
+          milestoneId: milestone.id,
+          message,
+          messageContext: 'comment',
+        })
+        .catch(err => {
+          if (err.name === 'NotAuthenticated') {
+            console.log('NotAuthenticated');
+          } else {
+            ErrorPopup('Something went wrong with creating new milestone message ', err);
+          }
+        });
+    });
   }
 
   const showModal = () => {
@@ -51,10 +58,6 @@ const MilestoneConversationComment = ({ milestone }) => {
         });
       }
     });
-  };
-
-  const closeModal = () => {
-    setVisible(false);
   };
 
   const canUserEdit = () => {
@@ -70,14 +73,13 @@ const MilestoneConversationComment = ({ milestone }) => {
   };
 
   const onMessageChange = msg => {
-    console.log('msg :>> ', msg);
     setMessage(msg);
   };
 
   return (
     <div id="milestone-comment">
       {canUserEdit() && (
-        <Fragment>
+        <>
           <button
             type="button"
             className="btn btn-success btn-sm w-100 mt-2"
@@ -102,7 +104,7 @@ const MilestoneConversationComment = ({ milestone }) => {
               />
             </Form>
           </Modal>
-        </Fragment>
+        </>
       )}
     </div>
   );
