@@ -19,6 +19,7 @@ const MilestoneConversationComment = ({ milestone }) => {
   } = useContext(UserContext);
   const [message, setMessage] = useState('');
   const [isVisble, setVisible] = useState(false);
+  const [isCreating, setCreating] = useState(false);
 
   const [form] = useForm();
 
@@ -31,14 +32,18 @@ const MilestoneConversationComment = ({ milestone }) => {
   };
 
   function createMessage() {
+    setCreating(true);
     form.validateFields().then(_ => {
-      closeModal();
       feathersClient
         .service('conversations')
         .create({
           milestoneId: milestone.id,
           message,
           messageContext: 'comment',
+        })
+        .then(() => {
+          setCreating(false);
+          closeModal();
         })
         .catch(err => {
           if (err.name === 'NotAuthenticated') {
@@ -91,6 +96,7 @@ const MilestoneConversationComment = ({ milestone }) => {
             visible={isVisble}
             destroyOnClose
             okText="Add"
+            okButtonProps={{ loading: isCreating }}
             onOk={createMessage}
             onCancel={closeModal}
             title="Comment on Milestone"
