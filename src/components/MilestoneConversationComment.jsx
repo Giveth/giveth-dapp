@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
 import Modal from 'antd/lib/modal/Modal';
 import { getHtmlText } from 'lib/helpers';
-import { Form } from 'antd';
+import { Button, Form } from 'antd';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
@@ -90,13 +90,9 @@ const MilestoneConversationComment = ({ milestone }) => {
     <div id="milestone-comment">
       {canUserEdit() && (
         <>
-          <button
-            type="button"
-            className="btn btn-success btn-sm w-100 mt-2"
-            onClick={() => showModal()}
-          >
+          <Button onClick={showModal} type="primary" block className="mt-2">
             Write Comment
-          </button>
+          </Button>
           <Modal
             visible={isVisble}
             destroyOnClose
@@ -106,6 +102,10 @@ const MilestoneConversationComment = ({ milestone }) => {
             onCancel={closeModal}
             title="Comment on Milestone"
           >
+            <p>
+              You can add comment to milestone status. Your message will be displayed in the updates
+              of milestone status
+            </p>
             <Form form={form} name="form_in_modal">
               <Form.Item
                 name="message"
@@ -121,12 +121,7 @@ const MilestoneConversationComment = ({ milestone }) => {
                   }),
                 ]}
               >
-                <Editor
-                  name="message"
-                  value={message}
-                  onChange={onMessageChange}
-                  placeholder="You can add comment to milestone status. Your message will be displayed in the updates of milestone status. "
-                />
+                <Editor name="message" value={message} onChange={onMessageChange} />
               </Form.Item>
             </Form>
           </Modal>
