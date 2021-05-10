@@ -1,26 +1,32 @@
-import React, { Fragment, useContext, useRef } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
+import Modal from 'antd/lib/modal/Modal';
+import Form, { useForm } from 'antd/lib/form/Form';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
-import ConversationModal from './ConversationModal';
+// import ConversationModal from './ConversationModal';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
+import Editor from './Editor';
 
 const MilestoneConversationComment = ({ milestone }) => {
-  const conversationModal = useRef(null);
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const [message, setMessage] = useState('');
+  const [isVisble, setVisible] = useState(false);
+
+  const [form] = useForm();
 
   function checkUser() {
     return authenticateUser(currentUser, false).then(() => checkProfile(currentUser));
   }
 
-  function createMessage(message) {
+  function createMessage() {
     feathersClient
       .service('conversations')
       .create({
@@ -37,35 +43,18 @@ const MilestoneConversationComment = ({ milestone }) => {
       });
   }
 
-  const writeMessage = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
-      conversationModal.current
-        .openModal({
-          title: 'Comment on Milestone',
-          description:
-            'You can add comment to milestone status. Your message will be displayed in the updates of milestone status. ',
-          textPlaceholder: '',
-          required: false,
-          cta: 'Add',
-          enableAttachProof: false,
-        })
-        .then(({ message }) => {
-          const msg = message.trim();
-          if (msg) {
-            createMessage(msg);
-            conversationModal.current.setState({ message: '' });
-          }
-        })
-        .catch(_ => {}),
-    );
-  };
-
-  const editMessage = () => {
+  const showModal = () => {
     checkUser().then(() => {
       if (currentUser.authenticated) {
-        writeMessage();
+        actionWithLoggedIn(currentUser).then(() => {
+          setVisible(true);
+        });
       }
     });
+  };
+
+  const closeModal = () => {
+    setVisible(false);
   };
 
   const canUserEdit = () => {
@@ -80,6 +69,11 @@ const MilestoneConversationComment = ({ milestone }) => {
     );
   };
 
+  const onMessageChange = msg => {
+    console.log('msg :>> ', msg);
+    setMessage(msg);
+  };
+
   return (
     <div id="milestone-comment">
       {canUserEdit() && (
@@ -87,11 +81,27 @@ const MilestoneConversationComment = ({ milestone }) => {
           <button
             type="button"
             className="btn btn-success btn-sm w-100 mt-2"
-            onClick={() => editMessage()}
+            onClick={() => showModal()}
           >
             Write Comment
           </button>
-          <ConversationModal ref={conversationModal} milestone={milestone} />
+          <Modal
+            visible={isVisble}
+            destroyOnClose
+            okText="Add"
+            onOk={createMessage}
+            onCancel={closeModal}
+            title="Comment on Milestone"
+          >
+            <Form form={form} name="form_in_modal">
+              <Editor
+                name="message"
+                value={message}
+                onChange={onMessageChange}
+                placeholder="You can add comment to milestone status. Your message will be displayed in the updates of milestone status. "
+              />
+            </Form>
+          </Modal>
         </Fragment>
       )}
     </div>
