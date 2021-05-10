@@ -62,7 +62,16 @@ MilestoneTitle.defaultProps = {
   disabled: false,
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id, disabled }) => {
+const MilestoneDescription = ({
+  extra,
+  onChange,
+  placeholder,
+  value,
+  label,
+  id,
+  disabled,
+  initialValue,
+}) => {
   const onDescriptionChange = useCallback(
     description => {
       onChange({ target: { name: 'description', value: description } });
@@ -76,6 +85,7 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id, 
       className="custom-form-item"
       extra={extra}
       required
+      initialValue={initialValue}
       rules={[
         {
           type: 'string',
@@ -113,6 +123,7 @@ MilestoneDescription.propTypes = {
   label: PropTypes.string,
   id: PropTypes.string,
   disabled: PropTypes.bool,
+  initialValue: PropTypes.string,
 };
 
 MilestoneDescription.defaultProps = {
@@ -121,6 +132,7 @@ MilestoneDescription.defaultProps = {
   label: 'Description',
   id: '',
   disabled: false,
+  initialValue: '',
 };
 
 const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {

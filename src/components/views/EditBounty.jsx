@@ -121,7 +121,6 @@ function EditBounty(props) {
       return;
     }
 
-    const { description } = milestone;
     const ms = new BridgedMilestone(milestone);
 
     ms.token = ANY_TOKEN;
@@ -164,7 +163,7 @@ function EditBounty(props) {
           notificationDescription = 'Your Bounty has been updated!';
         }
 
-        if (description) {
+        if (notificationDescription) {
           notification.info({ description: notificationDescription });
         }
         setLoading(false);

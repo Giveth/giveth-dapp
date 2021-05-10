@@ -259,7 +259,7 @@ function CreatePayment(props) {
             notification.error({ description: notificationError });
           }
 
-          if (description && notificationDescription) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);

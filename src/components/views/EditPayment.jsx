@@ -126,7 +126,7 @@ function EditPayment(props) {
               description: res.description,
               donateToDac: !!res.dacId,
               token: res.token,
-              fiatAmount: res.fiatAmount.toNumber(),
+              fiatAmount: res.fiatAmount ? res.fiatAmount.toNumber() : 0,
               selectedFiatType: res.selectedFiatType,
               recipientAddress: res.recipientAddress,
               notCapped: !capped,
@@ -237,7 +237,6 @@ function EditPayment(props) {
       milestone.parentProjectId = campaign.projectId;
       milestone.title = title;
       milestone.description = description;
-      milestone.image = image;
       milestone.recipientAddress = recipientAddress;
       milestone.image = image;
       milestone.token = token;
@@ -281,7 +280,7 @@ function EditPayment(props) {
             notificationDescription = 'Your Payment has been updated!';
           }
 
-          if (description) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);

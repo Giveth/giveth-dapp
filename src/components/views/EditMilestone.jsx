@@ -142,7 +142,7 @@ function EditMilestone(props) {
       return;
     }
 
-    const { description, reviewerAddress } = milestone;
+    const { reviewerAddress } = milestone;
     const ms = new LPMilestone(milestone);
 
     ms.token = ANY_TOKEN;
@@ -187,7 +187,7 @@ function EditMilestone(props) {
           notificationDescription = 'Your Milestone has been updated!';
         }
 
-        if (description) {
+        if (notificationDescription) {
           notification.info({ description: notificationDescription });
         }
         setLoading(false);
