@@ -40,7 +40,8 @@
       {
         "singleQuote": true,
         "trailingComma": "all",
-        "printWidth": 100
+        "printWidth": 100,
+        "endOfLine": "auto"
       }
     ],
     "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules
