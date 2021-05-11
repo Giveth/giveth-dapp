@@ -135,7 +135,7 @@ MilestoneDescription.defaultProps = {
   initialValue: '',
 };
 
-const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
+const MilestonePicture = ({ picture, setPicture, milestoneTitle, disabled }) => {
   const uploadProps = {
     multiple: false,
     accept: 'image/png, image/jpeg',
@@ -182,11 +182,11 @@ const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
         {picture ? (
           <div className="picture-upload-preview">
             <img src={`${config.ipfsGateway}${picture.slice(6)}`} alt={milestoneTitle} />
-            <DeleteTwoTone onClick={removePicture} />
+            {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
           </div>
         ) : (
           <ImgCrop>
-            <Upload.Dragger {...uploadProps}>
+            <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
               <p className="ant-upload-text">
                 Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
               </p>
@@ -202,6 +202,11 @@ MilestonePicture.propTypes = {
   picture: PropTypes.string.isRequired,
   milestoneTitle: PropTypes.string.isRequired,
   setPicture: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+MilestonePicture.defaultProps = {
+  disabled: false,
 };
 
 const MilestoneDonateToDac = ({ onChange, value, disabled }) => (
