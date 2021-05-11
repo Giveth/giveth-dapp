@@ -55,11 +55,12 @@ const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
             .openModal({
               title: 'Accept proposed Milestone',
               description:
-                'Optionally explain why you accept this proposed Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
+                'Your acceptance of this Milestone will be recorded as a publicly visible comment, and emailed to the Milestone Owner. Please add a personal comment, compliment or other custom message to accompany it!',
               textPlaceholder: 'Optionally explain why you accept this proposal...',
               required: false,
               cta: 'Accept proposal',
               enableAttachProof: false,
+              type: 'AcceptProposed',
             })
             .then(proof => {
               MilestoneService.acceptProposedMilestone({

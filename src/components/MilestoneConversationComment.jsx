@@ -42,12 +42,24 @@ const MilestoneConversationComment = ({ milestone }) => {
       conversationModal.current
         .openModal({
           title: 'Comment on Milestone',
-          description:
-            'You can add comment to milestone status. Your message will be displayed in the updates of milestone status. ',
+          description: (
+            <Fragment>
+              <p>Use this Comment section to:</p>
+              <ul>
+                <li>Provide a public record of questions and answers</li>
+                <li>Write an update, changes, compliments or concerns</li>
+                <li>
+                  Write other information that helps donors and project participants understand the
+                  the current status of the Milestone
+                </li>
+              </ul>
+            </Fragment>
+          ),
           textPlaceholder: '',
           required: false,
           cta: 'Add',
           enableAttachProof: false,
+          type: 'Comment',
         })
         .then(({ message }) => {
           const msg = message.trim();

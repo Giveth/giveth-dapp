@@ -3,15 +3,18 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Lottie from 'lottie-react';
 
 import Milestone from 'models/Milestone';
 import MilestoneProof from 'components/MilestoneProof';
-import { Button, Form, Modal } from 'antd';
+import { Button, Form, Modal, Row, Col } from 'antd';
 import Editor from './Editor';
 import { getHtmlText } from '../lib/helpers';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
+import CommentAnimation from '../assets/pencil.json';
+import AcceptProposedAnimation from '../assets/checkmark.json';
 
 /**
   A promise modal to file proof when taking action on a milestone
@@ -68,7 +71,7 @@ class ConversationModal extends Component {
     this.setState({ message }, () => this.toggleFormValid());
   }
 
-  openModal({ title, description, cta, required, textPlaceholder }) {
+  openModal({ title, description, cta, required, textPlaceholder, type }) {
     this.setState(
       {
         items: [],
@@ -79,6 +82,7 @@ class ConversationModal extends Component {
         required,
         formIsValid: !required,
         textPlaceholder,
+        type,
       },
       this.toggleFormValid,
     );
@@ -131,9 +135,20 @@ class ConversationModal extends Component {
       items,
       enableAttachProof,
       textPlaceholder,
+      type,
     } = this.state;
 
     const { milestone } = this.props;
+
+    let LottieAnimation;
+    let AnimationWidth;
+    if (type === 'Comment') {
+      LottieAnimation = CommentAnimation;
+      AnimationWidth = '200px';
+    } else if (type === 'AcceptProposed') {
+      LottieAnimation = AcceptProposedAnimation;
+      AnimationWidth = '400px';
+    }
 
     return (
       <Modal
@@ -159,7 +174,20 @@ class ConversationModal extends Component {
         ]}
       >
         <Form id="conversation" preserve={false} onSubmit={this.submit} requiredMark={required}>
-          <p className="mb-4">{description}</p>
+          <Row>
+            <Col className="col m-auto">
+              <div className="mb-4">{description}</div>
+            </Col>
+            {LottieAnimation && (
+              <Col span={12} className="text-center">
+                <Lottie
+                  animationData={LottieAnimation}
+                  className="m-auto"
+                  style={{ width: AnimationWidth }}
+                />
+              </Col>
+            )}
+          </Row>
           <div className="row">
             <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
               <Form.Item
