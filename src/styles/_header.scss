@@ -73,6 +73,10 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   }
 }
 
+.ant-menu {
+  font-size: 16px;
+}
+
 @media (max-width: 992px) {
   .ant-drawer-header {
     padding: 24px;
