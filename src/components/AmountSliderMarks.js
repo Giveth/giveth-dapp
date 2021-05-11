@@ -7,9 +7,14 @@ const AmountSliderMarks = (maxAmount, decimals) => {
     },
     label: '0%',
   };
-  sliderMarks[Number((maxAmount / 4).toFixed(_decimals))] = '25%';
-  sliderMarks[Number((maxAmount / 2).toFixed(_decimals))] = '50%';
-  sliderMarks[Number(((3 * maxAmount) / 4).toFixed(_decimals))] = '75%';
+
+  // Hide these slider marks for very tiny maxAmounts
+  if (maxAmount.toNumber() > 20 / 10 ** decimals) {
+    sliderMarks[Number((maxAmount / 4).toFixed(_decimals))] = '25%';
+    sliderMarks[Number((maxAmount / 2).toFixed(_decimals))] = '50%';
+    sliderMarks[Number(((3 * maxAmount) / 4).toFixed(_decimals))] = '75%';
+  }
+
   sliderMarks[Number(maxAmount.toFixed(_decimals))] = 'Max';
   return sliderMarks;
 };

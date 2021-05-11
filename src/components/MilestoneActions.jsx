@@ -95,7 +95,10 @@ function MilestoneActions({ milestone }) {
         />
       ) : null}
 
-      <ArchiveMilestoneButton milestone={milestone} />
+      <ArchiveMilestoneButton
+        milestone={milestone}
+        isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+      />
 
       <ChangeMilestoneRecipientButton milestone={milestone} />
 

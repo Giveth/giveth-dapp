@@ -22,12 +22,12 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
     fileList,
     customRequest: options => {
       const { onSuccess, onError, file, onProgress } = options;
-      onProgress(0);
+      onProgress({ percent: 0 });
       IPFSService.upload(file)
         .then(hash => {
           if (visible) {
+            onProgress({ percent: 100 });
             onSuccess(config.ipfsGateway + hash.slice(6));
-            onProgress(100);
           }
         })
         .catch(err => {

@@ -139,15 +139,10 @@ const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
   const uploadProps = {
     multiple: false,
     accept: 'image/png, image/jpeg',
-    fileList: [],
     customRequest: options => {
-      const { onSuccess, onError, file, onProgress } = options;
-      onProgress(0);
+      const { onSuccess, onError, file } = options;
       IPFSService.upload(file)
-        .then(address => {
-          onSuccess(address);
-          onProgress(100);
-        })
+        .then(onSuccess)
         .catch(err => {
           onError('Failed!', err);
         });

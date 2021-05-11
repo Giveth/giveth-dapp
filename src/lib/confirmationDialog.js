@@ -24,7 +24,7 @@ export default (type, title, successCallback) => {
   }
   sweetContent.innerHTML = `
     <b style="margin-bottom: 10px">${title}</b>
-    <input type="text" placeholder="First five characters of the above title" class="confirmation-input" style="width: 100%" />`;
+    <input type="text" placeholder="First five characters (without space) of the above title" class="confirmation-input" style="width: 100%" />`;
   React.swal({
     title: dialogTitle,
     text: dialogText,
