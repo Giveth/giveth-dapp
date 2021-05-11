@@ -172,8 +172,7 @@ const ModalContent = props => {
     }
 
     const max = roundBigNumber(localMax, decimals);
-    const maxNum = max.toNumber();
-    const sliderMark = AmountSliderMarks(maxNum, decimals);
+    const sliderMark = AmountSliderMarks(max, decimals);
 
     setSliderMarks(sliderMark);
     setDelegations(_delegations);
