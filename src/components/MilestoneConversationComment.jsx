@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
 import Modal from 'antd/lib/modal/Modal';
 import { getHtmlText } from 'lib/helpers';
-import { Button, Form } from 'antd';
+import { Button, Col, Form, Row } from 'antd';
+import Lottie from 'lottie-react';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
@@ -12,6 +13,7 @@ import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
 import Editor from './Editor';
+import CommentAnimation from '../assets/pencil.json';
 
 const MilestoneConversationComment = ({ milestone }) => {
   const {
@@ -86,6 +88,20 @@ const MilestoneConversationComment = ({ milestone }) => {
     setMessage(msg);
   };
 
+  const description = (
+    <Fragment>
+      <p>Use this Comment section to:</p>
+      <ul>
+        <li>Provide a public record of questions and answers</li>
+        <li>Write an update, changes, compliments or concerns</li>
+        <li>
+          Write other information that helps donors and project participants understand the the
+          current status of the Milestone
+        </li>
+      </ul>
+    </Fragment>
+  );
+
   return (
     <div id="milestone-comment">
       {canUserEdit() && (
@@ -101,18 +117,21 @@ const MilestoneConversationComment = ({ milestone }) => {
             onOk={createMessage}
             onCancel={closeModal}
             title="Comment on Milestone"
+            width={900}
           >
-            <Fragment>
-              <p>Use this Comment section to:</p>
-              <ul>
-                <li>Provide a public record of questions and answers</li>
-                <li>Write an update, changes, compliments or concerns</li>
-                <li>
-                  Write other information that helps donors and project participants understand the
-                  the current status of the Milestone
-                </li>
-              </ul>
-            </Fragment>
+            <Row>
+              <Col className="col m-auto">
+                <div className="mb-4">{description}</div>
+              </Col>
+              <Col span={12} className="text-center">
+                <Lottie
+                  animationData={CommentAnimation}
+                  className="m-auto"
+                  loop={false}
+                  style={{ width: '200px' }}
+                />
+              </Col>
+            </Row>
             <Form form={form} name="form_in_modal" preserve={false}>
               <Form.Item
                 name="message"

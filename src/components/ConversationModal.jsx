@@ -13,7 +13,6 @@ import { getHtmlText } from '../lib/helpers';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
-import CommentAnimation from '../assets/pencil.json';
 import AcceptProposedAnimation from '../assets/checkmark.json';
 
 /**
@@ -86,7 +85,11 @@ class ConversationModal extends Component {
       },
       this.toggleFormValid,
     );
-
+    // Centering AcceptProposed SVG animation
+    const element = document.getElementById('LottieAnimation');
+    if (element && type === 'AcceptProposed') {
+      element.children[0].setAttribute('viewBox', '150 100 500 400');
+    }
     return new Promise((resolve, reject) => {
       this.promise = {
         resolve,
@@ -142,12 +145,9 @@ class ConversationModal extends Component {
 
     let LottieAnimation;
     let AnimationWidth;
-    if (type === 'Comment') {
-      LottieAnimation = CommentAnimation;
-      AnimationWidth = '200px';
-    } else if (type === 'AcceptProposed') {
+    if (type === 'AcceptProposed') {
       LottieAnimation = AcceptProposedAnimation;
-      AnimationWidth = '400px';
+      AnimationWidth = '200px';
     }
 
     return (
@@ -182,7 +182,9 @@ class ConversationModal extends Component {
               <Col span={12} className="text-center">
                 <Lottie
                   animationData={LottieAnimation}
+                  loop={false}
                   className="m-auto"
+                  id="LottieAnimation"
                   style={{ width: AnimationWidth }}
                 />
               </Col>
