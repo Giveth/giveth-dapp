@@ -58,7 +58,8 @@ export default class LPMilestone extends Milestone {
       this.ownerAddress === user.address &&
       (!this.hasReviewer || this.status === Milestone.COMPLETED) &&
       this.mined &&
-      this.donationCounters.some(dc => dc.currentBalance.gt(0))
+      this.donationCounters.some(dc => dc.currentBalance.gt(0)) &&
+      this.status !== Milestone.CANCELED
     );
   }
 
