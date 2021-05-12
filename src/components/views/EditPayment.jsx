@@ -78,6 +78,14 @@ function EditPayment(props) {
   const conversionRateTimestamp = useRef();
   const [submitButtonText, setSubmitButtonText] = useState('Propose');
 
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+
   useEffect(() => {
     if (loadingAmount) {
       setSubmitButtonText('Loading Amount');
@@ -105,18 +113,23 @@ function EditPayment(props) {
     props.history.goBack();
   };
 
+  const isEditNotAllowed = ms => {
+    return (
+      ms.formType !== Milestone.PAYMENTTYPE ||
+      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      ms.donationCounters.length > 0
+    );
+  };
+
   useEffect(() => {
-    if (currentUser.id) {
+    if (milestone) {
+      if (isEditNotAllowed(milestone)) {
+        goBack();
+      }
+    } else if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
-          if (
-            res.formType !== Milestone.PAYMENTTYPE ||
-            !(
-              isOwner(res.owner.address, currentUser) ||
-              isOwner(res.campaign.ownerAddress, currentUser)
-            ) ||
-            res.donationCounters.length > 0
-          ) {
+          if (isEditNotAllowed(res)) {
             goBack();
           } else {
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
@@ -241,19 +254,20 @@ function EditPayment(props) {
       milestone.image = image;
       milestone.token = token;
       milestone.dacId = donateToDac ? config.defaultDacId : 0;
-      milestone.maxAmount = !notCapped ? maxAmount : undefined;
-      milestone.date = date;
       // TODO: We should have ability to delete fiatAmount for uncapped milestones
-      milestone.fiatAmount = !notCapped ? new BigNumber(fiatAmount) : new BigNumber(0);
-      milestone.selectedFiatType = selectedFiatType;
-      milestone.conversionRateTimestamp = !notCapped ? conversionRateTimestamp.current : undefined;
 
-      if (milestone.status) {
-        milestone.status =
-          !userIsCampaignOwner || milestone.status === Milestone.REJECTED
-            ? Milestone.PROPOSED
-            : milestone.status;
+      if (!notCapped) {
+        milestone.maxAmount = maxAmount;
+        milestone.date = date;
+        milestone.fiatAmount = new BigNumber(fiatAmount);
+        milestone.selectedFiatType = selectedFiatType;
+        milestone.conversionRateTimestamp = conversionRateTimestamp.current;
       }
+
+      milestone.status =
+        isProposed || milestone.status === Milestone.REJECTED
+          ? Milestone.PROPOSED
+          : milestone.status; // make sure not to change status!
 
       setLoading(true);
 
@@ -306,14 +320,6 @@ function EditPayment(props) {
       });
     }
   };
-
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
-
-  const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
 
   return (
     <Fragment>

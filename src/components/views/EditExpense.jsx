@@ -17,7 +17,6 @@ import {
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { authenticateUser } from '../../lib/middleware';
-// import BridgedMilestone from '../../models/BridgedMilestone';
 import { Milestone, MilestoneItem } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
@@ -54,7 +53,6 @@ function EditExpense(props) {
       loadingAmount: false,
     },
   ]);
-  const [itemsInitialValues, setItemsInitialValues] = useState();
   const [milestone, setMilestone] = useState();
   const [campaign, setCampaign] = useState();
   const [totalAmount, setTotalAmount] = useState(new BigNumber(0));
@@ -62,6 +60,14 @@ function EditExpense(props) {
   const [loading, setLoading] = useState(false);
   const [loadingAmount, setLoadingAmount] = useState(false);
   const [submitButtonText, setSubmitButtonText] = useState('Propose');
+
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
 
   useEffect(() => {
     if (loadingAmount) {
@@ -148,18 +154,23 @@ function EditExpense(props) {
     history.goBack();
   }
 
+  const isEditNotAllowed = ms => {
+    return (
+      ms.formType !== Milestone.EXPENSETYPE ||
+      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      ms.donationCounters.length > 0
+    );
+  };
+
   useEffect(() => {
-    if (currentUser.id) {
+    if (milestone) {
+      if (isEditNotAllowed(milestone)) {
+        goBack();
+      }
+    } else if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
-          if (
-            res.formType !== Milestone.EXPENSETYPE ||
-            !(
-              isOwner(res.owner.address, currentUser) ||
-              isOwner(res.campaign.ownerAddress, currentUser)
-            ) ||
-            res.donationCounters.length > 0
-          ) {
+          if (isEditNotAllowed(res)) {
             goBack();
           } else {
             const iValues = {
@@ -183,7 +194,6 @@ function EditExpense(props) {
               temp.picture = imageUrl;
               items.push(temp);
             });
-            setItemsInitialValues(items);
             setExpenseItems(items);
             setInitialValues(iValues);
             setExpenseForm(iValues);
@@ -216,12 +226,10 @@ function EditExpense(props) {
       milestone.maxAmount = totalAmount;
       // TODO: We should have ability to delete fiatAmount for uncapped milestones
 
-      if (milestone.status) {
-        milestone.status =
-          !userIsCampaignOwner || milestone.status === Milestone.REJECTED
-            ? Milestone.PROPOSED
-            : milestone.status;
-      }
+      milestone.status =
+        isProposed || milestone.status === Milestone.REJECTED
+          ? Milestone.PROPOSED
+          : milestone.status; // make sure not to change status!
 
       milestone.items = expenseItems.map(expenseItem => {
         const amount = itemAmountMap.current[expenseItem.key];
@@ -286,14 +294,6 @@ function EditExpense(props) {
     }
   };
 
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
-
-  const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
-
   return (
     <Fragment>
       <Web3ConnectWarning />
@@ -341,7 +341,7 @@ function EditExpense(props) {
                   {expenseItems.map((item, idx) => (
                     <CreateExpenseItem
                       key={item.key}
-                      item={itemsInitialValues[idx] ? itemsInitialValues[idx] : item}
+                      item={item}
                       id={idx}
                       updateStateOfItem={updateStateOfItem}
                       removeExpense={removeExpense}

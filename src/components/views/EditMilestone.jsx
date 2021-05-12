@@ -3,7 +3,7 @@ import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 
-import { ANY_TOKEN, history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
+import { history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
@@ -37,13 +37,7 @@ function EditMilestone(props) {
   const [campaign, setCampaign] = useState();
   const [hasReviewer, setHasReviewer] = useState(true);
   const [donateToDac, setDonateToDac] = useState(true);
-  const [milestone, setMilestone] = useState({
-    title: '',
-    description: '',
-    donateToDac: true,
-    reviewerAddress: '',
-    image: '',
-  });
+  const [milestone, setMilestone] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
@@ -57,35 +51,49 @@ function EditMilestone(props) {
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+
   function goBack() {
     history.goBack();
   }
 
+  const isEditNotAllowed = ms => {
+    return (
+      ms.formType !== Milestone.MILESTONETYPE ||
+      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      ms.donationCounters.length > 0
+    );
+  };
+
   useEffect(() => {
-    if (currentUser.id) {
+    if (milestone) {
+      if (isEditNotAllowed(milestone)) {
+        goBack();
+      }
+    } else if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
-          if (
-            res.formType !== Milestone.MILESTONETYPE ||
-            !(
-              isOwner(res.owner.address, currentUser) ||
-              isOwner(res.campaign.ownerAddress, currentUser)
-            ) ||
-            res.donationCounters.length > 0
-          ) {
+          if (isEditNotAllowed(res)) {
             goBack();
           } else {
+            const isReviewer = res.reviewerAddress !== ZERO_ADDRESS;
             const iValues = {
               title: res.title,
               description: res.description,
-              recipientAddress: res.recipientAddress,
-              reviewerAddress: res.reviewerAddress,
+              reviewerAddress: isReviewer ? res.reviewerAddress : null,
               image: res.image,
               donateToDac: !!res.dacId,
             };
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
             setInitialValues(iValues);
             setDonateToDac(!!res.dacId);
+            setHasReviewer(isReviewer);
             setMilestone(res);
             setImage(imageUrl);
             setCampaign(res.campaign);
@@ -145,22 +153,13 @@ function EditMilestone(props) {
     const { reviewerAddress } = milestone;
     const ms = new LPMilestone(milestone);
 
-    ms.token = ANY_TOKEN;
     ms.image = image;
-    ms.recipientId = campaign.projectId.toString();
     ms.reviewerAddress = hasReviewer ? reviewerAddress : ZERO_ADDRESS;
-    ms.ownerAddress = currentUser.address;
-    ms.campaignId = campaign._id;
-    ms.formType = Milestone.MILESTONETYPE;
     ms.parentProjectId = campaign.projectId;
     ms.dacId = donateToDac ? config.defaultDacId : 0;
 
-    if (milestone.status) {
-      ms.status =
-        !userIsCampaignOwner || milestone.status === Milestone.REJECTED
-          ? Milestone.PROPOSED
-          : milestone.status;
-    }
+    ms.status =
+      isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
 
     setLoading(true);
 
@@ -212,14 +211,6 @@ function EditMilestone(props) {
       },
     });
   };
-
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
-
-  const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
 
   return (
     <Fragment>

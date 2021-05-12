@@ -12,7 +12,7 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { ANY_TOKEN, history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
+import { history, isOwner } from '../../lib/helpers';
 import config from '../../configuration';
 import { Milestone } from '../../models';
 import { MilestoneService } from '../../services';
@@ -32,12 +32,7 @@ function EditBounty(props) {
 
   const [campaign, setCampaign] = useState();
   const [donateToDac, setDonateToDac] = useState(true);
-  const [milestone, setMilestone] = useState({
-    title: '',
-    description: '',
-    donateToDac: true,
-    reviewerAddress: '',
-  });
+  const [milestone, setMilestone] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
@@ -45,22 +40,35 @@ function EditBounty(props) {
     reviewerAddress: '',
   });
 
+  const milestoneHasFunded =
+    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+
+  const isProposed =
+    milestone &&
+    milestone.status &&
+    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+
   function goBack() {
     history.goBack();
   }
 
+  const isEditNotAllowed = ms => {
+    return (
+      ms.formType !== Milestone.BOUNTYTYPE ||
+      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      ms.donationCounters.length > 0
+    );
+  };
+
   useEffect(() => {
-    if (currentUser.id) {
+    if (milestone) {
+      if (isEditNotAllowed(milestone)) {
+        goBack();
+      }
+    } else if (currentUser.id) {
       MilestoneService.get(milestoneId)
         .then(res => {
-          if (
-            res.formType !== Milestone.BOUNTYTYPE ||
-            !(
-              isOwner(res.owner.address, currentUser) ||
-              isOwner(res.campaign.ownerAddress, currentUser)
-            ) ||
-            res.donationCounters.length > 0
-          ) {
+          if (isEditNotAllowed(res)) {
             goBack();
           } else {
             const iValues = {
@@ -123,21 +131,10 @@ function EditBounty(props) {
 
     const ms = new BridgedMilestone(milestone);
 
-    ms.token = ANY_TOKEN;
-    ms.image = '/img/bountyProject.png';
-    ms.campaignId = campaign._id;
     ms.parentProjectId = campaign.projectId;
     ms.dacId = donateToDac ? config.defaultDacId : 0;
-    ms.formType = Milestone.BOUNTYTYPE;
-    ms.ownerAddress = currentUser.address;
-    ms.recipientAddress = ZERO_ADDRESS;
-
-    if (milestone.status) {
-      ms.status =
-        !userIsCampaignOwner || milestone.status === Milestone.REJECTED
-          ? Milestone.PROPOSED
-          : milestone.status;
-    }
+    ms.status =
+      isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
 
     setLoading(true);
     await MilestoneService.save({
@@ -188,14 +185,6 @@ function EditBounty(props) {
       },
     });
   };
-
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
-
-  const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
 
   return (
     <Fragment>
