@@ -144,48 +144,36 @@ class ConversationModal extends Component {
     const { milestone } = this.props;
 
     let LottieAnimation;
-    let AnimationWidth;
     if (type === 'AcceptProposed') {
       LottieAnimation = AcceptProposedAnimation;
-      AnimationWidth = '200px';
     }
 
     return (
       <Modal
-        wrapClassName="vertical-center-modal"
         visible={modalIsOpen}
         destroyOnClose
         onCancel={() => this.closeModal(true)}
-        title={title}
         width={1000}
-        footer={[
-          <Button key="back" onClick={() => this.closeModal(true)}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={isSaving}
-            onClick={this.submit}
-            disabled={!formIsValid}
-          >
-            {CTA}
-          </Button>,
-        ]}
+        footer={null}
+        className="antModalComment"
+        style={{ top: 25 }}
       >
         <Form id="conversation" preserve={false} onSubmit={this.submit} requiredMark={required}>
-          <Row>
+          <Row className="justify-content-center">
             <Col className="col m-auto">
-              <div className="mb-4">{description}</div>
+              <h3 className="font-weight-bold">{title}</h3>
+              <div className="mb-4" style={{ fontSize: '18px', minWidth: '300px' }}>
+                {description}
+              </div>
             </Col>
             {LottieAnimation && (
-              <Col span={12} className="text-center">
+              <Col className="text-center">
                 <Lottie
                   animationData={LottieAnimation}
-                  loop={false}
                   className="m-auto"
                   id="LottieAnimation"
-                  style={{ width: AnimationWidth }}
+                  loop={false}
+                  style={{ width: '250px' }}
                 />
               </Col>
             )}
@@ -237,6 +225,30 @@ class ConversationModal extends Component {
             )}
           </div>
         </Form>
+        <div className="text-right">
+          <Button
+            key="back"
+            ghost
+            onClick={this.closeModal}
+            size="large"
+            type="primary"
+            loading={isSaving}
+            className="m-2"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={this.submit}
+            size="large"
+            key="submit"
+            type="primary"
+            loading={isSaving}
+            className="m-2"
+            disabled={!formIsValid}
+          >
+            {CTA}
+          </Button>
+        </div>
       </Modal>
     );
   }

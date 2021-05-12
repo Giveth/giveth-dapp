@@ -112,23 +112,25 @@ const MilestoneConversationComment = ({ milestone }) => {
           <Modal
             visible={isVisble}
             destroyOnClose
-            okText="Add"
-            okButtonProps={{ loading: isCreating }}
-            onOk={createMessage}
+            width={1000}
+            footer={null}
+            className="antModalComment"
+            style={{ top: 25 }}
             onCancel={closeModal}
-            title="Comment on Milestone"
-            width={900}
           >
-            <Row>
+            <Row className="justify-content-center">
               <Col className="col m-auto">
-                <div className="mb-4">{description}</div>
+                <h3 className="font-weight-bold">Comment on Milestone</h3>
+                <div className="mb-4" style={{ fontSize: '18px', minWidth: '300px' }}>
+                  {description}
+                </div>
               </Col>
-              <Col span={12} className="text-center">
+              <Col className="text-center">
                 <Lottie
                   animationData={CommentAnimation}
                   className="m-auto"
                   loop={false}
-                  style={{ width: '200px' }}
+                  style={{ width: '250px' }}
                 />
               </Col>
             </Row>
@@ -150,6 +152,27 @@ const MilestoneConversationComment = ({ milestone }) => {
                 <Editor name="message" value={message} onChange={onMessageChange} />
               </Form.Item>
             </Form>
+            <div className="text-right">
+              <Button
+                ghost
+                onClick={closeModal}
+                size="large"
+                type="primary"
+                loading={isCreating}
+                className="m-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createMessage}
+                size="large"
+                type="primary"
+                loading={isCreating}
+                className="m-2"
+              >
+                Submit
+              </Button>
+            </div>
           </Modal>
         </>
       )}
