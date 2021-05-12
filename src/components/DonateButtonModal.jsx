@@ -1,6 +1,14 @@
 /* eslint-disable react/prop-types */
 // eslint-disable-next-line max-classes-per-file
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
@@ -72,21 +80,29 @@ const DonateButtonModal = props => {
 
   const isCorrectNetwork = isHomeNetwork;
 
-  const tokenWhitelistOptions = tokenWhitelist.map(t => ({
-    value: t.address,
-    title: t.name,
-  }));
+  const tokenWhitelistOptions = useMemo(
+    () =>
+      tokenWhitelist.map(t => ({
+        value: t.address,
+        title: t.name,
+      })),
+    [tokenWhitelist],
+  );
 
   // set initial balance
-  const modelToken = model.token || {};
-  if (modelToken) modelToken.balance = new BigNumber(0);
+  const modelToken = useMemo(() => {
+    const t = model.token || {};
+    t.balance = new BigNumber(0);
+    return { ...t };
+  }, [model]);
 
-  const defaultToken =
-    tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0] || {};
-
-  const [selectedToken, setSelectedToken] = useState(
-    model.acceptsSingleToken ? modelToken : defaultToken,
+  const defaultToken = useMemo(
+    () =>
+      tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0] || {},
+    [tokenWhitelist],
   );
+
+  const [selectedToken, setSelectedToken] = useState({});
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [amount, setAmount] = useState(
@@ -102,11 +118,15 @@ const DonateButtonModal = props => {
   const stopPolling = useRef();
   const allowanceApprovalType = useRef();
 
+  useEffect(() => {
+    setSelectedToken(model.acceptsSingleToken ? modelToken : defaultToken);
+  }, [model, defaultToken]);
+
   const clearUp = () => {
     if (stopPolling.current) stopPolling.current();
   };
 
-  const closeDialog = () => {
+  const closeDialog = useCallback(() => {
     const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
@@ -119,9 +139,9 @@ const DonateButtonModal = props => {
     }
     setModalVisible(false);
     setFormIsValid(false);
-  };
+  }, [selectedToken, NativeTokenBalance, setModalVisible]);
 
-  const getMaxAmount = () => {
+  const getMaxAmount = useCallback(() => {
     const { dacId } = model;
 
     const balance =
@@ -149,48 +169,54 @@ const DonateButtonModal = props => {
     }
 
     return maxAmount;
-  };
+  }, [selectedToken, model, props, NativeTokenBalance]);
 
-  const updateAllowance = (delay = 0) => {
-    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
-    if (!isDonationInToken) {
-      setAllowance(new BigNumber(0));
-      setAllowanceStatus(AllowanceStatus.NotNeeded);
-    } else if (validProvider && currentUser.address) {
-      // Fetch from network after 1 sec inorder to new allowance value be returned in response
-      setTimeout(
-        () =>
-          DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
-            .then(_allowance => {
-              console.log('Allowance:', _allowance);
-              setAllowance(new BigNumber(utils.fromWei(_allowance)));
-            })
-            .catch(() => {}),
-        delay,
-      );
-    }
-  };
+  const updateAllowance = useCallback(
+    (delay = 0) => {
+      const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
+      if (!isDonationInToken) {
+        setAllowance(new BigNumber(0));
+        setAllowanceStatus(AllowanceStatus.NotNeeded);
+      } else if (validProvider && currentUser.address) {
+        // Fetch from network after 1 sec inorder to new allowance value be returned in response
+        setTimeout(
+          () =>
+            DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
+              .then(_allowance => {
+                console.log('Allowance:', _allowance);
+                setAllowance(new BigNumber(utils.fromWei(_allowance)));
+              })
+              .catch(() => {}),
+          delay,
+        );
+      }
+    },
+    [selectedToken, setAllowance, currentUser.address, validProvider],
+  );
 
-  const setToken = address => {
-    const token = tokenWhitelist.find(t => t.address === address);
-    const { nativeTokenName } = config;
-    if (!token.balance && token.symbol !== nativeTokenName) {
-      token.balance = new BigNumber('0');
-    } // FIXME: There should be a balance provider handling all of ..
+  const setToken = useCallback(
+    address => {
+      const token = tokenWhitelist.find(t => t.address === address);
+      const { nativeTokenName } = config;
+      if (!token.balance && token.symbol !== nativeTokenName) {
+        token.balance = new BigNumber('0');
+      } // FIXME: There should be a balance provider handling all of ..
 
-    const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
-    const defaultAmount = token.symbol === nativeTokenName ? '1' : '100';
-    const newAmount = balance
-      ? convertEthHelper(
-          BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
-          token.decimals,
-        )
-      : defaultAmount;
-    setSelectedToken(token);
-    setAmount(newAmount);
-  };
+      const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
+      const defaultAmount = token.symbol === nativeTokenName ? '1' : '100';
+      const newAmount = balance
+        ? convertEthHelper(
+            BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
+            token.decimals,
+          )
+        : defaultAmount;
+      setSelectedToken(token);
+      setAmount(newAmount);
+    },
+    [tokenWhitelist, NativeTokenBalance],
+  );
 
-  const updateAllowanceStatus = () => {
+  const updateAllowanceStatus = useCallback(() => {
     const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
     const { Needed, Enough, NotNeeded } = AllowanceStatus;
 
@@ -207,9 +233,9 @@ const DonateButtonModal = props => {
     }
 
     setAllowanceStatus(newAllowanceStatus);
-  };
+  }, [selectedToken, allowance, amount]);
 
-  const pollToken = () => {
+  const pollToken = useCallback(() => {
     // stop existing poll
     if (stopPolling.current) {
       stopPolling.current();
@@ -251,11 +277,18 @@ const DonateButtonModal = props => {
       }),
       POLL_DELAY_TOKENS,
     )();
-  };
+  }, [
+    NativeTokenBalance,
+    amount,
+    currentUser.address,
+    getMaxAmount,
+    isCorrectNetwork,
+    selectedToken,
+  ]);
 
   useEffect(() => {
     updateAllowanceStatus();
-  }, [amount, allowance]);
+  }, [amount, allowance, updateAllowanceStatus]);
 
   useEffect(() => {
     if (isHomeNetwork) {
@@ -264,9 +297,9 @@ const DonateButtonModal = props => {
     } else {
       clearUp();
     }
-  }, [selectedToken, isHomeNetwork, currentUser]);
+  }, [selectedToken, isHomeNetwork, currentUser, pollToken, updateAllowance]);
 
-  const canDonateToProject = () => {
+  const canDonateToProject = useCallback(() => {
     const { acceptsSingleToken, token } = model;
     return (
       !acceptsSingleToken ||
@@ -275,7 +308,7 @@ const DonateButtonModal = props => {
         t => t.foreignAddress.toLocaleLowerCase() === token.foreignAddress.toLocaleLowerCase(),
       )
     );
-  };
+  }, [model, tokenWhitelist]);
 
   useEffect(() => {
     getNetwork().then(network => {
@@ -307,7 +340,7 @@ const DonateButtonModal = props => {
     }
 
     return clearUp;
-  }, []);
+  }, [canDonateToProject, getMaxAmount, updateAllowance, model]);
 
   const donateWithBridge = async (
     adminId,
