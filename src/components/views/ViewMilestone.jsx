@@ -403,7 +403,6 @@ const ViewMilestone = props => {
                     <ViewMilestoneAlerts
                       milestone={milestone}
                       campaign={campaign}
-                      minimumPayoutUsdValue={minimumPayoutUsdValue}
                       isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                     />
 

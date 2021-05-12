@@ -92,7 +92,6 @@ const ViewMilestoneAlerts = ({ milestone, campaign, isAmountEnoughForWithdraw })
           <WithdrawMilestoneFundsButton
             milestone={milestone}
             isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-            minimumPayoutUsdValue={minimumPayoutUsdValue}
           />
         </ProjectViewActionAlert>
       )}
