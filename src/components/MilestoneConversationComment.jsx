@@ -114,8 +114,8 @@ const MilestoneConversationComment = ({ milestone }) => {
             destroyOnClose
             width={1000}
             footer={null}
-            className="antModalComment"
-            style={{ top: 25 }}
+            className="antModalComment pb-0"
+            centered
             onCancel={closeModal}
           >
             <Row className="justify-content-center">

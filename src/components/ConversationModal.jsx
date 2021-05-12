@@ -155,8 +155,8 @@ class ConversationModal extends Component {
         onCancel={() => this.closeModal(true)}
         width={1000}
         footer={null}
-        className="antModalComment"
-        style={{ top: 25 }}
+        className="antModalComment pb-0"
+        centered
       >
         <Form id="conversation" preserve={false} onSubmit={this.submit} requiredMark={required}>
           <Row className="justify-content-center">
