@@ -139,7 +139,7 @@ function Editor(props) {
         type="file"
         onChange={handleImageUpload}
         ref={imageUploader}
-        accept="image/x-png,image/gif,image/jpeg,image/webp,image/svg"
+        accept="image/*"
       />
       <div className="quill-wrapper">
         {uploading && (
