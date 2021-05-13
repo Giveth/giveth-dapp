@@ -18,7 +18,7 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   const uploadProps = {
     multiple: false,
     maxCount: 1,
-    accept: '.mp4',
+    accept: 'video/*',
     fileList,
     customRequest: options => {
       const { onSuccess, onError, file, onProgress } = options;
