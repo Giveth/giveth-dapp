@@ -25,7 +25,7 @@ const DescriptionRender = description => {
       }
       if (node.name === 'img') {
         return (
-          <img key="" style={{ height: 'auto', width: '100%' }} alt="" src={node.attribs.src} />
+          <img key="" style={{ height: 'auto', width: 'auto' }} alt="" src={node.attribs.src} />
         );
       }
       return undefined;
