@@ -179,20 +179,20 @@ function EditExpense(props) {
               recipientAddress: res.recipientAddress,
             };
             const items = [];
-            res.items.forEach(item => {
-              const temp = {};
-              temp.fiatAmount = item.fiatAmount ? item.fiatAmount.toNumber() : 0;
-              temp.currency = item.selectedFiatType;
-              temp.token = item.token;
-              temp.date = item.date;
-              temp.conversionRate = item.conversionRate;
-              temp.conversionRateTimestamp = item.conversionRateTimestamp;
-              temp.description = item.description;
-              temp.key = uuidv4();
-              temp.loadingAmount = false;
-              const imageUrl = item.image ? item.image.match(/\/ipfs\/.*/)[0] : '';
-              temp.picture = imageUrl;
-              items.push(temp);
+            res.items.forEach(_item => {
+              const item = {};
+              item.fiatAmount = _item.fiatAmount ? _item.fiatAmount.toNumber() : 0;
+              item.currency = _item.selectedFiatType;
+              item.token = _item.token;
+              item.date = _item.date;
+              item.conversionRate = _item.conversionRate;
+              item.conversionRateTimestamp = _item.conversionRateTimestamp;
+              item.description = _item.description;
+              item.key = uuidv4();
+              item.loadingAmount = false;
+              const imageUrl = _item.image ? _item.image.match(/\/ipfs\/.*/)[0] : '';
+              item.picture = imageUrl;
+              items.push(item);
             });
             setExpenseItems(items);
             setInitialValues(iValues);
