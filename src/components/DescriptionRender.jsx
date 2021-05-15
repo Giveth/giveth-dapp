@@ -24,9 +24,8 @@ const DescriptionRender = description => {
         );
       }
       if (node.name === 'img') {
-        return (
-          <img key="" style={{ height: 'auto', width: 'auto' }} alt="" src={node.attribs.src} />
-        );
+        const width = node.attribs.width ? `${node.attribs.width}px` : 'autho';
+        return <img key="" style={{ height: 'auto', width }} alt="" src={node.attribs.src} />;
       }
       return undefined;
     },
