@@ -155,7 +155,6 @@ function Editor(props) {
           </div>
         )}
         <ReactQuill
-          height="150px"
           ref={reactQuillRef}
           modules={modules}
           formats={formats}
