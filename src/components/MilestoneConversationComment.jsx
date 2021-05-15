@@ -1,9 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Milestone from 'models/Milestone';
 import Modal from 'antd/lib/modal/Modal';
 import { getHtmlText } from 'lib/helpers';
-import { Button, Form } from 'antd';
+import { Button, Col, Form, Row } from 'antd';
+import Lottie from 'lottie-react';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
 import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
@@ -12,6 +13,7 @@ import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
 import Editor from './Editor';
+import CommentAnimation from '../assets/pencil.json';
 
 const MilestoneConversationComment = ({ milestone }) => {
   const {
@@ -86,6 +88,20 @@ const MilestoneConversationComment = ({ milestone }) => {
     setMessage(msg);
   };
 
+  const description = (
+    <Fragment>
+      <p>Use this Comment section to:</p>
+      <ul>
+        <li>Provide a public record of questions and answers</li>
+        <li>Write an update, changes, compliments or concerns</li>
+        <li>
+          Write other information that helps donors and project participants understand the the
+          current status of the Milestone
+        </li>
+      </ul>
+    </Fragment>
+  );
+
   return (
     <div id="milestone-comment">
       {canUserEdit() && (
@@ -96,16 +112,28 @@ const MilestoneConversationComment = ({ milestone }) => {
           <Modal
             visible={isVisble}
             destroyOnClose
-            okText="Add"
-            okButtonProps={{ loading: isCreating }}
-            onOk={createMessage}
+            width={1000}
+            footer={null}
+            className="antModalComment pb-0"
+            centered
             onCancel={closeModal}
-            title="Comment on Milestone"
           >
-            <p>
-              You can add comment to milestone status. Your message will be displayed in the updates
-              of milestone status
-            </p>
+            <Row className="justify-content-center">
+              <Col className="col m-auto">
+                <h3 className="font-weight-bold">Comment on Milestone</h3>
+                <div className="mb-4" style={{ fontSize: '18px', minWidth: '300px' }}>
+                  {description}
+                </div>
+              </Col>
+              <Col className="text-center">
+                <Lottie
+                  animationData={CommentAnimation}
+                  className="m-auto"
+                  loop={false}
+                  style={{ width: '250px' }}
+                />
+              </Col>
+            </Row>
             <Form form={form} name="form_in_modal" preserve={false}>
               <Form.Item
                 name="message"
@@ -124,6 +152,27 @@ const MilestoneConversationComment = ({ milestone }) => {
                 <Editor name="message" value={message} onChange={onMessageChange} />
               </Form.Item>
             </Form>
+            <div className="text-right">
+              <Button
+                ghost
+                onClick={closeModal}
+                size="large"
+                type="primary"
+                loading={isCreating}
+                className="m-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createMessage}
+                size="large"
+                type="primary"
+                loading={isCreating}
+                className="m-2"
+              >
+                Submit
+              </Button>
+            </div>
           </Modal>
         </>
       )}
