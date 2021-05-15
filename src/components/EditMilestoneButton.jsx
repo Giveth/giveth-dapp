@@ -24,7 +24,14 @@ const EditMilestoneButton = forwardRef(({ milestone }, ref) => {
     checkBalance(balance)
       .then(() => {
         const { formType } = milestone;
-        if (['bounty', 'expense', 'payment', 'milestone'].includes(formType)) {
+        if (
+          [
+            Milestone.BOUNTYTYPE,
+            Milestone.EXPENSETYPE,
+            Milestone.PAYMENTTYPE,
+            Milestone.MILESTONETYPE,
+          ].includes(formType)
+        ) {
           const newMilestoneEditUrl = `/${formType}/${milestone._id}/edit`;
           history.push(newMilestoneEditUrl);
         } else if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
