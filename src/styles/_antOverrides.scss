@@ -174,19 +174,19 @@
 	padding-top: 60px;
 }
 
-#quill-ant {
-	& > div{
+.quill-wrapper {
+	.ql-toolbar{
 		border: 2px solid #dfdae8;
-	}
-	& > .ql-toolbar{
 		border-bottom-width: 1px;
 		border-radius: 8px 8px 0 0;
 	}
-	& > .ql-container{
+	.ql-container{
+		border: 2px solid #dfdae8;
 		border-top-width: 1px;
 		border-radius:  0 0 8px 8px;
-		& > .ql-editor {
-			min-height: 240px;
+		.ql-editor {
+			min-height: 18em;
+			max-height:  80vh;
 		}
 	}
 }
