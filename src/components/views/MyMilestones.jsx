@@ -77,7 +77,7 @@ const MyMilestones = () => {
         },
         onError: err => {
           ErrorPopup('Something went wrong.', err);
-          // TO DO: handle error here in view
+          // TODO: handle error here in view
           setLoading(false);
         },
       });
