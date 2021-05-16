@@ -219,19 +219,21 @@ function EditExpense(props) {
 
       const { title, recipientAddress, token } = expenseForm;
 
-      milestone.parentProjectId = campaign.projectId;
-      milestone.title = title;
-      milestone.recipientAddress = recipientAddress;
-      milestone.token = token;
-      milestone.maxAmount = totalAmount;
-      // TODO: We should have ability to delete fiatAmount for uncapped milestones
+      const ms = milestone;
 
-      milestone.status =
+      ms.parentProjectId = campaign.projectId;
+      ms.title = title;
+      ms.recipientAddress = recipientAddress;
+      ms.token = token;
+      ms.maxAmount = totalAmount;
+
+      // TODO: We should have ability to delete fiatAmount for uncapped milestones
+      ms.status =
         isProposed || milestone.status === Milestone.REJECTED
           ? Milestone.PROPOSED
           : milestone.status; // make sure not to change status!
 
-      milestone.items = expenseItems.map(expenseItem => {
+      ms.items = expenseItems.map(expenseItem => {
         const amount = itemAmountMap.current[expenseItem.key];
         return new MilestoneItem({
           ...expenseItem,
@@ -245,7 +247,7 @@ function EditExpense(props) {
       setLoading(true);
 
       await MilestoneService.save({
-        milestone,
+        milestone: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;

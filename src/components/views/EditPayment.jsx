@@ -194,7 +194,13 @@ function EditPayment(props) {
 
   useEffect(() => {
     updateAmount();
-  }, [payment.token, payment.fiatAmount, payment.date, payment.selectedFiatType]);
+  }, [
+    payment.token,
+    payment.fiatAmount,
+    payment.date,
+    payment.selectedFiatType,
+    payment.notCapped,
+  ]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -247,24 +253,31 @@ function EditPayment(props) {
         donateToDac,
       } = payment;
 
-      milestone.parentProjectId = campaign.projectId;
-      milestone.title = title;
-      milestone.description = description;
-      milestone.recipientAddress = recipientAddress;
-      milestone.image = image;
-      milestone.token = token;
-      milestone.dacId = donateToDac ? config.defaultDacId : 0;
-      // TODO: We should have ability to delete fiatAmount for uncapped milestones
+      const ms = milestone;
 
+      ms.parentProjectId = campaign.projectId;
+      ms.title = title;
+      ms.description = description;
+      ms.recipientAddress = recipientAddress;
+      ms.image = image;
+      ms.token = token;
+      ms.dacId = donateToDac ? config.defaultDacId : 0;
+
+      // TODO: We should have ability to delete fiatAmount for uncapped milestones
       if (!notCapped) {
-        milestone.maxAmount = maxAmount;
-        milestone.date = date;
-        milestone.fiatAmount = new BigNumber(fiatAmount);
-        milestone.selectedFiatType = selectedFiatType;
-        milestone.conversionRateTimestamp = conversionRateTimestamp.current;
+        ms.maxAmount = maxAmount;
+        ms.date = date;
+        ms.fiatAmount = new BigNumber(fiatAmount);
+        ms.selectedFiatType = selectedFiatType;
+        ms.conversionRateTimestamp = conversionRateTimestamp.current;
+      } else {
+        ms.maxAmount = undefined;
+        ms.fiatAmount = new BigNumber(0);
+        ms.selectedFiatType = '';
+        ms.conversionRateTimestamp = undefined;
       }
 
-      milestone.status =
+      ms.status =
         isProposed || milestone.status === Milestone.REJECTED
           ? Milestone.PROPOSED
           : milestone.status; // make sure not to change status!
@@ -272,13 +285,13 @@ function EditPayment(props) {
       setLoading(true);
 
       await MilestoneService.save({
-        milestone,
+        milestone: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           if (created) {
             if (!userIsCampaignOwner) {
-              notificationDescription = 'Payment proposed to the Campaign Owner';
+              notificationDescription = 'Payment proposed to the campaign owner';
             }
           } else if (txUrl) {
             notificationDescription = (
