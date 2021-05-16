@@ -77,6 +77,10 @@ function Editor(props) {
     const toolbar = reactQuillRef.current.getEditor().getModule('toolbar');
     toolbar.addHandler('image', imageHandler);
     toolbar.addHandler('video', videoHandler);
+    if (props.disabled) {
+      const quill = reactQuillRef.current.getEditor();
+      quill.enable(false);
+    }
   }, []);
 
   async function handleImageUpload() {
@@ -181,6 +185,7 @@ Editor.propTypes = {
   placeholder: PropTypes.string,
   id: PropTypes.string,
   setBusy: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 Editor.defaultProps = {
@@ -188,6 +193,7 @@ Editor.defaultProps = {
   placeholder: '',
   id: '',
   setBusy: () => {},
+  disabled: false,
 };
 
 export default Editor;
