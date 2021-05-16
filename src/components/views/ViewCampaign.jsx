@@ -453,11 +453,7 @@ const ViewCampaign = ({ match }) => {
                           </Row>
                         </Col>
                       </Row>
-                      <Balances
-                        entity={Object.assign(campaign, {
-                          gasPaidUsdValue: 4955.56,
-                        })}
-                      />
+                      <Balances entity={campaign} />
                     </div>
 
                     <Row justify="space-between" className="spacer-bottom-50 spacer-top-50">
