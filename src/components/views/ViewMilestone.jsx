@@ -43,6 +43,7 @@ import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
+import TotalGasPaid from './TotalGasPaid';
 
 /**
  Loads and shows a single milestone
@@ -659,6 +660,15 @@ const ViewMilestone = props => {
                             {getReadableStatus(milestone.status)}
                           </div>
                         </div>
+
+                        {milestone.gasPaidUsdValue && (
+                          <div className="py-3">
+                            <TotalGasPaid
+                              gasPaidUsdValue={milestone.gasPaidUsdValue}
+                              entity="MILESTONE"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div id="status-updates" className="col-md-6">
