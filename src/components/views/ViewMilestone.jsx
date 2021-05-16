@@ -114,26 +114,33 @@ const ViewMilestone = props => {
 
   useEffect(() => {
     const { milestoneId, milestoneSlug } = props.match.params;
-    const getFunction = milestoneSlug
-      ? MilestoneService.getBySlug.bind(MilestoneService, milestoneSlug)
-      : MilestoneService.get.bind(MilestoneService, milestoneId);
 
-    getFunction()
-      .then(_milestone => {
+    const subscription = MilestoneService.subscribeOne(
+      milestoneId,
+      _milestone => {
         if (milestoneId) {
           history.push(`/milestone/${_milestone.slug}`);
         }
         setMilestone(_milestone);
-        setCampaign(new Campaign(_milestone.campaign));
         setRecipient(
           _milestone.pendingRecipientAddress ? _milestone.pendingRecipient : _milestone.recipient,
         );
-        getDacTitle(_milestone.dacId);
-        setLoading(false);
-      })
-      .catch(() => {
+        // Stop unnecessary updates on subscribe
+        if (!campaign.id) {
+          setCampaign(new Campaign(_milestone.campaign));
+          getDacTitle(_milestone.dacId);
+          setLoading(false);
+        }
+      },
+      () => {
         setNotFound(true);
-      });
+      },
+      milestoneSlug,
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -186,6 +193,7 @@ const ViewMilestone = props => {
       }
     }
   };
+
   useEffect(() => {
     calculateMilestoneCurrentBalanceValue();
   });

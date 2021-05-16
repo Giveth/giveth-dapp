@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import ReactQuill from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import { toast } from 'react-toastify';
+import ImageResize from 'quill-image-resize-module-react';
 import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
 import VideoPopup from './VideoPopup';
 import Loader from './Loader';
+
+Quill.register('modules/imageResize', ImageResize);
 
 function Editor(props) {
   const [uploading, setUploading] = useState(false);
@@ -113,6 +116,10 @@ function Editor(props) {
   }, [uploading]);
 
   const modules = {
+    imageResize: {
+      parchment: Quill.import('parchment'),
+      modules: ['Resize', 'DisplaySize'],
+    },
     toolbar: [
       [{ header: [1, 2, false] }],
       ['bold', 'italic', 'underline', 'blockquote'],
@@ -143,6 +150,7 @@ function Editor(props) {
         type="file"
         onChange={handleImageUpload}
         ref={imageUploader}
+        accept="image/*"
       />
       <div className="quill-wrapper">
         {uploading && (
@@ -151,7 +159,6 @@ function Editor(props) {
           </div>
         )}
         <ReactQuill
-          height="150px"
           ref={reactQuillRef}
           modules={modules}
           formats={formats}
