@@ -77,9 +77,14 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   font-size: 16px;
 }
 
-// Should be changed
-.ant-menu.ant-menu-sub.ant-menu-vertical {
-  height: 136px;
+// Gas paid info for menu
+#profile\$Menu .ant-menu.ant-menu-sub.ant-menu-vertical {
+  height: 125px;
+}
+
+.ant-menu-item #TotalGasPaidView:hover {
+  color: rgba(0, 0, 0, 0.85);
+  cursor: default;
 }
 
 #TotalGasPaidView {
@@ -88,13 +93,24 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   border: 1.86px solid #DFDAE8;
   background: #F6F7FF;
 
+  // For menubar
   &.menuGasPaid {
     border-radius: 0;
     padding: 10px;
-  }
 
-  .ant-row .ant-col {
-    flex: 0 0 100%;
+    .ant-row {
+      width: min-content;
+
+      .ant-col {
+        flex: 0 0 100%;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        div {
+          line-height: initial;
+        }
+      }
+    }
   }
 }
 
@@ -104,13 +120,24 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   }
 
   .ant-drawer-body {
-    padding: 20px 0 0 0;
+    padding: 20px 1px 0 0;
   }
 
   .ant-menu.ant-menu-sub.ant-menu-inline .ant-menu-item.ant-menu-item-only-child {
     padding-left: 68px !important;
   }
+
   .ant-menu.ant-menu-light.ant-menu-root.ant-menu-inline > .ant-menu-item.ant-menu-item-only-child, .ant-menu-submenu-title {
     padding-left: 44px !important;
+  }
+
+  // Gas paid info
+
+  #profile\$Menu > li.ant-menu-item.ant-menu-item-only-child.p-0.mb-0 {
+    padding-left: 0px !important;
+  }
+
+  #TotalGasPaidView {
+    flex-wrap: nowrap;
   }
 }

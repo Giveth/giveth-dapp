@@ -661,9 +661,14 @@ const ViewMilestone = props => {
                           </div>
                         </div>
 
-                        <div className="py-3">
-                          <TotalGasPaid gasPaidUsdValue="5699.32" entity="MILESTONE" />
-                        </div>
+                        {milestone.gasPaidUsdValue && (
+                          <div className="py-3">
+                            <TotalGasPaid
+                              gasPaidUsdValue={milestone.gasPaidUsdValue}
+                              entity="MILESTONE"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div id="status-updates" className="col-md-6">

@@ -12,10 +12,10 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className }) => {
       <Col className="col px-0" style={{ margin: 'auto 0' }}>
         <Row>
           <Col>
-            <span className="pr-2">{`TOTAL GAS WE PAID FOR ${entity}:`}</span>
+            <div className="pr-2">{`TOTAL GAS WE PAID FOR ${entity}:`}</div>
           </Col>
           <Col>
-            <span className="font-weight-bold">{`${gasPaidUsdValue} USD`}</span>
+            <div className="font-weight-bold">{`${gasPaidUsdValue} USD`}</div>
           </Col>
         </Row>
       </Col>
