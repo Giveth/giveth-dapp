@@ -23,7 +23,18 @@ const EditMilestoneButton = forwardRef(({ milestone }, ref) => {
   const goMilestoneEditPage = () => {
     checkBalance(balance)
       .then(() => {
-        if (['Proposed', 'Rejected'].includes(milestone.status)) {
+        const { formType } = milestone;
+        if (
+          [
+            Milestone.BOUNTYTYPE,
+            Milestone.EXPENSETYPE,
+            Milestone.PAYMENTTYPE,
+            Milestone.MILESTONETYPE,
+          ].includes(formType)
+        ) {
+          const newMilestoneEditUrl = `/${formType}/${milestone._id}/edit`;
+          history.push(newMilestoneEditUrl);
+        } else if ([Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status)) {
           history.push(
             `/campaigns/${milestone.campaignId}/milestones/${milestone._id}/edit/proposed`,
           );

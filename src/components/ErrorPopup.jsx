@@ -103,11 +103,5 @@ export default (shortDescription, error) => {
         errorHandler(value);
       }
     });
-  } else {
-    React.swal({
-      title: 'Oh no!',
-      content: React.swal.msg(<p>{shortDescription}</p>),
-      icon: 'error',
-    });
   }
 };

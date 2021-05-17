@@ -67,7 +67,6 @@
       max-width: 100%;
       width: auto;
       box-sizing: border-box;
-      display: block;
     }
 
     p {
@@ -83,7 +82,7 @@
   }
 
   .sb-avatar {
-    display: block !important;
+    // display: block !important;
   }
 
   .missing-reviewer-alert {

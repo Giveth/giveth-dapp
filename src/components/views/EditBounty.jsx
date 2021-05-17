@@ -1,28 +1,26 @@
-import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
+import React, { memo, useContext, useEffect, useState, Fragment } from 'react';
 import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-
-import { history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
-import { Context as UserContext } from '../../contextProviders/UserProvider';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import Web3ConnectWarning from '../Web3ConnectWarning';
-import LPMilestone from '../../models/LPMilestone';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
-import config from '../../configuration';
-import { authenticateUser } from '../../lib/middleware';
-import ErrorHandler from '../../lib/ErrorHandler';
 import {
   MilestoneCampaignInfo,
   MilestoneDescription,
   MilestoneDonateToDac,
-  MilestonePicture,
   MilestoneReviewer,
   MilestoneTitle,
 } from '../EditMilestoneCommons';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { authenticateUser } from '../../lib/middleware';
+import { history, isOwner } from '../../lib/helpers';
+import config from '../../configuration';
+import { Milestone } from '../../models';
+import { MilestoneService } from '../../services';
+import ErrorHandler from '../../lib/ErrorHandler';
+import Web3ConnectWarning from '../Web3ConnectWarning';
+import BridgedMilestone from '../../models/BridgedMilestone';
 
-function EditMilestone(props) {
+function EditBounty(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -30,12 +28,9 @@ function EditMilestone(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-
   const { milestoneId } = props.match.params;
 
-  const [image, setImage] = useState('');
   const [campaign, setCampaign] = useState();
-  const [hasReviewer, setHasReviewer] = useState(true);
   const [donateToDac, setDonateToDac] = useState(true);
   const [milestone, setMilestone] = useState();
   const [initialValues, setInitialValues] = useState({
@@ -43,13 +38,7 @@ function EditMilestone(props) {
     description: '',
     donateToDac: true,
     reviewerAddress: '',
-    image: '',
   });
-
-  const [form] = Form.useForm();
-
-  const [loading, setLoading] = useState(false);
-  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   const milestoneHasFunded =
     milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
@@ -65,7 +54,7 @@ function EditMilestone(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Milestone.MILESTONETYPE ||
+      ms.formType !== Milestone.BOUNTYTYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
@@ -82,20 +71,15 @@ function EditMilestone(props) {
           if (isEditNotAllowed(res)) {
             goBack();
           } else {
-            const isReviewer = res.reviewerAddress !== ZERO_ADDRESS;
             const iValues = {
               title: res.title,
               description: res.description,
-              reviewerAddress: isReviewer ? res.reviewerAddress : null,
-              image: res.image,
+              reviewerAddress: res.reviewerAddress,
               donateToDac: !!res.dacId,
             };
-            const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
             setInitialValues(iValues);
             setDonateToDac(!!res.dacId);
-            setHasReviewer(isReviewer);
             setMilestone(res);
-            setImage(imageUrl);
             setCampaign(res.campaign);
           }
         })
@@ -105,6 +89,9 @@ function EditMilestone(props) {
         });
     }
   }, [currentUser.id]);
+
+  const [loading, setLoading] = useState(false);
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   useEffect(() => {
     setUserIsOwner(
@@ -117,12 +104,8 @@ function EditMilestone(props) {
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
     const ms = milestone;
-    if (type === 'checkbox' && name === 'hasReviewer') {
-      setHasReviewer(checked);
-    } else if (type === 'checkbox' && name === 'donateToDac') {
+    if (type === 'checkbox') {
       setDonateToDac(checked);
-    } else if (name === 'image') {
-      setImage(value);
     } else {
       ms[name] = value;
       setMilestone(ms);
@@ -133,10 +116,6 @@ function EditMilestone(props) {
     handleInputChange({
       target: { name: 'reviewerAddress', value: option.value },
     });
-  }
-
-  function setPicture(address) {
-    handleInputChange({ target: { name: 'image', value: address } });
   }
 
   const submit = async () => {
@@ -150,19 +129,14 @@ function EditMilestone(props) {
       return;
     }
 
-    const { reviewerAddress } = milestone;
-    const ms = new LPMilestone(milestone);
+    const ms = new BridgedMilestone(milestone);
 
-    ms.image = image;
-    ms.reviewerAddress = hasReviewer ? reviewerAddress : ZERO_ADDRESS;
     ms.parentProjectId = campaign.projectId;
     ms.dacId = donateToDac ? config.defaultDacId : 0;
-
     ms.status =
       isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
 
     setLoading(true);
-
     await MilestoneService.save({
       milestone: ms,
       from: currentUser.address,
@@ -170,12 +144,12 @@ function EditMilestone(props) {
         let notificationDescription;
         if (created) {
           if (!userIsCampaignOwner) {
-            notificationDescription = 'Milestone proposed to the Campaign Owner';
+            notificationDescription = 'Bounty proposed to the campaign owner';
           }
         } else if (txUrl) {
           notificationDescription = (
             <p>
-              Your Milestone is pending....
+              Your Bounty is pending....
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -183,7 +157,7 @@ function EditMilestone(props) {
             </p>
           );
         } else {
-          notificationDescription = 'Your Milestone has been updated!';
+          notificationDescription = 'Your Bounty has been updated!';
         }
 
         if (notificationDescription) {
@@ -196,7 +170,7 @@ function EditMilestone(props) {
         notification.success({
           description: (
             <p>
-              Your Milestone has been updated!
+              Your Bounty has been updated!
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -215,14 +189,13 @@ function EditMilestone(props) {
   return (
     <Fragment>
       <Web3ConnectWarning />
-
       <div id="create-milestone-view">
         <Row>
           <Col span={24}>
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title="Edit Milestone"
+              title="Edit Bounty"
               ghost={false}
             />
           </Col>
@@ -234,7 +207,6 @@ function EditMilestone(props) {
                 className="card-form"
                 requiredMark
                 onFinish={submit}
-                form={form}
                 scrollToFirstError={{
                   block: 'center',
                   behavior: 'smooth',
@@ -242,35 +214,29 @@ function EditMilestone(props) {
                 initialValues={initialValues}
               >
                 <div className="card-form-header">
-                  <img src={`${process.env.PUBLIC_URL}/img/milestone.png`} alt="milestone-logo" />
-                  <div className="title">Milestone</div>
+                  <img src={`${process.env.PUBLIC_URL}/img/bounty.png`} alt="bounty-logo" />
+                  <div className="title">Bounty</div>
                 </div>
 
                 <MilestoneCampaignInfo campaign={campaign} />
 
                 <div className="section">
-                  <div className="title">Milestone details</div>
+                  <div className="title">Bounty details</div>
 
                   <MilestoneTitle
                     value={milestone.title}
                     onChange={handleInputChange}
-                    extra="What are you going to accomplish in this Milestone?"
+                    extra="What is this Bounty about?"
                     disabled={milestoneHasFunded}
                   />
 
                   <MilestoneDescription
                     value={milestone.description}
                     onChange={handleInputChange}
-                    extra="Explain how you are going to do this successfully."
-                    placeholder="Describe how you are going to execute this milestone successfully..."
+                    extra="Explain the requirements and what success looks like."
+                    placeholder="Describe the Bounty and define the acceptance criteria..."
                     id="description"
                     disabled={milestoneHasFunded}
-                  />
-
-                  <MilestonePicture
-                    setPicture={setPicture}
-                    picture={image}
-                    milestoneTitle={milestone.title}
                   />
 
                   <MilestoneDonateToDac
@@ -280,25 +246,23 @@ function EditMilestone(props) {
                   />
 
                   <MilestoneReviewer
-                    toggleHasReviewer={handleInputChange}
+                    milestoneType="Bounty"
                     setReviewer={setReviewer}
-                    hasReviewer={hasReviewer}
-                    milestoneReviewerAddress={milestone.reviewerAddress}
-                    milestoneType="Milestone"
+                    hasReviewer
                     initialValue={initialValues.reviewerAddress}
+                    milestoneReviewerAddress={milestone.reviewerAddress}
                     disabled={!isProposed}
                   />
-
-                  <div className="milestone-desc">
-                    Contributions to this milestone will be sent directly to the
-                    <strong>{` ${campaign && campaign.title} `}</strong>
-                    Campaign address. As a preventative measure, please confirm that someone working
-                    on the project has access to funds that are sent to this address!
-                  </div>
                 </div>
+
+                <div className="milestone-desc">
+                  Your Bounty will collect funds in any currency. The total amount collected will be
+                  the Bounty Reward.
+                </div>
+
                 <Form.Item>
-                  <Button block size="large" type="primary" htmlType="submit" loading={loading}>
-                    Update Milestone
+                  <Button htmlType="submit" loading={loading} block size="large" type="primary">
+                    Update Bounty
                   </Button>
                 </Form.Item>
               </Form>
@@ -310,7 +274,7 @@ function EditMilestone(props) {
   );
 }
 
-EditMilestone.propTypes = {
+EditBounty.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       milestoneId: PropTypes.string,
@@ -321,4 +285,4 @@ EditMilestone.propTypes = {
 const isEqual = (prevProps, nextProps) =>
   prevProps.match.params.milestoneId === nextProps.match.params.milestoneId;
 
-export default memo(EditMilestone, isEqual);
+export default memo(EditBounty, isEqual);

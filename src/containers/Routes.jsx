@@ -21,13 +21,17 @@ import Campaigns from '../components/views/Campaigns';
 import DACs from '../components/views/DACs';
 
 import ViewCampaign from '../components/views/ViewCampaign';
-import EditMilestone from '../components/views/EditMilestone';
+import EditMilestoneOld from '../components/views/EditMilestoneOld';
 
 import MilestoneCreateOptionsMenu from '../components/views/MilestoneCreateOptionsMenu';
 import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
+import EditBounty from '../components/views/EditBounty';
+import EditMilestone from '../components/views/EditMilestone';
+import EditPayment from '../components/views/EditPayment';
+import EditExpense from '../components/views/EditExpense';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
@@ -157,7 +161,7 @@ const Routes = () => {
         exact
         path="/campaigns/:id/milestones/new"
         render={props => (
-          <EditMilestone
+          <EditMilestoneOld
             isNew
             balance={balance}
             isForeignNetwork={isForeignNetwork}
@@ -170,7 +174,7 @@ const Routes = () => {
         exact
         path="/campaigns/:id/milestones/propose"
         render={props => (
-          <EditMilestone
+          <EditMilestoneOld
             isNew
             isProposed
             isForeignNetwork={isForeignNetwork}
@@ -194,7 +198,7 @@ const Routes = () => {
         exact
         path="/campaigns/:id/milestones/:milestoneId/edit"
         render={props => (
-          <EditMilestone
+          <EditMilestoneOld
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -206,7 +210,7 @@ const Routes = () => {
         exact
         path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
         render={props => (
-          <EditMilestone
+          <EditMilestoneOld
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -214,6 +218,14 @@ const Routes = () => {
             {...props}
           />
         )}
+      />
+      <Route exact path="/bounty/:milestoneId/edit" render={props => <EditBounty {...props} />} />
+      <Route exact path="/expense/:milestoneId/edit" render={props => <EditExpense {...props} />} />
+      <Route exact path="/payment/:milestoneId/edit" render={props => <EditPayment {...props} />} />
+      <Route
+        exact
+        path="/milestone/:milestoneId/edit"
+        render={props => <EditMilestone {...props} />}
       />
       <Route
         exact

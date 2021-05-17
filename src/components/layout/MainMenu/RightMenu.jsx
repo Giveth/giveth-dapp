@@ -131,10 +131,8 @@ const RightMenu = () => {
             key="profile"
             title={
               <React.Fragment>
-                {currentUser.avatar && (
-                  <Avatar className="mr-2" size={30} src={currentUser.avatar} round />
-                )}
-                {currentUser.name ? currentUser.name : 'Hi, you!'}
+                {currentUser.avatar && <Avatar size={30} src={currentUser.avatar} round />}
+                <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
               </React.Fragment>
             }
           >

@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useContext, useEffect } from 'react';
+import React, { Fragment, useCallback, useContext } from 'react';
 import {
   Checkbox,
   Col,
@@ -24,7 +24,7 @@ import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
-const MilestoneTitle = ({ extra, onChange, value }) => (
+const MilestoneTitle = ({ extra, onChange, value, disabled }) => (
   <Form.Item
     name="title"
     label="Title"
@@ -41,6 +41,7 @@ const MilestoneTitle = ({ extra, onChange, value }) => (
   >
     <Input
       value={value}
+      disabled={disabled}
       name="title"
       placeholder="e.g. Support continued Development"
       onChange={onChange}
@@ -52,14 +53,25 @@ MilestoneTitle.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   extra: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 MilestoneTitle.defaultProps = {
   value: '',
   extra: '',
+  disabled: false,
 };
 
-const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }) => {
+const MilestoneDescription = ({
+  extra,
+  onChange,
+  placeholder,
+  value,
+  label,
+  id,
+  disabled,
+  initialValue,
+}) => {
   const onDescriptionChange = useCallback(
     description => {
       onChange({ target: { name: 'description', value: description } });
@@ -73,6 +85,7 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }
       className="custom-form-item"
       extra={extra}
       required
+      initialValue={initialValue}
       rules={[
         {
           type: 'string',
@@ -96,10 +109,12 @@ const MilestoneDescription = ({ extra, onChange, placeholder, value, label, id }
         placeholder={placeholder}
         id={id}
         key={id}
+        disabled={disabled}
       />
     </Form.Item>
   );
 };
+
 MilestoneDescription.propTypes = {
   value: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
@@ -107,6 +122,8 @@ MilestoneDescription.propTypes = {
   placeholder: PropTypes.string,
   label: PropTypes.string,
   id: PropTypes.string,
+  disabled: PropTypes.bool,
+  initialValue: PropTypes.string,
 };
 
 MilestoneDescription.defaultProps = {
@@ -114,9 +131,11 @@ MilestoneDescription.defaultProps = {
   placeholder: '',
   label: 'Description',
   id: '',
+  disabled: false,
+  initialValue: '',
 };
 
-const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
+const MilestonePicture = ({ picture, setPicture, milestoneTitle, disabled }) => {
   const uploadProps = {
     multiple: false,
     accept: 'image/png, image/jpeg',
@@ -163,11 +182,11 @@ const MilestonePicture = ({ picture, setPicture, milestoneTitle }) => {
         {picture ? (
           <div className="picture-upload-preview">
             <img src={`${config.ipfsGateway}${picture.slice(6)}`} alt={milestoneTitle} />
-            <DeleteTwoTone onClick={removePicture} />
+            {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
           </div>
         ) : (
           <ImgCrop>
-            <Upload.Dragger {...uploadProps}>
+            <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
               <p className="ant-upload-text">
                 Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
               </p>
@@ -183,9 +202,14 @@ MilestonePicture.propTypes = {
   picture: PropTypes.string.isRequired,
   milestoneTitle: PropTypes.string.isRequired,
   setPicture: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 };
 
-const MilestoneDonateToDac = ({ onChange, value }) => (
+MilestonePicture.defaultProps = {
+  disabled: false,
+};
+
+const MilestoneDonateToDac = ({ onChange, value, disabled }) => (
   <Form.Item
     className="custom-form-item milestone-donate-dac"
     valuePropName="checked"
@@ -199,7 +223,7 @@ const MilestoneDonateToDac = ({ onChange, value }) => (
       </div>
     }
   >
-    <Checkbox onChange={onChange} name="donateToDac" checked={value}>
+    <Checkbox onChange={onChange} name="donateToDac" checked={value} disabled={disabled}>
       Donate 3% to Giveth
     </Checkbox>
   </Form.Item>
@@ -208,6 +232,11 @@ const MilestoneDonateToDac = ({ onChange, value }) => (
 MilestoneDonateToDac.propTypes = {
   value: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+};
+
+MilestoneDonateToDac.defaultProps = {
+  disabled: false,
 };
 
 const MilestoneReviewer = ({
@@ -215,7 +244,9 @@ const MilestoneReviewer = ({
   hasReviewer,
   milestoneReviewerAddress,
   setReviewer,
+  initialValue,
   toggleHasReviewer,
+  disabled,
 }) => {
   const reviewers = useReviewers();
   return (
@@ -227,6 +258,7 @@ const MilestoneReviewer = ({
             name="hasReviewer"
             checked={hasReviewer}
             onChange={toggleHasReviewer}
+            disabled={disabled}
           />
         )}
         <span>{`${milestoneType} reviewer`}</span>
@@ -235,6 +267,7 @@ const MilestoneReviewer = ({
         <Fragment>
           <Form.Item
             name="Reviewer Address"
+            initialValue={initialValue}
             rules={[{ required: true }]}
             extra={`The reviewer verifies that the ${milestoneType} is completed successfully.`}
           >
@@ -244,6 +277,7 @@ const MilestoneReviewer = ({
               optionFilterProp="children"
               name="reviewerAddress"
               onSelect={setReviewer}
+              disabled={disabled}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -269,20 +303,21 @@ MilestoneReviewer.propTypes = {
   toggleHasReviewer: PropTypes.func,
   setReviewer: PropTypes.func.isRequired,
   milestoneReviewerAddress: PropTypes.string,
+  initialValue: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 MilestoneReviewer.defaultProps = {
   milestoneType: 'Milestone',
   milestoneReviewerAddress: '',
   toggleHasReviewer: null,
+  initialValue: null,
+  disabled: false,
 };
 
 const MilestoneDatePicker = ({ onChange, value, disabled }) => {
   const maxValue = getStartOfDayUTC().subtract(1, 'd');
 
-  useEffect(() => {
-    onChange(maxValue);
-  }, []);
   return (
     <Row gutter={16}>
       <Col className="gutter-row" span={10}>
@@ -339,6 +374,8 @@ const MilestoneToken = ({
   totalAmount,
   includeAnyToken,
   hideTotalAmount,
+  initialValue,
+  disabled,
 }) => {
   const {
     state: { activeTokenWhitelist },
@@ -359,6 +396,7 @@ const MilestoneToken = ({
           className="custom-form-item"
           extra="Select the token you want to be reimbursed in."
           rules={[{ required: true, message: 'Payment currency is required' }]}
+          initialValue={initialValue.symbol}
         >
           <Select
             showSearch
@@ -371,6 +409,7 @@ const MilestoneToken = ({
             }
             value={value && value.symbol}
             required
+            disabled={disabled}
           >
             {includeAnyToken && (
               <Select.Option key={ANY_TOKEN.name} value={ANY_TOKEN.symbol}>
@@ -406,6 +445,10 @@ MilestoneToken.propTypes = {
   totalAmount: PropTypes.string,
   includeAnyToken: PropTypes.bool,
   hideTotalAmount: PropTypes.bool,
+  initialValue: PropTypes.shape({
+    symbol: PropTypes.string,
+  }),
+  disabled: PropTypes.bool,
 };
 
 MilestoneToken.defaultProps = {
@@ -413,9 +456,13 @@ MilestoneToken.defaultProps = {
   totalAmount: '0',
   includeAnyToken: false,
   hideTotalAmount: false,
+  initialValue: {
+    symbol: null,
+  },
+  disabled: false,
 };
 
-const MilestoneRecipientAddress = ({ label, onChange, value }) => (
+const MilestoneRecipientAddress = ({ label, onChange, value, disabled }) => (
   <Form.Item
     name="recipientAddress"
     label={label}
@@ -432,7 +479,14 @@ const MilestoneRecipientAddress = ({ label, onChange, value }) => (
       },
     ]}
   >
-    <Input value={value} name="recipientAddress" placeholder="0x" onChange={onChange} required />
+    <Input
+      value={value}
+      name="recipientAddress"
+      placeholder="0x"
+      onChange={onChange}
+      required
+      disabled={disabled}
+    />
   </Form.Item>
 );
 
@@ -440,9 +494,11 @@ MilestoneRecipientAddress.propTypes = {
   label: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 MilestoneRecipientAddress.defaultProps = {
   value: '',
+  disabled: false,
 };
 
 const MilestoneFiatAmountCurrency = ({
@@ -452,6 +508,7 @@ const MilestoneFiatAmountCurrency = ({
   currency,
   id,
   disabled,
+  initialValues,
 }) => {
   const {
     state: { fiatWhitelist },
@@ -479,6 +536,7 @@ const MilestoneFiatAmountCurrency = ({
               },
             },
           ]}
+          initialValue={initialValues.fiatAmount}
         >
           <Input
             name="fiatAmount"
@@ -497,6 +555,7 @@ const MilestoneFiatAmountCurrency = ({
           className="custom-form-item"
           extra="Select the currency of this expense."
           rules={[{ required: true, message: 'Amount currency is required' }]}
+          initialValue={initialValues.selectedFiatType}
         >
           <Select
             showSearch
@@ -530,13 +589,22 @@ MilestoneFiatAmountCurrency.propTypes = {
   currency: PropTypes.string,
   id: PropTypes.string,
   disabled: PropTypes.bool,
+  initialValues: PropTypes.shape({
+    selectedFiatType: PropTypes.string,
+    fiatAmount: PropTypes.number,
+  }),
 };
 MilestoneFiatAmountCurrency.defaultProps = {
   amount: 0,
   currency: '',
   id: '',
   disabled: false,
+  initialValues: {
+    selectedFiatType: null,
+    fiatAmount: 0,
+  },
 };
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   MilestoneTitle,
