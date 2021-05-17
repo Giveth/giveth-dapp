@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -44,8 +44,6 @@ const MyMilestones = () => {
   const itemsPerPage = 10;
   const visiblePages = 10;
 
-  const isInitialRender = useRef(true);
-
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -60,7 +58,7 @@ const MyMilestones = () => {
     MilestoneService.unsubscribe();
   }
 
-  function loadMileStones() {
+  const loadMileStones = useCallback(() => {
     const myAddress = currentUser.address;
     if (myAddress) {
       MilestoneService.subscribeMyMilestones({
@@ -86,7 +84,7 @@ const MyMilestones = () => {
       setTotalResults(0);
       setLoading(false);
     }
-  }
+  }, [currentUser.address, milestoneStatus, skipPages]);
 
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
@@ -114,23 +112,10 @@ const MyMilestones = () => {
 
   useEffect(() => {
     // To skip initial render
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-    } else {
-      loadMileStones();
-    }
-    return cleanUp();
-  }, [skipPages]);
-
-  useEffect(() => {
-    // To skip initial render
-    if (currentUser.address) {
-      setLoading(true);
-      cleanUp();
-      loadMileStones();
-    }
+    setLoading(true);
+    loadMileStones();
     return cleanUp;
-  }, [currentUser.address, milestoneStatus]);
+  }, [currentUser.address, loadMileStones, milestoneStatus, skipPages]);
 
   return (
     <div id="milestones-view">
