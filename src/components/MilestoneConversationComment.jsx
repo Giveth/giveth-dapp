@@ -158,7 +158,7 @@ const MilestoneConversationComment = ({ milestone }) => {
                 onClick={closeModal}
                 size="large"
                 type="primary"
-                loading={isCreating}
+                disabled={isCreating}
                 className="m-2"
               >
                 Cancel
