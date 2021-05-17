@@ -95,7 +95,7 @@ const Balances = ({ entity }) => {
           <Row className="p-2 mb-4" justify="space-between" style={{ fontSize: '0.8rem' }}>
             {entity.gasPaidUsdValue && (
               <Col>
-                <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN" />
+                <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
               </Col>
             )}
             {currency && currentBalanceValue && (

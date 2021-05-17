@@ -666,7 +666,7 @@ const ViewMilestone = props => {
                             <div className="pt-3">
                               <TotalGasPaid
                                 gasPaidUsdValue={milestone.gasPaidUsdValue}
-                                entity="MILESTONE"
+                                entity="MILESTONE:"
                               />
                             </div>
                           )}
