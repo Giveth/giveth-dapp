@@ -487,7 +487,7 @@ const DonateButtonModal = props => {
                 "MetaMask couldn't get transaction receipt, but probably donation will go through",
               );
             } else {
-              const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+              const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err.message}`;
               ErrorHandler(err, message);
             }
 
