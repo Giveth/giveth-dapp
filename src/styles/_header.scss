@@ -77,13 +77,17 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   font-size: 16px;
 }
 
-// Gas paid info for menu
+// Gas paid info
+$GasMenuFontColor: #6B7087;
+$GasMilCampFontColor: #303B72;
+
+// Forcing ant menu height for gas info
 #profile\$Menu .ant-menu.ant-menu-sub.ant-menu-vertical {
   height: 125px;
 }
 
 .ant-menu-item #TotalGasPaidView:hover {
-  color: rgba(0, 0, 0, 0.85);
+  color: $GasMenuFontColor;
   cursor: default;
 }
 
@@ -92,11 +96,24 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
   padding: 1rem;
   border: 1.86px solid #DFDAE8;
   background: #F6F7FF;
+  font-family: 'Red Hat Text', sans-serif;
+  color: $GasMilCampFontColor;
+
+  // For Camp and Milestone
+  .ant-row .ant-col {
+    margin: auto 0;
+
+    &:nth-child(2) {
+      font-size: 1.1em;
+    }
+  }
 
   // For menubar
   &.menuGasPaid {
     border-radius: 0;
     padding: 10px;
+    color: $GasMenuFontColor;
+    font-size: 13px;
 
     .ant-row {
       width: min-content;
@@ -108,6 +125,9 @@ li.ant-menu-item.ant-menu-item-only-child[role="menuitem"] a.nav-link {
         align-items: center;
         div {
           line-height: initial;
+        }
+        &:nth-child(2) {
+          font-size: 14px;
         }
       }
     }

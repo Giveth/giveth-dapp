@@ -142,12 +142,10 @@ const RightMenu = () => {
             </Menu.Item>
             {currentUser.gasPaidUsdValue && (
               <Menu.Item className="p-0 mb-0" style={{ height: '73px' }}>
-                <div style={{ fontSize: '13px' }}>
-                  <TotalGasPaid
-                    gasPaidUsdValue={currentUser.gasPaidUsdValue}
-                    className="menuGasPaid"
-                  />
-                </div>
+                <TotalGasPaid
+                  gasPaidUsdValue={currentUser.gasPaidUsdValue}
+                  className="menuGasPaid"
+                />
               </Menu.Item>
             )}
           </SubMenu>
