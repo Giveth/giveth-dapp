@@ -9,6 +9,7 @@ import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../../../contextProviders/WhiteListProvider';
 import { signUpSwal } from '../../../lib/helpers';
 import MenuBarCreateButton from '../../MenuBarCreateButton';
+import TotalGasPaid from '../../views/TotalGasPaid';
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -139,6 +140,14 @@ const RightMenu = () => {
             <Menu.Item key="profile:1">
               <Link to="/profile">Profile</Link>
             </Menu.Item>
+            {currentUser.gasPaidUsdValue && (
+              <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
+                <TotalGasPaid
+                  gasPaidUsdValue={currentUser.gasPaidUsdValue}
+                  className="menuGasPaid"
+                />
+              </Menu.Item>
+            )}
           </SubMenu>
         </React.Fragment>
       )}

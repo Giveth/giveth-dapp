@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Row, Col } from 'antd';
 
 import Campaign from 'models/Campaign';
 import DAC from 'models/DAC';
@@ -7,6 +8,7 @@ import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
+import TotalGasPaid from './views/TotalGasPaid';
 
 /**
  * Shows a table of balances for a given entity (dac, campaign)
@@ -56,10 +58,7 @@ const Balances = ({ entity }) => {
     <div className="dashboard-table-view">
       {entity.donationCounters && entity.donationCounters.length > 0 && (
         <div className="table-container">
-          <table
-            className="table table-responsive table-hover"
-            style={{ marginTop: 0, marginBottom: '50px' }}
-          >
+          <table className="table table-hover text-left mt-0">
             <thead>
               <tr>
                 <th className="td-donations-amount">Current balance</th>
@@ -67,12 +66,12 @@ const Balances = ({ entity }) => {
                   <th className="td-donations-amount">Current balance value</th>
                 )}
                 <th className="td-donations-number">Number of donations</th>
-                <th className="td-donations-amount">Total donated</th>
+                <th className="td-donations-amount text-right">Total donated</th>
               </tr>
             </thead>
-            <tbody className="text-center">
+            <tbody>
               {entity.donationCounters.map(dc => (
-                <tr key={dc._id}>
+                <tr key={dc._id} className="text-left">
                   <td className="td-donations-amount">
                     {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
                   </td>
@@ -86,26 +85,28 @@ const Balances = ({ entity }) => {
                     </td>
                   )}
                   <td className="td-donations-number">{dc.donationCount || 0}</td>
-                  <td className="td-donations-amount">
+                  <td className="td-donations-amount text-right">
                     {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
                   </td>
                 </tr>
               ))}
             </tbody>
-            {currency && currentBalanceValue && (
-              <tfoot>
-                <tr>
-                  <td colSpan="4">
-                    <span className="font-weight-bold">
-                      Total Current Balance Value :{' '}
-                      {roundBigNumber(currentBalanceValue, precision).toFixed()} {currency}
-                    </span>
-                  </td>
-                </tr>
-              </tfoot>
-            )}
           </table>
-          <div />
+          <Row className="p-2 mb-4" justify="space-between" style={{ fontSize: '0.8rem' }}>
+            {entity.gasPaidUsdValue && (
+              <Col>
+                <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
+              </Col>
+            )}
+            {currency && currentBalanceValue && (
+              <Col style={{ margin: 'auto 0' }}>
+                <span className="font-weight-bold">
+                  Total Current Balance Value :{' '}
+                  {roundBigNumber(currentBalanceValue, precision).toFixed()} {currency}
+                </span>
+              </Col>
+            )}
+          </Row>
         </div>
       )}
     </div>

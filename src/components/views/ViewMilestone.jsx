@@ -43,6 +43,7 @@ import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
+import TotalGasPaid from './TotalGasPaid';
 
 /**
  Loads and shows a single milestone
@@ -446,49 +447,49 @@ const ViewMilestone = props => {
                     <div className="row">
                       <div id="details" className="col-md-6">
                         <h4>Details</h4>
+                        <div id="detailsCard">
+                          <div className="card details-card">
+                            <div className="form-group">
+                              <DetailLabel
+                                id="reviewer"
+                                title="Reviewer"
+                                explanation="This person will review the actual completion of the Milestone"
+                              />
+                              {milestone.hasReviewer && (
+                                <Fragment>
+                                  <table className="table-responsive">
+                                    <tbody>
+                                      <tr>
+                                        <td className="td-user">
+                                          <Link to={`/profile/${milestone.reviewerAddress}`}>
+                                            <Avatar
+                                              size={30}
+                                              src={getUserAvatar(milestone.reviewer)}
+                                              round
+                                            />
+                                            {getUserName(milestone.reviewer)}
+                                          </Link>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </Fragment>
+                              )}
+                              {!milestone.hasReviewer && (
+                                <p className="form-text alert alert-warning missing-reviewer-alert">
+                                  <i className="fa fa-exclamation-triangle" />
+                                  This Milestone does not have a reviewer. Any donations to this
+                                  Milestone can be withdrawn at any time and no checks are in place
+                                  to ensure this Milestone is completed.
+                                </p>
+                              )}
+                            </div>
 
-                        <div id="detailsCard" className="card details-card">
-                          <div className="form-group">
-                            <DetailLabel
-                              id="reviewer"
-                              title="Reviewer"
-                              explanation="This person will review the actual completion of the Milestone"
-                            />
-                            {milestone.hasReviewer && (
-                              <Fragment>
-                                <table className="table-responsive">
-                                  <tbody>
-                                    <tr>
-                                      <td className="td-user">
-                                        <Link to={`/profile/${milestone.reviewerAddress}`}>
-                                          <Avatar
-                                            size={30}
-                                            src={getUserAvatar(milestone.reviewer)}
-                                            round
-                                          />
-                                          {getUserName(milestone.reviewer)}
-                                        </Link>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </Fragment>
-                            )}
-                            {!milestone.hasReviewer && (
-                              <p className="form-text alert alert-warning missing-reviewer-alert">
-                                <i className="fa fa-exclamation-triangle" />
-                                This Milestone does not have a reviewer. Any donations to this
-                                Milestone can be withdrawn at any time and no checks are in place to
-                                ensure this Milestone is completed.
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="form-group">
-                            <DetailLabel
-                              id="recipient"
-                              title="Recipient"
-                              explanation={`
+                            <div className="form-group">
+                              <DetailLabel
+                                id="recipient"
+                                title="Recipient"
+                                explanation={`
                           Where the ${
                             milestone.isCapped ? milestone.token.symbol : 'tokens'
                           } will go
@@ -497,167 +498,178 @@ const ViewMilestone = props => {
                               ? ' after successful completion of the Milestone'
                               : ''
                           }`}
-                            />
-                            {milestone.hasRecipient && (
-                              <Fragment>
-                                {milestone.pendingRecipientAddress && (
-                                  <small className="form-text">
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                    This recipient is pending
-                                  </small>
-                                )}
-
-                                <table className="table-responsive">
-                                  <tbody>
-                                    <tr>
-                                      <td className="td-user">
-                                        {milestone instanceof LPMilestone ? (
-                                          <Link to={`/campaigns/${milestone.recipient._id}`}>
-                                            Campaign: {milestone.recipient.title}
-                                          </Link>
-                                        ) : (
-                                          <Link
-                                            to={`/profile/${milestone.pendingRecipientAddress ||
-                                              milestone.recipientAddress}`}
-                                          >
-                                            <Avatar
-                                              size={30}
-                                              src={getUserAvatar(recipient)}
-                                              round
-                                            />
-                                            {getUserName(recipient)}
-                                          </Link>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </Fragment>
-                            )}
-                            {!milestone.hasRecipient && (
-                              <p className="form-text">
-                                This Milestone does not have a recipient. If you are interested in
-                                completing the work for this Milestone, contact the Milestone
-                                manager and let them know!
-                              </p>
-                            )}
-                          </div>
-
-                          {milestone.dacId !== 0 && milestone.dacId !== undefined && (
-                            <div className="form-group">
-                              <DetailLabel
-                                id="dac-delegation"
-                                title="Delegating 3% to DAC"
-                                explanation="The DAC that this milestone is contributing to on every donation"
                               />
-                              {dacTitle}
-                            </div>
-                          )}
-                          {milestone.date && (
-                            <div className="form-group">
-                              <DetailLabel
-                                id="milestone-date"
-                                title="Date of Milestone"
-                                explanation={
-                                  milestone.isCapped
-                                    ? `This date defines the ${milestone.token.symbol}-fiat conversion rate`
-                                    : 'The date this Milestone was created'
-                                }
-                              />
-                              {moment.utc(milestone.createdAt).format('Do MMM YYYY')}
-                            </div>
-                          )}
+                              {milestone.hasRecipient && (
+                                <Fragment>
+                                  {milestone.pendingRecipientAddress && (
+                                    <small className="form-text">
+                                      <span>
+                                        <i className="fa fa-circle-o-notch fa-spin" />
+                                        &nbsp;
+                                      </span>
+                                      This recipient is pending
+                                    </small>
+                                  )}
 
-                          {milestone.isCapped && (
-                            <div className="form-group">
-                              <DetailLabel
-                                id="max-amount"
-                                title="Max amount to raise"
-                                explanation={`The maximum amount of ${milestone.token.symbol} that can be donated to this Milestone. Based on the requested amount in fiat.`}
-                              />
-                              {convertEthHelper(milestone.maxAmount, milestone.token.decimals)}{' '}
-                              {milestone.token.symbol}
-                              {milestone.items.length === 0 &&
-                                milestone.selectedFiatType &&
-                                milestone.selectedFiatType !== milestone.token.symbol &&
-                                milestone.fiatAmount && (
-                                  <span>
-                                    {' '}
-                                    ({milestone.fiatAmount.toFixed()} {milestone.selectedFiatType})
-                                  </span>
-                                )}
-                            </div>
-                          )}
-
-                          <div className="form-group">
-                            <DetailLabel
-                              id="amount-donated"
-                              title="Amount donated"
-                              explanation={
-                                milestone.acceptsSingleToken
-                                  ? `
-                              The amount of ${milestone.token.symbol} currently donated to this
-                              Milestone`
-                                  : 'The total amount(s) donated to this Milestone'
-                              }
-                            />
-                            {milestone.donationCounters.length &&
-                              milestone.donationCounters.map(dc => (
-                                <p className="donation-counter" key={dc.symbol}>
-                                  {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                                  <table className="table-responsive">
+                                    <tbody>
+                                      <tr>
+                                        <td className="td-user">
+                                          {milestone instanceof LPMilestone ? (
+                                            <Link to={`/campaigns/${milestone.recipient._id}`}>
+                                              Campaign: {milestone.recipient.title}
+                                            </Link>
+                                          ) : (
+                                            <Link
+                                              to={`/profile/${milestone.pendingRecipientAddress ||
+                                                milestone.recipientAddress}`}
+                                            >
+                                              <Avatar
+                                                size={30}
+                                                src={getUserAvatar(recipient)}
+                                                round
+                                              />
+                                              {getUserName(recipient)}
+                                            </Link>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </Fragment>
+                              )}
+                              {!milestone.hasRecipient && (
+                                <p className="form-text">
+                                  This Milestone does not have a recipient. If you are interested in
+                                  completing the work for this Milestone, contact the Milestone
+                                  manager and let them know!
                                 </p>
-                              ))}
-                          </div>
-
-                          {!milestone.isCapped && milestone.donationCounters.length > 0 && (
-                            <div className="form-group">
-                              <DetailLabel
-                                id="current-balance"
-                                title="Current balance"
-                                explanation="The current balance(s) of this Milestone"
-                              />
-                              {milestone.donationCounters.map(dc => (
-                                <p className="donation-counter" key={dc.symbol}>
-                                  {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
-                                </p>
-                              ))}
+                              )}
                             </div>
-                          )}
 
-                          {!milestone.isCapped &&
-                            milestone.donationCounters.length > 0 &&
-                            currency && (
+                            {milestone.dacId !== 0 && milestone.dacId !== undefined && (
                               <div className="form-group">
                                 <DetailLabel
-                                  id="current-balance-value"
-                                  title="Current balance value"
-                                  explanation="The current balance(s) of this Milestone in your native currency"
+                                  id="dac-delegation"
+                                  title="Delegating 3% to DAC"
+                                  explanation="The DAC that this milestone is contributing to on every donation"
                                 />
-                                {currentBalanceValue.toFixed(
-                                  (nativeCurrencyWhitelist.find(t => t.symbol === currency) || {})
-                                    .decimals || 2,
-                                )}{' '}
-                                {currency}
+                                {dacTitle}
+                              </div>
+                            )}
+                            {milestone.date && (
+                              <div className="form-group">
+                                <DetailLabel
+                                  id="milestone-date"
+                                  title="Date of Milestone"
+                                  explanation={
+                                    milestone.isCapped
+                                      ? `This date defines the ${milestone.token.symbol}-fiat conversion rate`
+                                      : 'The date this Milestone was created'
+                                  }
+                                />
+                                {moment.utc(milestone.createdAt).format('Do MMM YYYY')}
                               </div>
                             )}
 
-                          <div className="form-group">
-                            <DetailLabel
-                              id="campaign"
-                              title="Campaign"
-                              explanation="The Campaign this Milestone belongs to"
-                            />
-                            {campaign.title}
+                            {milestone.isCapped && (
+                              <div className="form-group">
+                                <DetailLabel
+                                  id="max-amount"
+                                  title="Max amount to raise"
+                                  explanation={`The maximum amount of ${milestone.token.symbol} that can be donated to this Milestone. Based on the requested amount in fiat.`}
+                                />
+                                {convertEthHelper(milestone.maxAmount, milestone.token.decimals)}{' '}
+                                {milestone.token.symbol}
+                                {milestone.items.length === 0 &&
+                                  milestone.selectedFiatType &&
+                                  milestone.selectedFiatType !== milestone.token.symbol &&
+                                  milestone.fiatAmount && (
+                                    <span>
+                                      {' '}
+                                      ({milestone.fiatAmount.toFixed()} {milestone.selectedFiatType}
+                                      )
+                                    </span>
+                                  )}
+                              </div>
+                            )}
+
+                            <div className="form-group">
+                              <DetailLabel
+                                id="amount-donated"
+                                title="Amount donated"
+                                explanation={
+                                  milestone.acceptsSingleToken
+                                    ? `
+                              The amount of ${milestone.token.symbol} currently donated to this
+                              Milestone`
+                                    : 'The total amount(s) donated to this Milestone'
+                                }
+                              />
+                              {milestone.donationCounters.length &&
+                                milestone.donationCounters.map(dc => (
+                                  <p className="donation-counter" key={dc.symbol}>
+                                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                                  </p>
+                                ))}
+                            </div>
+
+                            {!milestone.isCapped && milestone.donationCounters.length > 0 && (
+                              <div className="form-group">
+                                <DetailLabel
+                                  id="current-balance"
+                                  title="Current balance"
+                                  explanation="The current balance(s) of this Milestone"
+                                />
+                                {milestone.donationCounters.map(dc => (
+                                  <p className="donation-counter" key={dc.symbol}>
+                                    {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+
+                            {!milestone.isCapped &&
+                              milestone.donationCounters.length > 0 &&
+                              currency && (
+                                <div className="form-group">
+                                  <DetailLabel
+                                    id="current-balance-value"
+                                    title="Current balance value"
+                                    explanation="The current balance(s) of this Milestone in your native currency"
+                                  />
+                                  {currentBalanceValue.toFixed(
+                                    (nativeCurrencyWhitelist.find(t => t.symbol === currency) || {})
+                                      .decimals || 2,
+                                  )}{' '}
+                                  {currency}
+                                </div>
+                              )}
+
+                            <div className="form-group">
+                              <DetailLabel
+                                id="campaign"
+                                title="Campaign"
+                                explanation="The Campaign this Milestone belongs to"
+                              />
+                              {campaign.title}
+                            </div>
+
+                            <div className="form-group">
+                              <span className="label">Status</span>
+                              <br />
+                              {getReadableStatus(milestone.status)}
+                            </div>
                           </div>
 
-                          <div className="form-group">
-                            <span className="label">Status</span>
-                            <br />
-                            {getReadableStatus(milestone.status)}
-                          </div>
+                          {milestone.gasPaidUsdValue && (
+                            <div className="pt-3">
+                              <TotalGasPaid
+                                gasPaidUsdValue={milestone.gasPaidUsdValue}
+                                entity="MILESTONE:"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
 
