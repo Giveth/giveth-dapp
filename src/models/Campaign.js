@@ -50,6 +50,7 @@ class Campaign extends BasicModel {
     this.archivedMilestones = new Set(data.archivedMilestones || []);
     this.customThanksMessage = data.customThanksMessage;
     this.slug = data.slug;
+    this._gasPaidUsdValue = data.gasPaidUsdValue || '0';
   }
 
   toIpfs() {
@@ -178,6 +179,10 @@ class Campaign extends BasicModel {
   set commitTime(value) {
     this.checkType(value, ['number'], 'commitTime');
     this.myCommitTime = value;
+  }
+
+  get gasPaidUsdValue() {
+    return this._gasPaidUsdValue;
   }
 
   get totalDonated() {
