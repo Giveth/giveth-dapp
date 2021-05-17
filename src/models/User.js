@@ -40,6 +40,7 @@ class User extends Model {
       this._isAdmin = data.isAdmin;
       this._authenticated = data.authenticated || false;
       this._currency = data.currency || 'USD';
+      this._gasPaidUsdValue = data.gasPaidUsdValue || '0';
     }
   }
 
@@ -211,6 +212,10 @@ class User extends Model {
 
   get isAdmin() {
     return this._isAdmin;
+  }
+
+  get gasPaidUsdValue() {
+    return this._gasPaidUsdValue;
   }
 }
 
