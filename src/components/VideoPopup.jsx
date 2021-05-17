@@ -1,77 +1,64 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef, useState } from 'react';
-import { Radio, Input, Modal, Button, notification } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Form, Input, Radio, Upload, notification, Row, Col } from 'antd';
 import IPFSService from '../services/IPFSService';
 import config from '../configuration';
 
 const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   const [type, setType] = useState(1);
   const [url, setURL] = useState('');
-  const [youtubeUrl, setYoutubeURL] = useState('');
-  const [currentState, setCurrentState] = useState('');
-  const [loading, setLoading] = useState(false);
-  const stream = useRef(null);
-  const file = useRef(null);
+  const [fileList, setFileList] = useState([]);
+  const [youTube, setYouTube] = useState('');
+  const [form] = Form.useForm();
 
-  const onChange = e => {
+  const onTypeChange = e => {
     setType(e.target.value);
   };
 
-  const handleCamera = () => {
-    navigator.getUserMedia(
-      { audio: true, video: true },
-      cameraStream => {
-        stream.current = new window.MultiStreamsMixer([cameraStream]);
-        stream.current.frameInterval = 1;
-        stream.current.startDrawingFrames();
-        window.setSrcObject(stream.current.getMixedStream(), document.getElementById('video'));
-        // this.setState(
-        //   {
-        //     stream: new window.MultiStreamsMixer([cameraStream]),
-        //     cameraStream,
-        //   },
-        //   () => {
-        //     this.state.stream.frameInterval = 1; // eslint-disable-line react/no-direct-mutation-state
-        //     this.state.stream.startDrawingFrames();
-        //     window.setSrcObject(
-        //       this.state.stream.getMixedStream(),
-        //       document.getElementById('video'),
-        //     );
-        //   },
-        // );
-      },
-      () => {
-        // alert('No camera devices found');
-      },
-    );
+  const uploadProps = {
+    multiple: false,
+    maxCount: 1,
+    accept: 'video/*',
+    fileList,
+    customRequest: options => {
+      const { onSuccess, onError, file, onProgress } = options;
+      onProgress({ percent: 0 });
+      IPFSService.upload(file)
+        .then(hash => {
+          if (visible) {
+            onProgress({ percent: 100 });
+            onSuccess(config.ipfsGateway + hash.slice(6));
+          }
+        })
+        .catch(err => {
+          onError('Failed!', err);
+        });
+    },
+    onChange(info) {
+      const { status } = info.file;
+      console.log('status :>> ', status);
+      if (visible) {
+        setFileList(info.fileList);
+      }
+      if (status === 'uploading') {
+        console.log(info.fileList);
+      }
+      if (status === 'done') {
+        console.log('info.fileList :>> ', info.fileList);
+      } else if (status === 'error') {
+        console.log(`${info.file.name} file upload failed.`);
+        const args = {
+          message: 'Error',
+          description: 'Cannot upload picture to IPFS',
+        };
+        notification.error(args);
+      }
+    },
   };
 
-  const detectExtension = () => {
-    const extensionid = 'ajhifddimkapgcifgcodmmfdlknahffk';
-    const image = document.createElement('img');
-    image.src = `chrome-extension://${extensionid}/icon.png`;
-
-    image.onload = () => {
-      // handleScreenSharing();
-    };
-    image.onerror = () => {
-      setCurrentState('missing extension');
-    };
-  };
-
-  useEffect(() => {
-    if (type === 4) {
-      handleCamera();
-    } else if (type === 5) {
-      detectExtension();
-    }
-  }, [type]);
   function clearStates() {
-    if (file.current) {
-      file.current.value = null;
-    }
-    setLoading(false);
-    setURL(false);
+    setFileList([]);
+    form.resetFields();
   }
 
   function closeModal() {
@@ -80,116 +67,178 @@ const VideoPopup = ({ visible, handleClose, reactQuillRef }) => {
   }
 
   function insertToEditor(videURL) {
-    const quill = reactQuillRef.current.getEditor();
-    const index = quill.getLength() - 1;
-    quill.insertEmbed(index, 'video', videURL);
+    // TODO: Remove This if after edit milestone convert to FC;
+    let quill;
+    if (reactQuillRef.current) {
+      quill = reactQuillRef.current.getEditor();
+    } else {
+      quill = reactQuillRef.getEditor();
+    }
+    quill.focus();
+    const range = quill.getSelection();
+    quill.insertEmbed(range.index, 'video', videURL);
   }
 
   function getVideoUrl(tempUrl) {
-    let match =
+    if (!tempUrl) return null;
+    const match =
       tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtube\.com\/watch.*v=([a-zA-Z0-9_-]+)/) ||
       tempUrl.match(/^(?:(https?):\/\/)?(?:(?:www|m)\.)?youtu\.be\/([a-zA-Z0-9_-]+)/) ||
       tempUrl.match(/^.*(youtu.be\/|v\/|e\/|u\/\w+\/|embed\/|v=)([^#&?]*).*/);
     if (match && match[2].length === 11) {
       return `https://www.youtube.com/embed/${match[2]}?showinfo=0`;
     }
-    match = tempUrl.match(/^(?:(https?):\/\/)?(?:www\.)?vimeo\.com\/(\d+)/);
-    if (match) {
-      return `${match[1] || 'https'}://player.vimeo.com/video/${match[2]}/`;
-    }
     return null;
-  }
-
-  function uploadVideoToIPFS() {
-    const reader = new FileReader();
-    reader.onload = _ => {
-      IPFSService.upload(file.current.files[0])
-        .then(hash => {
-          insertToEditor(config.ipfsGateway + hash.slice(6));
-          closeModal();
-        })
-        .catch(() => {
-          notification.error({
-            message: 'IPFS Fails',
-            description: 'Something went wrong with the upload.',
-          });
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    };
-    setLoading(true);
-    reader.readAsDataURL(file.current.files[0]);
-  }
-
-  function onOk() {
-    let tempURL;
-    switch (type) {
-      case 1:
-        insertToEditor(url);
-        closeModal();
-        break;
-      case 2:
-        uploadVideoToIPFS();
-        break;
-      case 3:
-        tempURL = getVideoUrl(youtubeUrl);
-        if (tempURL) {
-          insertToEditor(tempURL);
-          closeModal();
-        }
-        break;
-      default:
-        break;
-    }
   }
 
   return (
     <Modal
-      title="Attach a video to description"
       visible={visible}
-      onOk={onOk}
+      title="Attach a video to description"
+      okText="Add"
+      cancelText="Cancel"
       onCancel={closeModal}
-      footer={[
-        <Button key="back" onClick={closeModal}>
-          cancel
-        </Button>,
-        <Button key="submit" type="primary" loading={loading} onClick={onOk}>
-          Submit
-        </Button>,
-      ]}
+      onOk={() => {
+        form
+          .validateFields()
+          .then(_ => {
+            let tempURL;
+            switch (type) {
+              case 1:
+                insertToEditor(url);
+                closeModal();
+                break;
+              case 2:
+                insertToEditor(fileList[0].response);
+                closeModal();
+                break;
+              case 3:
+                tempURL = getVideoUrl(youTube);
+                if (tempURL) {
+                  insertToEditor(tempURL);
+                  closeModal();
+                }
+                break;
+              default:
+                break;
+            }
+            // onCreate(values);
+          })
+          .catch(info => {
+            console.log('Validate Failed:', info);
+          });
+      }}
     >
-      <Radio.Group onChange={onChange} value={type}>
-        <Radio value={1}>Link</Radio>
-        <Radio value={2}>File</Radio>
-        <Radio value={3}>Youtube</Radio>
-        {/* <Radio value={3}>Camera</Radio> */}
-        {/* <Radio value={4}>Screen sharing</Radio> */}
-      </Radio.Group>
-      <div style={{ paddingTop: '40px' }}>
-        {type === 1 && <Input placeholder="Video URL" onChange={e => setURL(e.target.value)} />}
-        {type === 2 && (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <input type="file" accept="video/*" ref={file} />
-          </div>
-        )}
-        {type === 3 && (
-          <Input placeholder="Video URL" onChange={e => setYoutubeURL(e.target.value)} />
-        )}
-        {currentState === 'missing extension' && (
-          <div role="alert">
-            <strong>You need to install this </strong>
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://chrome.google.com/webstore/detail/screen-capturing/ajhifddimkapgcifgcodmmfdlknahffk"
+      <Row style={{ marginBottom: '32px' }}>
+        <Col span="24">
+          <Radio.Group onChange={onTypeChange} value={type}>
+            <Radio value={1}>Link</Radio>
+            <Radio value={2}>File</Radio>
+            <Radio value={3}>Youtube</Radio>
+          </Radio.Group>
+        </Col>
+      </Row>
+      <Row>
+        <Col span="24">
+          {visible && (
+            <Form
+              form={form}
+              layout="vertical"
+              name="form_in_modal"
+              initialValues={{
+                type: 1,
+                url: '',
+                file: [],
+                youTube: '',
+              }}
             >
-              Chrome extension
-            </a>{' '}
-            <strong>and reload</strong>
-          </div>
-        )}
-      </div>
+              <Form.Item
+                name="url"
+                style={{ display: type === 1 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 1) return Promise.resolve();
+                      if (!value || value.length < 10) {
+                        return Promise.reject(new Error('Please provide at least 10 characters'));
+                      }
+                      if (!/^https?:\/\//.test(value)) {
+                        return Promise.reject(
+                          new Error('Address should starts with http or https'),
+                        );
+                      }
+                      if (!/\.(mp4|webp|mov|avi)$/.test(value)) {
+                        return Promise.reject(
+                          new Error('Address should ends with video extension like .mp4 '),
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <Input placeholder="Video URL" onChange={e => setURL(e.target.value)} value={url} />
+              </Form.Item>
+              <Form.Item
+                name="file"
+                disabled
+                style={{ display: type === 2 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 2) return Promise.resolve();
+                      if (!value || !value.fileList || !value.fileList[0]) {
+                        return Promise.reject(new Error('Please upload a video'));
+                      }
+                      if (value.fileList[0].status === 'uploading') {
+                        return Promise.reject(new Error('Please Wait to video upload Completely.'));
+                      }
+                      if (value.fileList[0].status === 'error') {
+                        return Promise.reject(new Error('upload fails.'));
+                      }
+                      if (value.fileList[0].status === 'done' && value.fileList[0].response) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Something wrong.'));
+                    },
+                  }),
+                ]}
+              >
+                <Upload.Dragger {...uploadProps}>
+                  <img
+                    src="/img/ipfs-logo1.svg"
+                    alt="ipfs"
+                    style={{ width: '100px', padding: '20px' }}
+                  />
+                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                </Upload.Dragger>
+              </Form.Item>
+              <Form.Item
+                name="youtube"
+                style={{ display: type === 3 ? 'flex' : 'none' }}
+                rules={[
+                  () => ({
+                    validator(_, value) {
+                      if (type !== 3) return Promise.resolve();
+                      const finalURL = getVideoUrl(value);
+                      if (finalURL) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Please enter a valid youtube address.'));
+                    },
+                  }),
+                ]}
+              >
+                <Input
+                  placeholder="YouTube URL"
+                  onChange={e => setYouTube(e.target.value)}
+                  value={youTube}
+                />
+              </Form.Item>
+            </Form>
+          )}
+        </Col>
+      </Row>
     </Modal>
   );
 };

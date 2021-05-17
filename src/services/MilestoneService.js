@@ -79,10 +79,16 @@ class MilestoneService {
    *
    * @param id   ID of the Milestone to be retrieved
    */
-  static subscribeOne(id, onResult, onError) {
+  static subscribeOne(id, onResult, onError, slug) {
+    const query = {};
+    if (id) {
+      query._id = id;
+    } else if (slug) {
+      query.slug = slug;
+    }
     this.milestoneSubscription = milestones
       .watch({ listStrategy: 'always' })
-      .find({ query: { _id: id } })
+      .find({ query })
       .subscribe(resp => {
         const { total, data } = resp;
         if (total === 0) {
@@ -329,7 +335,7 @@ class MilestoneService {
                 $or: [{ intendedProjectTypeId: id }, { ownerTypeId: id }],
               },
             ],
-            $sort: { usdValue: -1, createdAt: -1 },
+            $sort: { createdAt: -1, usdValue: -1 },
             $limit,
             $skip,
           },

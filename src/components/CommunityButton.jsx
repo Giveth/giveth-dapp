@@ -27,7 +27,9 @@ class CommunityButton extends Component {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <i className={`fa ${this.state.icon}`} />
+        <i className={`fa ${this.state.icon !== 'external-link' ? this.state.icon : 'd-none'}`}>
+          &nbsp;
+        </i>
         {this.props.children}
       </a>
     );

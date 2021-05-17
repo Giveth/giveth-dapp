@@ -93,6 +93,7 @@ function CreateBounty(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.BOUNTYTYPE;
 
       if (bounty.donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -124,10 +125,12 @@ function CreateBounty(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Bounty has been updated!';
+            const notificationError =
+              'It seems your Bounty has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
@@ -219,7 +222,7 @@ function CreateBounty(props) {
               </div>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button htmlType="submit" loading={loading} block size="large" type="primary">
                   {userIsCampaignOwner ? 'Create' : 'Propose'}
                 </Button>
               </Form.Item>

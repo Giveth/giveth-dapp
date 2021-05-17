@@ -55,6 +55,10 @@ class MyCampaigns extends Component {
     if (this.campaignsObserver) this.campaignsObserver.unsubscribe();
   }
 
+  handlePageChanged(newPage) {
+    this.setState({ skipPages: newPage - 1 }, () => this.loadCampaigns());
+  }
+
   loadCampaigns() {
     const { currentUser } = this.props;
     this.campaignsObserver = CampaignService.getUserCampaigns(
@@ -119,10 +123,6 @@ class MyCampaigns extends Component {
         confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
       }),
     );
-  }
-
-  handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadCampaigns());
   }
 
   render() {

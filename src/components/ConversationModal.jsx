@@ -3,12 +3,17 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Lottie from 'lottie-react';
 
 import Milestone from 'models/Milestone';
 import MilestoneProof from 'components/MilestoneProof';
-import { Button, Form, Modal } from 'antd';
+import { Button, Form, Modal, Row, Col } from 'antd';
 import Editor from './Editor';
 import { getHtmlText } from '../lib/helpers';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
+import AcceptProposedAnimation from '../assets/checkmark.json';
 
 /**
   A promise modal to file proof when taking action on a milestone
@@ -65,7 +70,7 @@ class ConversationModal extends Component {
     this.setState({ message }, () => this.toggleFormValid());
   }
 
-  openModal({ title, description, cta, required, textPlaceholder }) {
+  openModal({ title, description, cta, required, textPlaceholder, type }) {
     this.setState(
       {
         items: [],
@@ -76,10 +81,15 @@ class ConversationModal extends Component {
         required,
         formIsValid: !required,
         textPlaceholder,
+        type,
       },
       this.toggleFormValid,
     );
-
+    // Centering AcceptProposed SVG animation
+    const element = document.getElementById('LottieAnimation');
+    if (element && type === 'AcceptProposed') {
+      element.children[0].setAttribute('viewBox', '150 100 500 400');
+    }
     return new Promise((resolve, reject) => {
       this.promise = {
         resolve,
@@ -100,7 +110,7 @@ class ConversationModal extends Component {
       }
     }
 
-    this.setState({ modalIsOpen: false });
+    this.setState({ modalIsOpen: false, message: '' });
   }
 
   toggleFormValid() {
@@ -128,35 +138,46 @@ class ConversationModal extends Component {
       items,
       enableAttachProof,
       textPlaceholder,
+      type,
     } = this.state;
 
     const { milestone } = this.props;
 
-    return (
-      <Form id="conversation" onSubmit={this.submit} requiredMark={required}>
-        <Modal
-          wrapClassName="vertical-center-modal"
-          visible={modalIsOpen}
-          onCancel={() => this.closeModal(true)}
-          title={title}
-          width={1000}
-          footer={[
-            <Button key="back" onClick={() => this.closeModal(true)}>
-              Cancel
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              loading={isSaving}
-              onClick={this.submit}
-              disabled={!formIsValid}
-            >
-              {CTA}
-            </Button>,
-          ]}
-        >
-          <p className="mb-4">{description}</p>
+    let LottieAnimation;
+    if (type === 'AcceptProposed') {
+      LottieAnimation = AcceptProposedAnimation;
+    }
 
+    return (
+      <Modal
+        visible={modalIsOpen}
+        destroyOnClose
+        onCancel={() => this.closeModal(true)}
+        width={1000}
+        footer={null}
+        className="antModalComment pb-0"
+        centered
+      >
+        <Form id="conversation" preserve={false} onSubmit={this.submit} requiredMark={required}>
+          <Row className="justify-content-center">
+            <Col className="col m-auto">
+              <h3 className="font-weight-bold">{title}</h3>
+              <div className="mb-4" style={{ fontSize: '18px', minWidth: '300px' }}>
+                {description}
+              </div>
+            </Col>
+            {LottieAnimation && (
+              <Col className="text-center">
+                <Lottie
+                  animationData={LottieAnimation}
+                  className="m-auto"
+                  id="LottieAnimation"
+                  loop={false}
+                  style={{ width: '250px' }}
+                />
+              </Col>
+            )}
+          </Row>
           <div className="row">
             <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
               <Form.Item
@@ -203,14 +224,40 @@ class ConversationModal extends Component {
               </div>
             )}
           </div>
-        </Modal>
-      </Form>
+        </Form>
+        <div className="text-right">
+          <Button
+            key="back"
+            ghost
+            onClick={this.closeModal}
+            size="large"
+            type="primary"
+            loading={isSaving}
+            className="m-2"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={this.submit}
+            size="large"
+            key="submit"
+            type="primary"
+            loading={isSaving}
+            className="m-2"
+            disabled={!formIsValid}
+          >
+            {CTA}
+          </Button>
+        </div>
+      </Modal>
     );
   }
 }
 
 ConversationModal.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default ConversationModal;

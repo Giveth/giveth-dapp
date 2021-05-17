@@ -11,6 +11,9 @@ import MilestoneConversationAction from './MilestoneConversationAction';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Milestone from '../models/Milestone';
 import config from '../configuration';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const getPaymentsStr = payments => {
   let phrase = '';
@@ -31,9 +34,10 @@ const getPaymentsStr = payments => {
 };
 
 const getReadableMessageContext = conversation => {
-  const { messageContext, ownerAddress } = conversation;
-  let { owner } = conversation;
+  const { messageContext, ownerAddress, recipientAddress } = conversation;
+  let { owner, recipient } = conversation;
   owner = owner || { address: ownerAddress };
+  recipient = recipient || { address: recipientAddress };
   const userName = getUserName(owner);
   const userLink = <Link to={`/profile/${owner.address}`}>{userName}</Link>;
 
@@ -50,7 +54,7 @@ const getReadableMessageContext = conversation => {
   if (messageContext === 'rePropose') return <Fragment>{userLink} re-proposed Milestone</Fragment>;
   if (messageContext === 'comment') return <Fragment>{userLink} wrote:</Fragment>;
   if (messageContext === 'payment') {
-    const { recipient, payments } = conversation;
+    const { payments } = conversation;
     if (payments) {
       const phrase = getPaymentsStr(payments);
       if (owner && recipient && owner.address === recipient.address) {
@@ -88,6 +92,17 @@ const getReadableMessageContext = conversation => {
       <Fragment>
         {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
         {`${paymentsStr} has been sent to recipient's wallet`}
+      </Fragment>
+    );
+  }
+  if (messageContext === 'recipientChanged') {
+    const recipientLink = (
+      <Link to={`/profile/${recipient.address}`}>{recipient.name || recipient.address}</Link>
+    );
+    return (
+      <Fragment>
+        {/* <Link to={`/profile/${donorId}`}>{donorTitle || 'Anonymous'}</Link> */}
+        {userLink} has changed recipient to {recipientLink}
       </Fragment>
     );
   }
@@ -197,7 +212,9 @@ function MilestoneConversationItem({ conversation, milestone, isAmountEnoughForW
 }
 
 MilestoneConversationItem.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };

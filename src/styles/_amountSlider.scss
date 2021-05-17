@@ -1,0 +1,31 @@
+#amount_slider {
+  $sliderHeight: 10px;
+  .ant-slider.ant-slider-with-marks {
+    .ant-slider-rail {
+      height: $sliderHeight;
+    }
+    .ant-slider-track {
+      height: $sliderHeight;
+    }
+    .ant-slider-step {
+      height: $sliderHeight;
+
+      span {
+        width: $sliderHeight + 4;
+        height: $sliderHeight + 4;
+      }
+    }
+    .ant-slider-handle {
+      width: $sliderHeight + 9;
+      height: $sliderHeight + 9;
+    }
+    .ant-slider-mark {
+      span:first-child {
+        left: 3px !important;
+      }
+      span:last-child {
+        left: calc(100% - 4px) !important;
+      }
+    }
+  }
+}

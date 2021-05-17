@@ -18,7 +18,6 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { authenticateUser } from '../../lib/middleware';
 import BridgedMilestone from '../../models/BridgedMilestone';
-import config from '../../configuration';
 import { Milestone, MilestoneItem } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
@@ -47,8 +46,8 @@ function CreateExpense(props) {
       currency: '',
       token: {},
       date: getStartOfDayUTC().subtract(1, 'd'),
-      conversationRate: 1,
-      conversationRateTimestamp: new Date().toISOString(),
+      conversionRate: 1,
+      conversionRateTimestamp: new Date().toISOString(),
       description: '',
       picture: '',
       key: uuidv4(),
@@ -135,8 +134,8 @@ function CreateExpense(props) {
         fiatAmount: 0,
         currency: '',
         date: getStartOfDayUTC().subtract(1, 'd'),
-        conversationRate: 1,
-        conversationRateTimestamp: new Date().toISOString(),
+        conversionRate: 1,
+        conversionRateTimestamp: new Date().toISOString(),
         description: '',
         picture: '',
         key: uuidv4(),
@@ -165,7 +164,7 @@ function CreateExpense(props) {
         return;
       }
 
-      const { title, description, recipientAddress, token, donateToDac } = expenseForm;
+      const { title, description, recipientAddress, token } = expenseForm;
 
       const ms = new BridgedMilestone({
         title,
@@ -179,10 +178,7 @@ function CreateExpense(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-
-      if (donateToDac) {
-        ms.dacId = config.defaultDacId;
-      }
+      ms.formType = Milestone.EXPENSETYPE;
 
       ms.maxAmount = totalAmount;
 
@@ -223,10 +219,12 @@ function CreateExpense(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Expense has been updated!';
+            const notificationError =
+              'It seems your Expense has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
@@ -306,7 +304,7 @@ function CreateExpense(props) {
                     token={expenseForm.token}
                   />
                 ))}
-                <Button onClick={addExpense} className="add-expense-button">
+                <Button onClick={addExpense} block size="large" type="primary" ghost>
                   Add new Expense
                 </Button>
               </div>
@@ -328,7 +326,13 @@ function CreateExpense(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                <Button
+                  block
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading || loadingAmount}
+                >
                   {submitButtonText}
                 </Button>
               </Form.Item>

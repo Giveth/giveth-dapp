@@ -7,6 +7,7 @@ import 'react-rangeslider/lib/index.css';
 
 import Campaign from 'models/Campaign';
 import Milestone from 'models/Milestone';
+import { Button } from 'antd';
 import { ZERO_ADDRESS } from '../lib/helpers';
 import { isLoggedIn, checkBalance } from '../lib/middleware';
 import config from '../configuration';
@@ -17,6 +18,9 @@ import CampaignService from '../services/CampaignService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -89,18 +93,11 @@ const ChangeOwnershipButton = props => {
     );
   };
 
-  const style = {
-    display: 'inline-block',
-    paddingRight: '10px',
-    ...props.style,
-  };
-
   return (
-    <span style={style}>
-      <button type="button" className="btn btn-danger" onClick={() => openDialog()}>
+    <Fragment>
+      <Button type="primary" block style={props.style} danger onClick={() => openDialog()}>
         Change co-owner
-      </button>
-
+      </Button>
       <Modal
         isOpen={modalVisible}
         style={modalStyles}
@@ -172,13 +169,15 @@ const ChangeOwnershipButton = props => {
           </Fragment>
         )}
       </Modal>
-    </span>
+    </Fragment>
   );
 };
 
 ChangeOwnershipButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.instanceOf(Milestone),
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ),
   style: PropTypes.shape(),
 };
 

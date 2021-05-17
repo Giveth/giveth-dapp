@@ -4,7 +4,6 @@ import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
-import ErrorPopup from 'components/ErrorPopup';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -13,6 +12,9 @@ import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import ErrorHandler from '../lib/ErrorHandler';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
 
 const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
@@ -66,8 +68,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
                 )}
                 {!(milestone instanceof LPMilestone) && (
                   <div className="alert alert-warning">
-                    Note: For security reasons, there is a delay of approximately 72 hrs before the
-                    funds will appear in {isRecipient ? 'your' : "the recipient's"} wallet.
+                    Note: For security reasons and to save in fees, there is a delay of
+                    approximately 2-5 days before the crypto will appear in{' '}
+                    {isRecipient ? 'your' : "the recipient's"} wallet.
                   </div>
                 )}
               </div>,
@@ -111,7 +114,7 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
                 onError: (err, txUrl) => {
                   let msg;
                   if (err === 'patch-error') {
-                    ErrorPopup('Something went wrong with withdrawing your funds', err);
+                    ErrorHandler(err, 'Issue on connecting server and pushing updates');
                   } else if (err.message === 'no-donations') {
                     msg = <p>Nothing to withdraw. There are no donations to this Milestone.</p>;
                   } else if (txUrl) {
@@ -142,9 +145,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
         })
         .catch(err => {
           if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
+            ErrorHandler(err, 'There is no balance left on the account.', true);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorHandler(err, 'Something went wrong.', true);
           }
         }),
     );
@@ -169,7 +172,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
 };
 
 WithdrawMilestoneFundsButton.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };
 

@@ -11,6 +11,9 @@ import ReproposeRejectedMilestoneButton from 'components/ReproposeRejectedMilest
 import RequestMarkMilestoneCompleteButton from 'components/RequestMarkMilestoneCompleteButton';
 import ApproveRejectMilestoneCompletionButtons from 'components/ApproveRejectMilestoneCompletionButtons';
 import WithdrawMilestoneFundsButton from 'components/WithdrawMilestoneFundsButton';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 class MilestoneConversationAction extends Component {
   render() {
@@ -61,7 +64,9 @@ class MilestoneConversationAction extends Component {
 }
 
 MilestoneConversationAction.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
   messageContext: PropTypes.string.isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
 };

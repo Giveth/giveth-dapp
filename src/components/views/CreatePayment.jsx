@@ -88,14 +88,6 @@ function CreatePayment(props) {
   }, [loadingAmount, userIsCampaignOwner]);
 
   useEffect(() => {
-    if (loadingAmount) {
-      setSubmitButtonText('Loading Amount');
-    } else {
-      setSubmitButtonText(userIsCampaignOwner ? 'Create' : 'Propose');
-    }
-  }, [loadingAmount, userIsCampaignOwner]);
-
-  useEffect(() => {
     setUserIsOwner(
       campaign &&
         currentUser.address &&
@@ -222,6 +214,7 @@ function CreatePayment(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.PAYMENTTYPE;
 
       if (donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -261,10 +254,12 @@ function CreatePayment(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Payment has been updated!';
+            const notificationError =
+              'It seems your Payment has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
@@ -400,7 +395,13 @@ function CreatePayment(props) {
                 />
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading || loadingAmount}>
+                <Button
+                  block
+                  size="large"
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading || loadingAmount}
+                >
                   {submitButtonText}
                 </Button>
               </Form.Item>

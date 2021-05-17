@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Avatar from 'react-avatar';
-import { Link, useRouteMatch } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { Menu, Grid } from 'antd';
 
@@ -36,25 +36,40 @@ const RightMenu = () => {
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
   const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
 
-  const isProfile = useRouteMatch('/profile');
-  const myMilestones = useRouteMatch('/my-milestones');
-  const donations = useRouteMatch('/donations');
-  const delegations = useRouteMatch('/delegations');
-  const myDacs = useRouteMatch('/my-dacs');
-  const myCampaigns = useRouteMatch('/my-campaigns');
-
-  let selectedKey;
-  if (isProfile) selectedKey = 'profile:1';
-  else if (myMilestones) selectedKey = 'Manage:1';
-  else if (donations) selectedKey = 'Manage:2';
-  else if (delegations) selectedKey = 'Manage:3';
-  else if (myDacs) selectedKey = 'Manage4';
-  else if (myCampaigns) selectedKey = 'Manage:5';
-  else selectedKey = '';
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    setSelectedKeys(selectedKey);
-  }, [selectedKey]);
+    const userAddress = currentUser._address && currentUser._address.toLowerCase();
+    switch (true) {
+      case pathname === '/profile':
+      case pathname.toLowerCase() === `/profile/${userAddress}`:
+        setSelectedKeys('profile:1');
+        break;
+
+      case pathname === '/my-milestones':
+        setSelectedKeys('Manage:1');
+        break;
+
+      case pathname === '/donations':
+        setSelectedKeys('Manage:2');
+        break;
+
+      case pathname === '/delegations':
+        setSelectedKeys('Manage:3');
+        break;
+
+      case pathname === '/my-dacs':
+        setSelectedKeys('Manage:4');
+        break;
+
+      case pathname === '/my-campaigns':
+        setSelectedKeys('Manage:5');
+        break;
+
+      default:
+        setSelectedKeys('');
+    }
+  }, [pathname, currentUser]);
 
   return (
     <Menu selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
@@ -116,10 +131,8 @@ const RightMenu = () => {
             key="profile"
             title={
               <React.Fragment>
-                {currentUser.avatar && (
-                  <Avatar className="mr-2" size={30} src={currentUser.avatar} round />
-                )}
-                {currentUser.name ? currentUser.name : 'Hi, you!'}
+                {currentUser.avatar && <Avatar size={30} src={currentUser.avatar} round />}
+                <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
               </React.Fragment>
             }
           >

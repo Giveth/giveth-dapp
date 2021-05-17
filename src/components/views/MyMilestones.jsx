@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -32,12 +32,14 @@ const reviewDue = updatedAt =>
 /**
  * The my milestones view
  */
-function MyMilestones() {
+const MyMilestones = () => {
+  const milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
+
   const [isLoading, setLoading] = useState(true);
   const [milestones, setMilestones] = useState([]);
   const [skipPages, setSkipPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
-  const [milestoneStatus, setMilestoneStatus] = useState('Active');
+  const [milestoneStatus, setMilestoneStatus] = useState(milestoneTabs[0]);
 
   const itemsPerPage = 10;
   const visiblePages = 10;
@@ -52,14 +54,12 @@ function MyMilestones() {
     state: { tokenWhitelist },
   } = useContext(WhiteListContext);
 
-  const milestoneTabs = ['Active', 'Paid', 'Canceled', 'Rejected'];
   function cleanUp() {
     MilestoneService.unsubscribe();
   }
 
-  function loadMileStones() {
+  const loadMileStones = useCallback(() => {
     const myAddress = currentUser.address;
-
     if (myAddress) {
       MilestoneService.subscribeMyMilestones({
         milestoneStatus,
@@ -75,7 +75,7 @@ function MyMilestones() {
         },
         onError: err => {
           ErrorPopup('Something went wrong.', err);
-          // TO DO: handle error here in view
+          // TODO: handle error here in view
           setLoading(false);
         },
       });
@@ -84,18 +84,7 @@ function MyMilestones() {
       setTotalResults(0);
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    loadMileStones();
-    return cleanUp;
-  }, []);
-
-  useEffect(() => {
-    setLoading(true);
-    cleanUp();
-    loadMileStones();
-  }, [currentUser, milestoneStatus]);
+  }, [currentUser.address, milestoneStatus, skipPages]);
 
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
@@ -104,21 +93,29 @@ function MyMilestones() {
     return token.symbol;
   }
 
-  useEffect(() => {
-    loadMileStones();
-    return cleanUp();
-  }, [skipPages]);
-
   function handlePageChanged(newPage) {
-    setLoading(true);
-    setSkipPages(newPage - 1);
+    // Skip rerendering for same page
+    if (newPage - 1 !== skipPages) {
+      setLoading(true);
+      setSkipPages(newPage - 1);
+    }
   }
 
   function changeTab(newStatus) {
-    setLoading(true);
-    setSkipPages(0);
-    setMilestoneStatus(newStatus);
+    // Skip rerendering for same tab
+    if (newStatus !== milestoneStatus) {
+      setLoading(true);
+      setSkipPages(0);
+      setMilestoneStatus(newStatus);
+    }
   }
+
+  useEffect(() => {
+    // To skip initial render
+    setLoading(true);
+    loadMileStones();
+    return cleanUp;
+  }, [currentUser.address, loadMileStones, milestoneStatus, skipPages]);
 
   return (
     <div id="milestones-view">
@@ -272,7 +269,7 @@ function MyMilestones() {
       </div>
     </div>
   );
-}
+};
 
 MyMilestones.defaultProps = {};
 

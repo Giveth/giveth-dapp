@@ -9,6 +9,9 @@ import ConversationModal from 'components/ConversationModal';
 import GA from 'lib/GoogleAnalytics';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
   const conversationModal = useRef();
@@ -52,11 +55,11 @@ const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
             .openModal({
               title: 'Accept proposed Milestone',
               description:
-                'Optionally explain why you accept this proposed Milestone. Compliments are appreciated! This information will be publicly visible and emailed to the Milestone owner.',
-              textPlaceholder: 'Optionally explain why you accept this proposal...',
+                'Your acceptance of this Milestone will be recorded as a publicly visible comment, and emailed to the Milestone Owner. Please add a personal comment, compliment or other custom message to accompany it!',
               required: false,
-              cta: 'Accept proposal',
+              cta: 'Submit',
               enableAttachProof: false,
+              type: 'AcceptProposed',
             })
             .then(proof => {
               MilestoneService.acceptProposedMilestone({
@@ -147,7 +150,9 @@ const AcceptRejectProposedMilestoneButtons = ({ milestone }) => {
 };
 
 AcceptRejectProposedMilestoneButtons.propTypes = {
-  milestone: PropTypes.instanceOf(Milestone).isRequired,
+  milestone: PropTypes.oneOfType(
+    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  ).isRequired,
 };
 
 export default React.memo(AcceptRejectProposedMilestoneButtons);

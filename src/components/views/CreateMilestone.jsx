@@ -101,6 +101,7 @@ function CreateMilestone(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
+      ms.formType = Milestone.MILESTONETYPE;
 
       if (milestone.donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -132,10 +133,12 @@ function CreateMilestone(props) {
               </p>
             );
           } else {
-            notificationDescription = 'Your Milestone has been updated!';
+            const notificationError =
+              'It seems your Milestone has been updated!, this should not be happened';
+            notification.error({ description: notificationError });
           }
 
-          if (description) {
+          if (notificationDescription) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
@@ -237,7 +240,7 @@ function CreateMilestone(props) {
                 </div>
               </div>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button block size="large" type="primary" htmlType="submit" loading={loading}>
                   {userIsCampaignOwner ? 'Create' : 'Propose'}
                 </Button>
               </Form.Item>

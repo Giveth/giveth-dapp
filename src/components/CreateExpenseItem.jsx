@@ -11,15 +11,17 @@ import {
 } from './EditMilestoneCommons';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import ErrorHandler from '../lib/ErrorHandler';
+import { getStartOfDayUTC } from '../lib/helpers';
 
 const WAIT_INTERVAL = 1000;
 
 function CreateExpenseItem({
-  item: initialValue,
+  item: initialValues,
   updateStateOfItem,
   removeExpense,
   removeAble,
   token = {},
+  disabled = false,
 }) {
   const {
     actions: { getConversionRates },
@@ -27,7 +29,7 @@ function CreateExpenseItem({
 
   const [visibleRemoveModal, setVisibleRemoveModal] = useState(false);
   const [loadingRate, setLoadingRate] = useState(false);
-  const [item, setItem] = useState({ ...initialValue });
+  const [item, setItem] = useState({ ...initialValues });
 
   const timer = useRef();
 
@@ -132,16 +134,26 @@ function CreateExpenseItem({
         currency={item.currency}
         amount={item.fiatAmount}
         id={`fiat-amount-currency-${item.key}`}
-        disabled={loadingRate}
+        disabled={loadingRate || disabled}
+        initialValues={{
+          fiatAmount: Number(initialValues.fiatAmount),
+          selectedFiatType: initialValues.currency,
+        }}
       />
 
-      <MilestoneDatePicker onChange={handleDatePicker} disabled={loadingRate} />
+      <MilestoneDatePicker
+        value={getStartOfDayUTC(item.date).subtract(1, 'd')}
+        onChange={handleDatePicker}
+        disabled={loadingRate || disabled}
+      />
 
       <MilestoneDescription
         onChange={handleInputChange}
         value={item.description}
         label="Description of the expense"
         id={`description-${item.key}`}
+        initialValue={initialValues.description}
+        disabled={disabled}
       />
 
       <MilestonePicture
@@ -149,10 +161,11 @@ function CreateExpenseItem({
         milestoneTitle={item.key}
         picture={item.picture}
         label="Receipt"
+        disabled={disabled}
       />
 
       {removeAble && (
-        <Button onClick={showRemoveModal} className="remove-expense-button">
+        <Button disabled={disabled} onClick={showRemoveModal} block size="large" danger>
           Remove Expense
         </Button>
       )}

@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 import DelegationsItem from './DelegationsItem';
 import { Donation, Milestone } from '../models';
 import Campaign from '../models/Campaign';
+import BridgedMilestone from '../models/BridgedMilestone';
+import LPPCappedMilestone from '../models/LPPCappedMilestone';
+import LPMilestone from '../models/LPMilestone';
 
 function DelegationsTable({
   delegations,
@@ -78,7 +81,11 @@ function DelegationsTable({
 DelegationsTable.propTypes = {
   delegations: PropTypes.arrayOf(PropTypes.instanceOf(Donation)).isRequired,
   campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
-  milestones: PropTypes.arrayOf(PropTypes.instanceOf(Milestone)).isRequired,
+  milestones: PropTypes.arrayOf(
+    PropTypes.oneOfType(
+      [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+    ),
+  ).isRequired,
   totalResults: PropTypes.number.isRequired,
   skipPages: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,

@@ -5,7 +5,8 @@
     "prettier",
     "prettier/flowtype",
     "prettier/react",
-    "prettier/standard"
+    "prettier/standard",
+    "plugin:react-hooks/recommended"
   ],
   "rules": {
     "react/jsx-props-no-spreading": "off",
@@ -39,7 +40,8 @@
       {
         "singleQuote": true,
         "trailingComma": "all",
-        "printWidth": 100
+        "printWidth": 100,
+        "endOfLine": "auto"
       }
     ],
     "react-app/jsx-a11y/href-no-hash": "off", // This rule is dropped but create-react-app uses old rules
