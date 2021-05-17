@@ -481,8 +481,15 @@ const DonateButtonModal = props => {
           .catch(err => {
             reject();
 
-            const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
-            ErrorHandler(err, message);
+            if (txHash === undefined) {
+              ErrorHandler(
+                err,
+                "MetaMask couldn't get transaction receipt, but probably donation will go through",
+              );
+            } else {
+              const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err}`;
+              ErrorHandler(err, message);
+            }
 
             setSaving(false);
             closeDialog();
