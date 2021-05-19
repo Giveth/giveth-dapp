@@ -1,6 +1,5 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
@@ -11,6 +10,7 @@ import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
@@ -26,6 +26,9 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
   const {
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
+  const {
+    actions: { displayMinPayoutWarning },
+  } = useContext(NotificationContext);
 
   const conversationModal = useRef();
 
@@ -36,12 +39,10 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
-        before you can mark this milestone complete. This is a temporary
-        limitation due to Ethereum Mainnet issues.`,
-            );
+            displayMinPayoutWarning({
+              minimumPayoutUsdValue,
+              type: 'MarkComplete',
+            });
             return;
           }
 

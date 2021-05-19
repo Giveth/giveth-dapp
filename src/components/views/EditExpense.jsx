@@ -292,9 +292,15 @@ function EditExpense(props) {
             ),
           });
         },
-        onError() {
+        onError(message, err, minimumPayoutUsdValue) {
           setLoading(false);
-          displayMinPayoutWarning();
+          if (minimumPayoutUsdValue) {
+            return displayMinPayoutWarning({
+              minimumPayoutUsdValue,
+              type: 'Creat/Edit',
+            });
+          }
+          return ErrorHandler(err, message);
         },
       });
     }

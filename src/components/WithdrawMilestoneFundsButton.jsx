@@ -1,12 +1,12 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { message } from 'antd';
 
 import MilestoneService from 'services/MilestoneService';
 import Milestone from 'models/Milestone';
 import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
@@ -27,6 +27,9 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
   const {
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
+  const {
+    actions: { displayMinPayoutWarning },
+  } = useContext(NotificationContext);
 
   async function withdraw() {
     const userAddress = currentUser.address;
@@ -38,15 +41,13 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
       ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-                A minimum donation balance of
-                ${minimumPayoutUsdValue} USD  is required before
-                you can collect or disperse the funds. This is a
-                 temporary limitation due to Ethereum Mainnet issues.`,
-            );
+            displayMinPayoutWarning({
+              minimumPayoutUsdValue,
+              type: 'Collect/Disburse',
+            });
             return;
           }
+
           React.swal({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
             content: React.swal.msg(

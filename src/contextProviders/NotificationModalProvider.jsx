@@ -1,7 +1,7 @@
 import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-import MinimumPayoutModal from '../components/MinimumPayoutModal';
+import NotificationModal from '../components/NotificationModal';
 
 const Context = createContext();
 const { Consumer, Provider } = Context;
@@ -11,29 +11,43 @@ class NotificationModalProvider extends Component {
     super(props);
     this.state = {
       showMinPayoutWarning: false,
+      minimumPayoutUsdValue: undefined,
     };
     this.displayMinPayoutWarning = this.displayMinPayoutWarning.bind(this);
   }
 
-  displayMinPayoutWarning(isVisible) {
-    this.setState({
-      showMinPayoutWarning: isVisible,
+  displayMinPayoutWarning(input) {
+    this.setState(() => {
+      if (input) {
+        return {
+          showMinPayoutWarning: true,
+          minimumPayoutUsdValue: input.minimumPayoutUsdValue,
+          type: input.type,
+        };
+      }
+      return {
+        showMinPayoutWarning: false,
+      };
     });
   }
 
   render() {
-    const { showMinPayoutWarning } = this.state;
+    const { showMinPayoutWarning, minimumPayoutUsdValue, type } = this.state;
     return (
       <Fragment>
-        <MinimumPayoutModal
-          show={showMinPayoutWarning}
-          closeModal={() => this.displayMinPayoutWarning(false)}
-          width={700}
-        />
+        {showMinPayoutWarning && (
+          <NotificationModal
+            show={showMinPayoutWarning}
+            closeModal={() => this.displayMinPayoutWarning(false)}
+            width={700}
+            minimumPayoutUsdValue={minimumPayoutUsdValue}
+            type={type}
+          />
+        )}
         <Provider
           value={{
             actions: {
-              displayMinPayoutWarning: () => this.displayMinPayoutWarning(true),
+              displayMinPayoutWarning: input => this.displayMinPayoutWarning(input),
             },
           }}
         >

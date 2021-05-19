@@ -7,18 +7,19 @@ import Campaign from 'models/Campaign';
 import MilestoneService from 'services/MilestoneService';
 import ErrorPopup from 'components/ErrorPopup';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
-import { message } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
 const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+
   const {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
@@ -27,6 +28,10 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   const {
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
+
+  const {
+    actions: { displayMinPayoutWarning },
+  } = useContext(NotificationContext);
 
   const archiveMilestone = () => {
     const status = milestone.donationCounters.some(dc => dc.currentBalance.gt(0))
@@ -37,12 +42,7 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
-        before you can archive this milestone. This is a temporary
-        limitation due to Ethereum Mainnet issues.`,
-            );
+            displayMinPayoutWarning({ minimumPayoutUsdValue, type: 'Archive' });
             return;
           }
           const proceed = await React.swal({
