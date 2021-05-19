@@ -16,11 +16,12 @@ import {
   MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
 import { authenticateUser } from '../../lib/middleware';
 import { Milestone, MilestoneItem } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 function EditExpense(props) {
   const {
@@ -30,6 +31,9 @@ function EditExpense(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const {
+    actions: { displayMinPayoutWarning },
+  } = useContext(NotificationContext);
 
   const { milestoneId } = props.match.params;
 
@@ -288,9 +292,9 @@ function EditExpense(props) {
             ),
           });
         },
-        onError(message, err) {
+        onError() {
           setLoading(false);
-          return ErrorHandler(err, message);
+          displayMinPayoutWarning();
         },
       });
     }

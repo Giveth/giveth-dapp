@@ -337,7 +337,7 @@ span.nav-link:focus {
     width: 100%;
     min-height: 164px;
     background: #ffffff;
-    box-shadow: 0px 4px 20px #d1d1d1;
+    box-shadow: 0 4px 20px #d1d1d1;
     border-radius: 8px;
     padding: 34px;
     color: #2c0b3f;
@@ -351,7 +351,7 @@ span.nav-link:focus {
         margin: auto;
       }
       & > .title {
-        font-family: Quicksand;
+        font-family: 'Quicksand', sans-serif;
         font-style: normal;
         font-weight: normal;
         font-size: 26px;
@@ -366,14 +366,14 @@ span.nav-link:focus {
     & > .campaign-info {
       margin-bottom: 24px;
       & > .label {
-        font-family: Quicksand;
+        font-family: 'Quicksand', sans-serif;
         font-style: normal;
         font-weight: normal;
         font-size: 16px;
         line-height: 20px;
       }
       & > .content {
-        font-family: Lato;
+        font-family: 'Lato', sans-serif;
         font-style: normal;
         font-weight: normal;
         font-size: 22px;
@@ -384,7 +384,7 @@ span.nav-link:focus {
     & > .section {
       padding-top: 30px;
       & > .title {
-        font-family: Quicksand;
+        font-family: 'Quicksand', sans-serif;
         font-style: normal;
         font-weight: bold;
         font-size: 22px;
