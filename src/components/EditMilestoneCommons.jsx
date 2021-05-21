@@ -78,6 +78,7 @@ const MilestoneDescription = ({
     },
     [onChange],
   );
+
   return (
     <Form.Item
       name={id}
@@ -85,7 +86,6 @@ const MilestoneDescription = ({
       className="custom-form-item"
       extra={extra}
       required
-      initialValue={initialValue}
       rules={[
         {
           type: 'string',
@@ -110,6 +110,7 @@ const MilestoneDescription = ({
         id={id}
         key={id}
         disabled={disabled}
+        initialValue={initialValue}
       />
     </Form.Item>
   );
