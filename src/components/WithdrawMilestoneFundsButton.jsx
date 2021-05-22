@@ -28,7 +28,7 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
   const {
-    actions: { displayMinPayoutWarning },
+    actions: { minPayoutWarningInWithdraw },
   } = useContext(NotificationContext);
 
   async function withdraw() {
@@ -41,10 +41,7 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
       ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
-            displayMinPayoutWarning({
-              minimumPayoutUsdValue,
-              type: 'Collect/Disburse',
-            });
+            minPayoutWarningInWithdraw(minimumPayoutUsdValue);
             return;
           }
 

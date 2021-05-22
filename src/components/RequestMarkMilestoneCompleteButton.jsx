@@ -27,7 +27,7 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
   const {
-    actions: { displayMinPayoutWarning },
+    actions: { minPayoutWarningInMarkComplete },
   } = useContext(NotificationContext);
 
   const conversationModal = useRef();
@@ -39,10 +39,7 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            displayMinPayoutWarning({
-              minimumPayoutUsdValue,
-              type: 'MarkComplete',
-            });
+            minPayoutWarningInMarkComplete(minimumPayoutUsdValue);
             return;
           }
 

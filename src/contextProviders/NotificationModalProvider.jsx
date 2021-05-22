@@ -10,44 +10,66 @@ class NotificationModalProvider extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      showMinPayoutWarning: false,
-      minimumPayoutUsdValue: undefined,
+      show: false,
     };
-    this.displayMinPayoutWarning = this.displayMinPayoutWarning.bind(this);
+    this.displayModal = this.displayModal.bind(this);
   }
 
-  displayMinPayoutWarning(input) {
+  displayModal(input) {
     this.setState(() => {
       if (input) {
         return {
-          showMinPayoutWarning: true,
-          minimumPayoutUsdValue: input.minimumPayoutUsdValue,
-          type: input.type,
+          show: true,
+          ...input,
         };
       }
       return {
-        showMinPayoutWarning: false,
+        show: false,
       };
     });
   }
 
   render() {
-    const { showMinPayoutWarning, minimumPayoutUsdValue, type } = this.state;
+    const { show } = this.state;
     return (
       <Fragment>
-        {showMinPayoutWarning && (
-          <NotificationModal
-            show={showMinPayoutWarning}
-            closeModal={() => this.displayMinPayoutWarning(false)}
-            width={700}
-            minimumPayoutUsdValue={minimumPayoutUsdValue}
-            type={type}
-          />
-        )}
+        {show && <NotificationModal closeModal={() => this.displayModal(false)} {...this.state} />}
         <Provider
           value={{
             actions: {
-              displayMinPayoutWarning: input => this.displayMinPayoutWarning(input),
+              minPayoutWarningInCreatEdit: input =>
+                this.displayModal({
+                  minimumPayoutUsdValue: input,
+                  type: 'Creat/Edit',
+                }),
+              minPayoutWarningInArchive: input =>
+                this.displayModal({
+                  minimumPayoutUsdValue: input,
+                  type: 'Archive',
+                }),
+              minPayoutWarningInMarkComplete: input =>
+                this.displayModal({
+                  minimumPayoutUsdValue: input,
+                  type: 'MarkComplete',
+                }),
+              minPayoutWarningInWithdraw: input =>
+                this.displayModal({
+                  minimumPayoutUsdValue: input,
+                  type: 'Withdraw',
+                }),
+              donationPending: url => this.displayModal({ txUrl: url, type: 'donationPending' }),
+              donationSuccessful: url =>
+                this.displayModal({ txUrl: url, type: 'donationSuccessful' }),
+              donationFailed: url => this.displayModal({ txUrl: url, type: 'donationFailed' }),
+              delegationPending: (url, isDac) =>
+                this.displayModal({
+                  txUrl: url,
+                  isDac,
+                  type: 'delegationPending',
+                }),
+              delegationSuccessful: url =>
+                this.displayModal({ txUrl: url, type: 'delegationSuccessful' }),
+              delegationFailed: url => this.displayModal({ txUrl: url, type: 'delegationFailed' }),
             },
           }}
         >

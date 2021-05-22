@@ -30,7 +30,7 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   } = useContext(WhiteListContext);
 
   const {
-    actions: { displayMinPayoutWarning },
+    actions: { minPayoutWarningInArchive },
   } = useContext(NotificationContext);
 
   const archiveMilestone = () => {
@@ -42,7 +42,7 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            displayMinPayoutWarning({ minimumPayoutUsdValue, type: 'Archive' });
+            minPayoutWarningInArchive(minimumPayoutUsdValue);
             return;
           }
           const proceed = await React.swal({

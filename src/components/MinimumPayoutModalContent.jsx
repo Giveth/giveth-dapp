@@ -21,7 +21,7 @@ const MinimumPayoutModalContent = ({ closeModal, minimumPayoutUsdValue, type }) 
     description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
         before you can mark this milestone complete. This is a temporary
         limitation due to Ethereum Mainnet issues.`;
-  } else if (type === 'Collect/Disburse') {
+  } else if (type === 'Withdraw') {
     title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
     description = `A minimum donation balance of
         $${minimumPayoutUsdValue} is required before you can collect or disburse the funds.
@@ -57,7 +57,7 @@ const MinimumPayoutModalContent = ({ closeModal, minimumPayoutUsdValue, type }) 
 MinimumPayoutModalContent.propTypes = {
   closeModal: PropTypes.func.isRequired,
   minimumPayoutUsdValue: PropTypes.number.isRequired,
-  type: PropTypes.oneOf(['Creat/Edit', 'MarkComplete', 'Archive', 'Collect/Disburse']).isRequired,
+  type: PropTypes.oneOf(['Creat/Edit', 'MarkComplete', 'Archive', 'Withdraw']).isRequired,
 };
 
 export default React.memo(MinimumPayoutModalContent);

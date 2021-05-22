@@ -44,7 +44,7 @@ function EditPayment(props) {
   } = useContext(Web3Context);
 
   const {
-    actions: { displayMinPayoutWarning },
+    actions: { minPayoutWarningInCreatEdit },
   } = useContext(NotificationContext);
 
   const [form] = Form.useForm();
@@ -334,10 +334,7 @@ function EditPayment(props) {
         onError(message, err, minimumPayoutUsdValue) {
           setLoading(false);
           if (minimumPayoutUsdValue) {
-            return displayMinPayoutWarning({
-              minimumPayoutUsdValue,
-              type: 'Creat/Edit',
-            });
+            return minPayoutWarningInCreatEdit(minimumPayoutUsdValue);
           }
           return ErrorHandler(err, message);
         },
