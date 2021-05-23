@@ -140,6 +140,10 @@ function Editor(props) {
     'image',
     'video',
     'template',
+    'alt',
+    'style',
+    'width',
+    'height',
   ];
 
   return (
