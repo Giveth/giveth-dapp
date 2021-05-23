@@ -7,6 +7,8 @@ import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { Button, Input, Row, Col } from 'antd';
+import Lottie from 'lottie-react';
+
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -22,6 +24,7 @@ import {
   Consumer as UserConsumer,
   Context as UserContext,
 } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 import DescriptionRender from '../DescriptionRender';
 
@@ -36,9 +39,9 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
+import SearchAnimation from '../../assets/search-file.json';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -476,7 +479,7 @@ const ViewCampaign = ({ match }) => {
                             {campaign.projectId > 0 && (
                               <Col xs={24} sm={12}>
                                 <Input.Search
-                                  placeholder="input search text"
+                                  placeholder="Search Milestones ..."
                                   onSearch={setSearchPhrase}
                                   size="large"
                                 />
@@ -516,9 +519,29 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {isLoadingMilestones && milestonesTotal === 0 && (
-                        <Loader className="relative" />
-                      )}
+                      {milestonesTotal === 0 &&
+                        ((!isLoadingMilestones && searchPhrase) || isLoadingMilestones) && (
+                          <div className="text-center mb-5 py-5">
+                            <Lottie
+                              animationData={SearchAnimation}
+                              className="m-auto"
+                              loop={false}
+                              style={{ width: '250px' }}
+                            />
+                            {!isLoadingMilestones && searchPhrase && (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                                <p
+                                  style={{ fontSize: '18px', fontFamily: 'Lato', color: '#6B7087' }}
+                                >
+                                  We couldn’t find any matches for your search or it doesn’t exist.
+                                  <br />
+                                  Try adjusting your search.
+                                </p>
+                              </Fragment>
+                            )}
+                          </div>
+                        )}
                       <div className="milestone-cards-grid-container">
                         {milestones.map(m => (
                           <MilestoneCard milestone={m} key={m._id} history={history} />
