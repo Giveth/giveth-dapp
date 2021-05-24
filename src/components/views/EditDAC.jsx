@@ -81,7 +81,7 @@ const EditDAC = ({ isNew, match }) => {
     if (userIsLoading || whitelistIsLoading || !currentUser.address) return () => {};
 
     if (isNew) {
-      if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
+      if (!currentUser.isDelegator && projectOwnersWhitelistEnabled) {
         const modal = Modal.error({
           title: 'Permission Denied',
           content: 'You are not allowed to create a DAC',
