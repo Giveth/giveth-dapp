@@ -39,7 +39,8 @@ const configurations = {
     foreignNetworkId: 67,
     homeNetworkName: 'Home Ganache',
     homeNetworkId: 66,
-    ipfsGateway: 'http://localhost:8080/ipfs/',
+    // ipfsGateway: 'http://localhost:8080/ipfs/',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     homeUrl: 'http://localhost:3010',
     // sendErrors: false,
     analytics: {

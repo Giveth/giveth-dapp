@@ -117,7 +117,7 @@ class DonationProvider extends Component {
           React.swal({
             title: 'Reject your donation?',
             text:
-              'Your donation will not go to this Milestone. You will still be in control of you funds and the DAC can still delegate you donation.',
+              'Your donation will not go to this Trace. You will still be in control of you funds and the DAC can still delegate you donation.',
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, reject'],
@@ -180,7 +180,7 @@ class DonationProvider extends Component {
           React.swal({
             title: 'Commit your donation?',
             text:
-              'Your donation will go to this Milestone. After committing you can no longer take back your money.',
+              'Your donation will go to this Trace. After committing you can no longer take back your money.',
             icon: 'warning',
             buttons: ['Cancel', 'Yes, commit'],
           }).then(isConfirmed => {

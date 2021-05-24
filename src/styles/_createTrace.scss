@@ -1,0 +1,61 @@
+#create-trace-view {
+	.trace-donate-dac {
+		padding-top: 32px;
+		label {
+			font-family: Quicksand;
+			font-style: normal;
+			font-weight: normal;
+			font-size: 16px;
+			line-height: 20px;
+		}
+
+    [role='img'] {
+      color: black;
+    }
+	}
+	.trace-reviewer {
+		font-family: Quicksand;
+		font-style: normal;
+		font-weight: normal;
+		font-size: 16px;
+		line-height: 20px;
+		margin-top: 32px;
+		.trace-reviewer-checkbox {
+			padding-right: 8px;
+		}
+	}
+	.trace-desc {
+		margin: 32px 0;
+		padding: 16px;
+		background: #edf0fa;
+		border-radius: 8px;
+	}
+
+  .add-expense-button, .remove-expense-button {
+    width: 100%;
+    height: 52px;
+
+    box-sizing: border-box;
+    border-radius: 8px;
+
+    font-family: Quicksand;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 20px;
+
+    text-align: center;
+  }
+
+  .add-expense-button {
+    border: 2px solid $new-purple;
+
+    color: $new-purple;
+  }
+
+  .remove-expense-button {
+    border: 2px solid $red;
+
+    color: $red;
+  }
+}

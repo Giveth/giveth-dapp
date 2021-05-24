@@ -61,7 +61,7 @@ export default async () => {
 
   network.liquidPledging = new LiquidPledging(web3, network.liquidPledgingAddress);
   network.lppCampaignFactory = new LPPCampaignFactory(web3, network.lppCampaignFactoryAddress);
-  network.milestoneFactory = new MilestoneFactory(web3, network.milestoneFactoryAddress);
+  network.traceFactory = new MilestoneFactory(web3, network.milestoneFactoryAddress);
   network.lppCappedMilestoneFactory = new LPPCappedMilestoneFactory(
     web3,
     network.lppCappedMilestoneFactoryAddress,

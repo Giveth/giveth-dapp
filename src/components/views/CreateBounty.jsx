@@ -4,22 +4,22 @@ import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestoneReviewer,
-  MilestoneTitle,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDescription,
+  TraceDonateToDac,
+  TraceReviewer,
+  TraceTitle,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
 import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import config from '../../configuration';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import BridgedMilestone from '../../models/BridgedMilestone';
+import BridgedTrace from '../../models/BridgedTrace';
 
 function CreateBounty(props) {
   const {
@@ -81,7 +81,7 @@ function CreateBounty(props) {
       }
 
       const { title, description, reviewerAddress, picture, recipientAddress } = bounty;
-      const ms = new BridgedMilestone({
+      const ms = new BridgedTrace({
         title,
         description,
         reviewerAddress,
@@ -93,20 +93,20 @@ function CreateBounty(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-      ms.formType = Milestone.BOUNTYTYPE;
+      ms.formType = Trace.BOUNTYTYPE;
 
       if (bounty.donateToDac) {
         ms.dacId = config.defaultDacId;
       }
 
       if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
+        ms.status = Trace.PROPOSED;
       }
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -134,7 +134,7 @@ function CreateBounty(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -160,7 +160,7 @@ function CreateBounty(props) {
   return (
     <Fragment>
       <Web3ConnectWarning />
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -187,18 +187,18 @@ function CreateBounty(props) {
                 <div className="title">Bounty</div>
               </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+              <TraceCampaignInfo campaign={campaign} />
 
               <div className="section">
                 <div className="title">Bounty details</div>
 
-                <MilestoneTitle
+                <TraceTitle
                   value={bounty.title}
                   onChange={handleInputChange}
                   extra="What is this Bounty about?"
                 />
 
-                <MilestoneDescription
+                <TraceDescription
                   value={bounty.description}
                   onChange={handleInputChange}
                   extra="Explain the requirements and what success looks like."
@@ -206,17 +206,17 @@ function CreateBounty(props) {
                   id="description"
                 />
 
-                <MilestoneDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
 
-                <MilestoneReviewer
-                  milestoneType="Bounty"
+                <TraceReviewer
+                  traceType="Bounty"
                   setReviewer={setReviewer}
                   hasReviewer
-                  milestoneReviewerAddress={bounty.reviewerAddress}
+                  traceReviewerAddress={bounty.reviewerAddress}
                 />
               </div>
 
-              <div className="milestone-desc">
+              <div className="trace-desc">
                 Your bounty will collect funds in any currency. The total amount collected will be
                 the Bounty Reward.
               </div>
@@ -239,7 +239,7 @@ CreateBounty.propTypes = {
     params: PropTypes.shape({
       id: PropTypes.string,
       slug: PropTypes.string,
-      milestoneId: PropTypes.string,
+      traceId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };

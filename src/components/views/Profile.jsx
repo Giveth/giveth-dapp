@@ -8,7 +8,7 @@ import GoBackButton from '../GoBackButton';
 import Loader from '../Loader';
 import { history } from '../../lib/helpers';
 
-import ProfileMilestonesTable from '../ProfileMilestonesTable';
+import ProfileTracesTable from '../ProfileTracesTable';
 import ProfileCampaignsTable from '../ProfileCampaignsTable';
 import ProfileDacsTable from '../ProfileDacsTable';
 import ProfileDonationsTable from '../ProfileDonationsTable';
@@ -74,7 +74,7 @@ const Profile = props => {
               </div>
             )}
 
-            <ProfileMilestonesTable userAddress={userAddress} />
+            <ProfileTracesTable userAddress={userAddress} />
 
             <ProfileCampaignsTable userAddress={userAddress} />
 

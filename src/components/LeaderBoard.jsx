@@ -8,7 +8,7 @@ import Donation from '../models/Donation';
 import LeaderBoardDonationItem from './LeaderBoardDonationItem';
 
 /**
- * Shows a table of aggregateDonations for a given type (dac, campaign, milestone)
+ * Shows a table of aggregateDonations for a given type (dac, campaign, trace)
  */
 
 class LeaderBoardItem extends Component {

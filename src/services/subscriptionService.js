@@ -13,9 +13,9 @@ export const inquirySubscriptionStatus = async ({ projectTypeId, userAddress }) 
 
 /**
  *
- * @param projectTypeId: milestoneId, campaignId or dacId
+ * @param projectTypeId: traceId, campaignId or dacId
  * @param enabled: boolean
- * @param projectType: 'campaign', 'dac' or 'milestone'
+ * @param projectType: 'campaign', 'dac' or 'trace'
  * @returns {*}
  */
 export const updateSubscription = ({ projectTypeId, enabled, projectType }) => {

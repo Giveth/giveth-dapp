@@ -10,16 +10,17 @@ import useCampaign from '../../hooks/useCampaign';
 import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
-  MilestoneCampaignInfo,
-  MilestoneRecipientAddress,
-  MilestoneTitle,
-  MilestoneToken,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceRecipientAddress,
+  TraceTitle,
+  TraceToken,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { authenticateUser } from '../../lib/middleware';
-import BridgedMilestone from '../../models/BridgedMilestone';
-import { Milestone, MilestoneItem } from '../../models';
-import { MilestoneService } from '../../services';
+import BridgedTrace from '../../models/BridgedTrace';
+import TraceItem from '../../models/TraceItem';
+import Trace from '../../models/Trace';
+import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
@@ -166,7 +167,7 @@ function CreateExpense(props) {
 
       const { title, description, recipientAddress, token } = expenseForm;
 
-      const ms = new BridgedMilestone({
+      const ms = new BridgedTrace({
         title,
         description,
         recipientAddress,
@@ -178,13 +179,13 @@ function CreateExpense(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-      ms.formType = Milestone.EXPENSETYPE;
+      ms.formType = Trace.EXPENSETYPE;
 
       ms.maxAmount = totalAmount;
 
       ms.items = expenseItems.map(expenseItem => {
         const amount = itemAmountMap.current[expenseItem.key];
-        return new MilestoneItem({
+        return new TraceItem({
           ...expenseItem,
           amount,
           image: expenseItem.picture,
@@ -194,13 +195,13 @@ function CreateExpense(props) {
       });
 
       if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
+        ms.status = Trace.PROPOSED;
       }
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -228,7 +229,7 @@ function CreateExpense(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -255,7 +256,7 @@ function CreateExpense(props) {
     <Fragment>
       <Web3ConnectWarning />
 
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -283,9 +284,9 @@ function CreateExpense(props) {
                 <div className="title">Expense</div>
               </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+              <TraceCampaignInfo campaign={campaign} />
 
-              <MilestoneTitle
+              <TraceTitle
                 onChange={handleInputChange}
                 value={expenseForm.title}
                 extra="What is the purpose of these expenses?"
@@ -312,14 +313,14 @@ function CreateExpense(props) {
               <div className="section">
                 <div className="title">Reimbursement options</div>
 
-                <MilestoneToken
+                <TraceToken
                   label="Reimburse in Currency"
                   onChange={handleSelectToken}
                   value={expenseForm.token}
                   totalAmount={convertEthHelper(totalAmount, expenseForm.token.decimals)}
                 />
 
-                <MilestoneRecipientAddress
+                <TraceRecipientAddress
                   label="Reimburse to wallet address"
                   onChange={handleInputChange}
                   value={expenseForm.recipientAddress}

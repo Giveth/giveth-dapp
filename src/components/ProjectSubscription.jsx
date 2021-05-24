@@ -91,7 +91,7 @@ function ProjectSubscription({ projectTypeId, projectType }) {
 
 ProjectSubscription.propTypes = {
   projectTypeId: PropTypes.string,
-  projectType: PropTypes.oneOf(['campaign', 'milestone', 'dac']),
+  projectType: PropTypes.oneOf(['campaign', 'trace', 'dac']),
 };
 
 ProjectSubscription.defaultProps = {

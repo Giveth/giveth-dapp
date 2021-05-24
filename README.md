@@ -159,8 +159,8 @@ The following events are tracked with Google Analytics:
 - pageviews
 - signup 
 - signin
-- creation of DACs/Campaigns/Milestones
-- editing of DACs/Campaigns/Milestones
+- creation of DACs/Campaigns/Traces
+- editing of DACs/Campaigns/Traces
 - making donations
 - actions on milestones
 

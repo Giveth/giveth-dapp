@@ -2,7 +2,7 @@ import CampaignService from './CampaignService';
 import DACService from './DACService';
 import DonationService from './DonationService';
 import IPFSService from './IPFSService';
-import MilestoneService from './MilestoneService';
+import TraceService from './TraceService';
 import UserService from './UserService';
 import WalletService from './WalletService';
 
@@ -11,7 +11,7 @@ export {
   DACService,
   DonationService,
   IPFSService,
-  MilestoneService,
+  TraceService,
   UserService,
   WalletService,
 };

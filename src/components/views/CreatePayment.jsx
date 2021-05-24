@@ -8,25 +8,25 @@ import useCampaign from '../../hooks/useCampaign';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDatePicker,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestoneFiatAmountCurrency,
-  MilestonePicture,
-  MilestoneRecipientAddress,
-  MilestoneTitle,
-  MilestoneToken,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDatePicker,
+  TraceDescription,
+  TraceDonateToDac,
+  TraceFiatAmountCurrency,
+  TracePicture,
+  TraceRecipientAddress,
+  TraceTitle,
+  TraceToken,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { authenticateUser } from '../../lib/middleware';
-import BridgedMilestone from '../../models/BridgedMilestone';
+import BridgedTrace from '../../models/BridgedTrace';
 import config from '../../configuration';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 const WAIT_INTERVAL = 1000;
@@ -112,7 +112,7 @@ function CreatePayment(props) {
     }
   }, [currentUser]);
 
-  // Update item of this item in milestone token
+  // Update item of this item in trace token
   const updateAmount = () => {
     const { token, currency, date, fiatAmount, notCapped } = payment;
     if (!token.symbol || !currency || notCapped) return;
@@ -202,7 +202,7 @@ function CreatePayment(props) {
         donateToDac,
       } = payment;
 
-      const ms = new BridgedMilestone({
+      const ms = new BridgedTrace({
         title,
         description,
         recipientAddress,
@@ -214,7 +214,7 @@ function CreatePayment(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-      ms.formType = Milestone.PAYMENTTYPE;
+      ms.formType = Trace.PAYMENTTYPE;
 
       if (donateToDac) {
         ms.dacId = config.defaultDacId;
@@ -229,13 +229,13 @@ function CreatePayment(props) {
       }
 
       if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
+        ms.status = Trace.PROPOSED;
       }
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -263,7 +263,7 @@ function CreatePayment(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -320,12 +320,12 @@ function CreatePayment(props) {
                 <div className="title">Payment</div>
               </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+              <TraceCampaignInfo campaign={campaign} />
 
-              <MilestoneTitle
+              <TraceTitle
                 value={payment.title}
                 onChange={handleInputChange}
-                extra="What are you going to accomplish in this Milestone?"
+                extra="What are you going to accomplish in this Trace?"
               />
 
               <div className="section">
@@ -345,14 +345,14 @@ function CreatePayment(props) {
 
                 {!payment.notCapped && (
                   <Fragment>
-                    <MilestoneFiatAmountCurrency
+                    <TraceFiatAmountCurrency
                       onCurrencyChange={handleSelectCurrency}
                       onAmountChange={handleInputChange}
                       amount={payment.fiatAmount}
                       currency={payment.currency}
                       disabled={loadingRate}
                     />
-                    <MilestoneDatePicker
+                    <TraceDatePicker
                       onChange={handleDatePicker}
                       value={payment.date}
                       disabled={loadingRate}
@@ -360,26 +360,26 @@ function CreatePayment(props) {
                   </Fragment>
                 )}
 
-                <MilestoneDescription
+                <TraceDescription
                   onChange={handleInputChange}
                   value={payment.description}
-                  extra="Describe how you are going to execute this milestone successfully..."
+                  extra="Describe how you are going to execute this trace successfully..."
                   placeholder="e.g. Monthly salary"
                   id="description"
                 />
 
-                <MilestonePicture
+                <TracePicture
                   setPicture={setPicture}
-                  milestoneTitle={payment.title}
+                  traceTitle={payment.title}
                   picture={payment.picture}
                 />
 
-                <MilestoneDonateToDac value={payment.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToDac value={payment.donateToDac} onChange={handleInputChange} />
               </div>
 
               <div className="section">
                 <div className="title">Payment options</div>
-                <MilestoneToken
+                <TraceToken
                   label="Payment currency"
                   onChange={handleSelectToken}
                   includeAnyToken={payment.notCapped}
@@ -388,7 +388,7 @@ function CreatePayment(props) {
                   value={payment.token}
                 />
 
-                <MilestoneRecipientAddress
+                <TraceRecipientAddress
                   label="Pay to wallet address"
                   onChange={handleInputChange}
                   value={payment.recipientAddress}

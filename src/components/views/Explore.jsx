@@ -3,7 +3,7 @@ import React from 'react';
 import { history } from '../../lib/helpers';
 import DACs from './DACs';
 import Campaigns from './Campaigns';
-import Milestones from './Milestones';
+import Traces from './Traces';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 
@@ -13,7 +13,7 @@ const Explore = () => (
 
     <DACs onlyRecent />
     <Campaigns onlyRecent />
-    <Milestones />
+    <Traces />
   </div>
 );
 

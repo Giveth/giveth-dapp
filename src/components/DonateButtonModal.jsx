@@ -557,7 +557,7 @@ const DonateButtonModal = props => {
     const amountDAC = parseFloat(_amount - _amount / 1.03)
       .toFixed(6)
       .toString();
-    const amountMilestone = parseFloat(_amount / 1.03)
+    const amountTrace = parseFloat(_amount / 1.03)
       .toFixed(6)
       .toString();
     const tokenSymbol = selectedToken.symbol;
@@ -568,7 +568,7 @@ const DonateButtonModal = props => {
           <p>For your donation you need to make 2 transactions:</p>
           <ol style={{ textAlign: 'left' }}>
             <li>
-              The milestone owner decided to support the <b>{dacTitle}</b>! Woo-hoo! <br />{' '}
+              The trace owner decided to support the <b>{dacTitle}</b>! Woo-hoo! <br />{' '}
               <b>
                 {amountDAC} {tokenSymbol}
               </b>{' '}
@@ -577,9 +577,9 @@ const DonateButtonModal = props => {
             <li>
               The rest (
               <b>
-                {amountMilestone} {tokenSymbol}
+                {amountTrace} {tokenSymbol}
               </b>
-              ) will go to the milestone owner.
+              ) will go to the trace owner.
             </li>
           </ol>
         </div>,
@@ -601,13 +601,7 @@ const DonateButtonModal = props => {
             _allowanceApprovalType,
           )
         )
-          result = await donateWithBridge(
-            adminId,
-            amountMilestone,
-            donationOwnerAddress,
-            0,
-            comment,
-          );
+          result = await donateWithBridge(adminId, amountTrace, donationOwnerAddress, 0, comment);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -825,7 +819,7 @@ const DonateButtonModal = props => {
                       value={amount}
                       onChange={setAmount}
                       autoFocus
-                      lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                      lteMessage={`This donation exceeds your wallet balance or the Trace max amount: ${convertEthHelper(
                         maxAmount,
                         decimals,
                       )} ${symbol}.`}

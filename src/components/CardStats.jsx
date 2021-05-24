@@ -5,7 +5,7 @@ import { convertEthHelper } from '../lib/helpers';
 import config from '../configuration';
 
 /**
- * Shows the statistics on DACs, Campaigns and milestonesCount
+ * Shows the statistics on DACs, Campaigns and tracesCount
  *
  * TODO: Check the properties that are passed, sometimes they are number, sometimes strings...
  */
@@ -25,7 +25,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
         </div>
       )}
 
-      {type === 'milestone' && (
+      {type === 'trace' && (
         <div className="col-3 text-center card-center">
           <p>Giver</p>
           <span>
@@ -44,7 +44,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
         </div>
       )}
 
-      {type === 'milestone' && (
+      {type === 'trace' && (
         <div className="col-5 text-center card-center">
           {maxAmount && (
             <span>
@@ -57,7 +57,7 @@ const CardStats = ({ peopleCount, maxAmount, totalDonated, type, status, token }
         </div>
       )}
 
-      {type === 'milestone' && (
+      {type === 'trace' && (
         <div className="col-4 text-center card-center">
           <p>status</p>
           <span>

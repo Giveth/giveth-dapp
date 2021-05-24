@@ -95,13 +95,13 @@ class DelegateButton extends Component {
 DelegateButton.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  milestoneOnly: PropTypes.bool,
+  traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
 };
 
 DelegateButton.defaultProps = {
-  milestoneOnly: false,
+  traceOnly: false,
 };
 
 export default DelegateButton;

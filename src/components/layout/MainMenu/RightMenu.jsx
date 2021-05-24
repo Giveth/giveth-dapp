@@ -47,7 +47,7 @@ const RightMenu = () => {
         setSelectedKeys('profile:1');
         break;
 
-      case pathname === '/my-milestones':
+      case pathname === '/my-traces':
         setSelectedKeys('Manage:1');
         break;
 
@@ -81,7 +81,7 @@ const RightMenu = () => {
       {validProvider && currentUser.address && (
         <SubMenu key="Manage" title="Manage">
           <Menu.Item key="Manage:1">
-            <Link to="/my-milestones">My Milestones</Link>
+            <Link to="/my-traces">My Traces</Link>
           </Menu.Item>
           <Menu.Item key="Manage:2">
             <Link to="/donations">My Donations</Link>

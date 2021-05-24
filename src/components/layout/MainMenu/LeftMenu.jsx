@@ -22,9 +22,14 @@ const LeftMenu = () => {
         setSelectedKeys('Campaigns');
         break;
 
+      // TODO this is for backward compatiblity
       case pathname === '/milestones':
       case pathname.startsWith('/milestone/'):
-        setSelectedKeys('Milestones');
+        setSelectedKeys('Traces');
+        break;
+      case pathname === '/traces':
+      case pathname.startsWith('/trace/'):
+        setSelectedKeys('Traces');
         break;
 
       default:
@@ -40,8 +45,8 @@ const LeftMenu = () => {
       <Menu.Item key="Campaigns">
         <Link to="/campaigns">Campaigns</Link>
       </Menu.Item>
-      <Menu.Item key="Milestones">
-        <Link to="/milestones">Milestones</Link>
+      <Menu.Item key="Traces">
+        <Link to="/traces">Traces</Link>
       </Menu.Item>
     </Menu>
   );

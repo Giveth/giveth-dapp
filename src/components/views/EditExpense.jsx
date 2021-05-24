@@ -10,15 +10,16 @@ import CreateExpenseItem from '../CreateExpenseItem';
 import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
-  MilestoneCampaignInfo,
-  MilestoneRecipientAddress,
-  MilestoneTitle,
-  MilestoneToken,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceRecipientAddress,
+  TraceTitle,
+  TraceToken,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { authenticateUser } from '../../lib/middleware';
-import { Milestone, MilestoneItem } from '../../models';
-import { MilestoneService } from '../../services';
+import TraceItem from '../../models/TraceItem';
+import Trace from '../../models/Trace';
+import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
@@ -31,7 +32,7 @@ function EditExpense(props) {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
-  const { milestoneId } = props.match.params;
+  const { traceId } = props.match.params;
 
   const [expenseForm, setExpenseForm] = useState({
     title: '',
@@ -53,7 +54,7 @@ function EditExpense(props) {
       loadingAmount: false,
     },
   ]);
-  const [milestone, setMilestone] = useState();
+  const [trace, setTrace] = useState();
   const [campaign, setCampaign] = useState();
   const [totalAmount, setTotalAmount] = useState(new BigNumber(0));
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
@@ -61,13 +62,10 @@ function EditExpense(props) {
   const [loadingAmount, setLoadingAmount] = useState(false);
   const [submitButtonText, setSubmitButtonText] = useState('Propose');
 
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+  const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
   const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+    trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   useEffect(() => {
     if (loadingAmount) {
@@ -156,19 +154,19 @@ function EditExpense(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Milestone.EXPENSETYPE ||
+      ms.formType !== Trace.EXPENSETYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
-    if (milestone) {
-      if (isEditNotAllowed(milestone)) {
+    if (trace) {
+      if (isEditNotAllowed(trace)) {
         goBack();
       }
     } else if (currentUser.id) {
-      MilestoneService.get(milestoneId)
+      TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
             goBack();
@@ -197,12 +195,12 @@ function EditExpense(props) {
             setExpenseItems(items);
             setInitialValues(iValues);
             setExpenseForm(iValues);
-            setMilestone(res);
+            setTrace(res);
             setCampaign(res.campaign);
           }
         })
         .catch(err => {
-          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          const message = `Sadly we were unable to load the requested Trace details. Please try again.`;
           ErrorHandler(err, message);
         });
     }
@@ -219,7 +217,7 @@ function EditExpense(props) {
 
       const { title, recipientAddress, token } = expenseForm;
 
-      const ms = milestone;
+      const ms = trace;
 
       ms.parentProjectId = campaign.projectId;
       ms.title = title;
@@ -227,15 +225,12 @@ function EditExpense(props) {
       ms.token = token;
       ms.maxAmount = totalAmount;
 
-      // TODO: We should have ability to delete fiatAmount for uncapped milestones
-      ms.status =
-        isProposed || milestone.status === Milestone.REJECTED
-          ? Milestone.PROPOSED
-          : milestone.status; // make sure not to change status!
+      // TODO: We should have ability to delete fiatAmount for uncapped traces
+      ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
       ms.items = expenseItems.map(expenseItem => {
         const amount = itemAmountMap.current[expenseItem.key];
-        return new MilestoneItem({
+        return new TraceItem({
           ...expenseItem,
           amount,
           image: expenseItem.picture,
@@ -246,8 +241,8 @@ function EditExpense(props) {
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -273,7 +268,7 @@ function EditExpense(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -299,7 +294,7 @@ function EditExpense(props) {
   return (
     <Fragment>
       <Web3ConnectWarning />
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -329,13 +324,13 @@ function EditExpense(props) {
                   <div className="title">Expense</div>
                 </div>
 
-                <MilestoneCampaignInfo campaign={campaign} />
+                <TraceCampaignInfo campaign={campaign} />
 
-                <MilestoneTitle
+                <TraceTitle
                   onChange={handleInputChange}
                   value={expenseForm.title}
                   extra="What is the purpose of these expenses?"
-                  disabled={milestoneHasFunded}
+                  disabled={traceHasFunded}
                 />
 
                 <div className="section">
@@ -367,7 +362,7 @@ function EditExpense(props) {
                 <div className="section">
                   <div className="title">Reimbursement options</div>
 
-                  <MilestoneToken
+                  <TraceToken
                     label="Reimburse in Currency"
                     onChange={handleSelectToken}
                     value={expenseForm.token}
@@ -376,7 +371,7 @@ function EditExpense(props) {
                     disabled={!isProposed}
                   />
 
-                  <MilestoneRecipientAddress
+                  <TraceRecipientAddress
                     label="Reimburse to wallet address"
                     onChange={handleInputChange}
                     value={expenseForm.recipientAddress}
@@ -406,7 +401,7 @@ function EditExpense(props) {
 EditExpense.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string,
+      traceId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
