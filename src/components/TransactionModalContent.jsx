@@ -10,35 +10,44 @@ const TransactionModalContent = ({ type, txUrl, isDac }) => {
   let description = '';
   let icon;
 
-  if (type === 'donationPending') {
-    title = 'Transaction Submitted';
-    description =
-      'It may take few minutes depending on the network. You can close the screen and check the status later in your wallet.';
-    icon = TxSubmitted;
-  } else if (type === 'donationSuccessful') {
-    title = 'Transaction Successful';
-    description = 'Your transaction has been processed. You can close the screen.';
-    icon = TxSuccessful;
-  } else if (type === 'donationFailed') {
-    title = 'Transaction Failed';
-    description = 'Something went wrong. Please check transaction details on Etherescan.';
-    icon = TxFailed;
-  } else if (type === 'delegationPending') {
-    title = 'Transaction Submitted';
-    description = 'The donations have been delegated.';
-    if (isDac) {
-      description +=
-        ' Please note the Giver may have 3 days to reject your delegation before the money gets committed.';
-    }
-    icon = TxSubmitted;
-  } else if (type === 'delegationSuccessful') {
-    title = 'Transaction Successful';
-    description = 'The delegation has been confirmed!';
-    icon = TxSuccessful;
-  } else if (type === 'delegationFailed') {
-    title = 'Transaction Failed';
-    description = 'Something went wrong. Please check transaction details on Etherescan.';
-    icon = TxFailed;
+  switch (type) {
+    case 'donationPending':
+      title = 'Transaction Submitted';
+      description =
+        'It may take few minutes depending on the network. You can close the screen and check the status later in your wallet.';
+      icon = TxSubmitted;
+      break;
+    case 'donationSuccessful':
+      title = 'Transaction Successful';
+      description = 'Your transaction has been processed. You can close the screen.';
+      icon = TxSuccessful;
+      break;
+    case 'donationFailed':
+      title = 'Transaction Failed';
+      description = 'Something went wrong. Please check transaction details on Etherescan.';
+      icon = TxFailed;
+      break;
+    case 'delegationPending':
+      title = 'Transaction Submitted';
+      description = 'The donations have been delegated.';
+      if (isDac) {
+        description +=
+          ' Please note the Giver may have 3 days to reject your delegation before the money gets committed.';
+      }
+      icon = TxSubmitted;
+      break;
+    case 'delegationSuccessful':
+      title = 'Transaction Successful';
+      description = 'The delegation has been confirmed!';
+      icon = TxSuccessful;
+      break;
+    case 'delegationFailed':
+      title = 'Transaction Failed';
+      description = 'Something went wrong. Please check transaction details on Etherescan.';
+      icon = TxFailed;
+      break;
+    default:
+    // TODO: handle wrong type
   }
 
   return (
