@@ -7,25 +7,32 @@ import AlertAnimation from '../assets/alert-notification.json';
 const MinimumPayoutModalContent = ({ closeModal, minimumPayoutUsdValue, type }) => {
   let title = '';
   let description = '';
-  if (type === 'Creat/Edit') {
-    title = `Minimum amount of $${minimumPayoutUsdValue} required`;
-    description = `Minimum amount of $${minimumPayoutUsdValue} is required before you can continue. This is a
+  switch (type) {
+    case 'Creat/Edit':
+      title = `Minimum amount of $${minimumPayoutUsdValue} required`;
+      description = `Minimum amount of $${minimumPayoutUsdValue} is required before you can continue. This is a
         temporary limitation due to Ethereum network issues.`;
-  } else if (type === 'Archive') {
-    title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
-    description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
+      break;
+    case 'Archive':
+      title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
+      description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
         before you can archive this milestone. This is a temporary
         limitation due to Ethereum Mainnet issues.`;
-  } else if (type === 'MarkComplete') {
-    title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
-    description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
+      break;
+    case 'MarkComplete':
+      title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
+      description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
         before you can mark this milestone complete. This is a temporary
         limitation due to Ethereum Mainnet issues.`;
-  } else if (type === 'Withdraw') {
-    title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
-    description = `A minimum donation balance of
+      break;
+    case 'Withdraw':
+      title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
+      description = `A minimum donation balance of
         $${minimumPayoutUsdValue} is required before you can collect or disburse the funds.
         This is a temporary limitation due to Ethereum Mainnet issues.`;
+      break;
+    default:
+    // TODO: handle wrong type
   }
 
   return (
