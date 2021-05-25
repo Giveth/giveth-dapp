@@ -195,9 +195,7 @@ class MyCommunities extends Component {
                   {communities && communities.data.length === 0 && (
                     <div>
                       <center>
-                        <h3>
-                          You didn&apos;t create any Decentralized Altruistic Communities yet!
-                        </h3>
+                        <h3>You didn&apos;t create any Communities yet!</h3>
                         <img
                           className="empty-state-img"
                           src={`${process.env.PUBLIC_URL}/img/community.svg`}

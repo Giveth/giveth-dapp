@@ -50,10 +50,7 @@ const Communities = ({ onlyRecent, step }) => {
     <div className="container">
       <div id="communities-view" className="card-view">
         <div className="container-fluid page-layout reduced-padding">
-          <h4>
-            Decentralized Altruistic Communities{' '}
-            {total > 0 && <span className="badge badge-success">{total}</span>}
-          </h4>
+          <h4>Communities {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
 
           {// There are some Communities in the system, show them
           !hasError && communities.length > 0 && (
@@ -76,7 +73,7 @@ const Communities = ({ onlyRecent, step }) => {
           !hasError && !isLoading && communities.length === 0 && (
             <div>
               <div className="text-center">
-                <p>There are no Decentralized Altruistic Communities (Communities) yet!</p>
+                <p>There are no Communities yet!</p>
                 <img
                   className="empty-state-img"
                   src={`${process.env.PUBLIC_URL}/img/community.svg`}
