@@ -14,7 +14,7 @@ const LeftMenu = () => {
     switch (true) {
       // TODO this is for backward compatibility
       case pathname === '/dacs':
-      case pathname.startsWith('/dac/'):
+      case pathname.startsWith('/dacs/'):
         setSelectedKeys('Communities');
         break;
 

@@ -30,9 +30,8 @@ const JoinGivethCommunity = () => {
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
-            Community! However, Giveth is still in alpha and we only allow a select group of people
-            to start Communities
+            It&#8217;s great to see that you want to start a Community! However, Giveth is still in
+            alpha and we only allow a select group of people to start Communities
             <br />
             Please <strong>contact us on our Slack</strong>, or keep browsing
           </p>,
@@ -49,8 +48,8 @@ const JoinGivethCommunity = () => {
         title: "You're almost there...",
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
-            Community. To get started, please sign up (or sign in) first.
+            It&#8217;s great to see that you want to start a Decentralized Community. To get
+            started, please sign up (or sign in) first.
           </p>,
         ),
         icon: 'info',

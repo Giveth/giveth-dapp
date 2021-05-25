@@ -225,7 +225,7 @@ const ViewCommunity = ({ match }) => {
                   userIsOwner && community.isActive && (() => editCommunity(community.id))
                 }
               >
-                <h6>Decentralized Altruistic Community</h6>
+                <h6>Community</h6>
                 <h1>{community.title}</h1>
 
                 {community.isActive && (

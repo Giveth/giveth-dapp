@@ -84,6 +84,16 @@ const Routes = () => {
       />
       <Route
         exact
+        path={getViewEntityPathsList('/dacs/:id')}
+        render={({ match }) => <Redirect to={`/communities/${match.params.id}`} />}
+      />
+      <Route
+        exact
+        path={getViewEntityPathsList('/dac/:slug')}
+        render={({ match }) => <Redirect to={`/community/${match.params.slug}`} />}
+      />
+      <Route
+        exact
         path="/communities/:id/edit"
         render={props => (
           <EditCommunity
@@ -184,13 +194,18 @@ const Routes = () => {
       />
       <Route
         exact
+        path={getViewEntityPathsList('/campaigns/:id/traces/:traceId')}
+        render={({ match }) => <Redirect to={`/campaigns/:id/traces/${match.params.traceId}`} />}
+      />
+      <Route
+        exact
         path={getViewEntityPathsList('/trace/:traceSlug')}
         render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
       />
       <Route
         exact
         path={getViewEntityPathsList('/milestone/:traceSlug')}
-        render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
+        render={({ match }) => <Redirect to={`/trace/${match.params.traceSlug}`} />}
       />
       <Route
         exact
@@ -262,6 +277,7 @@ const Routes = () => {
           />
         )}
       />
+      <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
       <Route
         exact
         path="/my-campaigns"
@@ -286,6 +302,8 @@ const Routes = () => {
                                           />
                                         )}
                                       /> */}
+      <Route exact path="/my-milestones" render={() => <Redirect to="/my-traces/" />} />
+
       <Route
         exact
         path="/profile"

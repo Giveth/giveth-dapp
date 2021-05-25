@@ -304,7 +304,7 @@ const EditCommunity = ({ isNew, match }) => {
               >
                 {isNew && (
                   <Fragment>
-                    <Title level={3}>Start a Decentralized Altruistic Community (Community)</Title>
+                    <Title level={3}>Start a Community</Title>
                     <Text>
                       A Community unites Givers and Makers in building a community around their
                       common vision to raise then delegate funds to Campaigns that deliver a
@@ -316,7 +316,7 @@ const EditCommunity = ({ isNew, match }) => {
                   name="title"
                   label="Name your Community"
                   className="custom-form-item"
-                  extra="Describe your Decentralized Altruistic Community (Community) in 1 sentence."
+                  extra="Describe your Community in 1 sentence."
                   rules={[
                     {
                       required: true,
