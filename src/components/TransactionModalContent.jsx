@@ -1,31 +1,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
-import TxSubmitted from '../assets/transaction-submitted.svg';
-import TxSuccessful from '../assets/transaction-successful.svg';
-import TxFailed from '../assets/transaction-failed.svg';
+import Lottie from 'lottie-react';
+
+import TnxFailedAnimation from '../assets/tnx-failed.json';
+import TnxSubmittedAnimation from '../assets/tnx-submitted.json';
+import TnxSuccessfulAnimation from '../assets/tnx-successful.json';
 
 const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
   let title = '';
   let description = '';
-  let icon;
+  let animation;
+  let loop = false;
 
   switch (type) {
     case 'donationPending':
       title = 'Transaction Submitted';
       description =
         'It may take few minutes depending on the network. You can close the screen and check the status later in your wallet.';
-      icon = TxSubmitted;
+      animation = TnxSubmittedAnimation;
+      loop = true;
       break;
     case 'donationSuccessful':
       title = 'Transaction Successful';
       description = 'Your transaction has been processed. You can close the screen.';
-      icon = TxSuccessful;
+      animation = TnxSuccessfulAnimation;
       break;
     case 'donationFailed':
       title = 'Transaction Failed';
       description = msg;
-      icon = TxFailed;
+      animation = TnxFailedAnimation;
       break;
     case 'delegationPending':
       title = 'Transaction Submitted';
@@ -34,17 +38,18 @@ const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
         description +=
           ' Please note the Giver may have 3 days to reject your delegation before the money gets committed.';
       }
-      icon = TxSubmitted;
+      animation = TnxSubmittedAnimation;
+      loop = true;
       break;
     case 'delegationSuccessful':
       title = 'Transaction Successful';
       description = 'The delegation has been confirmed!';
-      icon = TxSuccessful;
+      animation = TnxSuccessfulAnimation;
       break;
     case 'delegationFailed':
       title = 'Transaction Failed';
       description = msg;
-      icon = TxFailed;
+      animation = TnxFailedAnimation;
       break;
     default:
     // TODO: handle wrong type
@@ -52,7 +57,12 @@ const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
 
   return (
     <div className="text-center">
-      <img className="my-5" alt="transaction icon" src={icon} />
+      <Lottie
+        animationData={animation}
+        className="mx-auto my-3 py-5"
+        loop={loop}
+        style={{ width: '100px' }}
+      />
       <h2 className="text-center font-weight-bold" style={{ color: '#2C0B3F' }}>
         {title}
       </h2>
