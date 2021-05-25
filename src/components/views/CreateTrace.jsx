@@ -16,7 +16,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import {
   TraceCampaignInfo,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TracePicture,
   TraceReviewer,
   TraceTitle,
@@ -40,7 +40,7 @@ function CreateTrace(props) {
     title: '',
     description: '',
     picture: '',
-    donateToDac: true,
+    donateToCommunity: true,
     hasReviewer: true,
     reviewerAddress: '',
   });
@@ -103,8 +103,8 @@ function CreateTrace(props) {
       ms.parentProjectId = campaign.projectId;
       ms.formType = Trace.TRACETYPE;
 
-      if (trace.donateToDac) {
-        ms.dacId = config.defaultDacId;
+      if (trace.donateToCommunity) {
+        ms.communityId = config.defaultCommunityId;
       }
 
       if (!userIsCampaignOwner) {
@@ -222,7 +222,10 @@ function CreateTrace(props) {
                   traceTitle={trace.title}
                 />
 
-                <TraceDonateToDac value={trace.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToCommunity
+                  value={trace.donateToCommunity}
+                  onChange={handleInputChange}
+                />
 
                 <TraceReviewer
                   toggleHasReviewer={handleInputChange}

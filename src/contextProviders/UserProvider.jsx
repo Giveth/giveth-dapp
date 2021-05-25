@@ -11,14 +11,14 @@ import ErrorHandler from '../lib/ErrorHandler';
 
 // models
 import User from '../models/User';
-import { DACService } from '../services';
+import { CommunityService } from '../services';
 
 const Context = createContext();
 const { Provider, Consumer } = Context;
 export { Context, Consumer };
 
 // TO DO: This is the minimum transaction view required to:
-// create a DAC / Campaign / Milestone / Profile
+// create a Community / Campaign / Milestone / Profile
 React.minimumWalletBalance = 0.01;
 React.minimumWalletBalanceInWei = new BigNumber(utils.toWei('0.01'));
 
@@ -35,7 +35,7 @@ class UserProvider extends Component {
     this.state = {
       currentUser: {},
       hasError: false,
-      userIsDacOwner: false,
+      userIsCommunityOwner: false,
       isLoading: true,
     };
 
@@ -67,7 +67,7 @@ class UserProvider extends Component {
 
   async getUserData(address) {
     if (!address) {
-      this.setState({ currentUser: {}, userIsDacOwner: false, isLoading: false }, () => {
+      this.setState({ currentUser: {}, userIsCommunityOwner: false, isLoading: false }, () => {
         this.props.onLoaded();
       });
     } else {
@@ -85,10 +85,10 @@ class UserProvider extends Component {
               this.setState({ currentUser }, () => {
                 this.authenticateFeathers();
 
-                DACService.getUserIsDacOwner(
+                CommunityService.getUserIsCommunityOwner(
                   address,
-                  userIsDacOwner => this.setState({ userIsDacOwner }),
-                  () => this.setState({ userIsDacOwner: false }),
+                  userIsCommunityOwner => this.setState({ userIsCommunityOwner }),
+                  () => this.setState({ userIsCommunityOwner: false }),
                 );
               });
             }
@@ -197,7 +197,7 @@ class UserProvider extends Component {
   }
 
   render() {
-    const { currentUser, hasError, userIsDacOwner, isLoading } = this.state;
+    const { currentUser, hasError, userIsCommunityOwner, isLoading } = this.state;
 
     return (
       <Provider
@@ -206,7 +206,7 @@ class UserProvider extends Component {
             currentUser,
             hasError,
             signIn: this.signIn,
-            userIsDacOwner,
+            userIsCommunityOwner,
             isLoading,
           },
           actions: {

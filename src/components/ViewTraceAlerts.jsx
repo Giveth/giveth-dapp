@@ -20,7 +20,7 @@ import LPTrace from '../models/LPTrace';
 
 const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
   const {
-    state: { currentUser, userIsDacOwner },
+    state: { currentUser, userIsCommunityOwner },
   } = useContext(UserContext);
   const {
     state: { minimumPayoutUsdValue },
@@ -32,7 +32,8 @@ const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
   const userAddress = currentUser.address;
   const campaignOwnerAddress = campaign && campaign.ownerAddress;
 
-  const userCanDelegate = userIsDacOwner || (userAddress && userAddress === campaignOwnerAddress);
+  const userCanDelegate =
+    userIsCommunityOwner || (userAddress && userAddress === campaignOwnerAddress);
 
   return (
     <div>

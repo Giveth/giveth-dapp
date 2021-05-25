@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
 
 import Donation from '../models/Donation';
-import DAC from '../models/DAC';
+import Community from '../models/Community';
 import Trace from '../models/Trace';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
@@ -310,7 +310,8 @@ class DonationService {
             ? donation.delegateEntity.ownerAddress
             : donation.ownerEntity.ownerAddress;
         const senderId = donation.delegateId > 0 ? donation.delegateId : donation.ownerId;
-        const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
+        const receiverId =
+          delegateTo.type === 'community' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
           if (donation.ownerType === 'campaign') {
@@ -765,7 +766,7 @@ class DonationService {
     };
 
     // donation to a delegate
-    if (toAdmin.type === DAC.type) {
+    if (toAdmin.type === Community.type) {
       Object.assign(newDonation, {
         ownerType: 'giver',
         ownerTypeId: giver.address,

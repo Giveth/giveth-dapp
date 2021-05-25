@@ -27,7 +27,7 @@ import {
   history,
 } from '../../lib/helpers';
 import TraceService from '../../services/TraceService';
-import DACService from '../../services/DACService';
+import CommunityService from '../../services/CommunityService';
 import { Context as WhiteListContext } from '../../contextProviders/WhiteListProvider';
 import NotFound from './NotFound';
 import DescriptionRender from '../DescriptionRender';
@@ -74,7 +74,7 @@ const ViewTrace = props => {
   const [recipient, setRecipient] = useState({});
   const [campaign, setCampaign] = useState({});
   const [trace, setTrace] = useState({});
-  const [dacTitle, setDacTitle] = useState('');
+  const [communityTitle, setCommunityTitle] = useState('');
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
@@ -89,10 +89,10 @@ const ViewTrace = props => {
 
   const donationsPerBatch = 50;
 
-  const getDacTitle = async dacId => {
-    if (dacId === 0) return;
-    DACService.getByDelegateId(dacId)
-      .then(dac => setDacTitle(dac.title))
+  const getCommunityTitle = async communityId => {
+    if (communityId === 0) return;
+    CommunityService.getByDelegateId(communityId)
+      .then(community => setCommunityTitle(community.title))
       .catch(() => {});
   };
 
@@ -127,7 +127,7 @@ const ViewTrace = props => {
         // Stop unnecessary updates on subscribe
         if (!campaign.id) {
           setCampaign(new Campaign(_trace.campaign));
-          getDacTitle(_trace.dacId);
+          getCommunityTitle(_trace.communityId);
           setLoading(false);
         }
       },
@@ -300,7 +300,7 @@ const ViewTrace = props => {
       title: trace.title,
       id: trace.id,
       adminId: trace.projectId,
-      dacId: trace.dacId,
+      communityId: trace.communityId,
       campaignId: campaign._id,
       token: trace.acceptsSingleToken ? trace.token : undefined,
       isCapped: trace.isCapped,
@@ -534,14 +534,14 @@ const ViewTrace = props => {
                               )}
                             </div>
 
-                            {trace.dacId !== 0 && trace.dacId !== undefined && (
+                            {trace.communityId !== 0 && trace.communityId !== undefined && (
                               <div className="form-group">
                                 <DetailLabel
-                                  id="dac-delegation"
-                                  title="Delegating 3% to DAC"
-                                  explanation="The DAC that this trace is contributing to on every donation"
+                                  id="community-delegation"
+                                  title="Delegating 3% to Community"
+                                  explanation="The Community that this trace is contributing to on every donation"
                                 />
-                                {dacTitle}
+                                {communityTitle}
                               </div>
                             )}
                             {trace.date && (

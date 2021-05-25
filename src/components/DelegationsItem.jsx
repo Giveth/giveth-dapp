@@ -26,7 +26,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
   return (
     <tr name={donation.id}>
       <td className="td-actions">
-        {/* When donated to a dac, allow delegation
+        {/* When donated to a community, allow delegation
                                     to campaigns and traces */}
         {(donation.delegateId > 0 ||
           (currentUser.address && donation.ownerTypeId === currentUser.address)) &&

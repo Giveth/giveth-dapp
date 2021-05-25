@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import DACCard from '../DacCard';
+import CommunityCard from '../CommunityCard';
 import Loader from '../Loader';
-import DACService from '../../services/DACService';
+import CommunityService from '../../services/CommunityService';
 import LoadMore from '../LoadMore';
 
 /**
- * The DACs view mapped to /dacs
+ * The Communities view mapped to /communities
  */
-const DACs = ({ onlyRecent, step }) => {
-  const [dacs, setDacs] = useState([]);
+const Communities = ({ onlyRecent, step }) => {
+  const [communities, setCommunities] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [hasError, setHasError] = useState(false);
@@ -17,15 +17,15 @@ const DACs = ({ onlyRecent, step }) => {
   const isMounted = useRef(false);
 
   const loadMore = (init = false) => {
-    if (init || (!isLoading && isMounted.current && total > dacs.length)) {
+    if (init || (!isLoading && isMounted.current && total > communities.length)) {
       setLoading(true);
-      DACService.getDACs(
+      CommunityService.getCommunities(
         step, // Limit
-        dacs.length, // Skip
+        communities.length, // Skip
         onlyRecent,
-        (_dacs, _total) => {
+        (_communities, _total) => {
           if (!isMounted.current) return;
-          setDacs(dacs.concat(_dacs));
+          setCommunities(communities.concat(_communities));
           setTotal(_total);
           setLoading(false);
         },
@@ -48,49 +48,49 @@ const DACs = ({ onlyRecent, step }) => {
 
   return (
     <div className="container">
-      <div id="dacs-view" className="card-view">
+      <div id="communities-view" className="card-view">
         <div className="container-fluid page-layout reduced-padding">
           <h4>
             Decentralized Altruistic Communities{' '}
             {total > 0 && <span className="badge badge-success">{total}</span>}
           </h4>
 
-          {// There are some DACs in the system, show them
-          !hasError && dacs.length > 0 && (
+          {// There are some Communities in the system, show them
+          !hasError && communities.length > 0 && (
             <div>
               <p>
                 These Communities are solving causes. Help them realise their goals by joining them
                 and giving Ether or tokens!
               </p>
               <div className="cards-grid-container">
-                {dacs.map(dac => (
-                  <DACCard key={dac.id} dac={dac} />
+                {communities.map(community => (
+                  <CommunityCard key={community.id} community={community} />
                 ))}
               </div>
-              {dacs.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
+              {communities.length < total && <LoadMore onClick={loadMore} disabled={isLoading} />}
             </div>
           )}
           {!hasError && isLoading && <Loader />}
 
-          {// There are no DACs, show empty state
-          !hasError && !isLoading && dacs.length === 0 && (
+          {// There are no Communities, show empty state
+          !hasError && !isLoading && communities.length === 0 && (
             <div>
               <div className="text-center">
-                <p>There are no Decentralized Altruistic Communities (DACs) yet!</p>
+                <p>There are no Decentralized Altruistic Communities (Communities) yet!</p>
                 <img
                   className="empty-state-img"
                   src={`${process.env.PUBLIC_URL}/img/community.svg`}
                   width="200px"
                   height="200px"
-                  alt="no-dacs-icon"
+                  alt="no-communities-icon"
                 />
               </div>
             </div>
           )}
           {hasError && (
             <p>
-              <strong>Oops, something went wrong...</strong> The Giveth dapp could not load any DACs
-              for some reason. Please try refreshing the page...
+              <strong>Oops, something went wrong...</strong> The Giveth dapp could not load any
+              Communities for some reason. Please try refreshing the page...
             </p>
           )}
         </div>
@@ -99,11 +99,11 @@ const DACs = ({ onlyRecent, step }) => {
   );
 };
 
-DACs.propTypes = {
+Communities.propTypes = {
   step: PropTypes.number,
   onlyRecent: PropTypes.bool,
 };
 
-DACs.defaultProps = { step: 20, onlyRecent: false };
+Communities.defaultProps = { step: 20, onlyRecent: false };
 
-export default DACs;
+export default Communities;

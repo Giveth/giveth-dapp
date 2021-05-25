@@ -1,14 +1,14 @@
 /* eslint-disable import/no-cycle */
 import { toast } from 'react-toastify';
 import BasicModel from './BasicModel';
-import DACService from '../services/DACService';
+import CommunityService from '../services/CommunityService';
 import IPFSService from '../services/IPFSService';
 import { cleanIpfsPath } from '../lib/helpers';
 
 /**
- * The DApp DAC model
+ * The DApp Community model
  */
-class DAC extends BasicModel {
+class Community extends BasicModel {
   static get CANCELED() {
     return 'Canceled';
   }
@@ -22,12 +22,12 @@ class DAC extends BasicModel {
   }
 
   static get type() {
-    return 'dac';
+    return 'community';
   }
 
   // eslint-disable-next-line class-methods-use-this
   get type() {
-    return DAC.type;
+    return Community.type;
   }
 
   constructor(data) {
@@ -35,7 +35,7 @@ class DAC extends BasicModel {
 
     this.communityUrl = data.communityUrl || '';
     this.delegateId = data.delegateId || 0;
-    this.status = data.status || DAC.PENDING;
+    this.status = data.status || Community.PENDING;
     this.ownerAddress = data.ownerAddress;
     this._id = data._id;
     this.confirmations = data.confirmations || 0;
@@ -56,7 +56,7 @@ class DAC extends BasicModel {
   }
 
   toFeathers(txHash) {
-    const dac = {
+    const community = {
       title: this.title,
       slug: this.slug,
       description: this.description,
@@ -66,8 +66,8 @@ class DAC extends BasicModel {
       totalDonated: this.totalDonated,
       donationCount: this.donationCount,
     };
-    if (!this.id) dac.txHash = txHash;
-    return dac;
+    if (!this.id) community.txHash = txHash;
+    return community;
   }
 
   save(afterSave, afterMined, onError) {
@@ -78,10 +78,10 @@ class DAC extends BasicModel {
           this.image = hash;
           this.newImage = false;
         })
-        .then(() => DACService.save(this, this.owner.address, afterSave, afterMined, onError))
+        .then(() => CommunityService.save(this, this.owner.address, afterSave, afterMined, onError))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return DACService.save(this, this.owner.address, afterSave, afterMined, onError);
+    return CommunityService.save(this, this.owner.address, afterSave, afterMined, onError);
   }
 
   get communityUrl() {
@@ -116,16 +116,16 @@ class DAC extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(value, [DAC.PENDING, DAC.ACTIVE, DAC.CANCELED], 'status');
+    this.checkValue(value, [Community.PENDING, Community.ACTIVE, Community.CANCELED], 'status');
     this.myStatus = value;
-    if (value === DAC.PENDING) this.myOrder = 1;
-    else if (value === DAC.ACTIVE) this.myOrder = 2;
-    else if (value === DAC.CANCELED) this.myOrder = 3;
+    if (value === Community.PENDING) this.myOrder = 1;
+    else if (value === Community.ACTIVE) this.myOrder = 2;
+    else if (value === Community.CANCELED) this.myOrder = 3;
     else this.myOrder = 4;
   }
 
   get isActive() {
-    return this.status === DAC.ACTIVE;
+    return this.status === Community.ACTIVE;
   }
 
   get totalDonated() {
@@ -149,4 +149,4 @@ class DAC extends BasicModel {
   }
 }
 
-export default DAC;
+export default Community;

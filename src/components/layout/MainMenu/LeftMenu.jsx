@@ -12,8 +12,14 @@ const LeftMenu = () => {
 
   useEffect(() => {
     switch (true) {
+      // TODO this is for backward compatibility
       case pathname === '/dacs':
       case pathname.startsWith('/dac/'):
+        setSelectedKeys('Communities');
+        break;
+
+      case pathname === '/communities':
+      case pathname.startsWith('/community/'):
         setSelectedKeys('Communities');
         break;
 
@@ -40,7 +46,7 @@ const LeftMenu = () => {
   return (
     <Menu mode={lg ? 'horizontal' : 'inline'} selectedKeys={[selectedKeys]}>
       <Menu.Item key="Communities">
-        <Link to="/dacs">Communities</Link>
+        <Link to="/communities">Communities</Link>
       </Menu.Item>
       <Menu.Item key="Campaigns">
         <Link to="/campaigns">Campaigns</Link>

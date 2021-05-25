@@ -6,7 +6,7 @@ import useCampaign from '../../hooks/useCampaign';
 import {
   TraceCampaignInfo,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
@@ -37,7 +37,7 @@ function CreateBounty(props) {
     description: '',
     recipientAddress: ZERO_ADDRESS,
     picture: '/img/bountyProject.png',
-    donateToDac: true,
+    donateToCommunity: true,
     reviewerAddress: '',
   });
 
@@ -95,8 +95,8 @@ function CreateBounty(props) {
       ms.parentProjectId = campaign.projectId;
       ms.formType = Trace.BOUNTYTYPE;
 
-      if (bounty.donateToDac) {
-        ms.dacId = config.defaultDacId;
+      if (bounty.donateToCommunity) {
+        ms.communityId = config.defaultCommunityId;
       }
 
       if (!userIsCampaignOwner) {
@@ -206,7 +206,10 @@ function CreateBounty(props) {
                   id="description"
                 />
 
-                <TraceDonateToDac value={bounty.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToCommunity
+                  value={bounty.donateToCommunity}
+                  onChange={handleInputChange}
+                />
 
                 <TraceReviewer
                   traceType="Bounty"

@@ -209,9 +209,9 @@ TracePicture.defaultProps = {
   disabled: false,
 };
 
-const TraceDonateToDac = ({ onChange, value, disabled }) => (
+const TraceDonateToCommunity = ({ onChange, value, disabled }) => (
   <Form.Item
-    className="custom-form-item trace-donate-dac"
+    className="custom-form-item trace-donate-community"
     valuePropName="checked"
     extra={
       <div>
@@ -223,19 +223,19 @@ const TraceDonateToDac = ({ onChange, value, disabled }) => (
       </div>
     }
   >
-    <Checkbox onChange={onChange} name="donateToDac" checked={value} disabled={disabled}>
+    <Checkbox onChange={onChange} name="donateToCommunity" checked={value} disabled={disabled}>
       Donate 3% to Giveth
     </Checkbox>
   </Form.Item>
 );
 
-TraceDonateToDac.propTypes = {
+TraceDonateToCommunity.propTypes = {
   value: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
 };
 
-TraceDonateToDac.defaultProps = {
+TraceDonateToCommunity.defaultProps = {
   disabled: false,
 };
 
@@ -610,7 +610,7 @@ export {
   TraceTitle,
   TraceDescription,
   TracePicture,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TraceReviewer,
   TraceDatePicker,
   TraceCampaignInfo,

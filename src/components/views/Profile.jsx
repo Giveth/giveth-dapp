@@ -10,7 +10,7 @@ import { history } from '../../lib/helpers';
 
 import ProfileTracesTable from '../ProfileTracesTable';
 import ProfileCampaignsTable from '../ProfileCampaignsTable';
-import ProfileDacsTable from '../ProfileDacsTable';
+import ProfileCommunitiesTable from '../ProfileCommunitiesTable';
 import ProfileDonationsTable from '../ProfileDonationsTable';
 import ProfileUserInfo from '../ProfileUserInfo';
 import ProfileUpdatePermission from '../ProfileUpdatePermission';
@@ -78,7 +78,7 @@ const Profile = props => {
 
             <ProfileCampaignsTable userAddress={userAddress} />
 
-            <ProfileDacsTable userAddress={userAddress} />
+            <ProfileCommunitiesTable userAddress={userAddress} />
 
             <ProfileDonationsTable userAddress={userAddress} />
           </div>

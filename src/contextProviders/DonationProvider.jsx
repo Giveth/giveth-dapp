@@ -117,7 +117,7 @@ class DonationProvider extends Component {
           React.swal({
             title: 'Reject your donation?',
             text:
-              'Your donation will not go to this Trace. You will still be in control of you funds and the DAC can still delegate you donation.',
+              'Your donation will not go to this Trace. You will still be in control of you funds and the Community can still delegate you donation.',
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, reject'],

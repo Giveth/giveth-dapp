@@ -12,7 +12,7 @@ import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
 /**
- * Shows a table of donations for a given type (dac, campaign, trace)
+ * Shows a table of donations for a given type (community, campaign, trace)
  */
 
 class DonationListItem extends Component {

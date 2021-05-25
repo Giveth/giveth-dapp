@@ -5,20 +5,20 @@ import Pagination from 'react-js-pagination';
 import { convertEthHelper, getTruncatedText } from '../lib/helpers';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
-import { DAC } from '../models';
+import { Community } from '../models';
 
-const ProfileDacsTable = ({ userAddress }) => {
+const ProfileCommunitiesTable = ({ userAddress }) => {
   const [isLoading, setLoading] = useState(true);
-  const [dacs, setDacs] = useState([]);
+  const [communities, setCommunities] = useState([]);
   const [total, setTotal] = useState(0);
   const [skipPages, setSkipPages] = useState(0);
   const itemsPerPage = 25;
   const isMounted = useRef(false);
 
-  const loadUserDacs = () => {
+  const loadUserCommunities = () => {
     if (isMounted.current === false) return;
     feathersClient
-      .service('dacs')
+      .service('communities')
       .find({
         query: {
           ownerAddress: userAddress,
@@ -31,7 +31,7 @@ const ProfileDacsTable = ({ userAddress }) => {
       })
       .then(resp => {
         if (isMounted.current) {
-          setDacs(resp.data.map(m => new DAC(m)));
+          setCommunities(resp.data.map(m => new Community(m)));
           setTotal(resp.total);
           setLoading(false);
         }
@@ -49,7 +49,7 @@ const ProfileDacsTable = ({ userAddress }) => {
 
   useEffect(() => {
     setLoading(true);
-    loadUserDacs();
+    loadUserCommunities();
   }, [userAddress, skipPages]);
 
   const handlePageChanged = newPage => {
@@ -58,10 +58,10 @@ const ProfileDacsTable = ({ userAddress }) => {
 
   return (
     <Fragment>
-      {(isLoading || (dacs && dacs.length > 0)) && <h4>Communities</h4>}
+      {(isLoading || (communities && communities.length > 0)) && <h4>Communities</h4>}
       <div>
         {isLoading && <Loader className="small relative" />}
-        {!isLoading && dacs && dacs.length > 0 && (
+        {!isLoading && communities && communities.length > 0 && (
           <div className="table-container">
             <table className="table table-responsive table-striped table-hover">
               <thead>
@@ -73,10 +73,10 @@ const ProfileDacsTable = ({ userAddress }) => {
                 </tr>
               </thead>
               <tbody>
-                {dacs.map(d => (
-                  <tr key={d._id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                {communities.map(d => (
+                  <tr key={d._id} className={d.status === Community.PENDING ? 'pending' : ''}>
                     <td className="td-name">
-                      <Link to={`/dacs/${d._id}`}>{getTruncatedText(d.title, 45)}</Link>
+                      <Link to={`/communities/${d._id}`}>{getTruncatedText(d.title, 45)}</Link>
                       <div>
                         {d.ownerAddress === userAddress && (
                           <span className="badge badge-success">
@@ -95,7 +95,7 @@ const ProfileDacsTable = ({ userAddress }) => {
                       ))}
                     </td>
                     <td className="td-status">
-                      {d.status === DAC.PENDING && (
+                      {d.status === Community.PENDING && (
                         <span>
                           <i className="fa fa-circle-o-notch fa-spin" />
                           &nbsp;
@@ -126,8 +126,8 @@ const ProfileDacsTable = ({ userAddress }) => {
   );
 };
 
-ProfileDacsTable.propTypes = {
+ProfileCommunitiesTable.propTypes = {
   userAddress: PropTypes.string.isRequired,
 };
 
-export default ProfileDacsTable;
+export default ProfileCommunitiesTable;

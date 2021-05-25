@@ -23,7 +23,7 @@ export default class Trace extends BasicModel {
       projectId = undefined,
       ownerAddress = '',
       reviewerAddress = '',
-      dacId = 0,
+      communityId = 0,
       items = [],
       date = getStartOfDayUTC().subtract(1, 'd'),
       confirmations = 0,
@@ -56,7 +56,7 @@ export default class Trace extends BasicModel {
     this._status = status;
     this._projectId = projectId;
     this._reviewerAddress = reviewerAddress;
-    this._dacId = dacId;
+    this._communityId = communityId;
     this._items = items.map(i => new TraceItemModel(i));
     this._itemizeState = items && items.length > 0;
     this._date = getStartOfDayUTC(date);
@@ -111,7 +111,7 @@ export default class Trace extends BasicModel {
       image: cleanIpfsPath(this._image),
       ownerAddress: this._ownerAddress,
       reviewerAddress: this._reviewerAddress,
-      dacId: this._dacId,
+      communityId: this._communityId,
       recipientAddress: this._recipientAddress,
       campaignId: this._campaignId,
       projectId: this._projectId,
@@ -392,13 +392,13 @@ export default class Trace extends BasicModel {
     this._reviewerAddress = value;
   }
 
-  get dacId() {
-    return this._dacId;
+  get communityId() {
+    return this._communityId;
   }
 
-  set dacId(value) {
-    this.checkType(value, ['number'], 'dacId');
-    this._dacId = value;
+  set communityId(value) {
+    this.checkType(value, ['number'], 'communityId');
+    this._communityId = value;
   }
 
   get items() {
@@ -578,7 +578,7 @@ export default class Trace extends BasicModel {
   }
 
   get delegatePercent() {
-    return this._dacId !== undefined && this._dacId !== 0;
+    return this._communityId !== undefined && this._communityId !== 0;
   }
 
   get hasRecipient() {

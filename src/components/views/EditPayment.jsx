@@ -9,7 +9,7 @@ import {
   TraceCampaignInfo,
   TraceDatePicker,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TraceFiatAmountCurrency,
   TracePicture,
   TraceRecipientAddress,
@@ -60,7 +60,7 @@ function EditPayment(props) {
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
-    donateToDac: true,
+    donateToCommunity: true,
     token: {},
     recipientAddress: '',
   });
@@ -134,7 +134,7 @@ function EditPayment(props) {
             const iValues = {
               title: res.title,
               description: res.description,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
               token: res.token,
               fiatAmount: res.fiatAmount ? res.fiatAmount.toNumber() : 0,
               selectedFiatType: res.selectedFiatType,
@@ -247,7 +247,7 @@ function EditPayment(props) {
         selectedFiatType,
         token,
         date,
-        donateToDac,
+        donateToCommunity,
       } = payment;
 
       const ms = trace;
@@ -258,7 +258,7 @@ function EditPayment(props) {
       ms.recipientAddress = recipientAddress;
       ms.image = image;
       ms.token = token;
-      ms.dacId = donateToDac ? config.defaultDacId : 0;
+      ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
 
       // TODO: We should have ability to delete fiatAmount for uncapped traces
       if (!notCapped) {
@@ -419,8 +419,8 @@ function EditPayment(props) {
                     picture={payment.image}
                   />
 
-                  <TraceDonateToDac
-                    value={payment.donateToDac}
+                  <TraceDonateToCommunity
+                    value={payment.donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />

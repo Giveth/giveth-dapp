@@ -28,22 +28,22 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import Editor from '../Editor';
 
-import { IPFSService, DACService } from '../../services';
+import { IPFSService, CommunityService } from '../../services';
 import config from '../../configuration';
-import DAC from '../../models/DAC';
+import Community from '../../models/Community';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import GA from '../../lib/GoogleAnalytics';
 
 const { Title, Text } = Typography;
 
 /**
- * View to create or edit a DAC
+ * View to create or edit a Community
  *
  * @param isNew    If set, component will load an empty model.
- *                 Otherwise component expects an id param and will load a DAC object
- * @param id       URL parameter which is an id of a DAC object
+ *                 Otherwise component expects an id param and will load a Community object
+ * @param id       URL parameter which is an id of a Community object
  */
-const EditDAC = ({ isNew, match }) => {
+const EditCommunity = ({ isNew, match }) => {
   const {
     state: { currentUser, isLoading: userIsLoading },
   } = useContext(UserContext);
@@ -60,10 +60,10 @@ const EditDAC = ({ isNew, match }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isBlocking, setIsBlocking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [dac, setDac] = useState({});
+  const [community, setCommunity] = useState({});
 
-  const dacObject = useRef(
-    new DAC({
+  const communityObject = useRef(
+    new Community({
       owner: currentUser,
       ownerAddress: currentUser.address,
     }),
@@ -84,7 +84,7 @@ const EditDAC = ({ isNew, match }) => {
       if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
         const modal = Modal.error({
           title: 'Permission Denied',
-          content: 'You are not allowed to create a DAC',
+          content: 'You are not allowed to create a Community',
           closable: false,
           centered: true,
           onOk: () => history.replace('/'),
@@ -96,24 +96,24 @@ const EditDAC = ({ isNew, match }) => {
       }
 
       checkProfile(currentUser).then(() => {
-        setDac({
+        setCommunity({
           owner: currentUser,
           ownerAddress: currentUser.address,
         });
         setIsLoading(false);
       });
     } else {
-      DACService.get(match.params.id)
-        .then(community => {
-          if (isOwner(community.ownerAddress, currentUser)) {
-            setDac({
-              title: community.title,
-              description: community.description,
-              communityUrl: community.communityUrl,
-              reviewerAddress: community.reviewerAddress,
-              picture: community.image.match(/\/ipfs\/.*/)[0],
+      CommunityService.get(match.params.id)
+        .then(communityItem => {
+          if (isOwner(communityItem.ownerAddress, currentUser)) {
+            setCommunity({
+              title: communityItem.title,
+              description: communityItem.description,
+              communityUrl: communityItem.communityUrl,
+              reviewerAddress: communityItem.reviewerAddress,
+              picture: communityItem.image.match(/\/ipfs\/.*/)[0],
             });
-            dacObject.current = community;
+            communityObject.current = communityItem;
             setIsLoading(false);
           } else history.goBack();
         })
@@ -124,7 +124,7 @@ const EditDAC = ({ isNew, match }) => {
             setIsLoading(false);
             ErrorHandler(
               err,
-              'There has been a problem loading the DAC. Please refresh the page and try again.',
+              'There has been a problem loading the Community. Please refresh the page and try again.',
             );
           }
         });
@@ -137,7 +137,7 @@ const EditDAC = ({ isNew, match }) => {
 
   const handleInputChange = event => {
     const { name, value } = event.target;
-    setDac({ ...dac, [name]: value });
+    setCommunity({ ...community, [name]: value });
     setIsBlocking(true);
   };
 
@@ -150,11 +150,11 @@ const EditDAC = ({ isNew, match }) => {
   }
 
   useEffect(() => {
-    if (dac.image) {
-      const picture = dac.image.match(/\/ipfs\/.*/)[0];
+    if (community.image) {
+      const picture = community.image.match(/\/ipfs\/.*/)[0];
       setPicture(picture);
     }
-  }, [dac]);
+  }, [community]);
 
   const uploadProps = {
     multiple: false,
@@ -205,16 +205,16 @@ const EditDAC = ({ isNew, match }) => {
         return;
       }
 
-      Object.assign(dacObject.current, {
-        ...dac,
-        image: dac.picture,
+      Object.assign(communityObject.current, {
+        ...community,
+        image: community.picture,
       });
 
       const afterMined = url => {
         if (url) {
           const msg = (
             <p>
-              Your DAC has been created!
+              Your Community has been created!
               <br />
               <a href={url} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -226,9 +226,9 @@ const EditDAC = ({ isNew, match }) => {
           if (mounted.current) setIsSaving(false);
           notification.success({
             message: '',
-            description: 'Your DAC has been updated!',
+            description: 'Your Community has been updated!',
           });
-          history.push(`/dacs/${dacObject.current.id}`);
+          history.push(`/communities/${communityObject.current.id}`);
         }
       };
 
@@ -237,7 +237,7 @@ const EditDAC = ({ isNew, match }) => {
         if (!err) {
           const msg = (
             <p>
-              Your DAC is pending....
+              Your Community is pending....
               <br />
               <a href={url} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -246,17 +246,17 @@ const EditDAC = ({ isNew, match }) => {
           );
           notification.info({ description: msg });
           GA.trackEvent({
-            category: 'DAC',
+            category: 'Community',
             action: 'created',
             label: id,
           });
-          history.push('/my-dacs');
+          history.push('/my-communities');
         }
       };
 
       setIsSaving(true);
       setIsBlocking(false);
-      dacObject.current.save(afterCreate, afterMined).finally(() => {
+      communityObject.current.save(afterCreate, afterMined).finally(() => {
         setIsSaving(false);
       });
     }
@@ -280,7 +280,7 @@ const EditDAC = ({ isNew, match }) => {
               <PageHeader
                 className="site-page-header"
                 onBack={goBack}
-                title={isNew ? 'Create New DAC' : `Edit DAC ${dac.title}`}
+                title={isNew ? 'Create New Community' : `Edit Community ${community.title}`}
                 ghost={false}
               />
             </Col>
@@ -292,10 +292,10 @@ const EditDAC = ({ isNew, match }) => {
                 requiredMark
                 onFinish={submit}
                 initialValues={{
-                  title: dac.title,
-                  description: dac.description,
-                  reviewerAddress: dac.reviewerAddress,
-                  communityUrl: dac.communityUrl,
+                  title: community.title,
+                  description: community.description,
+                  reviewerAddress: community.reviewerAddress,
+                  communityUrl: community.communityUrl,
                 }}
                 scrollToFirstError={{
                   block: 'center',
@@ -304,11 +304,11 @@ const EditDAC = ({ isNew, match }) => {
               >
                 {isNew && (
                   <Fragment>
-                    <Title level={3}>Start a Decentralized Altruistic Community (DAC)</Title>
+                    <Title level={3}>Start a Decentralized Altruistic Community (Community)</Title>
                     <Text>
-                      A DAC unites Givers and Makers in building a community around their common
-                      vision to raise then delegate funds to Campaigns that deliver a positive
-                      impact to shared goals.
+                      A Community unites Givers and Makers in building a community around their
+                      common vision to raise then delegate funds to Campaigns that deliver a
+                      positive impact to shared goals.
                     </Text>
                   </Fragment>
                 )}
@@ -316,7 +316,7 @@ const EditDAC = ({ isNew, match }) => {
                   name="title"
                   label="Name your Community"
                   className="custom-form-item"
-                  extra="Describe your Decentralized Altruistic Community (DAC) in 1 sentence."
+                  extra="Describe your Decentralized Altruistic Community (Community) in 1 sentence."
                   rules={[
                     {
                       required: true,
@@ -357,7 +357,7 @@ const EditDAC = ({ isNew, match }) => {
                   <Editor
                     name="description"
                     onChange={onDescriptionChange}
-                    value={dac.description}
+                    value={community.description}
                     placeholder="Describe how you're going to solve your cause..."
                   />
                 </Form.Item>
@@ -368,7 +368,7 @@ const EditDAC = ({ isNew, match }) => {
                   rules={[
                     {
                       validator: async () => {
-                        if (!dac.picture) {
+                        if (!community.picture) {
                           throw new Error('Picture is required');
                         }
                       },
@@ -378,15 +378,15 @@ const EditDAC = ({ isNew, match }) => {
                     aspect ratio."
                 >
                   <Fragment>
-                    {dac.picture ? (
+                    {community.picture ? (
                       <div className="picture-upload-preview">
                         <img
                           src={
-                            dac.picture.startsWith('/ipfs/')
-                              ? `${config.ipfsGateway}${dac.picture.slice(6)}`
-                              : dac.picture
+                            community.picture.startsWith('/ipfs/')
+                              ? `${config.ipfsGateway}${community.picture.slice(6)}`
+                              : community.picture
                           }
-                          alt={dac.title}
+                          alt={community.title}
                         />
                         <DeleteTwoTone onClick={removePicture} />
                       </div>
@@ -415,7 +415,7 @@ const EditDAC = ({ isNew, match }) => {
                   ]}
                 >
                   <Input
-                    value={dac.communityUrl}
+                    value={community.communityUrl}
                     name="communityUrl"
                     placeholder="https://slack.giveth.com"
                     onChange={handleInputChange}
@@ -423,7 +423,7 @@ const EditDAC = ({ isNew, match }) => {
                 </Form.Item>
                 <Form.Item>
                   <Button block size="large" type="primary" htmlType="submit" loading={isSaving}>
-                    {isNew ? 'Create' : 'Update'} DAC
+                    {isNew ? 'Create' : 'Update'} Community
                   </Button>
                 </Form.Item>
               </Form>
@@ -435,7 +435,7 @@ const EditDAC = ({ isNew, match }) => {
   );
 };
 
-EditDAC.propTypes = {
+EditCommunity.propTypes = {
   isNew: PropTypes.bool,
   match: PropTypes.shape({
     params: PropTypes.shape({
@@ -444,8 +444,8 @@ EditDAC.propTypes = {
   }).isRequired,
 };
 
-EditDAC.defaultProps = {
+EditCommunity.defaultProps = {
   isNew: false,
 };
 
-export default EditDAC;
+export default EditCommunity;

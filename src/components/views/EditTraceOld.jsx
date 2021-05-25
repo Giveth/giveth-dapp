@@ -49,7 +49,7 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 import getConversionRatesContext from '../../containers/getConversionRatesContext';
 import TraceService from '../../services/TraceService';
 import CampaignService from '../../services/CampaignService';
-import DACService from '../../services/DACService';
+import CommunityService from '../../services/CommunityService';
 import LPTrace from '../../models/LPTrace';
 import BridgedTrace from '../../models/BridgedTrace';
 import DescriptionRender from '../DescriptionRender';
@@ -102,19 +102,19 @@ class EditTraceOld extends Component {
   constructor(props) {
     super(props);
 
-    const { defaultDacId } = config;
+    const { defaultCommunityId } = config;
 
     this.state = {
       isLoading: true,
       refreshList: [],
-      dacs: [],
+      communities: [],
       isSaving: false,
       formIsValid: false,
       loadTime: Date.now(),
       trace: TraceFactory.create({
         maxAmount: '0',
         fiatAmount: '0',
-        dacId: defaultDacId,
+        communityId: defaultCommunityId,
       }),
       tokenWhitelistOptions: props.tokenWhitelist.map(t => ({
         value: t.address,
@@ -163,12 +163,12 @@ class EditTraceOld extends Component {
           campaignId: match.params.id,
         });
 
-        await DACService.getDACs(
+        await CommunityService.getCommunities(
           undefined, // Limit
           0, // Skip
           false,
-          (dacs, _) => {
-            const formatDACS = dacs.map(r => ({
+          (communities, _) => {
+            const formatCommunities = communities.map(r => ({
               value: r.myDelegateId.toString(),
               title: `${r.myDelegateId ? r.myDelegateId : '?'} - ${r._title}`,
             }));
@@ -176,11 +176,11 @@ class EditTraceOld extends Component {
             this.setState(
               prevState => {
                 let { delegatePercent } = prevState;
-                if (dacs.length === 0) {
+                if (communities.length === 0) {
                   delegatePercent = false;
                 }
                 return {
-                  dacs: prevState.dacs.concat(formatDACS),
+                  communities: prevState.communities.concat(formatCommunities),
                   delegatePercent,
                 };
               },
@@ -216,7 +216,7 @@ class EditTraceOld extends Component {
               campaignId: trace.campaignId,
               refreshList: trace.items,
               hasReviewer: trace.reviewerAddress !== '' && trace.reviewerAddress !== ZERO_ADDRESS,
-              delegatePercent: trace.dacId !== 0,
+              delegatePercent: trace.communityId !== 0,
               isLPTrace: trace instanceof LPTrace,
               acceptsSingleToken: trace.token.symbol !== ANY_TOKEN.symbol,
               isCapped: trace.isCapped,
@@ -255,15 +255,19 @@ class EditTraceOld extends Component {
 
             const traceForm = sessionStorage.getItem('trace-form');
             if (traceForm) {
-              const { title, description, recipientAddress, reviewerAddress, dacId } = JSON.parse(
-                traceForm,
-              );
+              const {
+                title,
+                description,
+                recipientAddress,
+                reviewerAddress,
+                communityId,
+              } = JSON.parse(traceForm);
               if (title) trace.title = title;
               if (description) trace.description = description;
               if (recipientAddress) trace.recipientAddress = recipientAddress;
               if (reviewerAddress) trace.reviewerAddress = reviewerAddress;
               // eslint-disable-next-line radix
-              if (dacId) trace.dacId = parseInt(dacId);
+              if (communityId) trace.communityId = parseInt(communityId);
             }
 
             validQueryStringVariables.forEach(variable => {
@@ -594,12 +598,15 @@ class EditTraceOld extends Component {
 
   setDelegatePercent(value) {
     this.setState(prevState => {
-      const { dacs, trace } = prevState;
-      const { defaultDacId } = config;
+      const { communities, trace } = prevState;
+      const { defaultCommunityId } = config;
       const defaultValue =
-        defaultDacId && dacs.some(d => d.value === String(defaultDacId)) ? defaultDacId : 0;
-      const traceDacId = value && dacs.length > 0 ? defaultValue || parseInt(dacs[0].value, 10) : 0;
-      trace.dacId = traceDacId;
+        defaultCommunityId && communities.some(d => d.value === String(defaultCommunityId))
+          ? defaultCommunityId
+          : 0;
+      const traceCommunityId =
+        value && communities.length > 0 ? defaultValue || parseInt(communities[0].value, 10) : 0;
+      trace.communityId = traceCommunityId;
       return { delegatePercent: value, trace };
     });
   }
@@ -896,14 +903,14 @@ class EditTraceOld extends Component {
   saveFormInStorage(form) {
     if (!this.props.isNew) return;
 
-    const { title, description, reviewerAddress, dacId, recipientAddress } = form;
+    const { title, description, reviewerAddress, communityId, recipientAddress } = form;
     sessionStorage.setItem(
       'trace-form',
       JSON.stringify({
         title,
         description,
         reviewerAddress,
-        dacId,
+        communityId,
         recipientAddress,
       }),
     );
@@ -919,7 +926,7 @@ class EditTraceOld extends Component {
       conversionRateLoading,
     } = this.props;
     const {
-      dacs,
+      communities,
       isLoading,
       isSaving,
       refreshList,
@@ -995,7 +1002,7 @@ class EditTraceOld extends Component {
                       trace.title = inputs.title;
                       trace.description = inputs.description;
                       trace.reviewerAddress = inputs.reviewerAddress || ZERO_ADDRESS;
-                      trace.dacId = parseInt(inputs.dacId, 10) || 0;
+                      trace.communityId = parseInt(inputs.communityId, 10) || 0;
                       trace.recipientAddress = inputs.recipientAddress || ZERO_ADDRESS;
                     }}
                     onChange={val => this.saveFormInStorage(val)}
@@ -1064,7 +1071,7 @@ class EditTraceOld extends Component {
                       />
                     </div>
 
-                    {dacs.length > 0 && (
+                    {communities.length > 0 && (
                       <div className="form-group">
                         <div className="form-group react-toggle-container">
                           <Toggle
@@ -1073,22 +1080,22 @@ class EditTraceOld extends Component {
                             onChange={e => this.setDelegatePercent(e.target.checked)}
                             disabled={!isNew && !isProposed}
                           />
-                          <span className="label">Donate 3% to a DAC</span>
+                          <span className="label">Donate 3% to a Community</span>
                           {!delegatePercent && (
                             <span className="help-block">
-                              Supporting a DAC is optional, this will help a lot the growth of
+                              Supporting a Community is optional, this will help a lot the growth of
                               amazing projects.
                             </span>
                           )}
                         </div>
                         {delegatePercent && (
                           <SelectFormsy
-                            name="dacId"
-                            id="dac-select"
-                            label="DAC to donate to"
+                            name="communityId"
+                            id="community-select"
+                            label="Community to donate to"
                             helpText="Funds will be delegated each time someone donates"
-                            value={trace.dacId}
-                            options={dacs}
+                            value={trace.communityId}
+                            options={communities}
                             validations="isNumber"
                             validationErrors={{
                               isNumber: 'Please select a delegate.',

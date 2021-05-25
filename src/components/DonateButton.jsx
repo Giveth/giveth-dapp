@@ -15,9 +15,9 @@ import { withRouter } from 'react-router';
 import { Button } from 'antd';
 
 import config from '../configuration';
-import DACService from '../services/DACService';
+import CommunityService from '../services/CommunityService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
-import DAC from '../models/DAC';
+import Community from '../models/Community';
 import { checkProfileAfterDonation } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import DonateButtonModal from './DonateButtonModal';
@@ -95,7 +95,7 @@ const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
   adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   id: PropTypes.string.isRequired,
-  dacId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  communityId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   title: PropTypes.string.isRequired,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
@@ -134,27 +134,27 @@ const Root = props => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
-  const defaultDacDonateButton = useRef();
+  const defaultCommunityDonateButton = useRef();
 
-  const [defaultDacModel, setDefaultDacModel] = useState(undefined);
+  const [defaultCommunityModel, setDefaultCommunityModel] = useState(undefined);
 
   const { model, className } = props;
 
   useEffect(() => {
-    const { defaultDacId } = config;
-    if (defaultDacId) {
-      if (model.type !== DAC.type || Number(model.adminId) !== defaultDacId) {
-        DACService.getByDelegateId(defaultDacId).then(defaultDac => {
-          if (defaultDac) {
-            const dacModel = {
-              type: DAC.type,
-              title: defaultDac.title,
-              id: defaultDac.id,
+    const { defaultCommunityId } = config;
+    if (defaultCommunityId) {
+      if (model.type !== Community.type || Number(model.adminId) !== defaultCommunityId) {
+        CommunityService.getByDelegateId(defaultCommunityId).then(defaultCommunity => {
+          if (defaultCommunity) {
+            const communityModel = {
+              type: Community.type,
+              title: defaultCommunity.title,
+              id: defaultCommunity.id,
               token: { symbol: config.nativeTokenName },
-              adminId: defaultDac.delegateId,
+              adminId: defaultCommunity.delegateId,
             };
 
-            setDefaultDacModel(dacModel);
+            setDefaultCommunityModel(communityModel);
           }
         });
       }
@@ -176,8 +176,8 @@ const Root = props => {
           icon: 'success',
           buttons: 'OK',
         });
-      } else if (defaultDacModel) {
-        // Thanks and Donate to Defualt DAC suggestion
+      } else if (defaultCommunityModel) {
+        // Thanks and Donate to Defualt Community suggestion
         React.swal({
           title: 'Thank you!',
           text: 'Would you like to support Giveth as well?',
@@ -185,7 +185,7 @@ const Root = props => {
           buttons: ['No Thanks', 'Support Giveth'],
         }).then(result => {
           if (result) {
-            defaultDacDonateButton.current.click();
+            defaultCommunityDonateButton.current.click();
           }
         });
       } else {
@@ -203,18 +203,18 @@ const Root = props => {
   };
   const afterSuccessfulDonateMemorized = useCallback(afterSuccessfulDonate, [
     currentUser,
-    defaultDacModel,
+    defaultCommunityModel,
     customThanksMessage,
   ]);
 
   return (
     <Fragment>
       <DonateButtonWithRouter afterSuccessfulDonate={afterSuccessfulDonateMemorized} {...props} />
-      {defaultDacModel && (
+      {defaultCommunityModel && (
         <div style={{ display: 'none' }}>
           <DonateButton
-            model={defaultDacModel}
-            ref={defaultDacDonateButton}
+            model={defaultCommunityModel}
+            ref={defaultCommunityDonateButton}
             autoPopup={false}
             className={className}
           />

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 
 import Campaign from 'models/Campaign';
-import DAC from 'models/DAC';
+import Community from 'models/Community';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -11,7 +11,7 @@ import { Context as ConversionRateContext } from '../contextProviders/Conversion
 import TotalGasPaid from './views/TotalGasPaid';
 
 /**
- * Shows a table of balances for a given entity (dac, campaign)
+ * Shows a table of balances for a given entity (community, campaign)
  */
 
 const Balances = ({ entity }) => {
@@ -114,7 +114,7 @@ const Balances = ({ entity }) => {
 };
 
 Balances.propTypes = {
-  entity: PropTypes.oneOfType([PropTypes.instanceOf(Campaign), PropTypes.instanceOf(DAC)])
+  entity: PropTypes.oneOfType([PropTypes.instanceOf(Campaign), PropTypes.instanceOf(Community)])
     .isRequired,
 };
 

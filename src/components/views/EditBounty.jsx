@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import {
   TraceCampaignInfo,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
@@ -31,12 +31,12 @@ function EditBounty(props) {
   const { traceId } = props.match.params;
 
   const [campaign, setCampaign] = useState();
-  const [donateToDac, setDonateToDac] = useState(true);
+  const [donateToCommunity, setDonateToCommunity] = useState(true);
   const [trace, setTrace] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
-    donateToDac: true,
+    donateToCommunity: true,
     reviewerAddress: '',
   });
 
@@ -72,10 +72,10 @@ function EditBounty(props) {
               title: res.title,
               description: res.description,
               reviewerAddress: res.reviewerAddress,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
             };
             setInitialValues(iValues);
-            setDonateToDac(!!res.dacId);
+            setDonateToCommunity(!!res.communityId);
             setTrace(res);
             setCampaign(res.campaign);
           }
@@ -102,7 +102,7 @@ function EditBounty(props) {
     const { name, value, type, checked } = event.target;
     const ms = trace;
     if (type === 'checkbox') {
-      setDonateToDac(checked);
+      setDonateToCommunity(checked);
     } else {
       ms[name] = value;
       setTrace(ms);
@@ -129,7 +129,7 @@ function EditBounty(props) {
     const ms = new BridgedTrace(trace);
 
     ms.parentProjectId = campaign.projectId;
-    ms.dacId = donateToDac ? config.defaultDacId : 0;
+    ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
     ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
     setLoading(true);
@@ -235,8 +235,8 @@ function EditBounty(props) {
                     disabled={traceHasFunded}
                   />
 
-                  <TraceDonateToDac
-                    value={donateToDac}
+                  <TraceDonateToCommunity
+                    value={donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />

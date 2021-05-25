@@ -16,7 +16,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import {
   TraceCampaignInfo,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TracePicture,
   TraceReviewer,
   TraceTitle,
@@ -36,12 +36,12 @@ function EditTrace(props) {
   const [image, setImage] = useState('');
   const [campaign, setCampaign] = useState();
   const [hasReviewer, setHasReviewer] = useState(true);
-  const [donateToDac, setDonateToDac] = useState(true);
+  const [donateToCommunity, setDonateToCommunity] = useState(true);
   const [trace, setTrace] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
-    donateToDac: true,
+    donateToCommunity: true,
     reviewerAddress: '',
     image: '',
   });
@@ -85,11 +85,11 @@ function EditTrace(props) {
               description: res.description,
               reviewerAddress: isReviewer ? res.reviewerAddress : null,
               image: res.image,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
             };
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
             setInitialValues(iValues);
-            setDonateToDac(!!res.dacId);
+            setDonateToCommunity(!!res.communityId);
             setHasReviewer(isReviewer);
             setTrace(res);
             setImage(imageUrl);
@@ -116,8 +116,8 @@ function EditTrace(props) {
     const ms = trace;
     if (type === 'checkbox' && name === 'hasReviewer') {
       setHasReviewer(checked);
-    } else if (type === 'checkbox' && name === 'donateToDac') {
-      setDonateToDac(checked);
+    } else if (type === 'checkbox' && name === 'donateToCommunity') {
+      setDonateToCommunity(checked);
     } else if (name === 'image') {
       setImage(value);
     } else {
@@ -153,7 +153,7 @@ function EditTrace(props) {
     ms.image = image;
     ms.reviewerAddress = hasReviewer ? reviewerAddress : ZERO_ADDRESS;
     ms.parentProjectId = campaign.projectId;
-    ms.dacId = donateToDac ? config.defaultDacId : 0;
+    ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
 
     ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
@@ -265,8 +265,8 @@ function EditTrace(props) {
 
                   <TracePicture setPicture={setPicture} picture={image} traceTitle={trace.title} />
 
-                  <TraceDonateToDac
-                    value={donateToDac}
+                  <TraceDonateToCommunity
+                    value={donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />

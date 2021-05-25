@@ -11,32 +11,32 @@ import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 import Loader from '../Loader';
 
 import User from '../../models/User';
-import DACservice from '../../services/DACService';
-import DAC from '../../models/DAC';
+import CommunityService from '../../services/CommunityService';
+import Community from '../../models/Community';
 import AuthenticationWarning from '../AuthenticationWarning';
 
 /**
- * The my dacs view
+ * The my communities view
  */
-class MyDACs extends Component {
+class MyCommunities extends Component {
   constructor() {
     super();
 
     this.state = {
       isLoading: true,
-      dacs: {},
+      communities: {},
       visiblePages: 10,
       skipPages: 0,
       itemsPerPage: 50,
     };
 
-    this.editDAC = this.editDAC.bind(this);
+    this.editCommunity = this.editCommunity.bind(this);
     this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
   componentDidMount() {
     if (this.props.currentUser) {
-      this.loadDACs();
+      this.loadCommunities();
     }
   }
 
@@ -44,33 +44,33 @@ class MyDACs extends Component {
     if (prevProps.currentUser !== this.props.currentUser) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ isLoading: true });
-      if (this.dacsObserver) this.dacsObserver.unsubscribe();
-      this.loadDACs();
+      if (this.communitiesObserver) this.communitiesObserver.unsubscribe();
+      this.loadCommunities();
     }
   }
 
   componentWillUnmount() {
-    if (this.dacsObserver) this.dacsObserver.unsubscribe();
+    if (this.communitiesObserver) this.communitiesObserver.unsubscribe();
   }
 
   handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadDACs());
+    this.setState({ skipPages: newPage - 1 }, () => this.loadCommunities());
   }
 
-  loadDACs() {
-    this.dacsObserver = DACservice.getUserDACs(
+  loadCommunities() {
+    this.communitiesObserver = CommunityService.getUserCommunities(
       this.props.currentUser.address,
       this.state.skipPages,
       this.state.itemsPerPage,
-      dacs => this.setState({ dacs, isLoading: false }),
+      communities => this.setState({ communities, isLoading: false }),
       () => this.setState({ isLoading: false }),
     );
   }
 
-  editDAC(id) {
+  editCommunity(id) {
     checkBalance(this.props.balance)
       .then(() => {
-        history.push(`/dacs/${id}/edit`);
+        history.push(`/communities/${id}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -82,16 +82,20 @@ class MyDACs extends Component {
   }
 
   render() {
-    const { dacs, isLoading, visiblePages } = this.state;
-    const isPendingDac =
-      (dacs.data && dacs.data.some(d => d.confirmations !== d.requiredConfirmations)) || false;
+    const { communities, isLoading, visiblePages } = this.state;
+    const isPendingCommunity =
+      (communities.data &&
+        communities.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
+      false;
 
     return (
-      <div id="dacs-view">
+      <div id="communities-view">
         <div className="container-fluid page-layout dashboard-table-view">
           <div className="row">
             <div className="col-md-10 m-auto">
-              {(isLoading || (dacs && dacs.data.length > 0)) && <h1>Your Communities (DACs)</h1>}
+              {(isLoading || (communities && communities.data.length > 0)) && (
+                <h1>Your Communities</h1>
+              )}
 
               <AuthenticationWarning />
 
@@ -99,7 +103,7 @@ class MyDACs extends Component {
 
               {!isLoading && (
                 <div>
-                  {dacs && dacs.data.length > 0 && (
+                  {communities && communities.data.length > 0 && (
                     <div>
                       <table className="table table-responsive table-striped table-hover">
                         <thead>
@@ -110,23 +114,30 @@ class MyDACs extends Component {
                             <th className="td-donations-number">Donations</th>
                             <th className="td-donations-amount">Amount</th>
                             <th className="td-status">Status</th>
-                            <th className="td-confirmations">{isPendingDac && 'Confirmations'}</th>
+                            <th className="td-confirmations">
+                              {isPendingCommunity && 'Confirmations'}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          {dacs.data.map(d => (
-                            <tr key={d.id} className={d.status === DAC.PENDING ? 'pending' : ''}>
+                          {communities.data.map(d => (
+                            <tr
+                              key={d.id}
+                              className={d.status === Community.PENDING ? 'pending' : ''}
+                            >
                               <td className="td-actions">
                                 <button
                                   type="button"
                                   className="btn btn-link"
-                                  onClick={() => this.editDAC(d.id)}
+                                  onClick={() => this.editCommunity(d.id)}
                                 >
                                   <i className="fa fa-edit" />
                                 </button>
                               </td>
                               <td className="td-name">
-                                <Link to={`/dac/${d.slug}`}>{getTruncatedText(d.title, 45)}</Link>
+                                <Link to={`/community/${d.slug}`}>
+                                  {getTruncatedText(d.title, 45)}
+                                </Link>
                               </td>
                               <td className="td-donations-number">
                                 {d.donationCounters.length > 0 &&
@@ -149,7 +160,7 @@ class MyDACs extends Component {
                                 {d.donationCounters.length === 0 && <span>-</span>}
                               </td>
                               <td className="td-status">
-                                {d.status === DAC.PENDING && (
+                                {d.status === Community.PENDING && (
                                   <span>
                                     <i className="fa fa-circle-o-notch fa-spin" />
                                     &nbsp;
@@ -158,7 +169,8 @@ class MyDACs extends Component {
                                 {d.status}
                               </td>
                               <td className="td-confirmations">
-                                {(isPendingDac || d.requiredConfirmations !== d.confirmations) &&
+                                {(isPendingCommunity ||
+                                  d.requiredConfirmations !== d.confirmations) &&
                                   `${d.confirmations}/${d.requiredConfirmations}`}
                               </td>
                             </tr>
@@ -166,12 +178,12 @@ class MyDACs extends Component {
                         </tbody>
                       </table>
 
-                      {dacs.total > dacs.limit && (
+                      {communities.total > communities.limit && (
                         <center>
                           <Pagination
-                            activePage={dacs.skip + 1}
-                            itemsCountPerPage={dacs.limit}
-                            totalItemsCount={dacs.total}
+                            activePage={communities.skip + 1}
+                            itemsCountPerPage={communities.limit}
+                            totalItemsCount={communities.total}
                             pageRangeDisplayed={visiblePages}
                             onChange={this.handlePageChanged}
                           />
@@ -180,19 +192,18 @@ class MyDACs extends Component {
                     </div>
                   )}
 
-                  {dacs && dacs.data.length === 0 && (
+                  {communities && communities.data.length === 0 && (
                     <div>
                       <center>
                         <h3>
-                          You didn&apos;t create any Decentralized Altruistic Communities (DACs)
-                          yet!
+                          You didn&apos;t create any Decentralized Altruistic Communities yet!
                         </h3>
                         <img
                           className="empty-state-img"
                           src={`${process.env.PUBLIC_URL}/img/community.svg`}
                           width="200px"
                           height="200px"
-                          alt="no-dacs-icon"
+                          alt="no-communities-icon"
                         />
                       </center>
                     </div>
@@ -207,9 +218,9 @@ class MyDACs extends Component {
   }
 }
 
-MyDACs.propTypes = {
+MyCommunities.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   balance: PropTypes.objectOf(utils.BN).isRequired,
 };
 
-export default MyDACs;
+export default MyCommunities;

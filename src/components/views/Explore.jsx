@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { history } from '../../lib/helpers';
-import DACs from './DACs';
+import Communities from './Communities';
 import Campaigns from './Campaigns';
 import Traces from './Traces';
 
@@ -11,7 +11,7 @@ const Explore = () => (
   <div>
     <JoinGivethCommunity history={history} />
 
-    <DACs onlyRecent />
+    <Communities onlyRecent />
     <Campaigns onlyRecent />
     <Traces />
   </div>

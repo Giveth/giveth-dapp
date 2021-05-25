@@ -54,8 +54,7 @@ function ProjectSubscription({ projectTypeId, projectType }) {
     <div>
       <div className="project-subscription  vertical-align flex-row">
         <span className="flex-grow-1">
-          Get notifications whenever there is an activity in this{' '}
-          {projectType === 'dac' ? 'Community' : projectType}
+          Get notifications whenever there is an activity in this {projectType}
         </span>
         {!subscribed && (
           <button
@@ -91,7 +90,7 @@ function ProjectSubscription({ projectTypeId, projectType }) {
 
 ProjectSubscription.propTypes = {
   projectTypeId: PropTypes.string,
-  projectType: PropTypes.oneOf(['campaign', 'trace', 'dac']),
+  projectType: PropTypes.oneOf(['campaign', 'trace', 'community']),
 };
 
 ProjectSubscription.defaultProps = {

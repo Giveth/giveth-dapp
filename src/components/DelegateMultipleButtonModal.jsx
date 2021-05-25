@@ -52,7 +52,7 @@ const ModalContent = props => {
 
   const [sliderMarks, setSliderMarks] = useState();
   const [isDelegationLimited, setIsDelegationLimited] = useState();
-  const [isDacsFetched, setIsDacsFetched] = useState(false);
+  const [isCommunitiesFetched, setIsCommunitiesFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
@@ -91,7 +91,7 @@ const ModalContent = props => {
     const { decimals } = selectedToken;
 
     switch (entity.type) {
-      case 'dac':
+      case 'community':
         options.delegateId = entity.delegateId;
         options.delegateTypeId = entity.id;
         options.status = Donation.WAITING;
@@ -202,10 +202,10 @@ const ModalContent = props => {
     setObjectToDelegateFrom(target.value);
   }
 
-  const getDacs = useCallback(() => {
+  const getCommunities = useCallback(() => {
     const userAddress = currentUser ? currentUser.address : '';
     feathersClient
-      .service('dacs')
+      .service('communities')
       .find({
         query: {
           delegateId: { $gt: '0' },
@@ -214,19 +214,19 @@ const ModalContent = props => {
         },
       })
       .then(resp => {
-        const dacs = resp.data.map(c => ({
+        const communities = resp.data.map(c => ({
           name: c.title,
           id: c._id,
           ownerAddress: c.ownerAddress,
           delegateId: c.delegateId,
           delegateEntity: c.delegateEntity,
           delegate: c.delegate,
-          type: 'dac',
+          type: 'community',
         }));
 
         const _delegationOptions =
           trace && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
-            ? dacs.concat([
+            ? communities.concat([
                 {
                   id: campaign._id,
                   name: campaign.title,
@@ -235,10 +235,10 @@ const ModalContent = props => {
                   type: 'campaign',
                 },
               ])
-            : dacs;
+            : communities;
 
         if (isMounted.current) {
-          setIsDacsFetched(true);
+          setIsCommunitiesFetched(true);
           setDelegationOptions(_delegationOptions);
         }
       });
@@ -262,7 +262,7 @@ const ModalContent = props => {
             <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
               view the transaction here.
             </a>
-            {delegateType === 'dac' && (
+            {delegateType === 'community' && (
               <p>
                 The donations have been delegated. Please note the the Giver may have{' '}
                 <strong>3 days</strong> to reject your delegation before the money gets committed.
@@ -319,8 +319,8 @@ const ModalContent = props => {
     } else if (currentUser.address) {
       setDelegationOptions([]);
       setObjectToDelegateFrom([]);
-      setIsDacsFetched(false);
-      getDacs();
+      setIsCommunitiesFetched(false);
+      getCommunities();
     }
     prevUser.current = currentUser;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,7 +357,7 @@ const ModalContent = props => {
               <strong>{config.donationDelegateCountLimit}</strong> sources on each transaction. In
               this try, you are allowed to delegate money of <strong>{delegations.length}</strong>{' '}
               donations of total <strong>{totalDonations}</strong> available in{' '}
-              {delegateFromType.current === 'dac' ? 'DAC' : 'Campaign'}.
+              {delegateFromType.current === 'community' ? 'Community' : 'Campaign'}.
             </p>
           </div>
         )}
@@ -372,7 +372,7 @@ const ModalContent = props => {
             <InputToken
               name="delegateFrom"
               label="Delegate from:"
-              placeholder={trace ? 'Select a DAC or Campaign' : 'Select a DAC'}
+              placeholder={trace ? 'Select a Community or Campaign' : 'Select a Community'}
               value={objectToDelegateFrom}
               options={delegationOptions}
               onSelect={v => selectedObject(v)}
@@ -409,7 +409,7 @@ const ModalContent = props => {
                   {!props.trace || !props.trace.acceptsSingleToken
                     ? 'a different currency or '
                     : ''}
-                  different source {trace ? 'DAC/Campaign' : 'DAC'}
+                  different source {trace ? 'Community/Campaign' : 'Community'}
                 </p>
               ) : (
                 <div>
@@ -473,7 +473,7 @@ const ModalContent = props => {
   );
 
   const isContextReady =
-    !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isDacsFetched;
+    !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isCommunitiesFetched;
 
   return (
     <React.Fragment>

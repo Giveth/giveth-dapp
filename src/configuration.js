@@ -50,7 +50,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
-    defaultDacId: 0,
+    defaultCommunityId: 0,
   },
   develop: {
     title: 'develop',
@@ -80,7 +80,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
-    defaultDacId: 156,
+    defaultCommunityId: 156,
   },
   release: {
     title: 'release',
@@ -137,7 +137,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
-    defaultDacId: 5, // Giveth DAC
+    defaultCommunityId: 5, // Giveth Community
   },
 };
 

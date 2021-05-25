@@ -113,7 +113,7 @@ class Donation extends Model {
      *
      * URL {string}  URL to the entity
      * name {string} Title of the entity
-     * type {string} Type of the entity - one of DAC, CAMPAIGN, Milestone or GIVER
+     * type {string} Type of the entity - one of Community, CAMPAIGN, Milestone or GIVER
      */
     const donatedTo = {
       url: '/',
@@ -121,12 +121,12 @@ class Donation extends Model {
       type: '',
     };
     if (this._delegateId > 0 && !this._intendedProjectId) {
-      // DAC
+      // Community
       if (this._delegateEntity) {
-        donatedTo.url = `/dacs/${this._delegateEntity._id}`;
+        donatedTo.url = `/communities/${this._delegateEntity._id}`;
         donatedTo.name = getTruncatedText(this._delegateEntity.title, 45);
       }
-      donatedTo.type = 'DAC';
+      donatedTo.type = 'COMMUNITY';
     } else if (
       (!this._delegateId && this._ownerType === Campaign.type) ||
       (this._intendedProjectId && this._intendedProjectType === Campaign.type)
@@ -194,7 +194,7 @@ class Donation extends Model {
    * @returns {Object}
    *                     URL {string}  URL to the entity
    *                     name {string} Title of the entity
-   *                     type {string} Type of the entity - one of DAC, CAMPAIGN, Milestone or GIVER
+   *                     type {string} Type of the entity - one of Community, CAMPAIGN, Milestone or GIVER
    */
   get donatedTo() {
     return this._donatedTo;

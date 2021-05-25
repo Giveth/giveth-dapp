@@ -13,10 +13,10 @@ import DonateButton from '../DonateButton';
 import AggregateDonationService from '../../services/AggregateDonationService';
 import LeaderBoard from '../LeaderBoard';
 import CommunityButton from '../CommunityButton';
-import DAC from '../../models/DAC';
+import Community from '../../models/Community';
 import ProjectSubscription from '../ProjectSubscription';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
-import DACService from '../../services/DACService';
+import CommunityService from '../../services/CommunityService';
 import CampaignService from '../../services/CampaignService';
 import CampaignCard from '../CampaignCard';
 import config from '../../configuration';
@@ -32,7 +32,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Donation from '../../models/Donation';
 
 /**
- * The DAC detail view mapped to /dacs/id
+ * The Community detail view mapped to /communities/id
  *
  * @param currentUser  Currently logged in user information
  * @param history      Browser history object
@@ -40,7 +40,7 @@ import Donation from '../../models/Donation';
 
 const helmetContext = {};
 
-const ViewDAC = ({ match }) => {
+const ViewCommunity = ({ match }) => {
   const {
     state: { balance },
   } = useContext(Web3Context);
@@ -48,7 +48,7 @@ const ViewDAC = ({ match }) => {
     state: { currentUser },
   } = useContext(UserContext);
 
-  const [dac, setDac] = useState({});
+  const [community, setCommunities] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [isLoadingCampaigns, setLoadingCampaigns] = useState(true);
@@ -76,7 +76,7 @@ const ViewDAC = ({ match }) => {
   ) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
-      dac.id,
+      community.id,
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
@@ -91,10 +91,10 @@ const ViewDAC = ({ match }) => {
     );
   };
 
-  const loadDonations = dacId => {
-    if (dacId) {
-      DACService.getDonations(
-        dacId,
+  const loadDonations = communityId => {
+    if (communityId) {
+      CommunityService.getDonations(
+        communityId,
         0,
         0,
         (_donations, _donationsTotal) => {
@@ -111,20 +111,20 @@ const ViewDAC = ({ match }) => {
   useEffect(() => {
     const { id, slug } = match.params;
     const getFunction = slug
-      ? DACService.getBySlug.bind(DACService, slug)
-      : DACService.get.bind(DACService, id);
-    // Get the DAC
+      ? CommunityService.getBySlug.bind(CommunityService, slug)
+      : CommunityService.get.bind(CommunityService, id);
+    // Get the Community
     getFunction()
-      .then(async _dac => {
+      .then(async _community => {
         if (id) {
-          history.push(`/dac/${_dac.slug}`);
+          history.push(`/community/${_community.slug}`);
         }
-        setDac(_dac);
+        setCommunities(_community);
         setLoading(false);
       })
       .catch(err => {
         setNotFound(true);
-        ErrorHandler(err, 'Some error on fetching dac info, please try again later');
+        ErrorHandler(err, 'Some error on fetching community info, please try again later');
       });
 
     return cleanUp;
@@ -132,24 +132,26 @@ const ViewDAC = ({ match }) => {
 
   useEffect(() => {
     const subscribeFunc = async () => {
-      if (dac.id && donationsObserver.current === undefined) {
-        const relatedCampaigns = await CampaignService.getCampaignsByIdArray(dac.campaigns || []);
+      if (community.id && donationsObserver.current === undefined) {
+        const relatedCampaigns = await CampaignService.getCampaignsByIdArray(
+          community.campaigns || [],
+        );
         setCampaigns(relatedCampaigns);
         setLoadingCampaigns(false);
         loadMoreAggregateDonations(true);
-        loadDonations(dac.id);
+        loadDonations(community.id);
         // subscribe to donation count
-        donationsObserver.current = DACService.subscribeNewDonations(
-          dac.id,
+        donationsObserver.current = CommunityService.subscribeNewDonations(
+          community.id,
           _newDonations => {
             setNewDonations(_newDonations);
             if (_newDonations > 0) {
-              loadDonations(dac.id);
+              loadDonations(community.id);
               loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
             }
           },
           err => {
-            ErrorHandler(err, 'Some error on fetching dac donations, please try again later');
+            ErrorHandler(err, 'Some error on fetching community donations, please try again later');
             setNewDonations(0);
           },
         );
@@ -158,12 +160,12 @@ const ViewDAC = ({ match }) => {
     subscribeFunc().then();
 
     return cleanUp;
-  }, [dac]);
+  }, [community]);
 
-  const editDAC = id => {
+  const editCommunity = id => {
     checkBalance(balance)
       .then(() => {
-        history.push(`/dacs/${id}/edit`);
+        history.push(`/communities/${id}/edit`);
       })
       .catch(err => {
         if (err === 'noBalance') {
@@ -175,14 +177,15 @@ const ViewDAC = ({ match }) => {
   };
 
   const renderDescription = () => {
-    return DescriptionRender(dac.description);
+    return DescriptionRender(community.description);
   };
 
   if (notFound) {
-    return <NotFound projectType="DAC" />;
+    return <NotFound projectType="Community" />;
   }
 
-  const userIsOwner = dac && dac.owner && dac.owner.address === currentUser.address;
+  const userIsOwner =
+    community && community.owner && community.owner.address === currentUser.address;
 
   const campaignsTitle = `Campaigns${campaigns.length ? ` (${campaigns.length})` : ''}`;
   const leaderBoardTitle = `Leaderboard${
@@ -211,27 +214,29 @@ const ViewDAC = ({ match }) => {
           {!isLoading && (
             <div>
               <Helmet>
-                <title>{dac.title}</title>
+                <title>{community.title}</title>
               </Helmet>
               <BackgroundImageHeader
-                image={dac.image}
+                image={community.image}
                 height={300}
-                adminId={dac.delegateId}
-                projectType="DAC"
-                editProject={userIsOwner && dac.isActive && (() => editDAC(dac.id))}
+                adminId={community.delegateId}
+                projectType="Community"
+                editProject={
+                  userIsOwner && community.isActive && (() => editCommunity(community.id))
+                }
               >
                 <h6>Decentralized Altruistic Community</h6>
-                <h1>{dac.title}</h1>
+                <h1>{community.title}</h1>
 
-                {dac.isActive && (
+                {community.isActive && (
                   <div className="mt-4">
                     <DonateButton
                       model={{
-                        type: DAC.type,
-                        title: dac.title,
-                        id: dac.id,
+                        type: Community.type,
+                        title: community.title,
+                        id: community.id,
                         token: { symbol: config.nativeTokenName },
-                        adminId: dac.delegateId,
+                        adminId: community.delegateId,
                       }}
                       currentUser={currentUser}
                       history={history}
@@ -243,9 +248,9 @@ const ViewDAC = ({ match }) => {
               </BackgroundImageHeader>
 
               <GoBackSection
-                backUrl="/dacs"
+                backUrl="/communities"
                 backButtonTitle="Communities"
-                projectTitle={dac.title}
+                projectTitle={community.title}
                 inPageLinks={goBackSectionLinks}
               />
 
@@ -255,14 +260,17 @@ const ViewDAC = ({ match }) => {
                     <div id="description">
                       <div>
                         <h5 className="title">Subscribe to updates </h5>
-                        <ProjectSubscription projectTypeId={dac._id} projectType="dac" />
+                        <ProjectSubscription
+                          projectTypeId={community._id}
+                          projectType="community"
+                        />
                       </div>
                       <div className="about-section-header">
                         <h5 className="title">About</h5>
                         <div className="text-center">
-                          <Link to={`/profile/${dac.owner.address}`}>
-                            <Avatar size={50} src={getUserAvatar(dac.owner)} round />
-                            <p className="small">{getUserName(dac.owner)}</p>
+                          <Link to={`/profile/${community.owner.address}`}>
+                            <Avatar size={50} src={getUserAvatar(community.owner)} round />
+                            <p className="small">{getUserName(community.owner)}</p>
                           </Link>
                         </div>
                       </div>
@@ -270,9 +278,12 @@ const ViewDAC = ({ match }) => {
                       <div className="card content-card">
                         <div className="card-body content">{renderDescription()}</div>
 
-                        {dac.communityUrl && (
+                        {community.communityUrl && (
                           <div className="pl-3 pb-4">
-                            <CommunityButton className="btn btn-secondary" url={dac.communityUrl}>
+                            <CommunityButton
+                              className="btn btn-secondary"
+                              url={community.communityUrl}
+                            >
                               Join our Community
                             </CommunityButton>
                           </div>
@@ -286,16 +297,16 @@ const ViewDAC = ({ match }) => {
                           <h5>{leaderBoardTitle}</h5>
                         </Col>
                         <Col span={12}>
-                          {dac.isActive && (
+                          {community.isActive && (
                             <Row gutter={[16, 16]} justify="end">
                               <Col xs={24} sm={12} lg={8}>
                                 <DonateButton
                                   model={{
-                                    type: DAC.type,
-                                    title: dac.title,
-                                    id: dac.id,
+                                    type: Community.type,
+                                    title: community.title,
+                                    id: community.id,
                                     token: { symbol: config.nativeTokenName },
-                                    adminId: dac.delegateId,
+                                    adminId: community.delegateId,
                                   }}
                                   currentUser={currentUser}
                                   history={history}
@@ -320,16 +331,16 @@ const ViewDAC = ({ match }) => {
                           <h5>Funding</h5>
                         </Col>
                         <Col span={12}>
-                          {dac.isActive && (
+                          {community.isActive && (
                             <Row gutter={[16, 16]} justify="end">
                               <Col xs={24} sm={12} lg={8}>
                                 <DonateButton
                                   model={{
-                                    type: DAC.type,
-                                    title: dac.title,
-                                    id: dac.id,
+                                    type: Community.type,
+                                    title: community.title,
+                                    id: community.id,
                                     token: { symbol: config.nativeTokenName },
-                                    adminId: dac.delegateId,
+                                    adminId: community.delegateId,
                                   }}
                                   currentUser={currentUser}
                                   history={history}
@@ -339,7 +350,7 @@ const ViewDAC = ({ match }) => {
                           )}
                         </Col>
                       </Row>
-                      <Balances entity={dac} />
+                      <Balances entity={community} />
                     </div>
 
                     <div id="campaigns" className="spacer-top-50 spacer-bottom-50">
@@ -348,16 +359,16 @@ const ViewDAC = ({ match }) => {
                           <h5>{campaignsTitle}</h5>
                         </Col>
                         <Col span={12}>
-                          {dac.isActive && (
+                          {community.isActive && (
                             <Row gutter={[16, 16]} justify="end">
                               <Col xs={24} sm={12} lg={8}>
                                 <DonateButton
                                   model={{
-                                    type: DAC.type,
-                                    title: dac.title,
-                                    id: dac.id,
+                                    type: Community.type,
+                                    title: community.title,
+                                    id: community.id,
                                     token: { symbol: config.nativeTokenName },
-                                    adminId: dac.delegateId,
+                                    adminId: community.delegateId,
                                   }}
                                   currentUser={currentUser}
                                   history={history}
@@ -368,7 +379,8 @@ const ViewDAC = ({ match }) => {
                         </Col>
                       </Row>
                       <p>
-                        These Campaigns are working hard to solve the cause of this Community (DAC)
+                        These Campaigns are working hard to solve the cause of this Community
+                        (Community)
                       </p>
                       {isLoadingCampaigns && <Loader className="small" />}
 
@@ -391,7 +403,7 @@ const ViewDAC = ({ match }) => {
   );
 };
 
-ViewDAC.propTypes = {
+ViewCommunity.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -400,4 +412,4 @@ ViewDAC.propTypes = {
   }).isRequired,
 };
 
-export default ViewDAC;
+export default ViewCommunity;

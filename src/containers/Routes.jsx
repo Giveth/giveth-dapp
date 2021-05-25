@@ -7,18 +7,18 @@ import Profile from '../components/views/Profile';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewTrace from '../components/views/ViewTrace';
-import EditDAC from '../components/views/EditDAC';
-import ViewDAC from '../components/views/ViewDAC';
+import EditCommunity from '../components/views/EditCommunity';
+import ViewCommunity from '../components/views/ViewCommunity';
 import Donations from '../components/views/Donations';
 import Delegations from '../components/views/Delegations';
-import MyDACs from '../components/views/MyDACs';
+import MyCommunities from '../components/views/MyCommunities';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyTraces from '../components/views/MyTraces';
 import NotFound from '../components/views/NotFound';
 import Explore from '../components/views/Explore';
 import Traces from '../components/views/Traces';
 import Campaigns from '../components/views/Campaigns';
-import DACs from '../components/views/DACs';
+import Communities from '../components/views/Communities';
 
 import ViewCampaign from '../components/views/ViewCampaign';
 import EditTraceOld from '../components/views/EditTraceOld';
@@ -61,9 +61,9 @@ const Routes = () => {
                             */}
       <Route
         exact
-        path="/dacs/new"
+        path="/communities/new"
         render={props => (
-          <EditDAC
+          <EditCommunity
             isNew
             balance={balance}
             isForeignNetwork={isForeignNetwork}
@@ -74,19 +74,19 @@ const Routes = () => {
       />
       <Route
         exact
-        path={getViewEntityPathsList('/dacs/:id')}
-        render={props => <ViewDAC {...props} />}
+        path={getViewEntityPathsList('/communities/:id')}
+        render={props => <ViewCommunity {...props} />}
       />
       <Route
         exact
-        path={getViewEntityPathsList('/dac/:slug')}
-        render={props => <ViewDAC {...props} />}
+        path={getViewEntityPathsList('/community/:slug')}
+        render={props => <ViewCommunity {...props} />}
       />
       <Route
         exact
-        path="/dacs/:id/edit"
+        path="/communities/:id/edit"
         render={props => (
-          <EditDAC
+          <EditCommunity
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -252,9 +252,9 @@ const Routes = () => {
       />
       <Route
         exact
-        path="/my-dacs"
+        path="/my-communities"
         render={props => (
-          <MyDACs
+          <MyCommunities
             key={currentUser ? currentUser.id : 0}
             currentUser={currentUser}
             balance={balance}
@@ -303,7 +303,7 @@ const Routes = () => {
       <Route exact path="/milestones" render={props => <Traces {...props} />} />
       <Route exact path="/traces" render={props => <Traces {...props} />} />
       <Route exact path="/campaigns" render={() => <Campaigns />} />
-      <Route exact path="/dacs" render={() => <DACs />} />
+      <Route exact path="/communities" render={() => <Communities />} />
       <Route component={NotFound} />
     </Switch>
   );

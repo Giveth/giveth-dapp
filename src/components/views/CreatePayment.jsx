@@ -11,7 +11,7 @@ import {
   TraceCampaignInfo,
   TraceDatePicker,
   TraceDescription,
-  TraceDonateToDac,
+  TraceDonateToCommunity,
   TraceFiatAmountCurrency,
   TracePicture,
   TraceRecipientAddress,
@@ -62,7 +62,7 @@ function CreatePayment(props) {
     date: getStartOfDayUTC().subtract(1, 'd'),
     description: '',
     picture: '',
-    donateToDac: true,
+    donateToCommunity: true,
     recipientAddress: '',
     notCapped: false,
     conversionRateTimestamp: undefined,
@@ -199,7 +199,7 @@ function CreatePayment(props) {
         currency,
         token,
         date,
-        donateToDac,
+        donateToCommunity,
       } = payment;
 
       const ms = new BridgedTrace({
@@ -216,8 +216,8 @@ function CreatePayment(props) {
       ms.parentProjectId = campaign.projectId;
       ms.formType = Trace.PAYMENTTYPE;
 
-      if (donateToDac) {
-        ms.dacId = config.defaultDacId;
+      if (donateToCommunity) {
+        ms.communityId = config.defaultCommunityId;
       }
 
       if (!notCapped) {
@@ -374,7 +374,10 @@ function CreatePayment(props) {
                   picture={payment.picture}
                 />
 
-                <TraceDonateToDac value={payment.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToCommunity
+                  value={payment.donateToCommunity}
+                  onChange={handleInputChange}
+                />
               </div>
 
               <div className="section">

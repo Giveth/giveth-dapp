@@ -51,6 +51,11 @@ const RightMenu = () => {
         setSelectedKeys('Manage:1');
         break;
 
+      // This is for backward compatibility and working the links that we emailed to users
+      case pathname === '/my-milestones':
+        setSelectedKeys('Manage:1');
+        break;
+
       case pathname === '/donations':
         setSelectedKeys('Manage:2');
         break;
@@ -59,7 +64,12 @@ const RightMenu = () => {
         setSelectedKeys('Manage:3');
         break;
 
+      // This is for backward compatibility and working the links that we emailed to users
       case pathname === '/my-dacs':
+        setSelectedKeys('Manage:4');
+        break;
+
+      case pathname === '/my-communities':
         setSelectedKeys('Manage:4');
         break;
 
