@@ -61,15 +61,7 @@ function EditPayment(props) {
     recipientAddress: '',
     conversionRateTimestamp: undefined,
   });
-
-  const [initialValues, setInitialValues] = useState({
-    title: '',
-    description: '',
-    donateToDac: true,
-    token: {},
-    recipientAddress: '',
-  });
-
+  const [initialValues, setInitialValues] = useState(undefined);
   const [milestone, setMilestone] = useState();
   const [campaign, setCampaign] = useState();
   const [loading, setLoading] = useState(false);
@@ -358,7 +350,7 @@ function EditPayment(props) {
         </Row>
         <Row>
           <div className="card-form-container">
-            {campaign && (
+            {campaign && initialValues !== undefined && (
               <Form
                 className="card-form"
                 requiredMark
