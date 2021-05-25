@@ -17,11 +17,12 @@ import {
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
+// import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
 import { authenticateUser } from '../../lib/middleware';
 import { Milestone, MilestoneItem } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { CreateEditMinPayoutModal } from '../NotificationModal';
 
 function EditExpense(props) {
   const {
@@ -31,9 +32,9 @@ function EditExpense(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-  const {
-    actions: { minPayoutWarningInCreatEdit },
-  } = useContext(NotificationContext);
+  // const {
+  //   actions: { minPayoutWarningInCreatEdit },
+  // } = useContext(NotificationContext);
 
   const { milestoneId } = props.match.params;
 
@@ -295,7 +296,8 @@ function EditExpense(props) {
         onError(message, err, isLessThanMinPayout) {
           setLoading(false);
           if (isLessThanMinPayout) {
-            return minPayoutWarningInCreatEdit();
+            // return minPayoutWarningInCreatEdit();
+            return <CreateEditMinPayoutModal />;
           }
           return ErrorHandler(err, message);
         },
