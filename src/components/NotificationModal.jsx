@@ -4,15 +4,7 @@ import { Modal } from 'antd';
 import MinimumPayoutModalContent from './MinimumPayoutModalContent';
 import TransactionModalContent from './TransactionModalContent';
 
-const NotificationModal = ({
-  show,
-  closeModal,
-  width,
-  minimumPayoutUsdValue,
-  type,
-  txUrl,
-  isDac,
-}) => {
+const NotificationModal = ({ show, closeModal, width, type, txUrl, isDac, msg }) => {
   const donationDelegationTypes = [
     'donationPending',
     'donationSuccessful',
@@ -35,13 +27,9 @@ const NotificationModal = ({
           className="antModalComment pb-0"
         >
           {donationDelegationTypes.includes(type) ? (
-            <TransactionModalContent isDac={isDac} txUrl={txUrl} type={type} />
+            <TransactionModalContent isDac={isDac} txUrl={txUrl} type={type} msg={msg} />
           ) : (
-            <MinimumPayoutModalContent
-              closeModal={closeModal}
-              minimumPayoutUsdValue={minimumPayoutUsdValue}
-              type={type}
-            />
+            <MinimumPayoutModalContent closeModal={closeModal} type={type} />
           )}
         </Modal>
       )}
@@ -53,7 +41,6 @@ NotificationModal.propTypes = {
   show: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
   width: PropTypes.number,
-  minimumPayoutUsdValue: PropTypes.number,
   type: PropTypes.oneOf([
     'Creat/Edit',
     'MarkComplete',
@@ -68,13 +55,14 @@ NotificationModal.propTypes = {
   ]).isRequired,
   txUrl: PropTypes.string,
   isDac: PropTypes.bool,
+  msg: PropTypes.string,
 };
 
 NotificationModal.defaultProps = {
   width: 700,
-  minimumPayoutUsdValue: undefined,
   txUrl: undefined,
   isDac: false,
+  msg: undefined,
 };
 
 export default NotificationModal;

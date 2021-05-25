@@ -140,14 +140,9 @@ const RightMenu = () => {
             <Menu.Item key="profile:1">
               <Link to="/profile">Profile</Link>
             </Menu.Item>
-            {currentUser.gasPaidUsdValue && (
-              <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
-                <TotalGasPaid
-                  gasPaidUsdValue={currentUser.gasPaidUsdValue}
-                  className="menuGasPaid"
-                />
-              </Menu.Item>
-            )}
+            <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
+              <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
+            </Menu.Item>
           </SubMenu>
         </React.Fragment>
       )}

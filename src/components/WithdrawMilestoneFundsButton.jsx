@@ -11,7 +11,6 @@ import DonationService from '../services/DonationService';
 import LPMilestone from '../models/LPMilestone';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
@@ -24,9 +23,6 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-  const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
   const {
     actions: { minPayoutWarningInWithdraw },
   } = useContext(NotificationContext);
@@ -41,7 +37,7 @@ const WithdrawMilestoneFundsButton = ({ milestone, isAmountEnoughForWithdraw }) 
       ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
-            minPayoutWarningInWithdraw(minimumPayoutUsdValue);
+            minPayoutWarningInWithdraw();
             return;
           }
 

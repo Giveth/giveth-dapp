@@ -37,30 +37,15 @@ class NotificationModalProvider extends Component {
         <Provider
           value={{
             actions: {
-              minPayoutWarningInCreatEdit: input =>
-                this.displayModal({
-                  minimumPayoutUsdValue: input,
-                  type: 'Creat/Edit',
-                }),
-              minPayoutWarningInArchive: input =>
-                this.displayModal({
-                  minimumPayoutUsdValue: input,
-                  type: 'Archive',
-                }),
-              minPayoutWarningInMarkComplete: input =>
-                this.displayModal({
-                  minimumPayoutUsdValue: input,
-                  type: 'MarkComplete',
-                }),
-              minPayoutWarningInWithdraw: input =>
-                this.displayModal({
-                  minimumPayoutUsdValue: input,
-                  type: 'Withdraw',
-                }),
+              minPayoutWarningInCreatEdit: () => this.displayModal({ type: 'Creat/Edit' }),
+              minPayoutWarningInArchive: () => this.displayModal({ type: 'Archive' }),
+              minPayoutWarningInMarkComplete: () => this.displayModal({ type: 'MarkComplete' }),
+              minPayoutWarningInWithdraw: () => this.displayModal({ type: 'Withdraw' }),
               donationPending: url => this.displayModal({ txUrl: url, type: 'donationPending' }),
               donationSuccessful: url =>
                 this.displayModal({ txUrl: url, type: 'donationSuccessful' }),
-              donationFailed: url => this.displayModal({ txUrl: url, type: 'donationFailed' }),
+              donationFailed: (url, msg) =>
+                this.displayModal({ txUrl: url, msg, type: 'donationFailed' }),
               delegationPending: (url, isDac) =>
                 this.displayModal({
                   txUrl: url,
@@ -69,7 +54,8 @@ class NotificationModalProvider extends Component {
                 }),
               delegationSuccessful: url =>
                 this.displayModal({ txUrl: url, type: 'delegationSuccessful' }),
-              delegationFailed: url => this.displayModal({ txUrl: url, type: 'delegationFailed' }),
+              delegationFailed: (url, msg) =>
+                this.displayModal({ txUrl: url, msg, type: 'delegationFailed' }),
             },
           }}
         >

@@ -1,10 +1,16 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
 import Lottie from 'lottie-react';
-import AlertAnimation from '../assets/alert-notification.json';
 
-const MinimumPayoutModalContent = ({ closeModal, minimumPayoutUsdValue, type }) => {
+import AlertAnimation from '../assets/alert-notification.json';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+
+const MinimumPayoutModalContent = ({ closeModal, type }) => {
+  const {
+    state: { minimumPayoutUsdValue },
+  } = useContext(WhiteListContext);
+
   let title = '';
   let description = '';
   switch (type) {
@@ -63,7 +69,6 @@ const MinimumPayoutModalContent = ({ closeModal, minimumPayoutUsdValue, type }) 
 
 MinimumPayoutModalContent.propTypes = {
   closeModal: PropTypes.func.isRequired,
-  minimumPayoutUsdValue: PropTypes.number.isRequired,
   type: PropTypes.oneOf(['Creat/Edit', 'MarkComplete', 'Archive', 'Withdraw']).isRequired,
 };
 

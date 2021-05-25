@@ -26,12 +26,13 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
-import ErrorHandler from '../lib/ErrorHandler';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
+
+const etherScanUrl = config.etherscan;
 
 const ModalContent = props => {
   const {
@@ -44,7 +45,7 @@ const ModalContent = props => {
     state: { isForeignNetwork, validProvider, isEnabled: Web3ContextIsEnabled },
   } = useContext(Web3Context);
   const {
-    actions: { delegationPending, delegationSuccessful },
+    actions: { delegationPending, delegationSuccessful, delegationFailed },
   } = useContext(NotificationContext);
 
   const tokenWhitelistOptions = tokenWhitelist.map(t => ({
@@ -267,9 +268,13 @@ const ModalContent = props => {
       delegationSuccessful(txLink);
     };
 
-    const onError = err => {
+    const onError = (err, txHash) => {
       setSaving(false);
-      ErrorHandler(err, 'Something wrong in delegation, please try later');
+      if (err.code === 4001) {
+        delegationFailed(null, 'User denied transaction signature');
+      } else {
+        delegationFailed(`${etherScanUrl}tx/${txHash}`);
+      }
     };
 
     const onCancel = () => {

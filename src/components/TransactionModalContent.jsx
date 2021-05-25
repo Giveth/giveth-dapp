@@ -5,7 +5,7 @@ import TxSubmitted from '../assets/transaction-submitted.svg';
 import TxSuccessful from '../assets/transaction-successful.svg';
 import TxFailed from '../assets/transaction-failed.svg';
 
-const TransactionModalContent = ({ type, txUrl, isDac }) => {
+const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
   let title = '';
   let description = '';
   let icon;
@@ -24,7 +24,7 @@ const TransactionModalContent = ({ type, txUrl, isDac }) => {
       break;
     case 'donationFailed':
       title = 'Transaction Failed';
-      description = 'Something went wrong. Please check transaction details on Etherescan.';
+      description = msg;
       icon = TxFailed;
       break;
     case 'delegationPending':
@@ -43,7 +43,7 @@ const TransactionModalContent = ({ type, txUrl, isDac }) => {
       break;
     case 'delegationFailed':
       title = 'Transaction Failed';
-      description = 'Something went wrong. Please check transaction details on Etherescan.';
+      description = msg;
       icon = TxFailed;
       break;
     default:
@@ -62,13 +62,15 @@ const TransactionModalContent = ({ type, txUrl, isDac }) => {
       >
         {description}
       </p>
-      <div className="text-center pb-3">
-        <Button className="px-5">
-          <a href={txUrl} target="_blank" rel="noopener noreferrer">
-            View on Etherescan
-          </a>
-        </Button>
-      </div>
+      {txUrl && (
+        <div className="text-center pb-3">
+          <Button className="px-5">
+            <a href={txUrl} target="_blank" rel="noopener noreferrer">
+              View on Etherescan
+            </a>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -82,12 +84,15 @@ TransactionModalContent.propTypes = {
     'delegationSuccessful',
     'delegationFailed',
   ]).isRequired,
-  txUrl: PropTypes.string.isRequired,
+  txUrl: PropTypes.string,
   isDac: PropTypes.bool,
+  msg: PropTypes.string,
 };
 
 TransactionModalContent.defaultProps = {
   isDac: false,
+  msg: 'Something went wrong. Please check transaction details on Etherescan.',
+  txUrl: undefined,
 };
 
 export default React.memo(TransactionModalContent);

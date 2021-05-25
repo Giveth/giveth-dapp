@@ -468,10 +468,14 @@ const DonateButtonModal = props => {
             reject();
 
             if (txHash === undefined) {
-              ErrorHandler(
-                err,
-                "MetaMask couldn't get transaction receipt, but probably donation will go through",
-              );
+              if (err.code === 4001) {
+                donationFailed(null, 'User denied transaction signature');
+              } else {
+                donationFailed(
+                  null,
+                  "MetaMask couldn't get transaction receipt, but probably donation will go through",
+                );
+              }
             } else {
               donationFailed(txUrl);
             }

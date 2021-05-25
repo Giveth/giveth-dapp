@@ -9,7 +9,6 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
@@ -24,9 +23,6 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
-  const {
     actions: { minPayoutWarningInMarkComplete },
   } = useContext(NotificationContext);
 
@@ -39,7 +35,7 @@ const RequestMarkMilestoneCompleteButton = ({ milestone, isAmountEnoughForWithdr
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            minPayoutWarningInMarkComplete(minimumPayoutUsdValue);
+            minPayoutWarningInMarkComplete();
             return;
           }
 

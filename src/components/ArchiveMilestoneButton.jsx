@@ -9,7 +9,6 @@ import ErrorPopup from 'components/ErrorPopup';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
@@ -26,10 +25,6 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
   } = useContext(Web3Context);
 
   const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
-
-  const {
     actions: { minPayoutWarningInArchive },
   } = useContext(NotificationContext);
 
@@ -42,7 +37,7 @@ const ArchiveMilestoneButton = ({ milestone, isAmountEnoughForWithdraw }) => {
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            minPayoutWarningInArchive(minimumPayoutUsdValue);
+            minPayoutWarningInArchive();
             return;
           }
           const proceed = await React.swal({
