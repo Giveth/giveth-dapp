@@ -7,6 +7,7 @@ import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { Button, Input, Row, Col } from 'antd';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import Lottie from 'lottie-react';
 
 import Loader from '../Loader';
@@ -63,6 +64,7 @@ const ViewCampaign = ({ match }) => {
 
   const [isLoading, setLoading] = useState(true);
   const [isLoadingMilestones, setLoadingMilestones] = useState(true);
+  const [isLoadingFromScratch, setLoadingFromScratch] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
   const [milestones, setMilestones] = useState([]);
@@ -113,6 +115,7 @@ const ViewCampaign = ({ match }) => {
         const newMilestones = loadFromScratch ? _milestones : milestones.concat(_milestones);
         setMilestones(newMilestones);
         setLoadingMilestones(false);
+        setLoadingFromScratch(false);
         setMilestonesTotal(_milestonesTotal);
       },
       err => {
@@ -186,7 +189,11 @@ const ViewCampaign = ({ match }) => {
   }, [campaign]);
 
   useEffect(() => {
-    loadMoreMilestones(true);
+    // Skip initial render
+    if (campaign.id) {
+      loadMoreMilestones(true);
+      setLoadingFromScratch(true);
+    }
   }, [searchPhrase]);
 
   const downloadCsv = campaignId => {
@@ -478,11 +485,30 @@ const ViewCampaign = ({ match }) => {
                           <Row gutter={[16, 16]}>
                             {campaign.projectId > 0 && (
                               <Col xs={24} sm={12}>
-                                <Input.Search
-                                  placeholder="Search Milestones ..."
-                                  onSearch={setSearchPhrase}
-                                  size="large"
-                                />
+                                <div className="customSearchBox">
+                                  <Input
+                                    className="pr-5"
+                                    placeholder="Search Milestones ..."
+                                    size="large"
+                                    value={searchPhrase}
+                                    onChange={query => {
+                                      setSearchPhrase(query.target.value);
+                                    }}
+                                  />
+                                  <div>
+                                    <CloseOutlined
+                                      className={!searchPhrase ? 'd-none' : ''}
+                                      onClick={() => setSearchPhrase('')}
+                                    />
+                                    <SearchOutlined
+                                      className={searchPhrase ? 'd-none' : ''}
+                                      onClick={() => {
+                                        loadMoreMilestones(true);
+                                        setLoadingFromScratch(true);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
                               </Col>
                             )}
 
@@ -519,36 +545,44 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {milestonesTotal === 0 &&
-                        ((!isLoadingMilestones && searchPhrase) || isLoadingMilestones) && (
-                          <div className="text-center mb-5 py-5">
-                            <Lottie
-                              animationData={SearchAnimation}
-                              className="m-auto"
-                              loop={false}
-                              style={{ width: '250px' }}
-                            />
-                            {!isLoadingMilestones && searchPhrase && (
-                              <Fragment>
-                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
-                                <p
-                                  style={{ fontSize: '18px', fontFamily: 'Lato', color: '#6B7087' }}
-                                >
-                                  We couldn’t find any matches for your search or it doesn’t exist.
-                                  <br />
-                                  Try adjusting your search.
-                                </p>
-                              </Fragment>
-                            )}
-                          </div>
-                        )}
-                      <div className="milestone-cards-grid-container">
-                        {milestones.map(m => (
-                          <MilestoneCard milestone={m} key={m._id} history={history} />
-                        ))}
-                      </div>
+                      {((milestonesTotal === 0 && !isLoadingMilestones && searchPhrase) ||
+                        (isLoadingFromScratch && isLoadingMilestones)) && (
+                        <div className="text-center mb-5 pb-5 pt-4">
+                          <Lottie
+                            animationData={SearchAnimation}
+                            className="m-auto"
+                            loop={false}
+                            style={{ width: '250px' }}
+                            autoplay={isLoadingMilestones}
+                          />
+                          {!isLoadingMilestones && searchPhrase && (
+                            <Fragment>
+                              <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                              <p
+                                style={{
+                                  fontSize: '18px',
+                                  fontFamily: 'Lato',
+                                  color: '#6B7087',
+                                }}
+                              >
+                                We couldn’t find any matches for your search or it doesn’t exist.
+                                <br />
+                                Try adjusting your search.
+                              </p>
+                            </Fragment>
+                          )}
+                        </div>
+                      )}
 
-                      {milestones.length < milestonesTotal && (
+                      {!isLoadingFromScratch && (
+                        <div className="milestone-cards-grid-container">
+                          {milestones.map(m => (
+                            <MilestoneCard milestone={m} key={m._id} history={history} />
+                          ))}
+                        </div>
+                      )}
+
+                      {milestones.length < milestonesTotal && !isLoadingFromScratch && (
                         <div className="text-center">
                           <button
                             type="button"
