@@ -9,6 +9,7 @@ import axios from 'axios';
 import { Button, Input, Row, Col } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import Lottie from 'lottie-react';
+import debounce from 'lodash.debounce';
 
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
@@ -78,6 +79,7 @@ const ViewCampaign = ({ match }) => {
   const [searchPhrase, setSearchPhrase] = useState('');
 
   const donationsObserver = useRef();
+  const debouncedSearch = useRef();
 
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
@@ -103,12 +105,11 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  const loadMoreMilestones = (loadFromScratch = false) => {
+  const loadMoreMilestones = (loadFromScratch = false, query) => {
     setLoadingMilestones(true);
-
     CampaignService.getMilestones(
       campaign.id,
-      searchPhrase,
+      query || searchPhrase,
       milestonesPerBatch,
       loadFromScratch ? 0 : milestones.length,
       (_milestones, _milestonesTotal) => {
@@ -162,6 +163,9 @@ const ViewCampaign = ({ match }) => {
   }, [donationsTotal]);
 
   useEffect(() => {
+    if (campaign.id && !debouncedSearch.current) {
+      debouncedSearch.current = debounce(query => loadMoreMilestones(true, query), 1000);
+    }
     if (campaign._id && donationsObserver.current === undefined) {
       loadMoreMilestones(true);
       loadDonations(campaign._id);
@@ -191,8 +195,9 @@ const ViewCampaign = ({ match }) => {
   useEffect(() => {
     // Skip initial render
     if (campaign.id) {
-      loadMoreMilestones(true);
+      debouncedSearch.current(searchPhrase);
       setLoadingFromScratch(true);
+      setLoadingMilestones(true);
     }
   }, [searchPhrase]);
 
@@ -516,7 +521,12 @@ const ViewCampaign = ({ match }) => {
                               campaign.isActive &&
                               (userIsOwner || currentUser) && (
                                 <Col xs={12} sm={6}>
-                                  <Button onClick={gotoCreateMilestone} block size="large">
+                                  <Button
+                                    type="primary"
+                                    onClick={gotoCreateMilestone}
+                                    block
+                                    size="large"
+                                  >
                                     Create New
                                   </Button>
                                 </Col>
@@ -545,7 +555,7 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {((milestonesTotal === 0 && !isLoadingMilestones && searchPhrase) ||
+                      {((milestonesTotal === 0 && !isLoadingMilestones) ||
                         (isLoadingFromScratch && isLoadingMilestones)) && (
                         <div className="text-center mb-5 pb-5 pt-4">
                           <Lottie
@@ -555,22 +565,27 @@ const ViewCampaign = ({ match }) => {
                             style={{ width: '250px' }}
                             autoplay={isLoadingMilestones}
                           />
-                          {!isLoadingMilestones && searchPhrase && (
-                            <Fragment>
-                              <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
-                              <p
-                                style={{
-                                  fontSize: '18px',
-                                  fontFamily: 'Lato',
-                                  color: '#6B7087',
-                                }}
-                              >
-                                We couldn’t find any matches for your search or it doesn’t exist.
-                                <br />
-                                Try adjusting your search.
-                              </p>
-                            </Fragment>
-                          )}
+                          {!isLoadingMilestones &&
+                            (searchPhrase ? (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                                <p
+                                  style={{
+                                    fontSize: '18px',
+                                    fontFamily: 'Lato',
+                                    color: '#6B7087',
+                                  }}
+                                >
+                                  We couldn’t find any matches for your search or it doesn’t exist.
+                                  <br />
+                                  Try adjusting your search.
+                                </p>
+                              </Fragment>
+                            ) : (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No milestones in here!</h3>
+                              </Fragment>
+                            ))}
                         </div>
                       )}
 
