@@ -318,10 +318,11 @@ const Routes = () => {
       />
       <Route exact path="/profile/:userAddress" render={props => <Profile {...props} />} />
       <Route exact path="/" render={props => <Explore {...props} />} />
-      <Route exact path="/milestones" render={props => <Traces {...props} />} />
       <Route exact path="/traces" render={props => <Traces {...props} />} />
+      <Route exact path="/milestones" render={() => <Redirect to="/traces" />} />
       <Route exact path="/campaigns" render={() => <Campaigns />} />
       <Route exact path="/communities" render={() => <Communities />} />
+      <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
       <Route component={NotFound} />
     </Switch>
   );

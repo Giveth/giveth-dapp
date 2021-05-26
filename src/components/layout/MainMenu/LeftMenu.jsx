@@ -12,12 +12,6 @@ const LeftMenu = () => {
 
   useEffect(() => {
     switch (true) {
-      // TODO this is for backward compatibility
-      case pathname === '/dacs':
-      case pathname.startsWith('/dacs/'):
-        setSelectedKeys('Communities');
-        break;
-
       case pathname === '/communities':
       case pathname.startsWith('/community/'):
         setSelectedKeys('Communities');
@@ -28,11 +22,6 @@ const LeftMenu = () => {
         setSelectedKeys('Campaigns');
         break;
 
-      // TODO this is for backward compatiblity
-      case pathname === '/milestones':
-      case pathname.startsWith('/milestone/'):
-        setSelectedKeys('Traces');
-        break;
       case pathname === '/traces':
       case pathname.startsWith('/trace/'):
         setSelectedKeys('Traces');
