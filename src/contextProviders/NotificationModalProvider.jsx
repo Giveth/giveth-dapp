@@ -1,7 +1,7 @@
 import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-// import NotificationModal from '../components/NotificationModal';
+import NotificationModal from '../components/NotificationModal';
 
 const Context = createContext();
 const { Consumer, Provider } = Context;
@@ -9,6 +9,9 @@ const { Consumer, Provider } = Context;
 class NotificationModalProvider extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      show: false,
+    };
     this.displayModal = this.displayModal.bind(this);
   }
 
@@ -27,9 +30,10 @@ class NotificationModalProvider extends Component {
   }
 
   render() {
-    // const { show } = this.state;
+    const { show } = this.state;
     return (
       <Fragment>
+        {show && <NotificationModal closeModal={() => this.displayModal(false)} {...this.state} />}
         <Provider
           value={{
             actions: {
