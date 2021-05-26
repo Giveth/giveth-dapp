@@ -143,7 +143,7 @@ const RightMenu = () => {
             {currentUser.gasPaidUsdValue && (
               <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
                 <TotalGasPaid
-                  gasPaidUsdValue={currentUser.gasPaidUsdValue}
+                  gasPaidUsdValue={Number(currentUser.gasPaidUsdValue)}
                   className="menuGasPaid"
                 />
               </Menu.Item>

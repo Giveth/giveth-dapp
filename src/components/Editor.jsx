@@ -109,7 +109,7 @@ function Editor(props) {
     }
   }
 
-  const { placeholder, onChange, value, setBusy } = props;
+  const { placeholder, onChange, value, setBusy, initialValue } = props;
 
   useEffect(() => {
     setBusy(uploading);
@@ -140,6 +140,10 @@ function Editor(props) {
     'image',
     'video',
     'template',
+    'alt',
+    'style',
+    'width',
+    'height',
   ];
 
   return (
@@ -162,12 +166,13 @@ function Editor(props) {
           ref={reactQuillRef}
           modules={modules}
           formats={formats}
-          value={value}
+          value={value || initialValue}
           name="description"
           placeholder={placeholder}
           onChange={onChange}
           id={props.id}
           theme="snow"
+          defaultValue={initialValue}
         />
       </div>
       <VideoPopup
@@ -186,6 +191,7 @@ Editor.propTypes = {
   id: PropTypes.string,
   setBusy: PropTypes.func,
   disabled: PropTypes.bool,
+  initialValue: PropTypes.string,
 };
 
 Editor.defaultProps = {
@@ -194,6 +200,7 @@ Editor.defaultProps = {
   id: '',
   setBusy: () => {},
   disabled: false,
+  initialValue: '',
 };
 
 export default Editor;

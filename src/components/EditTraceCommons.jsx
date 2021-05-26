@@ -78,6 +78,7 @@ const TraceDescription = ({
     },
     [onChange],
   );
+
   return (
     <Form.Item
       name={id}
@@ -85,7 +86,6 @@ const TraceDescription = ({
       className="custom-form-item"
       extra={extra}
       required
-      initialValue={initialValue}
       rules={[
         {
           type: 'string',
@@ -110,6 +110,7 @@ const TraceDescription = ({
         id={id}
         key={id}
         disabled={disabled}
+        initialValue={initialValue}
       />
     </Form.Item>
   );
