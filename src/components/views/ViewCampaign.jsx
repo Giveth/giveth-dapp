@@ -94,23 +94,19 @@ const ViewCampaign = ({ match }) => {
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        console.log(_donations);
         let nDonations;
         if (loadFromScratch) {
           nDonations = _donations.map(item => {
             const _item = aggregateDonations.find(
               element => element._id === item._id && _item.totalAmount !== item.totalAmount,
             );
-            console.log(_item);
-            if (true) {
+            if (_item) {
               item.isNew = true;
               return item;
             }
             return item;
           });
         }
-        console.log(nDonations);
-        setNewDonations(3);
         setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
@@ -192,7 +188,6 @@ const ViewCampaign = ({ match }) => {
         campaign.id,
         _newDonations => {
           setNewDonations(_newDonations);
-          console.log(_newDonations);
           if (_newDonations > 0) {
             loadDonations(campaign.id);
             loadMoreAggregateDonations(true);

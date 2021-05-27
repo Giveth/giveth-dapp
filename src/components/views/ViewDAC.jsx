@@ -80,13 +80,26 @@ const ViewDAC = ({ match }) => {
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
+        let nDonations;
+        if (loadFromScratch) {
+          nDonations = _donations.map(item => {
+            const _item = aggregateDonations.find(
+              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
+            );
+            if (_item) {
+              item.isNew = true;
+              return item;
+            }
+            return item;
+          });
+        }
+        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal);
         setLoadingDonations(false);
       },
       err => {
         setLoadingDonations(false);
-        ErrorHandler(err, 'Some error on fetching loading donations, please try again later');
+        ErrorHandler(err, 'Some error on fetching donations, please try again later');
       },
     );
   };
@@ -145,7 +158,7 @@ const ViewDAC = ({ match }) => {
             setNewDonations(_newDonations);
             if (_newDonations > 0) {
               loadDonations(dac.id);
-              loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
+              loadMoreAggregateDonations(true);
             }
           },
           err => {
@@ -281,9 +294,17 @@ const ViewDAC = ({ match }) => {
                     </div>
 
                     <div id="donations" className="spacer-top-50">
-                      <Row justify="space-between">
-                        <Col span={12}>
-                          <h5>{leaderBoardTitle}</h5>
+                      <Row justify="space-between mb-3">
+                        <Col span={12} className="align-items-center d-flex">
+                          <h5 className="mb-0">{leaderBoardTitle}</h5>
+                          {newDonations > 0 && (
+                            <span
+                              className="badge badge-primary ml-4"
+                              style={{ fontSize: '12px', padding: '6px' }}
+                            >
+                              {newDonations} NEW
+                            </span>
+                          )}
                         </Col>
                         <Col span={12}>
                           {dac.isActive && (

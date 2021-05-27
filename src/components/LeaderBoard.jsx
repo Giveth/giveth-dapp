@@ -43,7 +43,7 @@ class LeaderBoardItem extends Component {
           onClick={this.toggleDetail}
         >
           {hasNew && (
-            <td>
+            <td className="text-center">
               {isNew && (
                 <div
                   style={{
@@ -118,11 +118,11 @@ const LeaderBoard = props => {
         {isLoading && total === 0 && <Loader className="relative" />}
         {aggregateDonations.length > 0 && (
           <div className="table-container">
-            <table className="table table-responsive table-hover mt-1">
+            <table className="table table-hover mt-1">
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  {!!newDonations && <th />}
+                  {!!newDonations && <th style={{ width: '35px' }} />}
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th className="td-toggle" />
                   <th className="td-rank">Rank</th>
