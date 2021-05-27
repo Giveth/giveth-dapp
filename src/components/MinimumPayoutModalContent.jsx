@@ -43,12 +43,7 @@ const MinimumPayoutModalContent = ({ closeModal, type }) => {
 
   return (
     <Fragment>
-      <Lottie
-        className="m-auto"
-        animationData={AlertAnimation}
-        loop={false}
-        style={{ width: '300px' }}
-      />
+      <Lottie className="m-auto" animationData={AlertAnimation} style={{ width: '300px' }} />
       <h2 className="text-center font-weight-bold" style={{ color: '#2C0B3F' }}>
         {title}
       </h2>
