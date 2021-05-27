@@ -291,7 +291,6 @@ const ViewCampaign = ({ match }) => {
 
                   <BackgroundImageHeader
                     image={campaign.image}
-                    height={300}
                     adminId={campaign.projectId}
                     projectType="Campaign"
                     editProject={userIsOwner && (() => editCampaign(campaign.id))}

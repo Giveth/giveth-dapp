@@ -215,7 +215,6 @@ const ViewDAC = ({ match }) => {
               </Helmet>
               <BackgroundImageHeader
                 image={dac.image}
-                height={300}
                 adminId={dac.delegateId}
                 projectType="DAC"
                 editProject={userIsOwner && dac.isActive && (() => editDAC(dac.id))}
