@@ -333,7 +333,6 @@ const ViewMilestone = props => {
 
               <BackgroundImageHeader
                 image={milestone.image}
-                height={300}
                 adminId={milestone.projectId}
                 projectType="Milestone"
                 editProject={
