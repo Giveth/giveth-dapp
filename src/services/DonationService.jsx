@@ -118,7 +118,6 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
-    onCancel = () => {},
   ) {
     const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
@@ -269,10 +268,7 @@ class DonationService {
             });
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => {
-            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
-            ErrorHandler(err, message, false, onError, onCancel);
-          });
+          .catch(err => onError(err, txHash));
       })
       .catch(err => {
         ErrorPopup('Unable to initiate the delegation transaction.', err);

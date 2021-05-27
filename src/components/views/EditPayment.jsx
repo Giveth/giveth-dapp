@@ -17,14 +17,15 @@ import {
   MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
 import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { authenticateUser } from '../../lib/middleware';
 import config from '../../configuration';
 import { Milestone } from '../../models';
 import { MilestoneService } from '../../services';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 const WAIT_INTERVAL = 1000;
 
@@ -41,6 +42,10 @@ function EditPayment(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
+  const {
+    actions: { minPayoutWarningInCreatEdit },
+  } = useContext(NotificationContext);
 
   const [form] = Form.useForm();
 
@@ -318,8 +323,11 @@ function EditPayment(props) {
             ),
           });
         },
-        onError(message, err) {
+        onError(message, err, isLessThanMinPayout) {
           setLoading(false);
+          if (isLessThanMinPayout) {
+            return minPayoutWarningInCreatEdit();
+          }
           return ErrorHandler(err, message);
         },
       });

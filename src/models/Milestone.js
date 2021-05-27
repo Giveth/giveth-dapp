@@ -79,7 +79,7 @@ export default class Milestone extends BasicModel {
     this._campaignId = campaignId;
     this._slug = slug;
     this._formType = formType;
-    this._gasPaidUsdValue = gasPaidUsdValue || '0';
+    this._gasPaidUsdValue = gasPaidUsdValue || 0;
   }
 
   toIpfs() {
