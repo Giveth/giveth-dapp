@@ -7,6 +7,10 @@ import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import { Button, Input, Row, Col } from 'antd';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import Lottie from 'lottie-react';
+import debounce from 'lodash.debounce';
+
 import Loader from '../Loader';
 import MilestoneCard from '../MilestoneCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
@@ -22,6 +26,7 @@ import {
   Consumer as UserConsumer,
   Context as UserContext,
 } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 import DescriptionRender from '../DescriptionRender';
 
@@ -36,9 +41,9 @@ import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
+import SearchAnimation from '../../assets/search-file.json';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -60,6 +65,7 @@ const ViewCampaign = ({ match }) => {
 
   const [isLoading, setLoading] = useState(true);
   const [isLoadingMilestones, setLoadingMilestones] = useState(true);
+  const [isLoadingFromScratch, setLoadingFromScratch] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
   const [milestones, setMilestones] = useState([]);
@@ -73,6 +79,7 @@ const ViewCampaign = ({ match }) => {
   const [searchPhrase, setSearchPhrase] = useState('');
 
   const donationsObserver = useRef();
+  const debouncedSearch = useRef();
 
   const donationsPerBatch = 5;
   const milestonesPerBatch = 12;
@@ -98,18 +105,18 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  const loadMoreMilestones = (loadFromScratch = false) => {
+  const loadMoreMilestones = (loadFromScratch = false, query) => {
     setLoadingMilestones(true);
-
     CampaignService.getMilestones(
       campaign.id,
-      searchPhrase,
+      query || searchPhrase,
       milestonesPerBatch,
       loadFromScratch ? 0 : milestones.length,
       (_milestones, _milestonesTotal) => {
         const newMilestones = loadFromScratch ? _milestones : milestones.concat(_milestones);
         setMilestones(newMilestones);
         setLoadingMilestones(false);
+        setLoadingFromScratch(false);
         setMilestonesTotal(_milestonesTotal);
       },
       err => {
@@ -156,6 +163,9 @@ const ViewCampaign = ({ match }) => {
   }, [donationsTotal]);
 
   useEffect(() => {
+    if (campaign.id && !debouncedSearch.current) {
+      debouncedSearch.current = debounce(query => loadMoreMilestones(true, query), 1000);
+    }
     if (campaign._id && donationsObserver.current === undefined) {
       loadMoreMilestones(true);
       loadDonations(campaign._id);
@@ -183,7 +193,12 @@ const ViewCampaign = ({ match }) => {
   }, [campaign]);
 
   useEffect(() => {
-    loadMoreMilestones(true);
+    // Skip initial render
+    if (campaign.id) {
+      debouncedSearch.current(searchPhrase);
+      setLoadingFromScratch(true);
+      setLoadingMilestones(true);
+    }
   }, [searchPhrase]);
 
   const downloadCsv = campaignId => {
@@ -475,11 +490,30 @@ const ViewCampaign = ({ match }) => {
                           <Row gutter={[16, 16]}>
                             {campaign.projectId > 0 && (
                               <Col xs={24} sm={12}>
-                                <Input.Search
-                                  placeholder="input search text"
-                                  onSearch={setSearchPhrase}
-                                  size="large"
-                                />
+                                <div className="customSearchBox">
+                                  <Input
+                                    className="pr-5"
+                                    placeholder="Search Milestones ..."
+                                    size="large"
+                                    value={searchPhrase}
+                                    onChange={query => {
+                                      setSearchPhrase(query.target.value);
+                                    }}
+                                  />
+                                  <div>
+                                    <CloseOutlined
+                                      className={!searchPhrase ? 'd-none' : ''}
+                                      onClick={() => setSearchPhrase('')}
+                                    />
+                                    <SearchOutlined
+                                      className={searchPhrase ? 'd-none' : ''}
+                                      onClick={() => {
+                                        loadMoreMilestones(true);
+                                        setLoadingFromScratch(true);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
                               </Col>
                             )}
 
@@ -487,7 +521,12 @@ const ViewCampaign = ({ match }) => {
                               campaign.isActive &&
                               (userIsOwner || currentUser) && (
                                 <Col xs={12} sm={6}>
-                                  <Button onClick={gotoCreateMilestone} block size="large">
+                                  <Button
+                                    type="primary"
+                                    onClick={gotoCreateMilestone}
+                                    block
+                                    size="large"
+                                  >
                                     Create New
                                   </Button>
                                 </Col>
@@ -516,16 +555,49 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {isLoadingMilestones && milestonesTotal === 0 && (
-                        <Loader className="relative" />
+                      {((milestonesTotal === 0 && !isLoadingMilestones) ||
+                        (isLoadingFromScratch && isLoadingMilestones)) && (
+                        <div className="text-center mb-5 pb-5 pt-4">
+                          <Lottie
+                            animationData={SearchAnimation}
+                            className="m-auto"
+                            loop={false}
+                            style={{ width: '250px' }}
+                            autoplay={isLoadingMilestones}
+                          />
+                          {!isLoadingMilestones &&
+                            (searchPhrase ? (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                                <p
+                                  style={{
+                                    fontSize: '18px',
+                                    fontFamily: 'Lato',
+                                    color: '#6B7087',
+                                  }}
+                                >
+                                  We couldn’t find any matches for your search or it doesn’t exist.
+                                  <br />
+                                  Try adjusting your search.
+                                </p>
+                              </Fragment>
+                            ) : (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No milestones in here!</h3>
+                              </Fragment>
+                            ))}
+                        </div>
                       )}
-                      <div className="milestone-cards-grid-container">
-                        {milestones.map(m => (
-                          <MilestoneCard milestone={m} key={m._id} history={history} />
-                        ))}
-                      </div>
 
-                      {milestones.length < milestonesTotal && (
+                      {!isLoadingFromScratch && (
+                        <div className="milestone-cards-grid-container">
+                          {milestones.map(m => (
+                            <MilestoneCard milestone={m} key={m._id} history={history} />
+                          ))}
+                        </div>
+                      )}
+
+                      {milestones.length < milestonesTotal && !isLoadingFromScratch && (
                         <div className="text-center">
                           <button
                             type="button"
