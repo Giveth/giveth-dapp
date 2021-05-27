@@ -444,9 +444,7 @@ class MilestoneService {
         const { minimumPayoutUsdValue } = await feathersClient.service('/whitelist').find();
         const rate = result.rates.USD;
         if (rate * milestone.maxAmount < minimumPayoutUsdValue) {
-          const message = `Maximum amount Must be greater than ${minimumPayoutUsdValue} USD`;
-          ErrorHandler({ message }, message, true);
-          return onError();
+          return onError(undefined, undefined, true);
         }
       }
       const profileHash = await this.uploadToIPFS(milestone);

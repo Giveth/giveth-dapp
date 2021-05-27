@@ -23,14 +23,16 @@ import AmountSliderMarks from './AmountSliderMarks';
 import DonationService from '../services/DonationService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
-import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import ErrorHandler from '../lib/ErrorHandler';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
+import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import BridgedMilestone from '../models/BridgedMilestone';
 import LPPCappedMilestone from '../models/LPPCappedMilestone';
 import LPMilestone from '../models/LPMilestone';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
+
+const etherScanUrl = config.etherscan;
 
 const ModalContent = props => {
   const {
@@ -42,6 +44,9 @@ const ModalContent = props => {
   const {
     state: { isForeignNetwork, validProvider, isEnabled: Web3ContextIsEnabled },
   } = useContext(Web3Context);
+  const {
+    actions: { delegationPending, delegationSuccessful, delegationFailed },
+  } = useContext(NotificationContext);
 
   const tokenWhitelistOptions = tokenWhitelist.map(t => ({
     value: t.address,
@@ -256,41 +261,20 @@ const ModalContent = props => {
       setSaving(false);
       setModalVisible(false);
       loadDonations();
-      React.swal({
-        title: 'Delegated!',
-        content: React.swal.msg(
-          <span>
-            The donations have been delegated,{' '}
-            <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
-              view the transaction here.
-            </a>
-            {delegateType === 'dac' && (
-              <p>
-                The donations have been delegated. Please note the the Giver may have{' '}
-                <strong>3 days</strong> to reject your delegation before the money gets committed.
-              </p>
-            )}
-          </span>,
-        ),
-        icon: 'success',
-      });
+      delegationPending(txLink, delegateType === 'dac');
     };
 
     const onSuccess = txLink => {
-      React.toast.success(
-        <p>
-          The delegation has been confirmed!
-          <br />
-          <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>,
-      );
+      delegationSuccessful(txLink);
     };
 
-    const onError = err => {
+    const onError = (err, txHash) => {
       setSaving(false);
-      ErrorHandler(err, 'Something wrong in delegation, please try later');
+      if (err.code === 4001) {
+        delegationFailed(null, 'User denied transaction signature');
+      } else {
+        delegationFailed(`${etherScanUrl}tx/${txHash}`);
+      }
     };
 
     const onCancel = () => {

@@ -664,14 +664,12 @@ const ViewMilestone = props => {
                             </div>
                           </div>
 
-                          {milestone.gasPaidUsdValue && (
-                            <div className="pt-3">
-                              <TotalGasPaid
-                                gasPaidUsdValue={milestone.gasPaidUsdValue}
-                                entity="MILESTONE:"
-                              />
-                            </div>
-                          )}
+                          <div className="pt-3">
+                            <TotalGasPaid
+                              gasPaidUsdValue={milestone.gasPaidUsdValue}
+                              entity="MILESTONE:"
+                            />
+                          </div>
                         </div>
                       </div>
 

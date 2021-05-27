@@ -30,6 +30,7 @@ import Web3Provider, { Consumer as Web3Consumer } from '../contextProviders/Web3
 import WhiteListProvider, {
   Consumer as WhiteListConsumer,
 } from '../contextProviders/WhiteListProvider';
+import NotificationModalProvider from '../contextProviders/NotificationModalProvider';
 
 import '../lib/validators';
 
@@ -101,34 +102,36 @@ const Application = () => {
                               <UserConsumer>
                                 {({ state: { hasError } }) => (
                                   <div>
-                                    {GA.init() && <GA.RouteTracker />}
+                                    <NotificationModalProvider>
+                                      {GA.init() && <GA.RouteTracker />}
 
-                                    {!hasError && (
-                                      <div>
-                                        <Header />
-                                        <Routes />
-                                      </div>
-                                    )}
+                                      {!hasError && (
+                                        <div>
+                                          <Header />
+                                          <Routes />
+                                        </div>
+                                      )}
 
-                                    {hasError && (
-                                      <div className="text-center">
-                                        <h2>Oops, something went wrong...</h2>
-                                        <p>
-                                          The Giveth dapp could not load for some reason. Please try
-                                          again...
-                                        </p>
-                                      </div>
-                                    )}
+                                      {hasError && (
+                                        <div className="text-center">
+                                          <h2>Oops, something went wrong...</h2>
+                                          <p>
+                                            The Giveth dapp could not load for some reason. Please
+                                            try again...
+                                          </p>
+                                        </div>
+                                      )}
 
-                                    <ToastContainer
-                                      position="top-right"
-                                      type="default"
-                                      autoClose={5000}
-                                      hideProgressBar
-                                      newestOnTop={false}
-                                      closeOnClick
-                                      pauseOnHover
-                                    />
+                                      <ToastContainer
+                                        position="top-right"
+                                        type="default"
+                                        autoClose={5000}
+                                        hideProgressBar
+                                        newestOnTop={false}
+                                        closeOnClick
+                                        pauseOnHover
+                                      />
+                                    </NotificationModalProvider>
                                   </div>
                                 )}
                               </UserConsumer>

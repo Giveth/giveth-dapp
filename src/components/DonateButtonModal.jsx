@@ -30,15 +30,16 @@ import DonationService from '../services/DonationService';
 import DACService from '../services/DACService';
 import { feathersClient } from '../lib/feathersClient';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
+import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import DAC from '../models/DAC';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
-import { Context as UserContext } from '../contextProviders/UserProvider';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
 
@@ -77,6 +78,9 @@ const DonateButtonModal = props => {
   const {
     state: { isHomeNetwork, validProvider, balance: NativeTokenBalance },
   } = useContext(Web3Context);
+  const {
+    actions: { donationPending, donationSuccessful, donationFailed },
+  } = useContext(NotificationContext);
 
   const isCorrectNetwork = isHomeNetwork;
 
@@ -421,6 +425,7 @@ const DonateButtonModal = props => {
 
       return new Promise((resolve, reject) => {
         let txHash;
+        let txUrl;
         method
           .on('transactionHash', async transactionHash => {
             const web3 = await getWeb3();
@@ -446,49 +451,33 @@ const DonateButtonModal = props => {
               }, UPDATE_ALLOWANCE_DELAY);
             }
 
+            txUrl = `${etherscanUrl}tx/${txHash}`;
+
             GA.trackEvent({
               category: 'Donation',
               action: 'donated',
-              label: `${etherscanUrl}tx/${txHash}`,
+              label: txUrl,
             });
-
-            React.toast.info(
-              <p>
-                Awesome! Your donation is pending...
-                <br />
-                <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
+            donationPending(txUrl);
           })
           .then(() => {
             setSaving(false);
-
-            React.toast.success(
-              <p>
-                Woot! Woot! Donation received. You are awesome!
-                <br />
-                Note: because we are bridging networks, there will be a delay before your donation
-                appears.
-                <br />
-                <a href={`${etherscanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
+            donationSuccessful(txUrl);
           })
           .catch(err => {
             reject();
 
             if (txHash === undefined) {
-              ErrorHandler(
-                err,
-                "MetaMask couldn't get transaction receipt, but probably donation will go through",
-              );
+              if (err.code === 4001) {
+                donationFailed(null, 'User denied transaction signature');
+              } else {
+                donationFailed(
+                  null,
+                  "MetaMask couldn't get transaction receipt, but probably donation will go through",
+                );
+              }
             } else {
-              const message = `Something went wrong with the transaction ${etherscanUrl}tx/${txHash} => ${err.message}`;
-              ErrorHandler(err, message);
+              donationFailed(txUrl);
             }
 
             setSaving(false);

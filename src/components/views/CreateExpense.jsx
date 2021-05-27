@@ -16,12 +16,13 @@ import {
   MilestoneToken,
 } from '../EditMilestoneCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
 import { authenticateUser } from '../../lib/middleware';
 import BridgedMilestone from '../../models/BridgedMilestone';
 import { Milestone, MilestoneItem } from '../../models';
 import { MilestoneService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 function CreateExpense(props) {
   const {
@@ -31,6 +32,9 @@ function CreateExpense(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const {
+    actions: { minPayoutWarningInCreatEdit },
+  } = useContext(NotificationContext);
 
   const { id: campaignId, slug: campaignSlug } = props.match.params;
   const campaign = useCampaign(campaignId, campaignSlug);
@@ -243,8 +247,11 @@ function CreateExpense(props) {
             ),
           });
         },
-        onError(message, err) {
+        onError(message, err, isLessThanMinPayout) {
           setLoading(false);
+          if (isLessThanMinPayout) {
+            return minPayoutWarningInCreatEdit();
+          }
           return ErrorHandler(err, message);
         },
       });
