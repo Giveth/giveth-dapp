@@ -94,7 +94,24 @@ const ViewCampaign = ({ match }) => {
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
+        console.log(_donations);
+        let nDonations;
+        if (loadFromScratch) {
+          nDonations = _donations.map(item => {
+            const _item = aggregateDonations.find(
+              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
+            );
+            console.log(_item);
+            if (true) {
+              item.isNew = true;
+              return item;
+            }
+            return item;
+          });
+        }
+        console.log(nDonations);
+        setNewDonations(3);
+        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
@@ -166,18 +183,19 @@ const ViewCampaign = ({ match }) => {
     if (campaign.id && !debouncedSearch.current) {
       debouncedSearch.current = debounce(query => loadMoreMilestones(true, query), 1000);
     }
-    if (campaign._id && donationsObserver.current === undefined) {
+    if (campaign.id && donationsObserver.current === undefined) {
       loadMoreMilestones(true);
-      loadDonations(campaign._id);
+      loadDonations(campaign.id);
       loadMoreAggregateDonations(true);
       // subscribe to donation count
       donationsObserver.current = CampaignService.subscribeNewDonations(
         campaign.id,
         _newDonations => {
           setNewDonations(_newDonations);
+          console.log(_newDonations);
           if (_newDonations > 0) {
-            loadDonations(campaign._id);
-            loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
+            loadDonations(campaign.id);
+            loadMoreAggregateDonations(true);
           }
         },
         () => setNewDonations(0),
@@ -388,8 +406,16 @@ const ViewCampaign = ({ match }) => {
 
                     <div id="donations" className="spacer-top-50">
                       <Row justify="space-between" className="spacer-bottom-16">
-                        <Col span={12}>
-                          <h5>{leaderBoardTitle}</h5>
+                        <Col span={12} className="align-items-center d-flex">
+                          <h5 className="mb-0">{leaderBoardTitle}</h5>
+                          {newDonations > 0 && (
+                            <span
+                              className="badge badge-primary ml-4"
+                              style={{ fontSize: '12px', padding: '6px' }}
+                            >
+                              {newDonations} NEW
+                            </span>
+                          )}
                         </Col>
                         <Col span={12}>
                           {campaign.isActive && (
