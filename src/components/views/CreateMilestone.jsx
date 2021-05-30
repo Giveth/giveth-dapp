@@ -22,7 +22,7 @@ import {
   TraceTitle,
 } from '../EditTraceCommons';
 
-function CreateTrace(props) {
+function CreateMilestone(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -36,7 +36,7 @@ function CreateTrace(props) {
   const campaign = useCampaign(campaignId, campaignSlug);
   const [form] = Form.useForm();
 
-  const [trace, setTrace] = useState({
+  const [milestone, setMilestone] = useState({
     title: '',
     description: '',
     picture: '',
@@ -59,9 +59,9 @@ function CreateTrace(props) {
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
     if (type === 'checkbox') {
-      setTrace({ ...trace, [name]: checked });
+      setMilestone({ ...milestone, [name]: checked });
     } else {
-      setTrace({ ...trace, [name]: value });
+      setMilestone({ ...milestone, [name]: value });
     }
   };
 
@@ -88,7 +88,7 @@ function CreateTrace(props) {
         return;
       }
 
-      const { title, description, reviewerAddress, hasReviewer, picture } = trace;
+      const { title, description, reviewerAddress, hasReviewer, picture } = milestone;
       const ms = new LPTrace({
         title,
         description,
@@ -101,9 +101,9 @@ function CreateTrace(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-      ms.formType = Trace.TRACETYPE;
+      ms.formType = Trace.MILESTONETYPE;
 
-      if (trace.donateToCommunity) {
+      if (milestone.donateToCommunity) {
         ms.communityId = config.defaultCommunityId;
       }
 
@@ -120,7 +120,7 @@ function CreateTrace(props) {
           let notificationDescription;
           if (created) {
             if (!userIsCampaignOwner) {
-              notificationDescription = 'Trace proposed to the Campaign Owner';
+              notificationDescription = 'Milestone proposed to the Campaign Owner';
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -134,7 +134,7 @@ function CreateTrace(props) {
             );
           } else {
             const notificationError =
-              'It seems your Trace has been updated!, this should not be happened';
+              'It seems your Milestone has been updated!, this should not be happened';
             notification.error({ description: notificationError });
           }
 
@@ -148,7 +148,7 @@ function CreateTrace(props) {
           notification.success({
             description: (
               <p>
-                Your Trace has been created!
+                Your Milestone has been created!
                 <br />
                 <a href={txUrl} target="_blank" rel="noopener noreferrer">
                   View transaction
@@ -175,7 +175,7 @@ function CreateTrace(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title="Create New Trace"
+              title="Create New Milestone"
               ghost={false}
             />
           </Col>
@@ -193,50 +193,50 @@ function CreateTrace(props) {
               }}
             >
               <div className="card-form-header">
-                <img src={`${process.env.PUBLIC_URL}/img/trace.png`} alt="trace-logo" />
+                <img src={`${process.env.PUBLIC_URL}/img/milestone.png`} alt="milestone-logo" />
                 <div className="title">Milestone</div>
               </div>
 
               <TraceCampaignInfo campaign={campaign} />
 
               <div className="section">
-                <div className="title">Trace details</div>
+                <div className="title">Milestone details</div>
 
                 <TraceTitle
-                  value={trace.title}
+                  value={milestone.title}
                   onChange={handleInputChange}
-                  extra="What are you going to accomplish in this Trace?"
+                  extra="What are you going to accomplish in this Milestone?"
                 />
 
                 <TraceDescription
-                  value={trace.description}
+                  value={milestone.description}
                   onChange={handleInputChange}
                   extra="Explain how you are going to do this successfully."
-                  placeholder="Describe how you are going to execute this trace successfully..."
+                  placeholder="Describe how you are going to execute this milestone successfully..."
                   id="description"
                 />
 
                 <TracePicture
                   setPicture={setPicture}
-                  picture={trace.picture}
-                  traceTitle={trace.title}
+                  picture={milestone.picture}
+                  traceTitle={milestone.title}
                 />
 
                 <TraceDonateToCommunity
-                  value={trace.donateToCommunity}
+                  value={milestone.donateToCommunity}
                   onChange={handleInputChange}
                 />
 
                 <TraceReviewer
                   toggleHasReviewer={handleInputChange}
                   setReviewer={setReviewer}
-                  hasReviewer={trace.hasReviewer}
-                  traceReviewerAddress={trace.reviewerAddress}
-                  traceType="Trace"
+                  hasReviewer={milestone.hasReviewer}
+                  traceReviewerAddress={milestone.reviewerAddress}
+                  traceType="Milestone"
                 />
 
                 <div className="trace-desc">
-                  Contributions to this trace will be sent directly to the
+                  Contributions to this milestone will be sent directly to the
                   <strong>{` ${campaign && campaign.title} `}</strong>
                   Campaign address. As a preventative measure, please confirm that someone working
                   on the project has access to funds that are sent to this address!
@@ -255,7 +255,7 @@ function CreateTrace(props) {
   );
 }
 
-CreateTrace.propTypes = {
+CreateMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       id: PropTypes.string,
@@ -268,4 +268,4 @@ const isEqual = (prevProps, nextProps) =>
   prevProps.match.params.id === nextProps.match.params.id &&
   prevProps.match.params.slug === nextProps.match.params.slug;
 
-export default memo(CreateTrace, isEqual);
+export default memo(CreateMilestone, isEqual);

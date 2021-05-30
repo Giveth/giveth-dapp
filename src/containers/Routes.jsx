@@ -26,12 +26,12 @@ import EditTraceOld from '../components/views/EditTraceOld';
 import TraceCreateOptionsMenu from '../components/views/TraceCreateOptionsMenu';
 import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
-import CreateTrace from '../components/views/CreateTrace';
+import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
 import EditBounty from '../components/views/EditBounty';
-import EditTrace from '../components/views/EditTrace';
 import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
+import EditMilestone from '../components/views/EditMilestone';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
@@ -144,7 +144,11 @@ const Routes = () => {
         path="/campaign/:slug/new"
         render={props => <TraceCreateOptionsMenu {...props} />}
       />
-      <Route exact path="/campaign/:slug/new/trace" render={props => <CreateTrace {...props} />} />
+      <Route
+        exact
+        path="/campaign/:slug/new/milestone"
+        render={props => <CreateMilestone {...props} />}
+      />
       <Route
         exact
         path="/campaign/:slug/new/payment"
@@ -230,7 +234,7 @@ const Routes = () => {
       <Route exact path="/bounty/:traceId/edit" render={props => <EditBounty {...props} />} />
       <Route exact path="/expense/:traceId/edit" render={props => <EditExpense {...props} />} />
       <Route exact path="/payment/:traceId/edit" render={props => <EditPayment {...props} />} />
-      <Route exact path="/trace/:traceId/edit" render={props => <EditTrace {...props} />} />
+      <Route exact path="/milestone/:traceId/edit" render={props => <EditMilestone {...props} />} />
       <Route
         exact
         path="/campaigns/:id/traces"

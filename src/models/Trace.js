@@ -209,7 +209,7 @@ export default class Trace extends BasicModel {
     return Trace.formTypes.BOUNTY;
   }
 
-  static get TRACETYPE() {
+  static get MILESTONETYPE() {
     return Trace.formTypes.Milestone;
   }
 

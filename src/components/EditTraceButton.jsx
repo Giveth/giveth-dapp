@@ -25,7 +25,7 @@ const EditTraceButton = forwardRef(({ trace }, ref) => {
       .then(() => {
         const { formType } = trace;
         if (
-          [Trace.BOUNTYTYPE, Trace.EXPENSETYPE, Trace.PAYMENTTYPE, Trace.TRACETYPE].includes(
+          [Trace.BOUNTYTYPE, Trace.EXPENSETYPE, Trace.PAYMENTTYPE, Trace.MILESTONETYPE].includes(
             formType,
           )
         ) {

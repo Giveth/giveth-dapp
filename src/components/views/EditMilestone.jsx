@@ -22,7 +22,7 @@ import {
   TraceTitle,
 } from '../EditTraceCommons';
 
-function EditTrace(props) {
+function EditMilestone(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -62,7 +62,7 @@ function EditTrace(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Trace.TRACETYPE ||
+      ms.formType !== Trace.MILESTONETYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
@@ -101,7 +101,7 @@ function EditTrace(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.id, isEditNotAllowed, trace, traceId]);
 
   useEffect(() => {
     setUserIsOwner(
@@ -166,12 +166,12 @@ function EditTrace(props) {
         let notificationDescription;
         if (created) {
           if (!userIsCampaignOwner) {
-            notificationDescription = 'Trace proposed to the Campaign Owner';
+            notificationDescription = 'Milestone proposed to the Campaign Owner';
           }
         } else if (txUrl) {
           notificationDescription = (
             <p>
-              Your Trace is pending....
+              Your Milestone is pending....
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -179,7 +179,7 @@ function EditTrace(props) {
             </p>
           );
         } else {
-          notificationDescription = 'Your Trace has been updated!';
+          notificationDescription = 'Your Milestone has been updated!';
         }
 
         if (notificationDescription) {
@@ -192,7 +192,7 @@ function EditTrace(props) {
         notification.success({
           description: (
             <p>
-              Your Trace has been updated!
+              Your Milestone has been updated!
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -218,7 +218,7 @@ function EditTrace(props) {
             <PageHeader
               className="site-page-header"
               onBack={goBack}
-              title="Edit Trace"
+              title="Edit Milestone"
               ghost={false}
             />
           </Col>
@@ -238,14 +238,14 @@ function EditTrace(props) {
                 initialValues={initialValues}
               >
                 <div className="card-form-header">
-                  <img src={`${process.env.PUBLIC_URL}/img/trace.png`} alt="trace-logo" />
-                  <div className="title">Trace</div>
+                  <img src={`${process.env.PUBLIC_URL}/img/milestone.png`} alt="milestone-logo" />
+                  <div className="title">Milestone</div>
                 </div>
 
                 <TraceCampaignInfo campaign={campaign} />
 
                 <div className="section">
-                  <div className="title">Trace details</div>
+                  <div className="title">Milestone details</div>
 
                   <TraceTitle
                     value={trace.title}
@@ -258,7 +258,7 @@ function EditTrace(props) {
                     value={trace.description}
                     onChange={handleInputChange}
                     extra="Explain how you are going to do this successfully."
-                    placeholder="Describe how you are going to execute this trace successfully..."
+                    placeholder="Describe how you are going to execute this milestone successfully..."
                     id="description"
                     disabled={traceHasFunded}
                   />
@@ -276,13 +276,13 @@ function EditTrace(props) {
                     setReviewer={setReviewer}
                     hasReviewer={hasReviewer}
                     traceReviewerAddress={trace.reviewerAddress}
-                    traceType="Trace"
+                    traceType="Milestone"
                     initialValue={initialValues.reviewerAddress}
                     disabled={!isProposed}
                   />
 
                   <div className="trace-desc">
-                    Contributions to this trace will be sent directly to the
+                    Contributions to this milestone will be sent directly to the
                     <strong>{` ${campaign && campaign.title} `}</strong>
                     Campaign address. As a preventative measure, please confirm that someone working
                     on the project has access to funds that are sent to this address!
@@ -290,7 +290,7 @@ function EditTrace(props) {
                 </div>
                 <Form.Item>
                   <Button block size="large" type="primary" htmlType="submit" loading={loading}>
-                    Update Trace
+                    Update Milestone
                   </Button>
                 </Form.Item>
               </Form>
@@ -302,7 +302,7 @@ function EditTrace(props) {
   );
 }
 
-EditTrace.propTypes = {
+EditMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       traceId: PropTypes.string,
@@ -313,4 +313,4 @@ EditTrace.propTypes = {
 const isEqual = (prevProps, nextProps) =>
   prevProps.match.params.traceId === nextProps.match.params.traceId;
 
-export default memo(EditTrace, isEqual);
+export default memo(EditMilestone, isEqual);
