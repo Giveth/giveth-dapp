@@ -7,8 +7,8 @@ import LPTrace from './LPTrace';
  */
 export default {
   create: data => {
-    if (data.type === 'LPPCappedTrace') return new LPPCappedTrace(data);
-    if (data.type === 'LPTrace') return new LPTrace(data);
+    if (data.type === 'LPPCappedMilestone') return new LPPCappedTrace(data);
+    if (data.type === 'LPMilestone') return new LPTrace(data);
     return new BridgedTrace({ ...data });
   },
 };

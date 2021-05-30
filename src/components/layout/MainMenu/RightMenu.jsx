@@ -91,7 +91,7 @@ const RightMenu = () => {
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
             <Menu.Item key="Manage:4">
-              <Link to="/my-dacs">My Communities</Link>
+              <Link to="/my-communities">My Communities</Link>
             </Menu.Item>
           )}
           {(userIsCampaignManager || userIsReviewer) && (
