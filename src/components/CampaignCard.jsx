@@ -8,7 +8,7 @@ import Campaign from '../models/Campaign';
 import GivethLogo from '../assets/logo.svg';
 
 /**
- * Campaign Card visible in the DACs view.
+ * Campaign Card visible in the Communities view.
  */
 const CampaignCard = props => {
   const viewCampaign = () => {

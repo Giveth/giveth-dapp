@@ -5,7 +5,7 @@ import Model from './Model';
 import { getTruncatedText, ZERO_ADDRESS } from '../lib/helpers';
 
 /**
- * The DAC, Milestone and Campaign base model containing basic common interface
+ * The Community, Milestone and Campaign base model containing basic common interface
  */
 class BasicModel extends Model {
   /**

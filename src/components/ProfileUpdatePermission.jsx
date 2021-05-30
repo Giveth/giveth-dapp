@@ -26,7 +26,7 @@ function ProfileUpdatePermission({ user, updateUser }) {
   };
 
   const multiOptions = [
-    { label: 'DAC Owner', value: 'isDelegator' },
+    { label: 'Community Owner', value: 'isDelegator' },
     { label: 'Campaign Owner', value: 'isProjectOwner' },
     { label: 'Reviewer', value: 'isReviewer' },
   ];

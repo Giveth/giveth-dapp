@@ -12,7 +12,7 @@ import Lottie from 'lottie-react';
 import debounce from 'lodash.debounce';
 
 import Loader from '../Loader';
-import MilestoneCard from '../MilestoneCard';
+import TraceCard from '../TraceCard';
 import { getUserName, getUserAvatar, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
@@ -64,12 +64,12 @@ const ViewCampaign = ({ match }) => {
   } = useContext(UserContext);
 
   const [isLoading, setLoading] = useState(true);
-  const [isLoadingMilestones, setLoadingMilestones] = useState(true);
+  const [isLoadingTraces, setLoadingTraces] = useState(true);
   const [isLoadingFromScratch, setLoadingFromScratch] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
-  const [milestones, setMilestones] = useState([]);
-  const [milestonesTotal, setMilestonesTotal] = useState(0);
+  const [traces, setTraces] = useState([]);
+  const [tracesTotal, setTracesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [aggregateDonationsTotal, setAggregateDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
@@ -82,7 +82,7 @@ const ViewCampaign = ({ match }) => {
   const debouncedSearch = useRef();
 
   const donationsPerBatch = 5;
-  const milestonesPerBatch = 12;
+  const tracesPerBatch = 12;
 
   const loadMoreAggregateDonations = (
     loadFromScratch = false,
@@ -105,23 +105,23 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  const loadMoreMilestones = (loadFromScratch = false, query) => {
-    setLoadingMilestones(true);
-    CampaignService.getMilestones(
+  const loadMoreTraces = (loadFromScratch = false, query) => {
+    setLoadingTraces(true);
+    CampaignService.getTraces(
       campaign.id,
       query || searchPhrase,
-      milestonesPerBatch,
-      loadFromScratch ? 0 : milestones.length,
-      (_milestones, _milestonesTotal) => {
-        const newMilestones = loadFromScratch ? _milestones : milestones.concat(_milestones);
-        setMilestones(newMilestones);
-        setLoadingMilestones(false);
+      tracesPerBatch,
+      loadFromScratch ? 0 : traces.length,
+      (_traces, _tracesTotal) => {
+        const newTraces = loadFromScratch ? _traces : traces.concat(_traces);
+        setTraces(newTraces);
+        setLoadingTraces(false);
         setLoadingFromScratch(false);
-        setMilestonesTotal(_milestonesTotal);
+        setTracesTotal(_tracesTotal);
       },
       err => {
-        setLoadingMilestones(false);
-        ErrorHandler(err, 'Some error on fetching campaign milestones, please try later');
+        setLoadingTraces(false);
+        ErrorHandler(err, 'Some error on fetching campaign traces, please try later');
       },
     );
   };
@@ -164,10 +164,10 @@ const ViewCampaign = ({ match }) => {
 
   useEffect(() => {
     if (campaign.id && !debouncedSearch.current) {
-      debouncedSearch.current = debounce(query => loadMoreMilestones(true, query), 1000);
+      debouncedSearch.current = debounce(query => loadMoreTraces(true, query), 1000);
     }
     if (campaign._id && donationsObserver.current === undefined) {
-      loadMoreMilestones(true);
+      loadMoreTraces(true);
       loadDonations(campaign._id);
       loadMoreAggregateDonations(true);
       // subscribe to donation count
@@ -197,7 +197,7 @@ const ViewCampaign = ({ match }) => {
     if (campaign.id) {
       debouncedSearch.current(searchPhrase);
       setLoadingFromScratch(true);
-      setLoadingMilestones(true);
+      setLoadingTraces(true);
     }
   }, [searchPhrase]);
 
@@ -240,7 +240,7 @@ const ViewCampaign = ({ match }) => {
     return DescriptionRender(campaign.description);
   };
 
-  const gotoCreateMilestone = () => {
+  const gotoCreateTrace = () => {
     history.push(`/campaign/${campaign.slug}/new`);
   };
 
@@ -260,7 +260,7 @@ const ViewCampaign = ({ match }) => {
   const leaderBoardTitle = `Leaderboard${
     aggregateDonationsTotal ? ` (${aggregateDonationsTotal})` : ''
   }`;
-  const milestonesTitle = `Milestones${milestonesTotal ? ` (${milestonesTotal})` : ''}`;
+  const tracesTitle = `Traces${tracesTotal ? ` (${tracesTotal})` : ''}`;
 
   const goBackSectionLinks = [
     { title: 'About', inPageId: 'description' },
@@ -270,15 +270,15 @@ const ViewCampaign = ({ match }) => {
     },
     { title: 'Funding', inPageId: 'funding' },
     {
-      title: milestonesTitle,
-      inPageId: 'milestones',
+      title: tracesTitle,
+      inPageId: 'traces',
     },
   ];
 
   return (
     <HelmetProvider context={helmetContext}>
       <UserConsumer>
-        {({ state: { userIsDacOwner } }) => (
+        {({ state: { userIsCommunityOwner } }) => (
           <ErrorBoundary>
             <div id="view-campaign-view">
               {isLoading && <Loader className="fixed" />}
@@ -345,7 +345,7 @@ const ViewCampaign = ({ match }) => {
                         </ProjectViewActionAlert>
                       )}
 
-                      {userIsDacOwner && (
+                      {userIsCommunityOwner && (
                         <ProjectViewActionAlert message="Delegate some donation to this project">
                           <DelegateMultipleButton campaign={campaign} />
                         </ProjectViewActionAlert>
@@ -440,7 +440,7 @@ const ViewCampaign = ({ match }) => {
                             </Col>
                             {campaign.isActive && (
                               <Fragment>
-                                {userIsDacOwner && (
+                                {userIsCommunityOwner && (
                                   <Col xs={12} md={7} lg={7} xl={5}>
                                     <DelegateMultipleButton size="large" campaign={campaign} />
                                   </Col>
@@ -480,10 +480,10 @@ const ViewCampaign = ({ match }) => {
                       {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                     </Row>
 
-                    <div id="milestones" className="spacer-bottom-50 spacer-top-50">
+                    <div id="traces" className="spacer-bottom-50 spacer-top-50">
                       <Row justify="space-between" className="spacer-bottom-16">
                         <Col lg={8}>
-                          <h5>{milestonesTitle}</h5>
+                          <h5>{tracesTitle}</h5>
                         </Col>
                         <Col xs={24} lg={16}>
                           <Row gutter={[16, 16]}>
@@ -492,7 +492,7 @@ const ViewCampaign = ({ match }) => {
                                 <div className="customSearchBox">
                                   <Input
                                     className="pr-5"
-                                    placeholder="Search Milestones ..."
+                                    placeholder="Search Traces ..."
                                     size="large"
                                     value={searchPhrase}
                                     onChange={query => {
@@ -507,7 +507,7 @@ const ViewCampaign = ({ match }) => {
                                     <SearchOutlined
                                       className={searchPhrase ? 'd-none' : ''}
                                       onClick={() => {
-                                        loadMoreMilestones(true);
+                                        loadMoreTraces(true);
                                         setLoadingFromScratch(true);
                                       }}
                                     />
@@ -522,7 +522,7 @@ const ViewCampaign = ({ match }) => {
                                 <Col xs={12} sm={6}>
                                   <Button
                                     type="primary"
-                                    onClick={gotoCreateMilestone}
+                                    onClick={gotoCreateTrace}
                                     block
                                     size="large"
                                   >
@@ -554,17 +554,17 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {((milestonesTotal === 0 && !isLoadingMilestones) ||
-                        (isLoadingFromScratch && isLoadingMilestones)) && (
+                      {((tracesTotal === 0 && !isLoadingTraces) ||
+                        (isLoadingFromScratch && isLoadingTraces)) && (
                         <div className="text-center mb-5 pb-5 pt-4">
                           <Lottie
                             animationData={SearchAnimation}
                             className="m-auto"
                             loop={false}
                             style={{ width: '250px' }}
-                            autoplay={isLoadingMilestones}
+                            autoplay={isLoadingTraces}
                           />
-                          {!isLoadingMilestones &&
+                          {!isLoadingTraces &&
                             (searchPhrase ? (
                               <Fragment>
                                 <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
@@ -582,34 +582,34 @@ const ViewCampaign = ({ match }) => {
                               </Fragment>
                             ) : (
                               <Fragment>
-                                <h3 style={{ color: '#2C0B3F' }}>No milestones in here!</h3>
+                                <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
                               </Fragment>
                             ))}
                         </div>
                       )}
 
                       {!isLoadingFromScratch && (
-                        <div className="milestone-cards-grid-container">
-                          {milestones.map(m => (
-                            <MilestoneCard milestone={m} key={m._id} history={history} />
+                        <div className="trace-cards-grid-container">
+                          {traces.map(t => (
+                            <TraceCard trace={t} key={t._id} history={history} />
                           ))}
                         </div>
                       )}
 
-                      {milestones.length < milestonesTotal && !isLoadingFromScratch && (
+                      {traces.length < tracesTotal && !isLoadingFromScratch && (
                         <div className="text-center">
                           <button
                             type="button"
                             className="btn btn-sm btn-info"
-                            onClick={() => loadMoreMilestones()}
-                            disabled={isLoadingMilestones}
+                            onClick={() => loadMoreTraces()}
+                            disabled={isLoadingTraces}
                           >
-                            {isLoadingMilestones && (
+                            {isLoadingTraces && (
                               <span>
                                 <i className="fa fa-circle-o-notch fa-spin" /> Loading
                               </span>
                             )}
-                            {!isLoadingMilestones && <span>Load More</span>}
+                            {!isLoadingTraces && <span>Load More</span>}
                           </button>
                         </div>
                       )}

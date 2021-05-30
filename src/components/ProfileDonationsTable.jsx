@@ -10,7 +10,7 @@ import Loader from './Loader';
 import { Donation } from '../models';
 import config from '../configuration';
 
-const ProfileDacsTable = ({ userAddress }) => {
+const ProfileCommunitiesTable = ({ userAddress }) => {
   const [isLoading, setLoading] = useState(true);
   const [donations, setDonations] = useState([]);
   const [total, setTotal] = useState(0);
@@ -18,7 +18,7 @@ const ProfileDacsTable = ({ userAddress }) => {
   const itemsPerPage = 25;
   const isMounted = useRef(false);
 
-  const loadUserDacs = () => {
+  const loadUserCommunities = () => {
     if (isMounted.current === false) return;
     feathersClient
       .service('donations')
@@ -58,7 +58,7 @@ const ProfileDacsTable = ({ userAddress }) => {
 
   useEffect(() => {
     setLoading(true);
-    loadUserDacs();
+    loadUserCommunities();
   }, [userAddress, skipPages]);
 
   const handlePageChanged = newPage => {
@@ -157,8 +157,8 @@ const ProfileDacsTable = ({ userAddress }) => {
   );
 };
 
-ProfileDacsTable.propTypes = {
+ProfileCommunitiesTable.propTypes = {
   userAddress: PropTypes.string.isRequired,
 };
 
-export default ProfileDacsTable;
+export default ProfileCommunitiesTable;

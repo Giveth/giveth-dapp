@@ -1,6 +1,6 @@
 import { LPPCampaign } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
-import Milestone from '../models/Milestone';
+import Trace from '../models/Trace';
 import getNetwork from '../lib/blockchain/getNetwork';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import extraGas from '../lib/blockchain/extraGas';
@@ -134,16 +134,16 @@ class CampaignService {
   }
 
   /**
-   * Get Campaign milestones listener
+   * Get Campaign traces listener
    *
    * @param id            ID of the Campaign which donations should be retrieved
-   * @param searchPhrase  Phrase to search milestones by
+   * @param searchPhrase  Phrase to search traces by
    * @param $limit        Amount of records to be loaded
    * @param $skip         Amounds of record to be skipped
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
    */
-  static getMilestones(
+  static getTraces(
     id,
     searchPhrase = '',
     $limit = 100,
@@ -154,9 +154,9 @@ class CampaignService {
     const query = {
       campaignId: id,
       status: {
-        $nin: [Milestone.CANCELED, Milestone.PROPOSED, Milestone.REJECTED, Milestone.PENDING],
+        $nin: [Trace.CANCELED, Trace.PROPOSED, Trace.REJECTED, Trace.PENDING],
       },
-      $or: [{ donationCounters: { $not: { $size: 0 } } }, { status: { $ne: Milestone.COMPLETED } }],
+      $or: [{ donationCounters: { $not: { $size: 0 } } }, { status: { $ne: Trace.COMPLETED } }],
       $limit,
       $skip,
     };
@@ -170,13 +170,13 @@ class CampaignService {
     }
 
     return feathersClient
-      .service('milestones')
+      .service('traces')
       .find({
         query,
       })
       .then(resp =>
         onSuccess(
-          resp.data.map(m => new Milestone(m)),
+          resp.data.map(m => new Trace(m)),
           resp.total,
         ),
       )

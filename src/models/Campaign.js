@@ -47,7 +47,7 @@ class Campaign extends BasicModel {
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
-    this.archivedMilestones = new Set(data.archivedMilestones || []);
+    this.archivedTraces = new Set(data.archivedTraces || []);
     this.customThanksMessage = data.customThanksMessage;
     this.slug = data.slug;
     this._gasPaidUsdValue = data.gasPaidUsdValue || 0;
@@ -59,7 +59,7 @@ class Campaign extends BasicModel {
       description: this.description,
       communityUrl: this.communityUrl,
       image: cleanIpfsPath(this.image),
-      archivedMilestones: Array.from(this.archivedMilestones),
+      archivedTraces: Array.from(this.archivedTraces),
       version: 1,
     };
   }
@@ -78,7 +78,7 @@ class Campaign extends BasicModel {
       reviewerAddress: this.reviewerAddress,
       fundsForwarder: ZERO_SMALL_ADDRESS,
       status: this.status,
-      archivedMilestones: Array.from(this.archivedMilestones),
+      archivedTraces: Array.from(this.archivedTraces),
     };
     if (!this.id) campaign.txHash = txHash;
     return campaign;

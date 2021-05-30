@@ -11,7 +11,7 @@ import { Slider } from 'antd';
 
 import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
-import Milestone from 'models/Milestone';
+import Trace from 'models/Trace';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
@@ -26,9 +26,9 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
-import BridgedMilestone from '../models/BridgedMilestone';
-import LPPCappedMilestone from '../models/LPPCappedMilestone';
-import LPMilestone from '../models/LPMilestone';
+import BridgedTrace from '../models/BridgedTrace';
+import LPPCappedTrace from '../models/LPPCappedTrace';
+import LPTrace from '../models/LPTrace';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -53,11 +53,11 @@ const ModalContent = props => {
     title: t.name,
   }));
 
-  const { campaign, milestone, setModalVisible } = props;
+  const { campaign, trace, setModalVisible } = props;
 
   const [sliderMarks, setSliderMarks] = useState();
   const [isDelegationLimited, setIsDelegationLimited] = useState();
-  const [isDacsFetched, setIsDacsFetched] = useState(false);
+  const [isCommunitiesFetched, setIsCommunitiesFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
@@ -68,9 +68,7 @@ const ModalContent = props => {
   const [delegationOptions, setDelegationOptions] = useState([]);
   const [objectToDelegateFrom, setObjectToDelegateFrom] = useState([]);
   const [selectedToken, setSelectedToken] = useState(
-    props.milestone && props.milestone.acceptsSingleToken
-      ? props.milestone.token
-      : tokenWhitelist[0],
+    props.trace && props.trace.acceptsSingleToken ? props.trace.token : tokenWhitelist[0],
   );
 
   const delegateFromType = useRef();
@@ -98,7 +96,7 @@ const ModalContent = props => {
     const { decimals } = selectedToken;
 
     switch (entity.type) {
-      case 'dac':
+      case 'community':
         options.delegateId = entity.delegateId;
         options.delegateTypeId = entity.id;
         options.status = Donation.WAITING;
@@ -160,18 +158,18 @@ const ModalContent = props => {
 
     let localMax = delegationSum;
 
-    if (props.milestone && props.milestone.isCapped) {
-      const milestoneMaxDonationAmount = props.milestone.maxAmount.minus(
-        props.milestone.totalDonatedSingleToken,
+    if (props.trace && props.trace.isCapped) {
+      const traceMaxDonationAmount = props.trace.maxAmount.minus(
+        props.trace.totalDonatedSingleToken,
       );
 
-      if (milestoneMaxDonationAmount.lt(delegationSum)) {
-        delegationSum = milestoneMaxDonationAmount;
-        localMax = milestoneMaxDonationAmount;
+      if (traceMaxDonationAmount.lt(delegationSum)) {
+        delegationSum = traceMaxDonationAmount;
+        localMax = traceMaxDonationAmount;
         setIsDelegationLimited(false);
-      } else if (milestoneMaxDonationAmount.lt(localMax)) {
-        localMax = milestoneMaxDonationAmount;
-      } else if (!milestoneMaxDonationAmount.lt(delegationSum)) {
+      } else if (traceMaxDonationAmount.lt(localMax)) {
+        localMax = traceMaxDonationAmount;
+      } else if (!traceMaxDonationAmount.lt(delegationSum)) {
         setIsDelegationLimited(true);
       }
     }
@@ -185,10 +183,10 @@ const ModalContent = props => {
     setMaxAmount(max);
     setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
     setLoadingDonations(false);
-  }, [objectToDelegateFrom, props.milestone, selectedToken, delegationOptions]);
+  }, [objectToDelegateFrom, props.trace, selectedToken, delegationOptions]);
 
   const isLimitedDelegateCount = () => {
-    if (props.milestone && props.milestone.isCapped) {
+    if (props.trace && props.trace.isCapped) {
       return totalDonations > delegations.length && isDelegationLimited;
     }
 
@@ -209,10 +207,10 @@ const ModalContent = props => {
     setObjectToDelegateFrom(target.value);
   }
 
-  const getDacs = useCallback(() => {
+  const getCommunities = useCallback(() => {
     const userAddress = currentUser ? currentUser.address : '';
     feathersClient
-      .service('dacs')
+      .service('communities')
       .find({
         query: {
           delegateId: { $gt: '0' },
@@ -221,35 +219,35 @@ const ModalContent = props => {
         },
       })
       .then(resp => {
-        const dacs = resp.data.map(c => ({
+        const communities = resp.data.map(c => ({
           name: c.title,
           id: c._id,
           ownerAddress: c.ownerAddress,
           delegateId: c.delegateId,
           delegateEntity: c.delegateEntity,
           delegate: c.delegate,
-          type: 'dac',
+          type: 'community',
         }));
 
         const _delegationOptions =
-          milestone && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
-            ? dacs.concat([
+          trace && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
+            ? communities.concat([
                 {
                   id: campaign._id,
                   name: campaign.title,
                   projectId: campaign.projectId,
-                  ownerEntity: milestone.ownerEntity,
+                  ownerEntity: trace.ownerEntity,
                   type: 'campaign',
                 },
               ])
-            : dacs;
+            : communities;
 
         if (isMounted.current) {
-          setIsDacsFetched(true);
+          setIsCommunitiesFetched(true);
           setDelegationOptions(_delegationOptions);
         }
       });
-  }, [currentUser, campaign, milestone]);
+  }, [currentUser, campaign, trace]);
 
   function submit({ comment }) {
     setSaving(true);
@@ -261,7 +259,7 @@ const ModalContent = props => {
       setSaving(false);
       setModalVisible(false);
       loadDonations();
-      delegationPending(txLink, delegateType === 'dac');
+      delegationPending(txLink, delegateType === 'community');
     };
 
     const onSuccess = txLink => {
@@ -284,7 +282,7 @@ const ModalContent = props => {
     DonationService.delegateMultiple(
       delegations,
       utils.toWei(amount),
-      props.milestone || props.campaign,
+      props.trace || props.campaign,
       comment,
       onCreated,
       onSuccess,
@@ -305,8 +303,8 @@ const ModalContent = props => {
     } else if (currentUser.address) {
       setDelegationOptions([]);
       setObjectToDelegateFrom([]);
-      setIsDacsFetched(false);
-      getDacs();
+      setIsCommunitiesFetched(false);
+      getCommunities();
     }
     prevUser.current = currentUser;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -331,8 +329,8 @@ const ModalContent = props => {
       {' '}
       <p>
         You are delegating donations to
-        {!milestone && <strong> {campaign.title}</strong>}
-        {milestone && <strong> {milestone.title}</strong>}
+        {!trace && <strong> {campaign.title}</strong>}
+        {trace && <strong> {trace.title}</strong>}
       </p>
       <Fragment>
         {isLimitedDelegateCount() && (
@@ -343,7 +341,7 @@ const ModalContent = props => {
               <strong>{config.donationDelegateCountLimit}</strong> sources on each transaction. In
               this try, you are allowed to delegate money of <strong>{delegations.length}</strong>{' '}
               donations of total <strong>{totalDonations}</strong> available in{' '}
-              {delegateFromType.current === 'dac' ? 'DAC' : 'Campaign'}.
+              {delegateFromType.current === 'community' ? 'Community' : 'Campaign'}.
             </p>
           </div>
         )}
@@ -358,7 +356,7 @@ const ModalContent = props => {
             <InputToken
               name="delegateFrom"
               label="Delegate from:"
-              placeholder={milestone ? 'Select a DAC or Campaign' : 'Select a DAC'}
+              placeholder={trace ? 'Select a Community or Campaign' : 'Select a Community'}
               value={objectToDelegateFrom}
               options={delegationOptions}
               onSelect={v => selectedObject(v)}
@@ -369,13 +367,13 @@ const ModalContent = props => {
           {objectToDelegateFrom.length !== 1 && (
             <p>
               Please select entity from which you want to delegate money to the{' '}
-              {milestone ? milestone.title : campaign.title}{' '}
+              {trace ? trace.title : campaign.title}{' '}
             </p>
           )}
           {objectToDelegateFrom.length === 1 && isLoadingDonations && <Loader />}
           {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
             <div>
-              {(!props.milestone || !props.milestone.acceptsSingleToken) && (
+              {(!props.trace || !props.trace.acceptsSingleToken) && (
                 <SelectFormsy
                   name="token"
                   id="token-select"
@@ -392,10 +390,10 @@ const ModalContent = props => {
                   The amount available to delegate is 0 {selectedToken.symbol}
                   <br />
                   Please select{' '}
-                  {!props.milestone || !props.milestone.acceptsSingleToken
+                  {!props.trace || !props.trace.acceptsSingleToken
                     ? 'a different currency or '
                     : ''}
-                  different source {milestone ? 'DAC/Campaign' : 'DAC'}
+                  different source {trace ? 'Community/Campaign' : 'Community'}
                 </p>
               ) : (
                 <div>
@@ -459,7 +457,7 @@ const ModalContent = props => {
   );
 
   const isContextReady =
-    !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isDacsFetched;
+    !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isCommunitiesFetched;
 
   return (
     <React.Fragment>
@@ -482,15 +480,15 @@ const ModalContent = props => {
 
 ModalContent.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.oneOfType(
-    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  trace: PropTypes.oneOfType(
+    [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ),
   setModalVisible: PropTypes.func.isRequired,
 };
 
 ModalContent.defaultProps = {
   campaign: undefined,
-  milestone: undefined,
+  trace: undefined,
 };
 
 export default React.memo(ModalContent);

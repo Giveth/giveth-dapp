@@ -27,7 +27,7 @@ import ErrorHandler from '../lib/ErrorHandler';
 
 import config from '../configuration';
 import DonationService from '../services/DonationService';
-import DACService from '../services/DACService';
+import CommunityService from '../services/CommunityService';
 import { feathersClient } from '../lib/feathersClient';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -35,7 +35,7 @@ import { Context as NotificationContext } from '../contextProviders/Notification
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import SelectFormsy from './SelectFormsy';
-import DAC from '../models/DAC';
+import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
@@ -146,7 +146,7 @@ const DonateButtonModal = props => {
   }, [selectedToken, NativeTokenBalance, setModalVisible]);
 
   const getMaxAmount = useCallback(() => {
-    const { dacId } = model;
+    const { communityId } = model;
 
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
@@ -164,7 +164,7 @@ const DonateButtonModal = props => {
 
     let { maxDonationAmount } = props;
     if (maxDonationAmount) {
-      if (dacId !== undefined && dacId !== 0) {
+      if (communityId !== undefined && communityId !== 0) {
         maxDonationAmount *= 1.03;
       }
       maxAmount = maxAmount.gt(maxDonationAmount)
@@ -527,26 +527,26 @@ const DonateButtonModal = props => {
     }
   };
 
-  const donateToDac = async (
+  const donateToCommunity = async (
     adminId,
-    dacId,
+    communityId,
     _amount,
     donationOwnerAddress,
     _allowanceApprovalType,
     comment,
   ) => {
-    const dac = await DACService.getByDelegateId(dacId);
+    const community = await CommunityService.getByDelegateId(communityId);
 
-    if (!dac) {
-      ErrorPopup(`Dac not found!`);
+    if (!community) {
+      ErrorPopup(`Community not found!`);
       return false;
     }
-    const { title: dacTitle } = dac;
+    const { title: communityTitle } = community;
 
-    const amountDAC = parseFloat(_amount - _amount / 1.03)
+    const amountCommunity = parseFloat(_amount - _amount / 1.03)
       .toFixed(6)
       .toString();
-    const amountMilestone = parseFloat(_amount / 1.03)
+    const amountTrace = parseFloat(_amount / 1.03)
       .toFixed(6)
       .toString();
     const tokenSymbol = selectedToken.symbol;
@@ -557,18 +557,18 @@ const DonateButtonModal = props => {
           <p>For your donation you need to make 2 transactions:</p>
           <ol style={{ textAlign: 'left' }}>
             <li>
-              The milestone owner decided to support the <b>{dacTitle}</b>! Woo-hoo! <br />{' '}
+              The trace owner decided to support the <b>{communityTitle}</b>! Woo-hoo! <br />{' '}
               <b>
-                {amountDAC} {tokenSymbol}
+                {amountCommunity} {tokenSymbol}
               </b>{' '}
               will be delegated.
             </li>
             <li>
               The rest (
               <b>
-                {amountMilestone} {tokenSymbol}
+                {amountTrace} {tokenSymbol}
               </b>
-              ) will go to the milestone owner.
+              ) will go to the trace owner.
             </li>
           </ol>
         </div>,
@@ -582,21 +582,15 @@ const DonateButtonModal = props => {
       try {
         if (
           await donateWithBridge(
-            dacId,
-            amountDAC,
+            communityId,
+            amountCommunity,
             donationOwnerAddress,
             _amount,
             comment,
             _allowanceApprovalType,
           )
         )
-          result = await donateWithBridge(
-            adminId,
-            amountMilestone,
-            donationOwnerAddress,
-            0,
-            comment,
-          );
+          result = await donateWithBridge(adminId, amountTrace, donationOwnerAddress, 0, comment);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -605,7 +599,7 @@ const DonateButtonModal = props => {
   };
 
   const submit = ({ customAddress, comment }) => {
-    const { adminId, dacId } = model;
+    const { adminId, communityId } = model;
 
     const donationOwnerAddress = customAddress || currentUser.address;
 
@@ -629,10 +623,10 @@ const DonateButtonModal = props => {
           setSaving(false);
           closeDialog();
         });
-    } else if (dacId) {
-      donateToDac(
+    } else if (communityId) {
+      donateToCommunity(
         adminId,
-        dacId,
+        communityId,
         amount,
         donationOwnerAddress,
         allowanceApprovalType.current,
@@ -740,13 +734,13 @@ const DonateButtonModal = props => {
           )}
           {isCorrectNetwork && currentUser.address && (
             <p>
-              {model.type.toLowerCase() === DAC.type && (
+              {model.type.toLowerCase() === Community.type && (
                 <span>
-                  You&apos;re pledging: as long as the DAC owner does not lock your money you can
-                  take take it back any time.
+                  You&apos;re pledging: as long as the Community owner does not lock your money you
+                  can take take it back any time.
                 </span>
               )}
-              {model.type.toLowerCase() !== DAC.type && (
+              {model.type.toLowerCase() !== Community.type && (
                 <span>
                   You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
                   you have filled out contact information in your <Link to="/profile">Profile</Link>{' '}
@@ -814,7 +808,7 @@ const DonateButtonModal = props => {
                       value={amount}
                       onChange={setAmount}
                       autoFocus
-                      lteMessage={`This donation exceeds your wallet balance or the Milestone max amount: ${convertEthHelper(
+                      lteMessage={`This donation exceeds your wallet balance or the Trace max amount: ${convertEthHelper(
                         maxAmount,
                         decimals,
                       )} ${symbol}.`}
@@ -930,7 +924,7 @@ const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
   adminId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   id: PropTypes.string.isRequired,
-  dacId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  communityId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   title: PropTypes.string.isRequired,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),

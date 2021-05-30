@@ -5,14 +5,14 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 
 import config from 'configuration';
-import Milestone from 'models/Milestone';
+import Trace from 'models/Trace';
 import Loader from './Loader';
 import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
 import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
 /**
- * Shows a table of donations for a given type (dac, campaign, milestone)
+ * Shows a table of donations for a given type (community, campaign, trace)
  */
 
 class DonationListItem extends Component {
@@ -237,7 +237,7 @@ const DonationList = props => {
           </div>
         )}
 
-        {!isLoading && donations.length === 0 && status === Milestone.IN_PROGRESS && (
+        {!isLoading && donations.length === 0 && status === Trace.IN_PROGRESS && (
           <p>No donations have been made yet. Be the first to donate now!</p>
         )}
       </div>

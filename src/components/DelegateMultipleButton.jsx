@@ -42,7 +42,7 @@ const closeButtonStyle = {
  * @prop {BN}           balance     Current user's balance
  * @prop {User}         currentUser Current user of the Dapp
  * @prop {Campaign}     campaign    If the delegation is towards campaign, this contains the campaign
- * @prop {Object}       milestone   It the delegation is towards campaign, this contains the milestone
+ * @prop {Object}       trace   It the delegation is towards campaign, this contains the trace
  * @prop {Object}       style       Styles added to the button
  */
 const DelegateMultipleButton = props => {

@@ -7,20 +7,20 @@ import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import LPMilestone from '../../models/LPMilestone';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import LPTrace from '../../models/LPTrace';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestonePicture,
-  MilestoneReviewer,
-  MilestoneTitle,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDescription,
+  TraceDonateToCommunity,
+  TracePicture,
+  TraceReviewer,
+  TraceTitle,
+} from '../EditTraceCommons';
 
 function CreateMilestone(props) {
   const {
@@ -40,7 +40,7 @@ function CreateMilestone(props) {
     title: '',
     description: '',
     picture: '',
-    donateToDac: true,
+    donateToCommunity: true,
     hasReviewer: true,
     reviewerAddress: '',
   });
@@ -89,7 +89,7 @@ function CreateMilestone(props) {
       }
 
       const { title, description, reviewerAddress, hasReviewer, picture } = milestone;
-      const ms = new LPMilestone({
+      const ms = new LPTrace({
         title,
         description,
         reviewerAddress: hasReviewer ? reviewerAddress : ZERO_ADDRESS,
@@ -101,20 +101,20 @@ function CreateMilestone(props) {
       ms.ownerAddress = currentUser.address;
       ms.campaignId = campaign._id;
       ms.parentProjectId = campaign.projectId;
-      ms.formType = Milestone.MILESTONETYPE;
+      ms.formType = Trace.MILESTONETYPE;
 
-      if (milestone.donateToDac) {
-        ms.dacId = config.defaultDacId;
+      if (milestone.donateToCommunity) {
+        ms.communityId = config.defaultCommunityId;
       }
 
       if (!userIsCampaignOwner) {
-        ms.status = Milestone.PROPOSED;
+        ms.status = Trace.PROPOSED;
       }
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -125,7 +125,7 @@ function CreateMilestone(props) {
           } else if (txUrl) {
             notificationDescription = (
               <p>
-                Your Milestone is pending....
+                Your Trace is pending....
                 <br />
                 <a href={txUrl} target="_blank" rel="noopener noreferrer">
                   View transaction
@@ -142,7 +142,7 @@ function CreateMilestone(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -169,7 +169,7 @@ function CreateMilestone(props) {
     <Fragment>
       <Web3ConnectWarning />
 
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -197,18 +197,18 @@ function CreateMilestone(props) {
                 <div className="title">Milestone</div>
               </div>
 
-              <MilestoneCampaignInfo campaign={campaign} />
+              <TraceCampaignInfo campaign={campaign} />
 
               <div className="section">
                 <div className="title">Milestone details</div>
 
-                <MilestoneTitle
+                <TraceTitle
                   value={milestone.title}
                   onChange={handleInputChange}
                   extra="What are you going to accomplish in this Milestone?"
                 />
 
-                <MilestoneDescription
+                <TraceDescription
                   value={milestone.description}
                   onChange={handleInputChange}
                   extra="Explain how you are going to do this successfully."
@@ -216,23 +216,26 @@ function CreateMilestone(props) {
                   id="description"
                 />
 
-                <MilestonePicture
+                <TracePicture
                   setPicture={setPicture}
                   picture={milestone.picture}
-                  milestoneTitle={milestone.title}
+                  traceTitle={milestone.title}
                 />
 
-                <MilestoneDonateToDac value={milestone.donateToDac} onChange={handleInputChange} />
+                <TraceDonateToCommunity
+                  value={milestone.donateToCommunity}
+                  onChange={handleInputChange}
+                />
 
-                <MilestoneReviewer
+                <TraceReviewer
                   toggleHasReviewer={handleInputChange}
                   setReviewer={setReviewer}
                   hasReviewer={milestone.hasReviewer}
-                  milestoneReviewerAddress={milestone.reviewerAddress}
-                  milestoneType="Milestone"
+                  traceReviewerAddress={milestone.reviewerAddress}
+                  traceType="Milestone"
                 />
 
-                <div className="milestone-desc">
+                <div className="trace-desc">
                   Contributions to this milestone will be sent directly to the
                   <strong>{` ${campaign && campaign.title} `}</strong>
                   Campaign address. As a preventative measure, please confirm that someone working

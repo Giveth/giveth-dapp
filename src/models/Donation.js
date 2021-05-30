@@ -3,7 +3,7 @@ import { utils } from 'web3';
 
 import Model from './Model';
 import { getTruncatedText } from '../lib/helpers';
-import Milestone from './Milestone';
+import Trace from './Trace';
 import Campaign from './Campaign';
 // import User from './User';
 
@@ -113,7 +113,7 @@ class Donation extends Model {
      *
      * URL {string}  URL to the entity
      * name {string} Title of the entity
-     * type {string} Type of the entity - one of DAC, CAMPAIGN, MILESTONE or GIVER
+     * type {string} Type of the entity - one of Community, CAMPAIGN, Milestone or GIVER
      */
     const donatedTo = {
       url: '/',
@@ -121,12 +121,12 @@ class Donation extends Model {
       type: '',
     };
     if (this._delegateId > 0 && !this._intendedProjectId) {
-      // DAC
+      // Community
       if (this._delegateEntity) {
-        donatedTo.url = `/dacs/${this._delegateEntity._id}`;
+        donatedTo.url = `/communities/${this._delegateEntity._id}`;
         donatedTo.name = getTruncatedText(this._delegateEntity.title, 45);
       }
-      donatedTo.type = 'DAC';
+      donatedTo.type = 'COMMUNITY';
     } else if (
       (!this._delegateId && this._ownerType === Campaign.type) ||
       (this._intendedProjectId && this._intendedProjectType === Campaign.type)
@@ -137,15 +137,15 @@ class Donation extends Model {
       donatedTo.name = entity !== undefined ? getTruncatedText(entity.title, 45) : null;
       donatedTo.type = 'CAMPAIGN';
     } else if (
-      (!this._delegateId && this._ownerType === Milestone.type) ||
-      (this._intendedProjectId && this._intendedProjectType === Milestone.type)
+      (!this._delegateId && this._ownerType === Trace.type) ||
+      (this._intendedProjectId && this._intendedProjectType === Trace.type)
     ) {
       // Milestone
       const entity = this._intendedProjectId ? this._intendedProjectEntity : this._ownerEntity;
       donatedTo.url =
-        entity !== undefined ? `/campaigns/${entity.campaign._id}/milestones/${entity._id}` : null;
+        entity !== undefined ? `/campaigns/${entity.campaign._id}/traces/${entity._id}` : null;
       donatedTo.name = entity !== undefined ? getTruncatedText(entity.title, 45) : null;
-      donatedTo.type = 'MILESTONE';
+      donatedTo.type = 'TRACE';
     } else {
       // User
       donatedTo.url = `/profile/${this._ownerEntity.address}`;
@@ -194,7 +194,7 @@ class Donation extends Model {
    * @returns {Object}
    *                     URL {string}  URL to the entity
    *                     name {string} Title of the entity
-   *                     type {string} Type of the entity - one of DAC, CAMPAIGN, MILESTONE or GIVER
+   *                     type {string} Type of the entity - one of Community, CAMPAIGN, Milestone or GIVER
    */
   get donatedTo() {
     return this._donatedTo;
