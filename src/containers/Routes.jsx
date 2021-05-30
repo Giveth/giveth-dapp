@@ -189,13 +189,8 @@ const Routes = () => {
       />
       <Route
         exact
-        path={getViewEntityPathsList('/campaigns/:id/traces/:traceId')}
+        path={getViewEntityPathsList('/campaigns/:id/milestones/:traceId')}
         render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
-      />
-      <Route
-        exact
-        path={getViewEntityPathsList('/campaigns/:id/traces/:traceId')}
-        render={({ match }) => <Redirect to={`/campaigns/:id/traces/${match.params.traceId}`} />}
       />
       <Route
         exact
