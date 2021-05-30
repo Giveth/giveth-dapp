@@ -7,26 +7,26 @@ import Campaign from 'models/Campaign';
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
-import { message } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 
 const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+
   const {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
+    actions: { minPayoutWarningInArchive },
+  } = useContext(NotificationContext);
 
   const archiveTrace = () => {
     const status = trace.donationCounters.some(dc => dc.currentBalance.gt(0))
@@ -37,12 +37,7 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
-        before you can archive this trace. This is a temporary
-        limitation due to Ethereum Mainnet issues.`,
-            );
+            minPayoutWarningInArchive();
             return;
           }
           const proceed = await React.swal({

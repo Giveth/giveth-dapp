@@ -50,7 +50,7 @@ class Campaign extends BasicModel {
     this.archivedTraces = new Set(data.archivedTraces || []);
     this.customThanksMessage = data.customThanksMessage;
     this.slug = data.slug;
-    this._gasPaidUsdValue = data.gasPaidUsdValue || '0';
+    this._gasPaidUsdValue = data.gasPaidUsdValue || 0;
   }
 
   toIpfs() {

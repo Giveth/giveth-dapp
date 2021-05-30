@@ -331,7 +331,6 @@ const ViewTrace = props => {
 
               <BackgroundImageHeader
                 image={trace.image}
-                height={300}
                 adminId={trace.projectId}
                 projectType="Trace"
                 editProject={
@@ -646,14 +645,9 @@ const ViewTrace = props => {
                             </div>
                           </div>
 
-                          {trace.gasPaidUsdValue && (
-                            <div className="pt-3">
-                              <TotalGasPaid
-                                gasPaidUsdValue={trace.gasPaidUsdValue}
-                                entity="Milestone:"
-                              />
-                            </div>
-                          )}
+                          <div className="pt-3">
+                            <TotalGasPaid gasPaidUsdValue={trace.gasPaidUsdValue} entity="TRACE:" />
+                          </div>
                         </div>
                       </div>
 

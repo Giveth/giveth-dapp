@@ -1,6 +1,5 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { message } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
@@ -10,7 +9,7 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
@@ -24,8 +23,8 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
-    state: { minimumPayoutUsdValue },
-  } = useContext(WhiteListContext);
+    actions: { minPayoutWarningInMarkComplete },
+  } = useContext(NotificationContext);
 
   const conversationModal = useRef();
 
@@ -36,12 +35,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
-            message.error(
-              `Oh No!
-        A minimum donation balance of ${minimumPayoutUsdValue} USD is required
-        before you can mark this trace complete. This is a temporary
-        limitation due to Ethereum Mainnet issues.`,
-            );
+            minPayoutWarningInMarkComplete();
             return;
           }
 

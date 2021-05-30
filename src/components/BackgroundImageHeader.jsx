@@ -9,12 +9,11 @@ const BackgroundImageHeader = props => {
     cancelProject,
     deleteProject,
     children,
-    height,
     projectType,
   } = props;
   const backgroundStyle = {
     background: `linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.9) ), url(${image})`,
-    height,
+    minHeight: '300px',
   };
 
   let showTrashButton = true;
@@ -48,7 +47,9 @@ const BackgroundImageHeader = props => {
         )}
       </div>
       <div className="vertical-align">
-        <div className="text-center">{children}</div>
+        <div className="text-center" style={{ maxWidth: '900px' }}>
+          {children}
+        </div>
       </div>
       <div className="project-id">{adminId}</div>
     </div>
@@ -59,7 +60,6 @@ export default BackgroundImageHeader;
 
 BackgroundImageHeader.propTypes = {
   image: PropTypes.string,
-  height: PropTypes.number,
   children: PropTypes.node,
   adminId: PropTypes.number,
   projectType: PropTypes.string.isRequired,
@@ -69,7 +69,6 @@ BackgroundImageHeader.propTypes = {
 };
 
 BackgroundImageHeader.defaultProps = {
-  height: 0,
   children: null,
   image: '',
   adminId: 0,

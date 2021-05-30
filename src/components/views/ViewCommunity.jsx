@@ -218,7 +218,6 @@ const ViewCommunity = ({ match }) => {
               </Helmet>
               <BackgroundImageHeader
                 image={community.image}
-                height={300}
                 adminId={community.delegateId}
                 projectType="Community"
                 editProject={

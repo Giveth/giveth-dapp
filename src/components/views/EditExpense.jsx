@@ -16,12 +16,13 @@ import {
   TraceToken,
 } from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
 import { authenticateUser } from '../../lib/middleware';
 import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 function EditExpense(props) {
   const {
@@ -31,6 +32,9 @@ function EditExpense(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+  const {
+    actions: { minPayoutWarningInCreatEdit },
+  } = useContext(NotificationContext);
 
   const { traceId } = props.match.params;
 
@@ -283,8 +287,11 @@ function EditExpense(props) {
             ),
           });
         },
-        onError(message, err) {
+        onError(message, err, isLessThanMinPayout) {
           setLoading(false);
+          if (isLessThanMinPayout) {
+            return minPayoutWarningInCreatEdit();
+          }
           return ErrorHandler(err, message);
         },
       });
