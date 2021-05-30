@@ -12,6 +12,6 @@ export default class BridgedTrace extends Trace {
 
   // eslint-disable-next-line class-methods-use-this
   get traceType() {
-    return 'BridgedMilestone';
+    return 'BridgedTrace';
   }
 }

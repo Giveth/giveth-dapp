@@ -25,7 +25,7 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className }) => {
 
 TotalGasPaid.propTypes = {
   // it was getting warning wo I changed it from number to string
-  gasPaidUsdValue: PropTypes.string.isRequired,
+  gasPaidUsdValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   entity: PropTypes.string,
   className: PropTypes.string,
 };

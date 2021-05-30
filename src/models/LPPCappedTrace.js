@@ -37,7 +37,7 @@ export default class LPPCappedTrace extends Trace {
     get & setters
   * */
   get traceType() {
-    return 'LPPCappedMilestone';
+    return 'LPPCappedTrace';
   }
 
   set campaignReviewerAddress(value) {

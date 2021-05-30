@@ -21,7 +21,7 @@ export default class LPTrace extends Trace {
   }
 
   get traceType() {
-    return 'LPMilestone';
+    return 'LPTrace';
   }
 
   get recipientId() {

@@ -74,10 +74,10 @@ function TraceCreateOptionsMenu() {
           />
         </Link>
 
-        <Link className="link-card" to="new/trace">
+        <Link className="link-card" to="new/milestone">
           <img
             className="link-card-logo"
-            src={`${process.env.PUBLIC_URL}/img/trace.png`}
+            src={`${process.env.PUBLIC_URL}/img/milestone.png`}
             alt="trace-logo"
           />
           <h2 className="link-card-title ">Milestone</h2>
