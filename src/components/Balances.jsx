@@ -93,11 +93,13 @@ const Balances = ({ entity }) => {
             </tbody>
           </table>
           <Row className="p-2 mb-4" justify="space-between" style={{ fontSize: '0.8rem' }}>
-            <Col>
-              <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
-            </Col>
+            {entity.gasPaidUsdValue !== undefined && (
+              <Col>
+                <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
+              </Col>
+            )}
             {currency && currentBalanceValue && (
-              <Col style={{ margin: 'auto 0' }}>
+              <Col className="my-auto py-3">
                 <span className="font-weight-bold">
                   Total Current Balance Value :{' '}
                   {roundBigNumber(currentBalanceValue, precision).toFixed()} {currency}
