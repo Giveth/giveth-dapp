@@ -37,7 +37,6 @@ import CampaignService from '../../services/CampaignService';
 import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
 import config from '../../configuration';
-import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
@@ -166,9 +165,9 @@ const ViewCampaign = ({ match }) => {
     if (campaign.id && !debouncedSearch.current) {
       debouncedSearch.current = debounce(query => loadMoreTraces(true, query), 1000);
     }
-    if (campaign._id && donationsObserver.current === undefined) {
+    if (campaign.id && donationsObserver.current === undefined) {
       loadMoreTraces(true);
-      loadDonations(campaign._id);
+      loadDonations(campaign.id);
       loadMoreAggregateDonations(true);
       // subscribe to donation count
       donationsObserver.current = CampaignService.subscribeNewDonations(
@@ -176,7 +175,7 @@ const ViewCampaign = ({ match }) => {
         _newDonations => {
           setNewDonations(_newDonations);
           if (_newDonations > 0) {
-            loadDonations(campaign._id);
+            loadDonations(campaign.id);
             loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
           }
         },
@@ -253,9 +252,6 @@ const ViewCampaign = ({ match }) => {
   const userAddress = currentUser.address;
   const ownerAddress = campaign && campaign.ownerAddress;
   const userIsOwner = userAddress && userAddress === ownerAddress;
-  const donationAddress = campaign && campaign.donationAddress;
-
-  const showDonateAddress = donationAddress || userIsOwner;
 
   const leaderBoardTitle = `Leaderboard${
     aggregateDonationsTotal ? ` (${aggregateDonationsTotal})` : ''
@@ -331,19 +327,6 @@ const ViewCampaign = ({ match }) => {
                         <h5 className="title">Subscribe to updates </h5>
                         <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
                       </div>
-
-                      {showDonateAddress && (
-                        <ProjectViewActionAlert message="Send money to an address to contribute">
-                          <CreateDonationAddressButton
-                            campaignTitle={campaign.title}
-                            campaignOwner={ownerAddress}
-                            campaignId={campaign.id}
-                            receiverId={campaign.projectId}
-                            giverId={(campaign._owner || {}).giverId}
-                            currentUser={currentUser}
-                          />
-                        </ProjectViewActionAlert>
-                      )}
 
                       {userIsCommunityOwner && (
                         <ProjectViewActionAlert message="Delegate some donation to this project">

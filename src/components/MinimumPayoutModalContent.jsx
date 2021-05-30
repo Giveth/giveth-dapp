@@ -22,13 +22,13 @@ const MinimumPayoutModalContent = ({ closeModal, type }) => {
     case 'Archive':
       title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
       description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
-        before you can archive this milestone. This is a temporary
+        before you can archive this trace. This is a temporary
         limitation due to Ethereum Mainnet issues.`;
       break;
     case 'MarkComplete':
       title = `Minimum donation balance of $${minimumPayoutUsdValue} required`;
       description = `A minimum donation balance of $${minimumPayoutUsdValue} is required
-        before you can mark this milestone complete. This is a temporary
+        before you can mark this trace complete. This is a temporary
         limitation due to Ethereum Mainnet issues.`;
       break;
     case 'Withdraw':
