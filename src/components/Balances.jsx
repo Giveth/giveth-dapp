@@ -93,7 +93,7 @@ const Balances = ({ entity }) => {
             </tbody>
           </table>
           <Row className="p-2 mb-4" justify="space-between" style={{ fontSize: '0.8rem' }}>
-            {entity instanceof Campaign && (
+            {entity.gasPaidUsdValue !== undefined && (
               <Col>
                 <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
               </Col>
