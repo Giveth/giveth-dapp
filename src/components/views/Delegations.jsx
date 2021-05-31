@@ -11,9 +11,9 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
 import DelegationsTable from '../DelegationsTable';
 import { feathersClient } from '../../lib/feathersClient';
-import DAC from '../../models/DAC';
+import Community from '../../models/Community';
 import Campaign from '../../models/Campaign';
-import Milestone from '../../models/Milestone';
+import Trace from '../../models/Trace';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Donation from '../../models/Donation';
 
@@ -34,19 +34,19 @@ const Delegations = () => {
   const [isLoading, setLoading] = useState(true);
   const [delegations, setDelegations] = useState([]);
   const [campaigns, setCampaigns] = useState(undefined);
-  const [milestones, setMilestones] = useState(undefined);
-  const [dacs, setDACs] = useState(undefined);
+  const [traces, setTraces] = useState(undefined);
+  const [communities, setCommunities] = useState(undefined);
   const [skipPages, setSkipPages] = useState(0);
   const [totalResults, setTotalResults] = useState(0);
 
   const loadProjectsInfo = () => {
     return Promise.all([
-      // Fetch Dacs
+      // Fetch Communities
       feathersClient
-        .service('dacs')
+        .service('communities')
         .find({
           query: {
-            status: DAC.ACTIVE,
+            status: Community.ACTIVE,
             ownerAddress: currentUser.address,
             $select: ['ownerAddress', 'title', '_id', 'delegateId'],
             $limit: 100,
@@ -56,14 +56,14 @@ const Delegations = () => {
           },
         })
         .then(resp =>
-          setDACs(
+          setCommunities(
             resp.data.map(d => {
-              d.type = DAC.type;
+              d.type = Community.type;
               d.name = d.title;
               d.id = d._id;
               d.element = (
                 <span>
-                  {d.title} <em>DAC</em>
+                  {d.title} <em>Community</em>
                 </span>
               );
               return d;
@@ -89,12 +89,12 @@ const Delegations = () => {
           setCampaigns(resp.data.map(c => new Campaign(c)));
         }),
 
-      // Fetch Milestones
+      // Fetch Traces
       feathersClient
-        .service('milestones')
+        .service('traces')
         .find({
           query: {
-            status: Milestone.IN_PROGRESS,
+            status: Trace.IN_PROGRESS,
             fullyFunded: { $ne: true },
             $select: [
               'title',
@@ -112,7 +112,7 @@ const Delegations = () => {
             },
           },
         })
-        .then(resp => setMilestones(resp.data.map(m => new Milestone(m)))),
+        .then(resp => setTraces(resp.data.map(m => new Trace(m)))),
     ]);
   };
 
@@ -121,7 +121,7 @@ const Delegations = () => {
       loadProjectsInfo()
         .then(() => {})
         .catch(err => {
-          const message = `Unable to load dacs, Campaigns or Milestones. ${err}`;
+          const message = `Unable to load communities, Campaigns or Traces. ${err}`;
           ErrorHandler(err, message);
           setLoading(false);
         });
@@ -131,10 +131,12 @@ const Delegations = () => {
   const getDonations = () => {
     // here we get all the ids.
     // TODO: less overhead here if we move it all to a single service.
-    // NOTE: This will not rerun, meaning after any dac/campaign/milestone is added
+    // NOTE: This will not rerun, meaning after any dac/campaign/trace is added
 
     if (currentUser.address) {
-      const dacsIds = dacs.filter(c => c.ownerAddress === currentUser.address).map(c => c._id);
+      const communitiesIds = communities
+        .filter(c => c.ownerAddress === currentUser.address)
+        .map(c => c._id);
 
       const campaignIds = campaigns
         .filter(c => c.ownerAddress === currentUser.address)
@@ -146,7 +148,7 @@ const Delegations = () => {
           $or: [
             { ownerTypeId: { $in: campaignIds }, status: Donation.COMMITTED },
             {
-              delegateTypeId: { $in: dacsIds },
+              delegateTypeId: { $in: communitiesIds },
               status: { $in: [Donation.WAITING, Donation.TO_APPROVE] },
             },
             {
@@ -184,10 +186,10 @@ const Delegations = () => {
   };
 
   useEffect(() => {
-    if (!!dacs && !!milestones && !!campaigns) {
+    if (!!communities && !!traces && !!campaigns) {
       getDonations();
     }
-  }, [skipPages, dacs, milestones, campaigns]);
+  }, [skipPages, communities, traces, campaigns]);
 
   const handlePageChanged = useCallback(newPage => {
     setSkipPages(newPage - 1);
@@ -213,7 +215,7 @@ const Delegations = () => {
               <DelegationsTable
                 delegations={delegations}
                 campaigns={campaigns}
-                milestones={milestones}
+                traces={traces}
                 totalResults={totalResults}
                 itemsPerPage={itemsPerPage}
                 skipPages={skipPages}

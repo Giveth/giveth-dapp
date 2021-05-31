@@ -12,8 +12,8 @@ const LeftMenu = () => {
 
   useEffect(() => {
     switch (true) {
-      case pathname === '/dacs':
-      case pathname.startsWith('/dac/'):
+      case pathname === '/communities':
+      case pathname.startsWith('/community/'):
         setSelectedKeys('Communities');
         break;
 
@@ -22,9 +22,9 @@ const LeftMenu = () => {
         setSelectedKeys('Campaigns');
         break;
 
-      case pathname === '/milestones':
-      case pathname.startsWith('/milestone/'):
-        setSelectedKeys('Milestones');
+      case pathname === '/traces':
+      case pathname.startsWith('/trace/'):
+        setSelectedKeys('Traces');
         break;
 
       default:
@@ -35,13 +35,13 @@ const LeftMenu = () => {
   return (
     <Menu mode={lg ? 'horizontal' : 'inline'} selectedKeys={[selectedKeys]}>
       <Menu.Item key="Communities">
-        <Link to="/dacs">Communities</Link>
+        <Link to="/communities">Communities</Link>
       </Menu.Item>
       <Menu.Item key="Campaigns">
         <Link to="/campaigns">Campaigns</Link>
       </Menu.Item>
-      <Menu.Item key="Milestones">
-        <Link to="/milestones">Milestones</Link>
+      <Menu.Item key="Traces">
+        <Link to="/traces">Traces</Link>
       </Menu.Item>
     </Menu>
   );

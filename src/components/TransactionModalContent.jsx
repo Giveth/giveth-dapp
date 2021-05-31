@@ -7,7 +7,7 @@ import TnxFailedAnimation from '../assets/tnx-failed.json';
 import TnxSubmittedAnimation from '../assets/tnx-submitted.json';
 import TnxSuccessfulAnimation from '../assets/tnx-successful.json';
 
-const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
+const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
   let title = '';
   let description = '';
   let animation;
@@ -34,7 +34,7 @@ const TransactionModalContent = ({ type, txUrl, isDac, msg }) => {
     case 'delegationPending':
       title = 'Transaction Submitted';
       description = 'The donations have been delegated.';
-      if (isDac) {
+      if (isCommunity) {
         description +=
           ' Please note the Giver may have 3 days to reject your delegation before the money gets committed.';
       }
@@ -95,12 +95,12 @@ TransactionModalContent.propTypes = {
     'delegationFailed',
   ]).isRequired,
   txUrl: PropTypes.string,
-  isDac: PropTypes.bool,
+  isCommunity: PropTypes.bool,
   msg: PropTypes.string,
 };
 
 TransactionModalContent.defaultProps = {
-  isDac: false,
+  isCommunity: false,
   msg: 'Something went wrong. Please check transaction details on Etherescan.',
   txUrl: undefined,
 };

@@ -39,7 +39,8 @@ const configurations = {
     foreignNetworkId: 67,
     homeNetworkName: 'Home Ganache',
     homeNetworkId: 66,
-    ipfsGateway: 'http://localhost:8080/ipfs/',
+    // ipfsGateway: 'http://localhost:8080/ipfs/',
+    ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     homeUrl: 'http://localhost:3010',
     // sendErrors: false,
     analytics: {
@@ -49,7 +50,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
-    defaultDacId: 0,
+    defaultCommunityId: 0,
   },
   develop: {
     title: 'develop',
@@ -79,7 +80,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
-    defaultDacId: 156,
+    defaultCommunityId: 156,
   },
   release: {
     title: 'release',
@@ -136,7 +137,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
-    defaultDacId: 5, // Giveth DAC
+    defaultCommunityId: 5, // Giveth Community
   },
 };
 

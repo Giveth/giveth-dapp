@@ -46,10 +46,10 @@ class NotificationModalProvider extends Component {
                 this.displayModal({ txUrl: url, type: 'donationSuccessful' }),
               donationFailed: (url, msg) =>
                 this.displayModal({ txUrl: url, msg, type: 'donationFailed' }),
-              delegationPending: (url, isDac) =>
+              delegationPending: (url, isCommunity) =>
                 this.displayModal({
                   txUrl: url,
-                  isDac,
+                  isCommunity,
                   type: 'delegationPending',
                 }),
               delegationSuccessful: url =>

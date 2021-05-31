@@ -1,7 +1,7 @@
-import DAC from './DAC';
+import Community from './Community';
 import Donation from './Donation';
-import Milestone from './Milestone';
-import MilestoneItem from './MilestoneItem';
+import Trace from './Trace';
+import TraceItem from './TraceItem';
 import User from './User';
 
-export { DAC, Donation, Milestone, MilestoneItem, User };
+export { Community, Donation, Trace, TraceItem, User };

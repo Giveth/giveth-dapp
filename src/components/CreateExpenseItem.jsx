@@ -4,11 +4,11 @@ import { Button } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import BigNumber from 'bignumber.js';
 import {
-  MilestoneDatePicker,
-  MilestoneDescription,
-  MilestoneFiatAmountCurrency,
-  MilestonePicture,
-} from './EditMilestoneCommons';
+  TraceDatePicker,
+  TraceDescription,
+  TraceFiatAmountCurrency,
+  TracePicture,
+} from './EditTraceCommons';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import { getStartOfDayUTC } from '../lib/helpers';
@@ -58,7 +58,7 @@ function CreateExpenseItem({
     setLoadingAmount(false);
   }
 
-  // Update item of this item in milestone token
+  // Update item of this item in trace token
   function updateAmount() {
     if (!token.symbol || !item.currency) return;
 
@@ -128,7 +128,7 @@ function CreateExpenseItem({
 
   return (
     <div key={item.key}>
-      <MilestoneFiatAmountCurrency
+      <TraceFiatAmountCurrency
         onCurrencyChange={handleSelectCurrency}
         onAmountChange={handleInputChange}
         currency={item.currency}
@@ -141,13 +141,13 @@ function CreateExpenseItem({
         }}
       />
 
-      <MilestoneDatePicker
+      <TraceDatePicker
         value={getStartOfDayUTC(item.date).subtract(1, 'd')}
         onChange={handleDatePicker}
         disabled={loadingRate || disabled}
       />
 
-      <MilestoneDescription
+      <TraceDescription
         onChange={handleInputChange}
         value={item.description}
         label="Description of the expense"
@@ -156,9 +156,9 @@ function CreateExpenseItem({
         disabled={disabled}
       />
 
-      <MilestonePicture
+      <TracePicture
         setPicture={setPicture}
-        milestoneTitle={item.key}
+        traceTitle={item.key}
         picture={item.picture}
         label="Receipt"
         disabled={disabled}

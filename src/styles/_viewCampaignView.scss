@@ -26,7 +26,7 @@
     }
   }
 
-  .milestone-card {
+  .trace-card {
     margin-bottom: 10px;
 
     small {
@@ -35,7 +35,7 @@
     }
   }
 
-  .milestone-cards-grid-container {
+  .trace-cards-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     grid-gap: 25px;

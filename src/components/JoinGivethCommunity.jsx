@@ -24,15 +24,14 @@ const JoinGivethCommunity = () => {
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsProjectOwner = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
 
-  const createDAC = () => {
+  const createCommunity = () => {
     if (!userIsDelegator) {
       React.swal({
         title: 'Sorry, Giveth is in beta...',
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
-            DAC! However, Giveth is still in alpha and we only allow a select group of people to
-            start DACs
+            It&#8217;s great to see that you want to start a Community! However, Giveth is still in
+            alpha and we only allow a select group of people to start Communities
             <br />
             Please <strong>contact us on our Slack</strong>, or keep browsing
           </p>,
@@ -43,14 +42,14 @@ const JoinGivethCommunity = () => {
       return;
     }
     if (currentUser.giverId) {
-      history.push('/dacs/new');
+      history.push('/communities/new');
     } else {
       React.swal({
         title: "You're almost there...",
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Decentralized Altruistic Community, or
-            DAC. To get started, please sign up (or sign in) first.
+            It&#8217;s great to see that you want to start a Decentralized Community. To get
+            started, please sign up (or sign in) first.
           </p>,
         ),
         icon: 'info',
@@ -119,7 +118,7 @@ const JoinGivethCommunity = () => {
                 if (!isEnabled) {
                   enableProvider();
                 } else {
-                  createDAC(currentUser, balance);
+                  createCommunity(currentUser, balance);
                 }
               }}
             >

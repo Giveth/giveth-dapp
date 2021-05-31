@@ -6,16 +6,16 @@ import BigNumber from 'bignumber.js';
 
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDatePicker,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestoneFiatAmountCurrency,
-  MilestonePicture,
-  MilestoneRecipientAddress,
-  MilestoneTitle,
-  MilestoneToken,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDatePicker,
+  TraceDescription,
+  TraceDonateToCommunity,
+  TraceFiatAmountCurrency,
+  TracePicture,
+  TraceRecipientAddress,
+  TraceTitle,
+  TraceToken,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
@@ -24,8 +24,8 @@ import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/
 import ErrorHandler from '../../lib/ErrorHandler';
 import { authenticateUser } from '../../lib/middleware';
 import config from '../../configuration';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 
 const WAIT_INTERVAL = 1000;
 
@@ -49,7 +49,7 @@ function EditPayment(props) {
 
   const [form] = Form.useForm();
 
-  const { milestoneId } = props.match.params;
+  const { traceId } = props.match.params;
 
   const [payment, setPayment] = useState({
     title: '',
@@ -62,7 +62,7 @@ function EditPayment(props) {
     conversionRateTimestamp: undefined,
   });
   const [initialValues, setInitialValues] = useState(undefined);
-  const [milestone, setMilestone] = useState();
+  const [trace, setTrace] = useState();
   const [campaign, setCampaign] = useState();
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
@@ -75,13 +75,10 @@ function EditPayment(props) {
   const conversionRateTimestamp = useRef();
   const [submitButtonText, setSubmitButtonText] = useState('Propose');
 
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+  const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
   const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+    trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   useEffect(() => {
     if (loadingAmount) {
@@ -112,19 +109,19 @@ function EditPayment(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Milestone.PAYMENTTYPE ||
+      ms.formType !== Trace.PAYMENTTYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
-    if (milestone) {
-      if (isEditNotAllowed(milestone)) {
+    if (trace) {
+      if (isEditNotAllowed(trace)) {
         goBack();
       }
     } else if (currentUser.id) {
-      MilestoneService.get(milestoneId)
+      TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
             goBack();
@@ -134,7 +131,7 @@ function EditPayment(props) {
             const iValues = {
               title: res.title,
               description: res.description,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
               token: res.token,
               fiatAmount: res.fiatAmount ? res.fiatAmount.toNumber() : 0,
               selectedFiatType: res.selectedFiatType,
@@ -145,18 +142,18 @@ function EditPayment(props) {
             };
             setInitialValues(iValues);
             setPayment(iValues);
-            setMilestone(res);
+            setTrace(res);
             setCampaign(res.campaign);
           }
         })
         .catch(err => {
-          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          const message = `Sadly we were unable to load the requested Trace details. Please try again.`;
           ErrorHandler(err, message);
         });
     }
   }, [currentUser.id]);
 
-  // Update item of this item in milestone token
+  // Update item of this item in trace token
   const updateAmount = () => {
     const { token, selectedFiatType, date, fiatAmount } = payment;
     if (!token.symbol || !selectedFiatType || payment.notCapped) return;
@@ -247,10 +244,10 @@ function EditPayment(props) {
         selectedFiatType,
         token,
         date,
-        donateToDac,
+        donateToCommunity,
       } = payment;
 
-      const ms = milestone;
+      const ms = trace;
 
       ms.parentProjectId = campaign.projectId;
       ms.title = title;
@@ -258,9 +255,9 @@ function EditPayment(props) {
       ms.recipientAddress = recipientAddress;
       ms.image = image;
       ms.token = token;
-      ms.dacId = donateToDac ? config.defaultDacId : 0;
+      ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
 
-      // TODO: We should have ability to delete fiatAmount for uncapped milestones
+      // TODO: We should have ability to delete fiatAmount for uncapped traces
       if (!notCapped) {
         ms.maxAmount = maxAmount;
         ms.date = date;
@@ -274,15 +271,12 @@ function EditPayment(props) {
         ms.conversionRateTimestamp = undefined;
       }
 
-      ms.status =
-        isProposed || milestone.status === Milestone.REJECTED
-          ? Milestone.PROPOSED
-          : milestone.status; // make sure not to change status!
+      ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
       setLoading(true);
 
-      await MilestoneService.save({
-        milestone: ms,
+      await TraceService.save({
+        trace: ms,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
@@ -308,7 +302,7 @@ function EditPayment(props) {
             notification.info({ description: notificationDescription });
           }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
         },
         afterMined: (created, txUrl) => {
           notification.success({
@@ -367,13 +361,13 @@ function EditPayment(props) {
                   <div className="title">Payment</div>
                 </div>
 
-                <MilestoneCampaignInfo campaign={campaign} />
+                <TraceCampaignInfo campaign={campaign} />
 
-                <MilestoneTitle
+                <TraceTitle
                   value={payment.title}
                   onChange={handleInputChange}
-                  extra="What are you going to accomplish in this Milestone?"
-                  disabled={milestoneHasFunded}
+                  extra="What are you going to accomplish in this Trace?"
+                  disabled={traceHasFunded}
                 />
 
                 <div className="section">
@@ -394,7 +388,7 @@ function EditPayment(props) {
 
                   {!payment.notCapped && (
                     <Fragment>
-                      <MilestoneFiatAmountCurrency
+                      <TraceFiatAmountCurrency
                         onCurrencyChange={handleSelectCurrency}
                         onAmountChange={handleInputChange}
                         amount={payment.fiatAmount}
@@ -402,7 +396,7 @@ function EditPayment(props) {
                         disabled={loadingRate || !isProposed}
                         initialValues={initialValues}
                       />
-                      <MilestoneDatePicker
+                      <TraceDatePicker
                         onChange={handleDatePicker}
                         value={payment.date}
                         disabled={loadingRate || !isProposed}
@@ -410,23 +404,23 @@ function EditPayment(props) {
                     </Fragment>
                   )}
 
-                  <MilestoneDescription
+                  <TraceDescription
                     onChange={handleInputChange}
                     value={payment.description}
-                    extra="Describe how you are going to execute this milestone successfully..."
+                    extra="Describe how you are going to execute this trace successfully..."
                     placeholder="e.g. Monthly salary"
                     id="description"
-                    disabled={milestoneHasFunded}
+                    disabled={traceHasFunded}
                   />
 
-                  <MilestonePicture
+                  <TracePicture
                     setPicture={setPicture}
-                    milestoneTitle={payment.title}
+                    traceTitle={payment.title}
                     picture={payment.image}
                   />
 
-                  <MilestoneDonateToDac
-                    value={payment.donateToDac}
+                  <TraceDonateToCommunity
+                    value={payment.donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />
@@ -435,7 +429,7 @@ function EditPayment(props) {
                 <div className="section">
                   <div className="title">Payment options</div>
 
-                  <MilestoneToken
+                  <TraceToken
                     label="Payment currency"
                     onChange={handleSelectToken}
                     includeAnyToken={payment.notCapped}
@@ -446,7 +440,7 @@ function EditPayment(props) {
                     disabled={!isProposed}
                   />
 
-                  <MilestoneRecipientAddress
+                  <TraceRecipientAddress
                     label="Pay to wallet address"
                     onChange={handleInputChange}
                     value={payment.recipientAddress}
@@ -480,7 +474,7 @@ EditPayment.propTypes = {
   }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string,
+      traceId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
