@@ -806,7 +806,7 @@ class TraceService {
         const traceContract = trace.contract(web3);
 
         return traceContract
-          .cancelTrace({
+          .cancelMilestone({
             from,
             $extraGas: extraGas(),
           })
