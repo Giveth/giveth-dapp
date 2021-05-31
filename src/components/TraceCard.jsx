@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Avatar from 'react-avatar';
@@ -18,7 +18,7 @@ import LPTrace from '../models/LPTrace';
 /**
  * A single trace
  */
-const TraceCard = props => {
+const TraceCard = ({ trace }) => {
   const {
     state: { balance },
   } = useContext(Web3Context);
@@ -27,35 +27,53 @@ const TraceCard = props => {
   } = useContext(UserContext);
 
   const viewTrace = () => {
-    history.push(`/trace/${props.trace.slug}`);
+    history.push(`/trace/${trace.slug}`);
   };
 
   const createTraceLink = () => {
-    return `/trace/${props.trace.slug}`;
+    return `/trace/${trace.slug}`;
   };
 
   const viewProfile = e => {
     e.stopPropagation();
-    history.push(`/profile/${props.trace.ownerAddress}`);
+    history.push(`/profile/${trace.ownerAddress}`);
   };
 
-  const editTrace = e => {
-    e.stopPropagation();
+  const editTrace = useCallback(
+    e => {
+      e.stopPropagation();
 
-    checkBalance(balance)
-      .then(() => {
-        history.push(`/campaigns/${props.trace.campaign._id}/traces/${props.trace._id}/edit`);
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
-  };
+      checkBalance(balance)
+        .then(() => {
+          const { formType } = trace;
+          if (
+            [Trace.BOUNTYTYPE, Trace.EXPENSETYPE, Trace.PAYMENTTYPE, Trace.MILESTONETYPE].includes(
+              formType,
+            )
+          ) {
+            const newTraceEditUrl = `/${formType}/${trace._id}/edit`;
+            history.push(newTraceEditUrl);
+          } else if ([Trace.PROPOSED, Trace.REJECTED].includes(trace.status)) {
+            history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit/proposed`);
+            // TODO:
+            // history.push(`/traces/${trace._id}/edit/proposed`);
+          } else {
+            history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
+            // TODO:
+            // history.push(`/traces/${trace._id}/edit`);
+          }
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
+        });
+    },
+    [balance, trace],
+  );
 
-  const { trace } = props;
   const colors = ['#76318f', '#50b0cf', '#1a1588', '#2A6813', '#95d114', '#155388', '#604a7d'];
   const color = colors[Math.floor(Math.random() * colors.length)];
 
