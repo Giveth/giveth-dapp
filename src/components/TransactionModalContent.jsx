@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
 import Lottie from 'lottie-react';
@@ -6,12 +6,43 @@ import Lottie from 'lottie-react';
 import TnxFailedAnimation from '../assets/tnx-failed.json';
 import TnxSubmittedAnimation from '../assets/tnx-submitted.json';
 import TnxSuccessfulAnimation from '../assets/tnx-successful.json';
+import config from '../configuration';
+import CommunityService from '../services/CommunityService';
+import ErrorHandler from '../lib/ErrorHandler';
+
+const DeepPurpleColor = { color: '#2C0B3F' };
+const contentTextStyle = {
+  color: '#6B7087',
+  fontSize: '18px',
+  fontFamily: 'Lato',
+};
 
 const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
   let title = '';
-  let description = '';
+  let description;
   let animation;
   let loop = false;
+
+  const TnxSuccessfulDescription = () => (
+    <Fragment>
+      Your transaction has been processed.
+      <a href={txUrl} target="_blank" rel="noopener noreferrer">
+        {' '}
+        View on Etherescan
+      </a>
+    </Fragment>
+  );
+
+  const gotoDefaultCommunity = () => {
+    const { defaultCommunityId } = config;
+    CommunityService.getByDelegateId(defaultCommunityId)
+      .then(defaultCommunity => {
+        window.location.replace(`/community/${defaultCommunity.slug}/donate`);
+      })
+      .catch(err => {
+        ErrorHandler(err, 'Something went wrong on fetching default community!');
+      });
+  };
 
   switch (type) {
     case 'donationPending':
@@ -23,7 +54,7 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
       break;
     case 'donationSuccessful':
       title = 'Transaction Successful';
-      description = 'Your transaction has been processed. You can close the screen.';
+      description = TnxSuccessfulDescription();
       animation = TnxSuccessfulAnimation;
       break;
     case 'donationFailed':
@@ -63,16 +94,24 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
         loop={loop}
         style={{ width: '100px' }}
       />
-      <h2 className="text-center font-weight-bold" style={{ color: '#2C0B3F' }}>
+      <h2 className="text-center font-weight-bold" style={DeepPurpleColor}>
         {title}
       </h2>
-      <p
-        className="text-center pb-3"
-        style={{ color: '#6B7087', fontSize: '22px', fontFamily: 'Lato' }}
-      >
+      <div className="text-center pb-3" style={contentTextStyle}>
         {description}
-      </p>
-      {txUrl && (
+      </div>
+      {type === 'donationSuccessful' && (
+        <div className="mt-4 text-center">
+          <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
+            Enjoying Giveth? Consider donating.
+          </div>
+          <div style={contentTextStyle}>Your help keeps Giveth alive. ❤️</div>
+          <Button className="px-5 my-4" onClick={gotoDefaultCommunity}>
+            Donate to Giveth
+          </Button>
+        </div>
+      )}
+      {txUrl && type !== 'donationSuccessful' && (
         <div className="text-center pb-3">
           <Button className="px-5">
             <a href={txUrl} target="_blank" rel="noopener noreferrer">

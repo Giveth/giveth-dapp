@@ -308,9 +308,6 @@ const ViewTrace = props => {
       isCapped: trace.isCapped,
       ownerAddress: trace.ownerAddress,
     },
-    currentUser,
-    history,
-    type: Trace.type,
     maxDonationAmount: trace.isCapped
       ? trace.maxAmount.minus(trace.totalDonatedSingleToken)
       : undefined,
