@@ -49,7 +49,7 @@ class DonationListItem extends Component {
   }
 
   render() {
-    const { d, hasProposedDelegation } = this.props;
+    const { d, hasProposedDelegation, isNew, hasNew } = this.props;
     const totalColumns = 6 + (hasProposedDelegation ? 1 : 0);
     let typeLabel;
     let historyClassName = '';
@@ -85,9 +85,16 @@ class DonationListItem extends Component {
     } else if (this.state.itemType === 'direct') {
       etherScanLink = homeEtherscan && d.homeTxHash ? `${homeEtherscan}tx/${d.homeTxHash}` : '';
     }
+
     return (
       <Fragment>
-        <tr key={d._id}>
+        <tr
+          key={d._id}
+          style={isNew ? { background: '#DAEBFC', borderBottom: '2px solid #5191F6' } : {}}
+        >
+          {hasNew && (
+            <td>{isNew && <div style={{ borderRadius: '50%', border: '4px solid #5191F6' }} />}</td>
+          )}
           <td>
             {this.state.hasHistory ? (
               <button type="button" className="btn btn-info btn-sm" onClick={this.toggleDetail}>
@@ -173,6 +180,13 @@ DonationListItem.propTypes = {
   d: PropTypes.instanceOf(Donation).isRequired,
   hasProposedDelegation: PropTypes.bool.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
+  isNew: PropTypes.bool,
+  hasNew: PropTypes.bool,
+};
+
+DonationListItem.defaultProps = {
+  isNew: false,
+  hasNew: false,
 };
 
 const DonationList = props => {
@@ -180,14 +194,6 @@ const DonationList = props => {
   const hasProposedDelegation = props.donations.some(d => d.intendedProjectId);
   return (
     <div>
-      <div>
-        {newDonations > 0 && (
-          <span className="badge badge-primary ml-2 mb-2" style={{ verticalAlign: 'middle' }}>
-            {newDonations} new
-          </span>
-        )}
-      </div>
-
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
         {donations.length > 0 && (
@@ -195,6 +201,8 @@ const DonationList = props => {
             <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
               <thead>
                 <tr>
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                  {!!newDonations && <th />}
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th />
                   <th className="td-date">Date</th>
@@ -207,8 +215,10 @@ const DonationList = props => {
                 </tr>
               </thead>
               <tbody>
-                {donations.map(d => (
+                {donations.map((d, i) => (
                   <DonationListItem
+                    isNew={i < newDonations}
+                    hasNew={!!newDonations}
                     d={d}
                     key={d._id}
                     hasProposedDelegation={hasProposedDelegation}

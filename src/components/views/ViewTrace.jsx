@@ -151,7 +151,9 @@ const ViewTrace = props => {
         trace.id,
         _newDonations => {
           setNewDonations(_newDonations);
-          if (_newDonations > 0) loadMoreDonations(true, donations.length); // Load how many donations that was previously loaded
+          if (_newDonations > 0) {
+            loadMoreDonations(true);
+          }
         },
         () => setNewDonations(0),
       );
@@ -707,8 +709,16 @@ const ViewTrace = props => {
                       {trace.status !== Trace.PROPOSED && (
                         <React.Fragment>
                           <Row justify="space-between">
-                            <Col span={12}>
-                              <h5>{donationsTitle}</h5>
+                            <Col span={12} className="align-items-center d-flex">
+                              <h5 className="mb-0">{donationsTitle}</h5>
+                              {newDonations > 0 && (
+                                <span
+                                  className="badge badge-primary ml-4"
+                                  style={{ fontSize: '12px', padding: '6px' }}
+                                >
+                                  {newDonations} NEW
+                                </span>
+                              )}
                             </Col>
                             <Col span={12}>
                               {isActiveTrace() && (

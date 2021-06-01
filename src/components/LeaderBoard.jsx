@@ -29,14 +29,32 @@ class LeaderBoardItem extends Component {
   }
 
   render() {
-    const { d, rank, useAmountRemaining } = this.props;
+    const { d, rank, useAmountRemaining, isNew, hasNew } = this.props;
     const { donations, totalAmount, giver } = d;
     const { showDetails } = this.state;
     const roundTotalAmount = roundBigNumber(totalAmount, 2).toFixed();
 
     return (
       <Fragment>
-        <tr key={d._id} className={showDetails ? 'donation-item' : ''} onClick={this.toggleDetail}>
+        <tr
+          key={d._id}
+          style={isNew ? { background: '#DAEBFC', borderBottom: '2px solid #5191F6' } : {}}
+          className={showDetails ? 'donation-item' : ''}
+          onClick={this.toggleDetail}
+        >
+          {hasNew && (
+            <td className="text-center">
+              {isNew && (
+                <div
+                  style={{
+                    borderRadius: '50%',
+                    border: '4px solid #5191F6',
+                    display: 'inline-block',
+                  }}
+                />
+              )}
+            </td>
+          )}
           <td className="toggle-details">
             <button type="button" className="btn btn-sm">
               <i className={showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
@@ -76,19 +94,35 @@ LeaderBoardItem.propTypes = {
   d: PropTypes.shape().isRequired,
   rank: PropTypes.number.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
+  isNew: PropTypes.bool,
+  hasNew: PropTypes.bool,
+};
+
+LeaderBoardItem.defaultProps = {
+  isNew: false,
+  hasNew: false,
 };
 
 const LeaderBoard = props => {
-  const { isLoading, aggregateDonations, loadMore, total, useAmountRemaining } = props;
+  const {
+    isLoading,
+    aggregateDonations,
+    loadMore,
+    total,
+    useAmountRemaining,
+    newDonations,
+  } = props;
   return (
     <div className="leader-board">
       <div className="dashboard-table-view">
         {isLoading && total === 0 && <Loader className="relative" />}
         {aggregateDonations.length > 0 && (
           <div className="table-container">
-            <table className="table table-hover" style={{ marginTop: 0 }}>
+            <table className="table table-hover mt-1">
               <thead>
                 <tr>
+                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                  {!!newDonations && <th style={{ width: '35px' }} />}
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
                   <th className="td-toggle" />
                   <th className="td-rank">Rank</th>
@@ -102,6 +136,8 @@ const LeaderBoard = props => {
               <tbody>
                 {aggregateDonations.map((d, index) => (
                   <LeaderBoardItem
+                    isNew={d.isNew}
+                    hasNew={!!newDonations}
                     d={d}
                     key={d._id}
                     rank={index + 1}
@@ -146,8 +182,10 @@ LeaderBoard.propTypes = {
   total: PropTypes.number.isRequired,
   loadMore: PropTypes.func.isRequired,
   useAmountRemaining: PropTypes.bool,
+  newDonations: PropTypes.number,
 };
 
 LeaderBoard.defaultProps = {
   useAmountRemaining: false,
+  newDonations: undefined,
 };
