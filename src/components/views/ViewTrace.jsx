@@ -37,7 +37,6 @@ import GoBackSection from '../GoBackSection';
 import ViewTraceAlerts from '../ViewTraceAlerts';
 import CancelTraceButton from '../CancelTraceButton';
 import DeleteProposedTraceButton from '../DeleteProposedTraceButton';
-import CommunityButton from '../CommunityButton';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
@@ -427,14 +426,6 @@ const ViewTrace = props => {
 
                       <div className="card content-card">
                         <div className="card-body content">{renderDescription()}</div>
-
-                        {trace.communityUrl && (
-                          <div className="pl-3 pb-4">
-                            <CommunityButton className="btn btn-secondary" url={campaign.trace}>
-                              Join our Community
-                            </CommunityButton>
-                          </div>
-                        )}
                       </div>
                     </div>
 

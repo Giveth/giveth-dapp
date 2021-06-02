@@ -1,40 +1,40 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-class CommunityButton extends Component {
-  constructor(props) {
-    super(props);
-    let icon = 'external-link';
-    const u = this.props.url;
+const CommunityButton = ({ url, className, children }) => {
+  const [icon, setIcon] = useState('external-link');
 
-    if (u.indexOf('slack') > -1) icon = 'fa-slack';
-    if (u.indexOf('reddit') > -1) icon = 'fa-reddit';
-    if (u.indexOf('facebook') > -1) icon = 'fa-facebook-square';
-    if (u.indexOf('github') > -1) icon = 'fa-github';
-    if (u.indexOf('twitter') > -1) icon = 'fa-twitter';
-    if (u.indexOf('linkedin') > -1) icon = 'fa-linkedin';
+  useEffect(() => {
+    switch (true) {
+      case url.indexOf('slack') > -1:
+        setIcon('fa-slack');
+        break;
+      case url.indexOf('reddit') > -1:
+        setIcon('fa-reddit');
+        break;
+      case url.indexOf('facebook') > -1:
+        setIcon('fa-facebook-square');
+        break;
+      case url.indexOf('github') > -1:
+        setIcon('fa-github');
+        break;
+      case url.indexOf('twitter') > -1:
+        setIcon('fa-twitter');
+        break;
+      case url.indexOf('linkedin') > -1:
+        setIcon('fa-linkedin');
+        break;
+      default:
+    }
+  }, [url]);
 
-    this.state = {
-      icon,
-    };
-  }
-
-  render() {
-    return (
-      <a
-        className={this.props.className}
-        href={this.props.url}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <i className={`fa ${this.state.icon !== 'external-link' ? this.state.icon : 'd-none'}`}>
-          &nbsp;
-        </i>
-        {this.props.children}
-      </a>
-    );
-  }
-}
+  return (
+    <a className={className} href={`//${url}`} target="_blank" rel="noopener noreferrer">
+      <i className={`fa ${icon !== 'external-link' ? icon : 'd-none'}`}>&nbsp;</i>
+      {children}
+    </a>
+  );
+};
 
 CommunityButton.propTypes = {
   url: PropTypes.string.isRequired,
