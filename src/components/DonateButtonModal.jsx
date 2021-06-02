@@ -350,10 +350,20 @@ const DonateButtonModal = props => {
     adminId,
     _amount,
     donationOwnerAddress,
+    community,
     allowanceAmount = 0,
     comment = '',
     _allowanceApprovalType = AllowanceApprovalType.Default,
   ) => {
+    // When donating to a trace that 3% of donations goes to Giveth community then for 3% donation
+    // community is filled otherwise it's undefined
+    const toAdmin = community
+      ? {
+          type: Community.type,
+          id: community._id,
+          adminId,
+        }
+      : model;
     const { homeEtherscan: etherscanUrl } = config;
     const userAddress = currentUser.address;
 
@@ -434,7 +444,7 @@ const DonateButtonModal = props => {
 
             await DonationService.newFeathersDonation(
               donationOwner,
-              model,
+              toAdmin,
               amountWei,
               selectedToken,
               txHash,
@@ -585,12 +595,20 @@ const DonateButtonModal = props => {
             communityId,
             amountCommunity,
             donationOwnerAddress,
+            community,
             _amount,
             comment,
             _allowanceApprovalType,
           )
         )
-          result = await donateWithBridge(adminId, amountTrace, donationOwnerAddress, 0, comment);
+          result = await donateWithBridge(
+            adminId,
+            amountTrace,
+            donationOwnerAddress,
+            undefined,
+            0,
+            comment,
+          );
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -639,6 +657,7 @@ const DonateButtonModal = props => {
         adminId,
         amount,
         donationOwnerAddress,
+        undefined,
         amount,
         comment,
         allowanceApprovalType.current,
