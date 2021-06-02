@@ -16,6 +16,7 @@ const contentTextStyle = {
   fontSize: '18px',
   fontFamily: 'Lato',
 };
+
 const { defaultCommunityId } = config;
 
 const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
