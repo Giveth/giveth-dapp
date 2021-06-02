@@ -380,24 +380,9 @@ const ViewTrace = props => {
 
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
-                <EditTraceButton
-                  ref={editTraceButtonRef}
-                  trace={trace}
-                  balance={balance}
-                  currentUser={currentUser}
-                />
-                <CancelTraceButton
-                  ref={cancelTraceButtonRef}
-                  balance={balance}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
-
-                <DeleteProposedTraceButton
-                  ref={deleteTraceButtonRef}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
+                <EditTraceButton ref={editTraceButtonRef} trace={trace} />
+                <CancelTraceButton ref={cancelTraceButtonRef} trace={trace} />
+                <DeleteProposedTraceButton ref={deleteTraceButtonRef} trace={trace} />
               </span>
 
               <div className="container-fluid mt-4">
