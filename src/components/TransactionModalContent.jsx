@@ -16,6 +16,7 @@ const contentTextStyle = {
   fontSize: '18px',
   fontFamily: 'Lato',
 };
+const { defaultCommunityId } = config;
 
 const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
   let title = '';
@@ -34,7 +35,6 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
   );
 
   const gotoDefaultCommunity = () => {
-    const { defaultCommunityId } = config;
     CommunityService.getByDelegateId(defaultCommunityId)
       .then(defaultCommunity => {
         window.location.replace(`/community/${defaultCommunity.slug}/donate`);
@@ -87,10 +87,10 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
   }
 
   return (
-    <div className="text-center">
+    <div className="text-center p-4">
       <Lottie
         animationData={animation}
-        className="mx-auto my-3 py-5"
+        className="mx-auto my-3 pb-5"
         loop={loop}
         style={{ width: '100px' }}
       />
@@ -100,19 +100,19 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
       <div className="text-center pb-3" style={contentTextStyle}>
         {description}
       </div>
-      {type === 'donationSuccessful' && (
+      {defaultCommunityId > 0 && type === 'donationSuccessful' && (
         <div className="mt-4 text-center">
           <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
             Enjoying Giveth? Consider donating.
           </div>
           <div style={contentTextStyle}>Your help keeps Giveth alive. ❤️</div>
-          <Button className="px-5 my-4" onClick={gotoDefaultCommunity}>
+          <Button className="px-5 mt-4" onClick={gotoDefaultCommunity}>
             Donate to Giveth
           </Button>
         </div>
       )}
       {txUrl && type !== 'donationSuccessful' && (
-        <div className="text-center pb-3">
+        <div className="text-center py-1">
           <Button className="px-5">
             <a href={txUrl} target="_blank" rel="noopener noreferrer">
               View on Etherescan
