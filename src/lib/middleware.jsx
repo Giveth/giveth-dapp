@@ -147,23 +147,6 @@ export const authenticateUser = async (currentUser, redirectOnFail) => {
 };
 
 /**
- * Check if the user has registered a profile after doanation. If not, ask the user to register one.
- */
-export const checkProfileAfterDonation = async currentUser => {
-  // already created a profile
-  if (!currentUser || currentUser.name) return;
-
-  const redirect = await React.swal({
-    title: 'Please Register!',
-    text:
-      'Thank you for donating, fill out your Giveth Profile if you want recognition for your contribution!',
-    icon: 'info',
-    buttons: ['No Thanks', 'Ok'],
-  });
-  if (redirect) history.push('/profile');
-};
-
-/**
  * Check if the user has registered a profile. If not, ask the user to register one.
  */
 export const checkProfile = async currentUser => {
