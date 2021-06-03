@@ -68,7 +68,7 @@ const AllowanceApprovalType = {
 };
 
 const DonateButtonModal = props => {
-  const { model, afterSuccessfulDonate, setModalVisible } = props;
+  const { model, setModalVisible, customThanksMessage } = props;
   const {
     state: { tokenWhitelist },
   } = useContext(WhiteListContext);
@@ -462,7 +462,7 @@ const DonateButtonModal = props => {
           })
           .then(() => {
             setSaving(false);
-            donationSuccessful(txUrl);
+            donationSuccessful(txUrl, customThanksMessage);
           })
           .catch(err => {
             reject();
@@ -603,12 +603,6 @@ const DonateButtonModal = props => {
 
     const donationOwnerAddress = customAddress || currentUser.address;
 
-    const afterDonate = success => {
-      if (success) {
-        afterSuccessfulDonate();
-      }
-    };
-
     if (allowanceApprovalType.current === AllowanceApprovalType.Clear) {
       DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
         .then(() => {
@@ -632,7 +626,7 @@ const DonateButtonModal = props => {
         allowanceApprovalType.current,
         comment,
       )
-        .then(afterDonate)
+        .then()
         .catch(() => {});
     } else {
       donateWithBridge(
@@ -643,7 +637,7 @@ const DonateButtonModal = props => {
         comment,
         allowanceApprovalType.current,
       )
-        .then(afterDonate)
+        .then()
         .catch(() => {});
     }
 
@@ -936,7 +930,7 @@ const modelTypes = PropTypes.shape({
 DonateButtonModal.propTypes = {
   model: modelTypes.isRequired,
   maxDonationAmount: PropTypes.instanceOf(BigNumber),
-  afterSuccessfulDonate: PropTypes.func,
+  customThanksMessage: PropTypes.string,
   match: PropTypes.shape({
     path: PropTypes.string.isRequired,
     url: PropTypes.string.isRequired,
@@ -946,8 +940,8 @@ DonateButtonModal.propTypes = {
 
 DonateButtonModal.defaultProps = {
   maxDonationAmount: undefined, // new BigNumber(10000000000000000),
-  afterSuccessfulDonate: () => {},
   match: undefined,
+  customThanksMessage: undefined,
 };
 
 export default React.memo(DonateButtonModal);

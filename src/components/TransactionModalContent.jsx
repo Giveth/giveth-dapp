@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'antd';
 import Lottie from 'lottie-react';
@@ -9,6 +9,8 @@ import TnxSuccessfulAnimation from '../assets/tnx-successful.json';
 import config from '../configuration';
 import CommunityService from '../services/CommunityService';
 import ErrorHandler from '../lib/ErrorHandler';
+import { history } from '../lib/helpers';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 
 const DeepPurpleColor = { color: '#2C0B3F' };
 const contentTextStyle = {
@@ -19,7 +21,18 @@ const contentTextStyle = {
 
 const { defaultCommunityId } = config;
 
-const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
+const TransactionModalContent = ({
+  type,
+  txUrl,
+  isCommunity,
+  msg,
+  customThanksMessage,
+  closeModal,
+}) => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+
   let title = '';
   let description;
   let animation;
@@ -35,14 +48,19 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
     </Fragment>
   );
 
-  const gotoDefaultCommunity = () => {
-    CommunityService.getByDelegateId(defaultCommunityId)
-      .then(defaultCommunity => {
-        window.location.replace(`/community/${defaultCommunity.slug}/donate`);
-      })
-      .catch(err => {
-        ErrorHandler(err, 'Something went wrong on fetching default community!');
-      });
+  const afterDonate = input => {
+    if (input === 'register') {
+      history.push('/profile');
+    } else {
+      CommunityService.getByDelegateId(defaultCommunityId)
+        .then(defaultCommunity => {
+          history.push(`/community/${defaultCommunity.slug}/donate`);
+        })
+        .catch(err => {
+          ErrorHandler(err, 'Something went wrong on fetching default community!');
+        });
+    }
+    closeModal();
   };
 
   switch (type) {
@@ -87,6 +105,54 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
     // TODO: handle wrong type
   }
 
+  const donationSuccessMessage = () => {
+    if (currentUser && !currentUser.name) {
+      return (
+        <div className="mt-4 text-center">
+          <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
+            Please Register!
+          </div>
+          <div style={contentTextStyle}>
+            Thank you for donating, fill out your Giveth Profile if you want recognition for your
+            contribution!
+          </div>
+          <Button ghost className="px-5 mt-4 mx-1" onClick={closeModal}>
+            No Thanks
+          </Button>
+          <Button className="px-5 mt-4 mx-1" onClick={() => afterDonate('register')}>
+            <span className="mx-4">Ok</span>
+          </Button>
+        </div>
+      );
+    }
+    if (typeof customThanksMessage !== 'undefined') {
+      return (
+        <div className="mt-4 text-center">
+          <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
+            {customThanksMessage}
+          </div>
+          <Button className="px-5 mt-4" onClick={closeModal}>
+            OK
+          </Button>
+        </div>
+      );
+    }
+    if (defaultCommunityId > 0) {
+      return (
+        <div className="mt-4 text-center">
+          <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
+            Enjoying Giveth? Consider donating.
+          </div>
+          <div style={contentTextStyle}>Your help keeps Giveth alive. ❤️</div>
+          <Button className="px-5 mt-4" onClick={afterDonate}>
+            Donate to Giveth
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="text-center p-4">
       <Lottie
@@ -101,18 +167,10 @@ const TransactionModalContent = ({ type, txUrl, isCommunity, msg }) => {
       <div className="text-center pb-3" style={contentTextStyle}>
         {description}
       </div>
-      {defaultCommunityId > 0 && type === 'donationSuccessful' && (
-        <div className="mt-4 text-center">
-          <div style={{ fontWeight: 500, fontSize: '24px', ...DeepPurpleColor }}>
-            Enjoying Giveth? Consider donating.
-          </div>
-          <div style={contentTextStyle}>Your help keeps Giveth alive. ❤️</div>
-          <Button className="px-5 mt-4" onClick={gotoDefaultCommunity}>
-            Donate to Giveth
-          </Button>
-        </div>
-      )}
-      {txUrl && type !== 'donationSuccessful' && (
+
+      {type === 'donationSuccessful' && donationSuccessMessage()}
+
+      {type !== 'donationSuccessful' && txUrl && (
         <div className="text-center py-1">
           <Button className="px-5">
             <a href={txUrl} target="_blank" rel="noopener noreferrer">
@@ -137,12 +195,16 @@ TransactionModalContent.propTypes = {
   txUrl: PropTypes.string,
   isCommunity: PropTypes.bool,
   msg: PropTypes.string,
+  customThanksMessage: PropTypes.string,
+  closeModal: PropTypes.func,
 };
 
 TransactionModalContent.defaultProps = {
   isCommunity: false,
   msg: 'Something went wrong. Please check transaction details on Etherescan.',
   txUrl: undefined,
+  customThanksMessage: undefined,
+  closeModal: () => {},
 };
 
 export default React.memo(TransactionModalContent);

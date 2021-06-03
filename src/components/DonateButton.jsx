@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import React, { forwardRef, Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
@@ -7,8 +7,6 @@ import { withRouter } from 'react-router';
 import { Button } from 'antd';
 
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
-import { checkProfileAfterDonation } from '../lib/middleware';
-import { Context as UserContext } from '../contextProviders/UserProvider';
 import DonateButtonModal from './DonateButtonModal';
 
 const modalStyles = {
@@ -29,7 +27,7 @@ const modalStyles = {
 
 Modal.setAppElement('#root');
 
-const DonateButton = forwardRef((props, ref) => {
+const DonateButton = props => {
   const { model, autoPopup, className, match, size, style } = props;
 
   const {
@@ -60,7 +58,6 @@ const DonateButton = forwardRef((props, ref) => {
         type="donate"
         block
         onClick={doDonate}
-        ref={ref}
         className={className}
         size={size}
         style={style}
@@ -78,7 +75,7 @@ const DonateButton = forwardRef((props, ref) => {
       </Modal>
     </Fragment>
   );
-});
+};
 
 const modelTypes = PropTypes.shape({
   type: PropTypes.string.isRequired,
@@ -118,20 +115,13 @@ DonateButton.defaultProps = {
 const DonateButtonWithRouter = withRouter(React.memo(DonateButton));
 
 const Root = props => {
-  const {
-    state: { currentUser },
-  } = useContext(UserContext);
-
-  const afterSuccessfulDonate = () => {
-    if (currentUser && !currentUser.name) {
-      //  Thanks for anon user (without profile) Register Suggestion
-      checkProfileAfterDonation(currentUser);
-    }
-  };
-  const afterSuccessfulDonateMemorized = useCallback(afterSuccessfulDonate, [currentUser]);
+  const { model } = props;
+  const { customThanksMessage } = model;
 
   return (
-    <DonateButtonWithRouter afterSuccessfulDonate={afterSuccessfulDonateMemorized} {...props} />
+    <Fragment>
+      <DonateButtonWithRouter customThanksMessage={customThanksMessage} {...props} />
+    </Fragment>
   );
 };
 

@@ -4,7 +4,16 @@ import { Modal } from 'antd';
 import MinimumPayoutModalContent from './MinimumPayoutModalContent';
 import TransactionModalContent from './TransactionModalContent';
 
-const NotificationModal = ({ show, closeModal, width, type, txUrl, isCommunity, msg }) => {
+const NotificationModal = ({
+  show,
+  closeModal,
+  width,
+  type,
+  txUrl,
+  isCommunity,
+  msg,
+  customThanksMessage,
+}) => {
   const donationDelegationTypes = [
     'donationPending',
     'donationSuccessful',
@@ -32,6 +41,8 @@ const NotificationModal = ({ show, closeModal, width, type, txUrl, isCommunity, 
               txUrl={txUrl}
               type={type}
               msg={msg}
+              closeModal={closeModal}
+              customThanksMessage={customThanksMessage}
             />
           ) : (
             <MinimumPayoutModalContent closeModal={closeModal} type={type} />
@@ -61,6 +72,7 @@ NotificationModal.propTypes = {
   txUrl: PropTypes.string,
   isCommunity: PropTypes.bool,
   msg: PropTypes.string,
+  customThanksMessage: PropTypes.string,
 };
 
 NotificationModal.defaultProps = {
@@ -68,6 +80,7 @@ NotificationModal.defaultProps = {
   txUrl: undefined,
   isCommunity: false,
   msg: undefined,
+  customThanksMessage: undefined,
 };
 
 export default NotificationModal;
