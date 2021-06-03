@@ -346,8 +346,24 @@ const DonateButtonModal = props => {
     return clearUp;
   }, [canDonateToProject, getMaxAmount, updateAllowance, model]);
 
+  /**
+   *
+   * @param toAdmin
+   * {
+   *    adminId:number,
+   *    id:string <entityId>,
+   *    type: community | trace | campaign
+   *    campaignId ?: it's filled for traces
+   * }
+   * @param _amount
+   * @param donationOwnerAddress
+   * @param allowanceAmount
+   * @param comment
+   * @param _allowanceApprovalType
+   * @returns {Promise<unknown>}
+   */
   const donateWithBridge = async (
-    adminId,
+    toAdmin,
     _amount,
     donationOwnerAddress,
     allowanceAmount = 0,
@@ -377,7 +393,7 @@ const DonateButtonModal = props => {
             donationOwner = user;
             method = givethBridge.current.donate(
               user.giverId,
-              adminId,
+              toAdmin.adminId,
               tokenAddress,
               amountWei,
               opts,
@@ -385,7 +401,7 @@ const DonateButtonModal = props => {
           } else {
             method = givethBridge.current.donateAndCreateGiver(
               donationOwnerAddress,
-              adminId,
+              toAdmin.adminId,
               tokenAddress,
               amountWei,
               opts,
@@ -395,7 +411,7 @@ const DonateButtonModal = props => {
         } catch (e) {
           method = givethBridge.current.donateAndCreateGiver(
             donationOwnerAddress,
-            adminId,
+            toAdmin.adminId,
             tokenAddress,
             amountWei,
             opts,
@@ -408,14 +424,14 @@ const DonateButtonModal = props => {
           currentUser.giverId > 0
             ? givethBridge.current.donate(
                 currentUser.giverId,
-                adminId,
+                toAdmin.adminId,
                 tokenAddress,
                 amountWei,
                 opts,
               )
             : givethBridge.current.donateAndCreateGiver(
                 currentUser.address,
-                adminId,
+                toAdmin.adminId,
                 tokenAddress,
                 amountWei,
                 opts,
@@ -434,7 +450,7 @@ const DonateButtonModal = props => {
 
             await DonationService.newFeathersDonation(
               donationOwner,
-              model,
+              toAdmin,
               amountWei,
               selectedToken,
               txHash,
@@ -582,7 +598,11 @@ const DonateButtonModal = props => {
       try {
         if (
           await donateWithBridge(
-            communityId,
+            {
+              adminId: communityId,
+              type: Community.type,
+              id: community._id,
+            },
             amountCommunity,
             donationOwnerAddress,
             _amount,
@@ -590,7 +610,7 @@ const DonateButtonModal = props => {
             _allowanceApprovalType,
           )
         )
-          result = await donateWithBridge(adminId, amountTrace, donationOwnerAddress, 0, comment);
+          result = await donateWithBridge(model, amountTrace, donationOwnerAddress, 0, comment);
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -636,7 +656,7 @@ const DonateButtonModal = props => {
         .catch(() => {});
     } else {
       donateWithBridge(
-        adminId,
+        model,
         amount,
         donationOwnerAddress,
         amount,
