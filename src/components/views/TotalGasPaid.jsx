@@ -34,7 +34,8 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
             <div className="pr-2">{gasPaidInfo}</div>
           </Col>
           <Col>
-            <div className="font-weight-bold">{`${gasPaidUsdValue} USD`}</div>
+            <div className="font-weight-bold">{`${gasPaidUsdValue &&
+              gasPaidUsdValue.toFixed(0)} USD`}</div>
           </Col>
         </Row>
       </Col>
