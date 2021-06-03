@@ -43,6 +43,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 import TotalGasPaid from './TotalGasPaid';
+import config from '../../configuration';
 
 /**
  Loads and shows a single trace
@@ -317,6 +318,8 @@ const ViewTrace = props => {
 
   const detailsCardElmnt = document.getElementById('detailsCard');
   const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
+
+  const fullPath = config.homeUrl + props.match.url;
 
   return (
     <HelmetProvider context={helmetContext}>
@@ -624,7 +627,11 @@ const ViewTrace = props => {
                           </div>
 
                           <div className="pt-3">
-                            <TotalGasPaid gasPaidUsdValue={trace.gasPaidUsdValue} entity="TRACE:" />
+                            <TotalGasPaid
+                              gasPaidUsdValue={trace.gasPaidUsdValue}
+                              entity="TRACE"
+                              tweetUrl={fullPath}
+                            />
                           </div>
                         </div>
                       </div>
@@ -735,6 +742,7 @@ ViewTrace.propTypes = {
       traceId: PropTypes.string,
       traceSlug: PropTypes.string,
     }),
+    url: PropTypes.string,
   }).isRequired,
 };
 
