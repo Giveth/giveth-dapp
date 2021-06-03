@@ -42,8 +42,12 @@ class NotificationModalProvider extends Component {
               minPayoutWarningInMarkComplete: () => this.displayModal({ type: 'MarkComplete' }),
               minPayoutWarningInWithdraw: () => this.displayModal({ type: 'Withdraw' }),
               donationPending: url => this.displayModal({ txUrl: url, type: 'donationPending' }),
-              donationSuccessful: url =>
-                this.displayModal({ txUrl: url, type: 'donationSuccessful' }),
+              donationSuccessful: (url, customThanksMessage) =>
+                this.displayModal({
+                  txUrl: url,
+                  type: 'donationSuccessful',
+                  customThanksMessage,
+                }),
               donationFailed: (url, msg) =>
                 this.displayModal({ txUrl: url, msg, type: 'donationFailed' }),
               delegationPending: (url, isCommunity) =>

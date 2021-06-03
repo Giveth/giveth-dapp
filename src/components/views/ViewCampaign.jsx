@@ -317,8 +317,6 @@ const ViewCampaign = ({ match }) => {
                             adminId: campaign.projectId,
                             customThanksMessage: campaign.customThanksMessage,
                           }}
-                          currentUser={currentUser}
-                          history={history}
                           autoPopup
                           className="header-donate"
                           size="large"
@@ -407,8 +405,6 @@ const ViewCampaign = ({ match }) => {
                                     customThanksMessage: campaign.customThanksMessage,
                                     token: { symbol: config.nativeTokenName },
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                   size="large"
                                 />
                               </Col>
@@ -461,8 +457,6 @@ const ViewCampaign = ({ match }) => {
                                         symbol: config.nativeTokenName,
                                       },
                                     }}
-                                    currentUser={currentUser}
-                                    history={history}
                                     size="large"
                                   />
                                 </Col>
@@ -548,8 +542,6 @@ const ViewCampaign = ({ match }) => {
                                       symbol: config.nativeTokenName,
                                     },
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                   size="large"
                                 />
                               </Col>

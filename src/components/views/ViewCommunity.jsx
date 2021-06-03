@@ -250,8 +250,6 @@ const ViewCommunity = ({ match }) => {
                         token: { symbol: config.nativeTokenName },
                         adminId: community.delegateId,
                       }}
-                      currentUser={currentUser}
-                      history={history}
                       autoPopup
                       size="large"
                     />
@@ -328,8 +326,6 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                 />
                               </Col>
                             </Row>
@@ -362,8 +358,6 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                 />
                               </Col>
                             </Row>
@@ -390,8 +384,6 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                 />
                               </Col>
                             </Row>
