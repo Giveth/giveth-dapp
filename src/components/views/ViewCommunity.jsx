@@ -229,16 +229,20 @@ const ViewCommunity = ({ match }) => {
               <Helmet>
                 <title>{community.title}</title>
               </Helmet>
-              <BackgroundImageHeader
-                image={community.image}
-                adminId={community.delegateId}
-                projectType="Community"
-                editProject={
-                  userIsOwner && community.isActive && (() => editCommunity(community.id))
-                }
-              >
-                <h6>Community</h6>
+              <BackgroundImageHeader image={community.image} adminId={community.delegateId}>
+                <h6>COMMUNITY</h6>
                 <h1>{community.title}</h1>
+
+                {userIsOwner && community.isActive && (
+                  <button
+                    type="button"
+                    className="btn m-1 ghostButtonHeader btn-sm btn-primary"
+                    onClick={() => editCommunity(community.id)}
+                  >
+                    <i className="fa fa-pencil" />
+                    &nbsp;Edit
+                  </button>
+                )}
 
                 {community.isActive && (
                   <div className="mt-4">

@@ -298,15 +298,21 @@ const ViewCampaign = ({ match }) => {
                     <title>{campaign.title}</title>
                   </Helmet>
 
-                  <BackgroundImageHeader
-                    image={campaign.image}
-                    adminId={campaign.projectId}
-                    projectType="Campaign"
-                    editProject={userIsOwner && (() => editCampaign(campaign.id))}
-                    cancelProject={userIsOwner && (() => {})}
-                  >
-                    <h6>Campaign</h6>
+                  <BackgroundImageHeader image={campaign.image} adminId={campaign.projectId}>
+                    <h6>CAMPAIGN</h6>
                     <h1>{campaign.title}</h1>
+
+                    {userIsOwner && (
+                      <button
+                        type="button"
+                        className="btn m-1 ghostButtonHeader btn-sm btn-primary"
+                        onClick={() => editCampaign(campaign.id)}
+                      >
+                        <i className="fa fa-pencil" />
+                        &nbsp;Edit
+                      </button>
+                    )}
+
                     {campaign.isActive && (
                       <div className="mt-4">
                         <DonateButton

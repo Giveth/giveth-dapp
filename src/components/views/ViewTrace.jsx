@@ -81,9 +81,6 @@ const ViewTrace = props => {
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
-  const editTraceButtonRef = useRef();
-  const cancelTraceButtonRef = useRef();
-  const deleteTraceButtonRef = useRef();
   const donationsObserver = useRef();
 
   const donationsPerBatch = 50;
@@ -327,21 +324,8 @@ const ViewTrace = props => {
                 <title>{trace.title}</title>
               </Helmet>
 
-              <BackgroundImageHeader
-                image={trace.image}
-                adminId={trace.projectId}
-                projectType="Trace"
-                editProject={
-                  trace.canUserEdit(currentUser) && (() => editTraceButtonRef.current.click())
-                }
-                cancelProject={
-                  trace.canUserCancel(currentUser) && (() => cancelTraceButtonRef.current.click())
-                }
-                deleteProject={
-                  trace.canUserDelete(currentUser) && (() => deleteTraceButtonRef.current.click())
-                }
-              >
-                <h6>Trace</h6>
+              <BackgroundImageHeader image={trace.image} adminId={trace.projectId}>
+                <h6>TRACE</h6>
                 <h1>{trace.title}</h1>
 
                 {!trace.status === Trace.IN_PROGRESS && <p>This Trace is not active anymore</p>}
@@ -350,7 +334,14 @@ const ViewTrace = props => {
 
                 <p>Campaign: {campaign.title} </p>
 
-                {isActiveTrace() && (
+                <EditTraceButton
+                  trace={trace}
+                  className="m-1 ghostButtonHeader btn-sm btn-primary"
+                />
+                <CancelTraceButton trace={trace} className="m-1 ghostButtonHeader" />
+                <DeleteProposedTraceButton trace={trace} className="m-1 ghostButtonHeader" />
+
+                {isActiveTrace() && trace.ownerAddress !== currentUser.address && (
                   <div className="mt-4">
                     <DonateButton
                       {...donateButtonProps}
@@ -373,28 +364,6 @@ const ViewTrace = props => {
                 <h5 className="title">Subscribe to updates </h5>
                 <ProjectSubscription projectTypeId={trace._id} projectType="trace" />
               </div>
-
-              {/* This buttons should not be displayed, just are clicked by using references */}
-              <span className="d-none">
-                <EditTraceButton
-                  ref={editTraceButtonRef}
-                  trace={trace}
-                  balance={balance}
-                  currentUser={currentUser}
-                />
-                <CancelTraceButton
-                  ref={cancelTraceButtonRef}
-                  balance={balance}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
-
-                <DeleteProposedTraceButton
-                  ref={deleteTraceButtonRef}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
-              </span>
 
               <div className="container-fluid mt-4">
                 <div className="row">

@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, useContext } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import Trace from 'models/Trace';
@@ -11,7 +11,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 
-const EditTraceButton = forwardRef(({ trace }, ref) => {
+const EditTraceButton = ({ trace, className }) => {
   const {
     state: { balance, isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
@@ -54,25 +54,29 @@ const EditTraceButton = forwardRef(({ trace }, ref) => {
     <Fragment>
       {trace.canUserEdit(currentUser) && (
         <button
-          ref={ref}
           type="button"
-          className="btn btn-link"
+          className={`btn ${className}`}
           onClick={() =>
             isForeignNetwork ? goTraceEditPage() : displayForeignNetRequiredWarning()
           }
         >
-          <i className="fa fa-edit" />
+          <i className={className !== 'btn-link' ? 'fa fa-pencil' : 'fa fa-edit'} />
           &nbsp;Edit
         </button>
       )}
     </Fragment>
   );
-});
+};
 
 EditTraceButton.propTypes = {
   trace: PropTypes.oneOfType(
     [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ).isRequired,
+  className: PropTypes.string,
+};
+
+EditTraceButton.defaultProps = {
+  className: 'btn-link',
 };
 
 export default React.memo(EditTraceButton);
