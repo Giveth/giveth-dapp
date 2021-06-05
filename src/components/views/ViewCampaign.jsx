@@ -56,7 +56,8 @@ const helmetContext = {};
 
 const ViewCampaign = ({ match }) => {
   const {
-    state: { balance },
+    state: { isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
     state: { currentUser },
@@ -302,7 +303,13 @@ const ViewCampaign = ({ match }) => {
                     image={campaign.image}
                     adminId={campaign.projectId}
                     projectType="Campaign"
-                    editProject={userIsOwner && (() => editCampaign(campaign.id))}
+                    editProject={
+                      userIsOwner &&
+                      (() =>
+                        isForeignNetwork
+                          ? editCampaign(campaign.id)
+                          : displayForeignNetRequiredWarning())
+                    }
                     cancelProject={userIsOwner && (() => {})}
                   >
                     <h6>Campaign</h6>

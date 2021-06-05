@@ -135,7 +135,7 @@ class MyCampaigns extends Component {
 
     return (
       <Web3Consumer>
-        {({ state: { isForeignNetwork } }) => (
+        {({ state: { isForeignNetwork }, actions: { displayForeignNetRequiredWarning } }) => (
           <div id="campaigns-view">
             <div className="container-fluid page-layout dashboard-table-view">
               <div className="row">
@@ -182,7 +182,11 @@ class MyCampaigns extends Component {
                                       <button
                                         type="button"
                                         className="btn btn-link"
-                                        onClick={() => this.editCampaign(c.id)}
+                                        onClick={() =>
+                                          isForeignNetwork
+                                            ? this.editCampaign(c.id)
+                                            : displayForeignNetRequiredWarning()
+                                        }
                                       >
                                         <i className="fa fa-edit" />
                                         &nbsp;Edit
@@ -196,7 +200,11 @@ class MyCampaigns extends Component {
                                         <button
                                           type="button"
                                           className="btn btn-danger btn-sm"
-                                          onClick={() => this.cancelCampaign(c)}
+                                          onClick={() =>
+                                            isForeignNetwork
+                                              ? this.cancelCampaign(c)
+                                              : displayForeignNetRequiredWarning()
+                                          }
                                         >
                                           <i className="fa fa-ban" />
                                           &nbsp;Cancel
