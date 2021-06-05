@@ -110,7 +110,7 @@ const DonateButtonModal = props => {
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [amount, setAmount] = useState(
-    selectedToken.symbol === config.nativeTokenName ? '1' : '100',
+    selectedToken.symbol === config.nativeTokenName ? '100' : '100',
   );
   const [showCustomAddress, setShowCustomAddress] = useState(false);
   const [allowance, setAllowance] = useState(new BigNumber(0));
@@ -131,7 +131,7 @@ const DonateButtonModal = props => {
   };
 
   const closeDialog = useCallback(() => {
-    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
+    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '100' : '100';
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     if (balance) {
@@ -207,7 +207,7 @@ const DonateButtonModal = props => {
       } // FIXME: There should be a balance provider handling all of ..
 
       const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
-      const defaultAmount = token.symbol === nativeTokenName ? '1' : '100';
+      const defaultAmount = '0';
       const newAmount = balance
         ? convertEthHelper(
             BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
