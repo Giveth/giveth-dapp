@@ -34,11 +34,7 @@ const EditCampaignButton = ({ campaign, className }) => {
   return (
     <Fragment>
       {canUserEdit && (
-        <button
-          type="button"
-          className={`btn btn-primary btn-sm ${className}`}
-          onClick={editCampaign}
-        >
+        <button type="button" className={`btn btn-sm ${className}`} onClick={editCampaign}>
           <i className={className !== 'btn-link' ? 'fa fa-pencil' : 'fa fa-edit'} />
           &nbsp;Edit
         </button>

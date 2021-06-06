@@ -283,7 +283,10 @@ const ViewCampaign = ({ match }) => {
                     <h6>CAMPAIGN</h6>
                     <h1>{campaign.title}</h1>
 
-                    <EditCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
+                    <EditCampaignButton
+                      campaign={campaign}
+                      className="m-1 ghostButtonHeader btn-primary"
+                    />
                     <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
 
                     {campaign.isActive && (
