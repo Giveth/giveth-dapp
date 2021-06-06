@@ -43,6 +43,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 import TotalGasPaid from './TotalGasPaid';
+import config from '../../configuration';
 
 /**
  Loads and shows a single trace
@@ -315,6 +316,8 @@ const ViewTrace = props => {
   const detailsCardElmnt = document.getElementById('detailsCard');
   const detailsCardHeight = detailsCardElmnt && detailsCardElmnt.offsetHeight;
 
+  const fullPath = config.homeUrl + props.match.url;
+
   return (
     <HelmetProvider context={helmetContext}>
       <ErrorBoundary>
@@ -376,24 +379,9 @@ const ViewTrace = props => {
 
               {/* This buttons should not be displayed, just are clicked by using references */}
               <span className="d-none">
-                <EditTraceButton
-                  ref={editTraceButtonRef}
-                  trace={trace}
-                  balance={balance}
-                  currentUser={currentUser}
-                />
-                <CancelTraceButton
-                  ref={cancelTraceButtonRef}
-                  balance={balance}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
-
-                <DeleteProposedTraceButton
-                  ref={deleteTraceButtonRef}
-                  trace={trace}
-                  currentUser={currentUser}
-                />
+                <EditTraceButton ref={editTraceButtonRef} trace={trace} />
+                <CancelTraceButton ref={cancelTraceButtonRef} trace={trace} />
+                <DeleteProposedTraceButton ref={deleteTraceButtonRef} trace={trace} />
               </span>
 
               <div className="container-fluid mt-4">
@@ -636,7 +624,11 @@ const ViewTrace = props => {
                           </div>
 
                           <div className="pt-3">
-                            <TotalGasPaid gasPaidUsdValue={trace.gasPaidUsdValue} entity="TRACE:" />
+                            <TotalGasPaid
+                              gasPaidUsdValue={trace.gasPaidUsdValue}
+                              entity="TRACE"
+                              tweetUrl={fullPath}
+                            />
                           </div>
                         </div>
                       </div>
@@ -747,6 +739,7 @@ ViewTrace.propTypes = {
       traceId: PropTypes.string,
       traceSlug: PropTypes.string,
     }),
+    url: PropTypes.string,
   }).isRequired,
 };
 

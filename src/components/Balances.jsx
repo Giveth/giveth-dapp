@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
+import { useLocation } from 'react-router-dom';
 
 import Campaign from 'models/Campaign';
 import Community from 'models/Community';
@@ -9,6 +10,7 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import TotalGasPaid from './views/TotalGasPaid';
+import config from '../configuration';
 
 /**
  * Shows a table of balances for a given entity (community, campaign)
@@ -53,6 +55,8 @@ const Balances = ({ entity }) => {
   }, [currentUser, currency, entity]);
 
   const precision = (nativeCurrencyWhitelist.find(t => t.symbol === currency) || {}).decimals || 2;
+  const location = useLocation();
+  const fullPath = config.homeUrl + location.pathname;
 
   return (
     <div className="dashboard-table-view">
@@ -93,9 +97,13 @@ const Balances = ({ entity }) => {
             </tbody>
           </table>
           <Row className="p-2 mb-4" justify="space-between" style={{ fontSize: '0.8rem' }}>
-            {entity.gasPaidUsdValue !== undefined && (
+            {entity.gasPaidUsdValue >= 0 && (
               <Col>
-                <TotalGasPaid gasPaidUsdValue={entity.gasPaidUsdValue} entity="CAMPAIGN:" />
+                <TotalGasPaid
+                  gasPaidUsdValue={entity.gasPaidUsdValue}
+                  entity="CAMPAIGN"
+                  tweetUrl={fullPath}
+                />
               </Col>
             )}
             {currency && currentBalanceValue && (
