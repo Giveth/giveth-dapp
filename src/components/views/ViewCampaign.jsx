@@ -6,14 +6,14 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { Button, Input, Row, Col } from 'antd';
+import { Button, Col, Input, Row } from 'antd';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import Lottie from 'lottie-react';
 import debounce from 'lodash.debounce';
 
 import Loader from '../Loader';
 import TraceCard from '../TraceCard';
-import { getUserName, getUserAvatar, history } from '../../lib/helpers';
+import { getUserAvatar, getUserName, history } from '../../lib/helpers';
 import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
@@ -33,8 +33,6 @@ import DescriptionRender from '../DescriptionRender';
 import Donation from '../../models/Donation';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
-
-import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
 import config from '../../configuration';
 import NotFound from './NotFound';
@@ -235,19 +233,12 @@ const ViewCampaign = ({ match }) => {
       });
   };
 
-  const editCampaign = id => {
-    checkBalance(balance)
-      .then(() => {
-        history.push(`/campaigns/${id}/edit`);
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
-  };
+  const editCampaign = id =>
+    !isForeignNetwork
+      ? displayForeignNetRequiredWarning()
+      : checkBalance(balance).then(() => {
+          history.push(`/campaigns/${id}/edit`);
+        });
 
   const renderDescription = () => {
     return DescriptionRender(campaign.description);
@@ -303,13 +294,7 @@ const ViewCampaign = ({ match }) => {
                     image={campaign.image}
                     adminId={campaign.projectId}
                     projectType="Campaign"
-                    editProject={
-                      userIsOwner &&
-                      (() =>
-                        isForeignNetwork
-                          ? editCampaign(campaign.id)
-                          : displayForeignNetRequiredWarning())
-                    }
+                    editProject={userIsOwner && (() => editCampaign(campaign.id))}
                     cancelProject={userIsOwner && (() => {})}
                   >
                     <h6>Campaign</h6>
