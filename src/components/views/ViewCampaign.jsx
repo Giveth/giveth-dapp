@@ -43,6 +43,7 @@ import GoBackSection from '../GoBackSection';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 import SearchAnimation from '../../assets/search-file.json';
+import CancelCampaignButton from '../CancelCampaignButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -302,7 +303,7 @@ const ViewCampaign = ({ match }) => {
                     <h6>CAMPAIGN</h6>
                     <h1>{campaign.title}</h1>
 
-                    {userIsOwner && (
+                    {userIsOwner && campaign.isActive && (
                       <button
                         type="button"
                         className="btn m-1 ghostButtonHeader btn-sm btn-primary"
@@ -312,6 +313,7 @@ const ViewCampaign = ({ match }) => {
                         &nbsp;Edit
                       </button>
                     )}
+                    <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
 
                     {campaign.isActive && (
                       <div className="mt-4">

@@ -8,15 +8,14 @@ import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Consumer as Web3Consumer } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
-import GA from 'lib/GoogleAnalytics';
 import { actionWithLoggedIn, checkBalance } from '../../lib/middleware';
-import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
 import User from '../../models/User';
 import { convertEthHelper, getTruncatedText, history } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
+import CancelCampaignButton from '../CancelCampaignButton';
 
 /**
  * The my campaings view
@@ -34,7 +33,6 @@ class MyCampaigns extends Component {
     };
 
     this.editCampaign = this.editCampaign.bind(this);
-    this.cancelCampaign = this.cancelCampaign.bind(this);
     this.handlePageChanged = this.handlePageChanged.bind(this);
   }
 
@@ -82,47 +80,6 @@ class MyCampaigns extends Component {
           }
         });
     });
-  }
-
-  cancelCampaign(campaign) {
-    actionWithLoggedIn(this.props.currentUser).then(() =>
-      checkBalance(this.props.balance).then(() => {
-        const confirmCancelCampaign = () => {
-          const afterCreate = url => {
-            const msg = (
-              <p>
-                Campaign cancelation pending...
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.info(msg);
-            GA.trackEvent({
-              category: 'Campaign',
-              action: 'canceled',
-              label: campaign.id,
-            });
-          };
-
-          const afterMined = url => {
-            const msg = (
-              <p>
-                The Campaign has been cancelled!
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.success(msg);
-          };
-          campaign.cancel(this.props.currentUser.address, afterCreate, afterMined);
-        };
-        confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
-      }),
-    );
   }
 
   render() {
@@ -189,19 +146,7 @@ class MyCampaigns extends Component {
                                       </button>
                                     )}
 
-                                    {(c.reviewerAddress === userAddress ||
-                                      c.owner.address === userAddress) &&
-                                      isForeignNetwork &&
-                                      c.isActive && (
-                                        <button
-                                          type="button"
-                                          className="btn btn-danger btn-sm"
-                                          onClick={() => this.cancelCampaign(c)}
-                                        >
-                                          <i className="fa fa-ban" />
-                                          &nbsp;Cancel
-                                        </button>
-                                      )}
+                                    <CancelCampaignButton campaign={c} />
                                   </td>
                                   <td className="td-name">
                                     <Link to={`/campaign/${c.slug}`}>
