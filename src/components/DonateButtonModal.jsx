@@ -110,7 +110,7 @@ const DonateButtonModal = props => {
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
   const [amount, setAmount] = useState(
-    selectedToken.symbol === config.nativeTokenName ? '100' : '100',
+    selectedToken.symbol === config.nativeTokenName ? '1' : '100',
   );
   const [showCustomAddress, setShowCustomAddress] = useState(false);
   const [allowance, setAllowance] = useState(new BigNumber(0));
@@ -131,7 +131,7 @@ const DonateButtonModal = props => {
   };
 
   const closeDialog = useCallback(() => {
-    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '100' : '100';
+    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
     const balance =
       selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
     if (balance) {
