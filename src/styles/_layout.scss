@@ -15,7 +15,7 @@
 
 @mixin content-styling() {
   .content {
-    font-size: 1.2rem;
+    font-size: 1rem;
 
     iframe,
     img {
@@ -63,6 +63,12 @@
 
 @mixin quill-theme() {
   @include bullet-styling(8);
+  blockquote {
+    border-left: 4px solid #ccc;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    padding-left: 16px;
+  }
   ol {
     li {
       &.ql-indent-1 {
