@@ -14,7 +14,6 @@ import debounce from 'lodash.debounce';
 import Loader from '../Loader';
 import TraceCard from '../TraceCard';
 import { getUserAvatar, getUserName, history } from '../../lib/helpers';
-import { checkBalance } from '../../lib/middleware';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
@@ -26,7 +25,6 @@ import {
   Consumer as UserConsumer,
   Context as UserContext,
 } from '../../contextProviders/UserProvider';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 import DescriptionRender from '../DescriptionRender';
 
@@ -42,6 +40,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
 import SearchAnimation from '../../assets/search-file.json';
 import CancelCampaignButton from '../CancelCampaignButton';
+import EditCampaignButton from '../EditCampaignButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -54,10 +53,6 @@ import CancelCampaignButton from '../CancelCampaignButton';
 const helmetContext = {};
 
 const ViewCampaign = ({ match }) => {
-  const {
-    state: { isForeignNetwork, balance },
-    actions: { displayForeignNetRequiredWarning },
-  } = useContext(Web3Context);
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -234,13 +229,6 @@ const ViewCampaign = ({ match }) => {
       });
   };
 
-  const editCampaign = id =>
-    !isForeignNetwork
-      ? displayForeignNetRequiredWarning()
-      : checkBalance(balance).then(() => {
-          history.push(`/campaigns/${id}/edit`);
-        });
-
   const renderDescription = () => {
     return DescriptionRender(campaign.description);
   };
@@ -295,16 +283,7 @@ const ViewCampaign = ({ match }) => {
                     <h6>CAMPAIGN</h6>
                     <h1>{campaign.title}</h1>
 
-                    {userIsOwner && campaign.isActive && (
-                      <button
-                        type="button"
-                        className="btn m-1 ghostButtonHeader btn-sm btn-primary"
-                        onClick={() => editCampaign(campaign.id)}
-                      >
-                        <i className="fa fa-pencil" />
-                        &nbsp;Edit
-                      </button>
-                    )}
+                    <EditCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
                     <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
 
                     {campaign.isActive && (

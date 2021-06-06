@@ -18,7 +18,10 @@ const CancelCampaignButton = ({ campaign, className }) => {
   } = useContext(Web3Context);
 
   const cancelCampaign = () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    if (!isForeignNetwork) {
+      return displayForeignNetRequiredWarning();
+    }
+    return actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance).then(() => {
         const confirmCancelCampaign = () => {
           const afterCreate = url => {
@@ -60,16 +63,18 @@ const CancelCampaignButton = ({ campaign, className }) => {
 
   const userAddress = currentUser.address;
   const { ownerAddress, reviewerAddress } = campaign;
-  const userIsOwner =
-    userAddress && (userAddress === ownerAddress || userAddress === reviewerAddress);
+  const canUserCancel =
+    userAddress &&
+    (userAddress === ownerAddress || userAddress === reviewerAddress) &&
+    campaign.isActive;
 
   return (
     <Fragment>
-      {userIsOwner && campaign.isActive && (
+      {canUserCancel && (
         <button
           type="button"
           className={`btn btn-danger btn-sm ${className}`}
-          onClick={() => (isForeignNetwork ? cancelCampaign() : displayForeignNetRequiredWarning())}
+          onClick={cancelCampaign}
         >
           <i className="fa fa-ban mr-2" />
           &nbsp;Cancel

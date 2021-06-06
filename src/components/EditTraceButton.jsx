@@ -2,7 +2,7 @@ import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import Trace from 'models/Trace';
-import { checkBalance } from 'lib/middleware';
+import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
 import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -21,45 +21,44 @@ const EditTraceButton = ({ trace, className }) => {
   } = useContext(UserContext);
 
   const goTraceEditPage = () => {
-    checkBalance(balance)
-      .then(() => {
-        const { formType } = trace;
-        if (
-          [Trace.BOUNTYTYPE, Trace.EXPENSETYPE, Trace.PAYMENTTYPE, Trace.MILESTONETYPE].includes(
-            formType,
-          )
-        ) {
-          const newTraceEditUrl = `/${formType}/${trace._id}/edit`;
-          history.push(newTraceEditUrl);
-        } else if ([Trace.PROPOSED, Trace.REJECTED].includes(trace.status)) {
-          history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit/proposed`);
-          // TODO:
-          // history.push(`/traces/${trace._id}/edit/proposed`);
-        } else {
-          history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
-          // TODO:
-          // history.push(`/traces/${trace._id}/edit`);
-        }
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+    if (!isForeignNetwork) {
+      return displayForeignNetRequiredWarning();
+    }
+    return actionWithLoggedIn(currentUser).then(() =>
+      checkBalance(balance)
+        .then(() => {
+          const { formType } = trace;
+          if (
+            [Trace.BOUNTYTYPE, Trace.EXPENSETYPE, Trace.PAYMENTTYPE, Trace.MILESTONETYPE].includes(
+              formType,
+            )
+          ) {
+            const newTraceEditUrl = `/${formType}/${trace._id}/edit`;
+            history.push(newTraceEditUrl);
+          } else if ([Trace.PROPOSED, Trace.REJECTED].includes(trace.status)) {
+            history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit/proposed`);
+            // TODO:
+            // history.push(`/traces/${trace._id}/edit/proposed`);
+          } else {
+            history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
+            // TODO:
+            // history.push(`/traces/${trace._id}/edit`);
+          }
+        })
+        .catch(err => {
+          if (err === 'noBalance') {
+            ErrorPopup('There is no balance left on the account.', err);
+          } else if (err !== undefined) {
+            ErrorPopup('Something went wrong.', err);
+          }
+        }),
+    );
   };
 
   return (
     <Fragment>
       {trace.canUserEdit(currentUser) && (
-        <button
-          type="button"
-          className={`btn ${className}`}
-          onClick={() =>
-            isForeignNetwork ? goTraceEditPage() : displayForeignNetRequiredWarning()
-          }
-        >
+        <button type="button" className={`btn ${className}`} onClick={goTraceEditPage}>
           <i className={className !== 'btn-link' ? 'fa fa-pencil' : 'fa fa-edit'} />
           &nbsp;Edit
         </button>

@@ -25,7 +25,10 @@ const CancelTraceButton = ({ trace, className }) => {
   const conversationModal = useRef();
 
   const openDialog = () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    if (!isForeignNetwork) {
+      return displayForeignNetRequiredWarning();
+    }
+    return actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -97,11 +100,7 @@ const CancelTraceButton = ({ trace, className }) => {
   return (
     <Fragment>
       {trace.canUserCancel(currentUser) && (
-        <button
-          type="button"
-          className={`btn btn-danger btn-sm ${className}`}
-          onClick={() => (isForeignNetwork ? openDialog() : displayForeignNetRequiredWarning())}
-        >
+        <button type="button" className={`btn btn-danger btn-sm ${className}`} onClick={openDialog}>
           <i className="fa fa-times" />
           &nbsp;Cancel
         </button>
