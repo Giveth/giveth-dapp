@@ -6,15 +6,14 @@ import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
-import GA from 'lib/GoogleAnalytics';
-import { actionWithLoggedIn, checkBalance } from '../../lib/middleware';
-import confirmationDialog from '../../lib/confirmationDialog';
 import Loader from '../Loader';
-import { convertEthHelper, getTruncatedText, history } from '../../lib/helpers';
+import { convertEthHelper, getTruncatedText } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
+import CancelCampaignButton from '../CancelCampaignButton';
+import EditCampaignButton from '../EditCampaignButton';
 
 /**
  * The my campaings view
@@ -24,8 +23,7 @@ function MyCampaigns() {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
-    actions: { displayForeignNetRequiredWarning },
+    state: { isForeignNetwork },
   } = useContext(Web3Context);
 
   const [isLoading, setLoading] = useState(true);
@@ -73,57 +71,6 @@ function MyCampaigns() {
     setSkipPages(newPage - 1);
   }
 
-  function editCampaign(id) {
-    actionWithLoggedIn(currentUser).then(() =>
-      isForeignNetwork
-        ? checkBalance(balance).then(() => {
-            history.push(`/campaigns/${id}/edit`);
-          })
-        : displayForeignNetRequiredWarning(),
-    );
-  }
-
-  function cancelCampaign(campaign) {
-    actionWithLoggedIn(currentUser).then(() =>
-      checkBalance(balance).then(() => {
-        const confirmCancelCampaign = () => {
-          const afterCreate = url => {
-            const msg = (
-              <p>
-                Campaign cancelation pending...
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.info(msg);
-            GA.trackEvent({
-              category: 'Campaign',
-              action: 'canceled',
-              label: campaign.id,
-            });
-          };
-
-          const afterMined = url => {
-            const msg = (
-              <p>
-                The Campaign has been cancelled!
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.success(msg);
-          };
-          campaign.cancel(currentUser.address, afterCreate, afterMined);
-        };
-        confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
-      }),
-    );
-  }
-
   const userAddress = currentUser.address;
   const isPendingCampaign =
     (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
@@ -167,34 +114,8 @@ function MyCampaigns() {
                         {campaigns.data.map(c => (
                           <tr key={c.id} className={c.status === Campaign.PENDING ? 'pending' : ''}>
                             <td className="td-actions">
-                              {c.owner.address === userAddress && c.isActive && (
-                                <button
-                                  type="button"
-                                  className="btn btn-link"
-                                  onClick={() => editCampaign(c.id)}
-                                >
-                                  <i className="fa fa-edit" />
-                                  &nbsp;Edit
-                                </button>
-                              )}
-
-                              {(c.reviewerAddress === userAddress ||
-                                c.owner.address === userAddress) &&
-                                isForeignNetwork &&
-                                c.isActive && (
-                                  <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() =>
-                                      isForeignNetwork
-                                        ? cancelCampaign(c)
-                                        : displayForeignNetRequiredWarning()
-                                    }
-                                  >
-                                    <i className="fa fa-ban" />
-                                    &nbsp;Cancel
-                                  </button>
-                                )}
+                              <EditCampaignButton campaign={c} />
+                              <CancelCampaignButton campaign={c} />
                             </td>
                             <td className="td-name">
                               <Link to={`/campaign/${c.slug}`}>

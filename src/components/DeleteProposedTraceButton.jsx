@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, useContext } from 'react';
+import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
@@ -12,7 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 
-const DeleteProposedTraceButton = forwardRef(({ trace }, ref) => {
+const DeleteProposedTraceButton = ({ trace, className }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -35,24 +35,28 @@ const DeleteProposedTraceButton = forwardRef(({ trace }, ref) => {
       {trace.canUserDelete(currentUser) && (
         <span>
           <button
-            ref={ref}
             type="button"
-            className="btn btn-danger btn-sm"
+            className={`btn btn-danger btn-sm ${className}`}
             onClick={deleteProposedTrace}
           >
-            <i className="fa fa-times-circle-o" />
-            &nbsp;Delete
+            <i className="fa fa-trash-o mr-2" />
+            Delete
           </button>
         </span>
       )}
     </Fragment>
   );
-});
+};
 
 DeleteProposedTraceButton.propTypes = {
   trace: PropTypes.oneOfType(
     [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ).isRequired,
+  className: PropTypes.string,
+};
+
+DeleteProposedTraceButton.defaultProps = {
+  className: '',
 };
 
 export default React.memo(DeleteProposedTraceButton);

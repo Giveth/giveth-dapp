@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, useContext, useRef } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
@@ -13,7 +13,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 
-const CancelTraceButton = forwardRef(({ trace }, ref) => {
+const CancelTraceButton = ({ trace, className }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -25,7 +25,10 @@ const CancelTraceButton = forwardRef(({ trace }, ref) => {
   const conversationModal = useRef();
 
   const openDialog = () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    if (!isForeignNetwork) {
+      return displayForeignNetRequiredWarning();
+    }
+    return actionWithLoggedIn(currentUser).then(() =>
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -97,12 +100,7 @@ const CancelTraceButton = forwardRef(({ trace }, ref) => {
   return (
     <Fragment>
       {trace.canUserCancel(currentUser) && (
-        <button
-          ref={ref}
-          type="button"
-          className="btn btn-danger btn-sm"
-          onClick={() => (isForeignNetwork ? openDialog() : displayForeignNetRequiredWarning())}
-        >
+        <button type="button" className={`btn btn-danger btn-sm ${className}`} onClick={openDialog}>
           <i className="fa fa-times" />
           &nbsp;Cancel
         </button>
@@ -111,12 +109,17 @@ const CancelTraceButton = forwardRef(({ trace }, ref) => {
       <ConversationModal ref={conversationModal} trace={trace} />
     </Fragment>
   );
-});
+};
 
 CancelTraceButton.propTypes = {
   trace: PropTypes.oneOfType(
     [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ).isRequired,
+  className: PropTypes.string,
+};
+
+CancelTraceButton.defaultProps = {
+  className: '',
 };
 
 export default React.memo(CancelTraceButton);
