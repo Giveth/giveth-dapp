@@ -18,6 +18,9 @@ const Context = createContext();
 const { Provider, Consumer } = Context;
 export { Consumer };
 
+const capitalizeFirstLetter = string => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
 /**
  * Donation provider listing given user's donation and actions on top of them
  *
@@ -116,8 +119,9 @@ class DonationProvider extends Component {
         .then(() =>
           React.swal({
             title: 'Reject your donation?',
-            text:
-              'Your donation will not go to this Trace. You will still be in control of you funds and the Community can still delegate you donation.',
+            text: `Your donation will not go to this ${capitalizeFirstLetter(
+              donation.intendedProjectType,
+            )}. You will still be in control of you funds and the Community can still delegate you donation.`,
             icon: 'warning',
             dangerMode: true,
             buttons: ['Cancel', 'Yes, reject'],
