@@ -109,9 +109,7 @@ const DonateButtonModal = props => {
   const [selectedToken, setSelectedToken] = useState({});
   const [isSaving, setSaving] = useState(false);
   const [formIsValid, setFormIsValid] = useState(false);
-  const [amount, setAmount] = useState(
-    selectedToken.symbol === config.nativeTokenName ? '1' : '100',
-  );
+  const [amount, setAmount] = useState('0');
   const [showCustomAddress, setShowCustomAddress] = useState(false);
   const [allowance, setAllowance] = useState(new BigNumber(0));
   const [allowanceStatus, setAllowanceStatus] = useState(AllowanceStatus.NotNeeded);
@@ -131,19 +129,9 @@ const DonateButtonModal = props => {
   };
 
   const closeDialog = useCallback(() => {
-    const defaultAmount = selectedToken.symbol === config.nativeTokenName ? '1' : '100';
-    const balance =
-      selectedToken.symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
-    if (balance) {
-      const newAmount = BigNumber.min(
-        convertEthHelper(utils.fromWei(balance.toFixed()), selectedToken.decimals),
-        defaultAmount,
-      ).toFixed();
-      setAmount(newAmount);
-    }
     setModalVisible(false);
     setFormIsValid(false);
-  }, [selectedToken, NativeTokenBalance, setModalVisible]);
+  }, [setModalVisible]);
 
   const getMaxAmount = useCallback(() => {
     const { communityId } = model;
