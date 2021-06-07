@@ -123,7 +123,9 @@ function Editor(props) {
     toolbar: [
       [{ header: [1, 2, false] }],
       ['bold', 'italic', 'underline', 'blockquote'],
+      [{ color: [] }, { background: [] }],
       [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ indent: '-1' }, { indent: '+1' }],
       ['link', 'image', 'video'],
     ],
   };
@@ -144,6 +146,9 @@ function Editor(props) {
     'style',
     'width',
     'height',
+    'indent',
+    'background',
+    'color',
   ];
 
   return (
