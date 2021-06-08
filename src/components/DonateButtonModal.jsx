@@ -12,12 +12,11 @@ import React, {
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import { Form, Input, Textarea } from 'formsy-react-components';
 import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Slider } from 'antd';
+import { Slider, Form, Select, Input, InputNumber } from 'antd';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
@@ -34,10 +33,8 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import ActionNetworkWarning from './ActionNetworkWarning';
-import SelectFormsy from './SelectFormsy';
 import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
-import NumericInput from './NumericInput';
 import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
@@ -108,12 +105,14 @@ const DonateButtonModal = props => {
 
   const [selectedToken, setSelectedToken] = useState({});
   const [isSaving, setSaving] = useState(false);
-  const [formIsValid, setFormIsValid] = useState(false);
   const [amount, setAmount] = useState('0');
   const [showCustomAddress, setShowCustomAddress] = useState(false);
   const [allowance, setAllowance] = useState(new BigNumber(0));
   const [allowanceStatus, setAllowanceStatus] = useState(AllowanceStatus.NotNeeded);
   const [contentVisible, setContentVisible] = useState(false);
+  const [customAddress, setCustomAddress] = useState();
+  const [formIsValid, setFormIsValid] = useState(true);
+  const [donationComment, setDonationComment] = useState('');
 
   const form = useRef();
   const givethBridge = useRef();
@@ -127,11 +126,6 @@ const DonateButtonModal = props => {
   const clearUp = () => {
     if (stopPolling.current) stopPolling.current();
   };
-
-  const closeDialog = useCallback(() => {
-    setModalVisible(false);
-    setFormIsValid(false);
-  }, [setModalVisible]);
 
   const getMaxAmount = useCallback(() => {
     const { communityId } = model;
@@ -193,17 +187,9 @@ const DonateButtonModal = props => {
       if (!token.balance && token.symbol !== nativeTokenName) {
         token.balance = new BigNumber('0');
       } // FIXME: There should be a balance provider handling all of ..
-
-      const balance = token.symbol === nativeTokenName ? NativeTokenBalance : token.balance;
       const defaultAmount = '0';
-      const newAmount = balance
-        ? convertEthHelper(
-            BigNumber.min(utils.fromWei(balance.toFixed()), defaultAmount),
-            token.decimals,
-          )
-        : defaultAmount;
       setSelectedToken(token);
-      setAmount(newAmount);
+      setAmount(defaultAmount);
     },
     [tokenWhitelist, NativeTokenBalance],
   );
@@ -447,7 +433,7 @@ const DonateButtonModal = props => {
             );
 
             resolve(true);
-            closeDialog();
+            setModalVisible(false);
 
             if (isDonationInToken) {
               setTimeout(() => {
@@ -485,7 +471,7 @@ const DonateButtonModal = props => {
             }
 
             setSaving(false);
-            closeDialog();
+            setModalVisible(false);
           })
           .finally(() => updateAllowance(UPDATE_ALLOWANCE_DELAY));
       });
@@ -606,7 +592,7 @@ const DonateButtonModal = props => {
     return result;
   };
 
-  const submit = ({ customAddress, comment }) => {
+  const submit = () => {
     const { adminId, communityId } = model;
 
     const donationOwnerAddress = customAddress || currentUser.address;
@@ -621,9 +607,8 @@ const DonateButtonModal = props => {
         .catch(err => {
           const message = `Something went wrong with the transaction`;
           ErrorHandler(err, message);
-
           setSaving(false);
-          closeDialog();
+          setModalVisible(false);
         });
     } else if (communityId) {
       donateToCommunity(
@@ -632,7 +617,7 @@ const DonateButtonModal = props => {
         amount,
         donationOwnerAddress,
         allowanceApprovalType.current,
-        comment,
+        donationComment,
       )
         .then()
         .catch(() => {});
@@ -642,7 +627,7 @@ const DonateButtonModal = props => {
         amount,
         donationOwnerAddress,
         amount,
-        comment,
+        donationComment,
         allowanceApprovalType.current,
       )
         .then()
@@ -663,7 +648,7 @@ const DonateButtonModal = props => {
 
   const submitDefault = () => {
     allowanceApprovalType.current = AllowanceApprovalType.Default;
-    form.current.formsyForm.submit();
+    form.current.submit();
   };
 
   const submitInfiniteAllowance = () => {
@@ -675,7 +660,7 @@ const DonateButtonModal = props => {
     }).then(result => {
       if (result) {
         allowanceApprovalType.current = AllowanceApprovalType.Infinite;
-        form.current.formsyForm.submit();
+        form.current.submit();
       }
     });
   };
@@ -689,27 +674,30 @@ const DonateButtonModal = props => {
     }).then(result => {
       if (result) {
         allowanceApprovalType.current = AllowanceApprovalType.Clear;
-        form.current.formsyForm.submit();
+        form.current.submit();
       }
     });
   };
 
   const capitalizeAdminType = type => type.charAt(0).toUpperCase() + type.slice(1);
 
+  let isZeroAmount = false;
+  if (Number(amount) === 0) {
+    isZeroAmount = true;
+  }
+
   return (
     <Fragment>
       {contentVisible && (
         <Form
-          onSubmit={submit}
+          className="card-form"
           ref={form}
-          mapping={inputs => ({
-            amount: inputs.amount,
-            customAddress: inputs.customAddress,
-            comment: inputs.comment,
-          })}
-          onValid={() => setFormIsValid(true)}
-          onInvalid={() => setFormIsValid(false)}
-          layout="vertical"
+          requiredMark
+          onFinish={submit}
+          scrollToFirstError={{
+            block: 'center',
+            behavior: 'smooth',
+          }}
         >
           <h3>
             Donate to support <em>{model.title}</em>
@@ -728,12 +716,14 @@ const DonateButtonModal = props => {
               It looks like your Ethereum Provider is locked or you need to enable it.
             </div>
           )}
+
           {validProvider && currentUser.address && (
             <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.homeNetworkName}
             />
           )}
+
           {isCorrectNetwork && currentUser.address && (
             <p>
               {model.type.toLowerCase() === Community.type && (
@@ -755,35 +745,39 @@ const DonateButtonModal = props => {
           {validProvider && isCorrectNetwork && currentUser.address && (
             <div>
               {!model.acceptsSingleToken && (
-                <SelectFormsy
-                  name="token"
-                  id="token-select"
-                  label="Make your donation in"
-                  helpText={`Select ${config.nativeTokenName} or the token you want to donate`}
-                  value={selectedToken.address}
-                  options={tokenWhitelistOptions}
-                  onChange={address => setToken(address)}
-                />
+                <Fragment>
+                  <div className="label mb-3">Make your donation in:</div>
+                  <Select
+                    name="token"
+                    id="token-select"
+                    value={selectedToken.address}
+                    onChange={setToken}
+                    style={{ minWidth: '200px' }}
+                    className="mr-3 mb-3"
+                  >
+                    {tokenWhitelistOptions.map(item => (
+                      <Select.Option value={item.value} key={item.value}>
+                        {item.title}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Fragment>
               )}
+
               {/* TODO: remove this b/c the wallet provider will contain this info */}
               {zeroBalance ? (
-                <Fragment>
-                  You don&apos;t have any {symbol} token!
-                  <br />
-                  <br />
-                  <br />
-                  <br />
-                </Fragment>
+                <div className="mb-4 mt-2 label">You don&apos;t have any {symbol} token!</div>
               ) : (
-                <Fragment>
+                <span>
                   {config.homeNetworkName} {symbol} balance:&nbsp;
                   <em>
                     {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
                   </em>
-                </Fragment>
+                </span>
               )}
             </div>
           )}
+
           {isCorrectNetwork && validProvider && currentUser.address && (
             <Fragment>
               {!zeroBalance ? (
@@ -791,39 +785,44 @@ const DonateButtonModal = props => {
                   <span className="label">How much {symbol} do you want to donate?</span>
 
                   {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                    <div className="form-group" id="amount_slider">
-                      <Slider
-                        min={0}
-                        max={maxAmount.toNumber()}
-                        onChange={num => setAmount(num.toString())}
-                        value={amount}
-                        step={decimals ? 1 / 10 ** decimals : 1}
-                        marks={sliderMarks}
-                      />
-                    </div>
+                    <Fragment>
+                      <div className="form-group" id="amount_slider">
+                        <Slider
+                          min={0}
+                          max={maxAmount.toNumber()}
+                          onChange={num => setAmount(num.toString())}
+                          value={amount}
+                          step={decimals ? 1 / 10 ** decimals : 1}
+                          marks={sliderMarks}
+                        />
+                      </div>
+                      <div className="pt-2 pb-4">
+                        <InputNumber
+                          min={0}
+                          max={maxAmount
+                            .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
+                            .toNumber()}
+                          id="amount-input"
+                          value={amount}
+                          onChange={setAmount}
+                          autoFocus
+                          style={{ minWidth: '200px' }}
+                          className="rounded"
+                          size="large"
+                          precision={decimals}
+                        />
+                      </div>
+                    </Fragment>
                   )}
-                  <div className="form-group">
-                    <NumericInput
-                      token={selectedToken}
-                      maxAmount={maxAmount}
-                      id="amount-input"
-                      value={amount}
-                      onChange={setAmount}
-                      autoFocus
-                      lteMessage={`This donation exceeds your wallet balance or the Trace max amount: ${convertEthHelper(
-                        maxAmount,
-                        decimals,
-                      )} ${symbol}.`}
-                    />
-                  </div>
+
                   {showCustomAddress && (
-                    <div className="alert alert-success">
+                    <div className="alert alert-success py-1">
                       <i className="fa fa-exclamation-triangle" />
                       The donation will be donated on behalf of address:
                     </div>
                   )}
 
-                  <div className="react-toggle-container">
+                  <div className="react-toggle-container mb-1">
                     <Toggle
                       id="show-recipient-address"
                       defaultChecked={showCustomAddress}
@@ -832,35 +831,64 @@ const DonateButtonModal = props => {
                     <div className="label">I want to donate on behalf of another address</div>
                   </div>
                   {showCustomAddress && (
-                    <div className="form-group recipient-address-container">
+                    <Form.Item
+                      className="mb-0"
+                      name="customAddress"
+                      initialValue={currentUser.address}
+                      rules={[
+                        {
+                          required: true,
+                          type: 'string',
+                        },
+                        {
+                          validator: async (_, val) => {
+                            try {
+                              utils.toChecksumAddress(val);
+                              setFormIsValid(true);
+                              return Promise.resolve();
+                            } catch (err) {
+                              setFormIsValid(false);
+                              // eslint-disable-next-line prefer-promise-reject-errors
+                              return Promise.reject('Invalid address!');
+                            }
+                          },
+                        },
+                      ]}
+                    >
                       <Input
+                        className="rounded"
                         name="customAddress"
                         id="title-input"
-                        type="text"
-                        value={currentUser.address}
-                        placeholder={ZERO_ADDRESS}
-                        validations="isEtherAddress"
-                        validationErrors={{
-                          isEtherAddress: 'Please insert a valid Ethereum address.',
-                        }}
+                        value={customAddress}
+                        onChange={input => setCustomAddress(input.target.value)}
                       />
-                    </div>
+                    </Form.Item>
                   )}
+
                   <div className="form-group">
-                    <Textarea name="comment" id="comment-input" value="" placeholder="Comment" />
-                  </div>
-                  <div>
                     <br />
-                    <br />
+                    <Input.TextArea
+                      name="comment"
+                      id="comment-input"
+                      className="rounded"
+                      placeholder="Comment"
+                      onChange={e => setDonationComment(e.target.value)}
+                    />
                   </div>
                 </Fragment>
               ) : null}
+
               {maxAmount.toNumber() !== 0 && (
                 <Fragment>
                   <LoaderButton
-                    className="btn btn-success"
+                    className="btn btn-success m-1"
                     formNoValidate
-                    disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                    disabled={
+                      isSaving ||
+                      (showCustomAddress && !formIsValid) ||
+                      isZeroAmount ||
+                      !isCorrectNetwork
+                    }
                     isLoading={false}
                     onClick={submitDefault}
                   >
@@ -870,9 +898,14 @@ const DonateButtonModal = props => {
                   {allowanceStatus === AllowanceStatus.Needed && (
                     <LoaderButton
                       type="button"
-                      className="btn btn-primary ml-2"
+                      className="btn btn-primary m-1"
                       formNoValidate
-                      disabled={isSaving || !formIsValid || !isCorrectNetwork}
+                      disabled={
+                        isSaving ||
+                        (showCustomAddress && !formIsValid) ||
+                        isZeroAmount ||
+                        !isCorrectNetwork
+                      }
                       isLoading={false}
                       onClick={submitInfiniteAllowance}
                       data-tip="React-tooltip"
@@ -881,7 +914,7 @@ const DonateButtonModal = props => {
                     </LoaderButton>
                   )}
 
-                  <ReactTooltip place="top" type="dark" effect="solid">
+                  <ReactTooltip type="dark" effect="solid">
                     <p style={{ maxWidth: 250 }}>
                       Infinite unlock will allow the Giveth Bridge smart contract to interact freely
                       with the {selectedToken.name} in your wallet, this can be changed later by
@@ -891,7 +924,7 @@ const DonateButtonModal = props => {
 
                   {allowanceStatus === AllowanceStatus.Enough && (
                     <LoaderButton
-                      className="btn btn-danger ml-2"
+                      className="btn btn-danger m-1"
                       formNoValidate
                       disabled={isSaving || !isCorrectNetwork}
                       isLoading={false}
@@ -904,18 +937,10 @@ const DonateButtonModal = props => {
               )}
             </Fragment>
           )}
-          <span className={zeroBalance ? '' : 'ml-2'}>
+
+          <span className="m-1">
             <ExchangeButton />
           </span>
-          <button
-            className="btn btn-light float-right"
-            type="button"
-            onClick={() => {
-              closeDialog();
-            }}
-          >
-            Close
-          </button>
         </Form>
       )}
     </Fragment>

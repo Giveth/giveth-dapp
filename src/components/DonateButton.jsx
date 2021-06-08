@@ -1,34 +1,20 @@
 // eslint-disable-next-line max-classes-per-file
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
 import { withRouter } from 'react-router';
-import { Button } from 'antd';
+import { Button, Modal } from 'antd';
 
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DonateButtonModal from './DonateButtonModal';
 
 const modalStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    minWidth: '40%',
-    maxWidth: '80%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-20%',
-    transform: 'translate(-50%, -50%)',
-    boxShadow: '0 0 40px #ccc',
-    overflowY: 'auto',
-    maxHeight: '64%',
-  },
+  minWidth: '60%',
+  maxWidth: '90%',
 };
 
-Modal.setAppElement('#root');
-
 const DonateButton = props => {
-  const { model, autoPopup, className, match, size, style } = props;
+  const { autoPopup, className, match, size, style } = props;
 
   const {
     state: { isEnabled },
@@ -65,10 +51,12 @@ const DonateButton = props => {
         Donate
       </Button>
       <Modal
-        isOpen={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-        shouldCloseOnOverlayClick={false}
-        contentLabel={`Support this ${model.type}!`}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        centered
+        destroyOnClose
+        className="pb-0"
         style={modalStyles}
       >
         <DonateButtonModal {...props} setModalVisible={setModalVisible} />
