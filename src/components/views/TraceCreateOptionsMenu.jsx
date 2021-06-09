@@ -41,7 +41,6 @@ function TraceCreateOptionsMenu() {
             alt="trace-logo"
           />
         </Link>
-
         <Link className="link-card" to="new/bounty">
           <img
             className="link-card-logo"
@@ -58,7 +57,6 @@ function TraceCreateOptionsMenu() {
             alt="trace-logo"
           />
         </Link>
-
         <Link className="link-card" to="new/expense">
           <img
             className="link-card-logo"
@@ -73,23 +71,23 @@ function TraceCreateOptionsMenu() {
             alt="trace-logo"
           />
         </Link>
-
-        <Link className="link-card" to="new/milestone">
-          <img
-            className="link-card-logo"
-            src={`${process.env.PUBLIC_URL}/img/milestone.png`}
-            alt="trace-logo"
-          />
-          <h2 className="link-card-title ">Milestone</h2>
-          <p className="link-card-desc">
-            Your Campaign will get rewarded after accomplishing this task.
-          </p>
-          <img
-            className="link-card-arrow"
-            src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`}
-            alt="trace-logo"
-          />
-        </Link>
+        {/* //TODO after uncommenting milestone we should remove margin-top: 82px in .link-card-container
+        {/* <Link className="link-card" to="new/milestone"> */}
+        {/*  <img */}
+        {/*    className="link-card-logo" */}
+        {/*    src={`${process.env.PUBLIC_URL}/img/milestone.png`} */}
+        {/*    alt="trace-logo" */}
+        {/*  /> */}
+        {/*  <h2 className="link-card-title ">Milestone</h2> */}
+        {/*  <p className="link-card-desc"> */}
+        {/*    Your Campaign will get rewarded after accomplishing this task. */}
+        {/*  </p> */}
+        {/*  <img */}
+        {/*    className="link-card-arrow" */}
+        {/*    src={`${process.env.PUBLIC_URL}/img/right-arrow.svg`} */}
+        {/*    alt="trace-logo" */}
+        {/*  /> */}
+        {/* </Link> */}
       </div>
     </div>
   );
