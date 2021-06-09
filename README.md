@@ -29,12 +29,13 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
 
 #### Prerequisities
-- You need to use Node > v8, however, v10 does not work correctly yet.
-- You need to use npm > v5.4, or yarn > v1.6 to correctly install the dependencies.
+- You need to use NodeJS v10.
+- You need to use yarn > v1.6 to correctly install the dependencies.
+- You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) 
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
-2. Join us on [Element](http://join.giveth.io) if you haven't already.
+2. Join us on [Element](http://join.giveth.io) or [Discord](https://discord.gg/Uq2TaXP9bC) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
@@ -54,7 +55,7 @@ If your operative system is any distrubution of linux you can use an All in One 
     ```
     cd giveth-dapp
     ```
-3. Make sure you have [NodeJS](https://nodejs.org/) (v8.4.0 or higher) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
+3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
 4. Install dependencies from within giveth-dapp directory:
     ```
     npm install
@@ -62,34 +63,24 @@ If your operative system is any distrubution of linux you can use an All in One 
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
-2. Run the node-v8.9.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
-3. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
-4. In the administrator command prompt, change to the directory where you want to store this repository.
+1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15)
+2. After downloading, install the packages marked from this [image](./VSstudio.png)
+3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/)(its better to be v10.24.1 LTS) 
+4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
+5. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
+6. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
    ```
-5. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
+7. Double check node version with CMD command:
    ```
-   npm install npm@latest -g
+   node -v
    ```
-6. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
+8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install" you should first delete "node modules" folder.
    ```
-   npm install -g windows-build-tools
-   ```
-7. Install dependencies from within giveth-dapp directory:
-    ```
-    npm install
-    ```
-8. For some reason the npm node-sass package does not install correctly in windows when using the 'npm install' command, so you must rebuild the node-sass package with:
-   ```
-   npm rebuild node-sass
-   ```
-9. The web3 package does not install correctly when using the 'npm install' command, so you must install it separately in order for this dapp to run. Use the following to install web3:
-   ```
-   npm install web3
-   ```
-10. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+   yarn install
+
+9. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further. Alternatively, you could change the configuration to connect to the `develop` environment, see the [Configuration](#configuration) section.
