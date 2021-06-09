@@ -77,7 +77,6 @@ const Delegations = () => {
         .find({
           query: {
             status: Campaign.ACTIVE,
-            ownerAddress: currentUser.address,
             $select: ['ownerAddress', 'title', '_id', 'projectId'],
             $limit: 100,
             $sort: {

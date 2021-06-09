@@ -288,7 +288,6 @@ class DelegateButtonModal extends Component {
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
-
     return (
       <React.Fragment>
         {traceOnly && <p>Select a Trace to delegate this donation to:</p>}
@@ -319,8 +318,7 @@ class DelegateButtonModal extends Component {
                 data-for="delegateHint"
               />
               <ReactTooltip id="delegateHint" place="right" type="dark" effect="solid">
-                Just fill campaign field to delegate to campaign, otherwise fund is delegated to
-                trace
+                Choose a Campaign or a Trace to delegate your funds to.
               </ReactTooltip>
             </span>
             <div>
