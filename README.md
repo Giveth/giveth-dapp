@@ -31,7 +31,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 #### Prerequisities
 - You need to use NodeJS v10.
 - You need to use yarn > v1.6 to correctly install the dependencies.
-- You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) 
+- You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
@@ -63,20 +63,20 @@ If your operative system is any distrubution of linux you can use an All in One 
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15)
-2. After downloading, install the packages marked from this [image](./VSstudio.png)
-3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/)(its better to be v10.24.1 LTS) 
+1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs node-gyp module and node-gyp needs the VS C++ 2017 Build Tools to be installed.
+2. After downloading, install the packages marked from this [image](./VSstudio.png).
+3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS) 
 4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
 5. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
 6. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
    ```
-7. Double check node version with CMD command:
+7. Double check the node version with CMD command:
    ```
    node -v
    ```
-8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install" you should first delete "node modules" folder.
+8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install", you should first delete "node modules" folder.
    ```
    yarn install
 
@@ -119,7 +119,7 @@ REACT_APP_DECIMALS | 8 | How many decimal should be shown for cryptocurrency val
 REACT_APP_FEATHERJS_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the environment injected feathers connection URL. |
 REACT_APP_NODE_CONNECTION_URL | Differs per REACT_APP_ENVIRONMENT | Overwrites the EVM node connection URL for making EVM transactions. |
 REACT_APP_LIQUIDPLEDGING_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Liquid Pledging contract address. |
-REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Communities contract address. |
+REACT_APP_DAC_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the DACs contract address. |
 REACT_APP_CAMPAIGN_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the Campaign Factory contract address. |
 REACT_APP_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwrites the MilestoneFactory contract address. |
 REACT_APP_TOKEN_ADDRESSES | Differs per REACT_APP_ENVIRONMENT | Overwrites the bridged token addresses. This is a JSON object string w/ token name : token address. |
@@ -150,8 +150,8 @@ The following events are tracked with Google Analytics:
 - pageviews
 - signup 
 - signin
-- creation of Communities/Campaigns/Traces
-- editing of Communities/Campaigns/Traces
+- creation of DACs/Campaigns/Milestones
+- editing of DACs/Campaigns/Milestones
 - making donations
 - actions on milestones
 
@@ -219,4 +219,4 @@ environment before we merge it to the master branch and deploy to production env
 ](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
-Reach out to us on [Element](https://join.giveth.io) for any help or to share ideas.
+Reach out to us on [Element](https://join.giveth.io) or [Discord](https://discord.gg/Uq2TaXP9bC) for any help or to share ideas.
