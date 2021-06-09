@@ -63,9 +63,9 @@ If your operative system is any distrubution of linux you can use an All in One 
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs node-gyp module and node-gyp needs the VS C++ 2017 Build Tools to be installed.
+1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
 2. After downloading, install the packages marked from this [image](./VSstudio.png).
-3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS) 
+3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS). 
 4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
 5. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
 6. In the administrator command prompt, change to the directory where you want to store this repository.
@@ -79,7 +79,7 @@ If your operative system is any distrubution of linux you can use an All in One 
 8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install", you should first delete "node modules" folder.
    ```
    yarn install
-
+   ```
 9. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run
