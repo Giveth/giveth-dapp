@@ -10,7 +10,7 @@ import DonateButtonModal from './DonateButtonModal';
 
 const modalStyles = {
   minWidth: '60%',
-  maxWidth: '90%',
+  maxWidth: '800px',
 };
 
 const DonateButton = props => {

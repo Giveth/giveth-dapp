@@ -11,8 +11,8 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
 const modalStyles = {
-  minWidth: '50%',
-  maxWidth: '90%',
+  minWidth: '60%',
+  maxWidth: '800px',
 };
 
 /**

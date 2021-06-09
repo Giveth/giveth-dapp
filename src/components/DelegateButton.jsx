@@ -13,7 +13,7 @@ import DelegateButtonModal from './DelegateButtonModal';
 
 const modalStyles = {
   minWidth: '60%',
-  maxWidth: '90%',
+  maxWidth: '800px',
 };
 
 // FIXME: We need slider component that uses bignumbers, there are some precision issues here

@@ -878,27 +878,11 @@ const DonateButtonModal = props => {
                 </Fragment>
               ) : null}
 
-              {maxAmount.toNumber() !== 0 && (
-                <Fragment>
-                  <LoaderButton
-                    className="btn btn-success m-1"
-                    formNoValidate
-                    disabled={
-                      isSaving ||
-                      (showCustomAddress && !formIsValid) ||
-                      isZeroAmount ||
-                      !isCorrectNetwork
-                    }
-                    isLoading={false}
-                    onClick={submitDefault}
-                  >
-                    {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
-                  </LoaderButton>
-
-                  {allowanceStatus === AllowanceStatus.Needed && (
+              <div style={{ marginLeft: '-4px' }}>
+                {maxAmount.toNumber() !== 0 && (
+                  <Fragment>
                     <LoaderButton
-                      type="button"
-                      className="btn btn-primary m-1"
+                      className="btn btn-success m-1"
                       formNoValidate
                       disabled={
                         isSaving ||
@@ -907,40 +891,58 @@ const DonateButtonModal = props => {
                         !isCorrectNetwork
                       }
                       isLoading={false}
-                      onClick={submitInfiniteAllowance}
-                      data-tip="React-tooltip"
+                      onClick={submitDefault}
                     >
-                      <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
+                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
                     </LoaderButton>
-                  )}
 
-                  <ReactTooltip type="dark" effect="solid">
-                    <p style={{ maxWidth: 250 }}>
-                      Infinite unlock will allow the Giveth Bridge smart contract to interact freely
-                      with the {selectedToken.name} in your wallet, this can be changed later by
-                      clicking Donate and choosing to Revoke unlike your bank irl.. hehehehe
-                    </p>
-                  </ReactTooltip>
+                    {allowanceStatus === AllowanceStatus.Needed && (
+                      <LoaderButton
+                        type="button"
+                        className="btn btn-primary m-1"
+                        formNoValidate
+                        disabled={
+                          isSaving ||
+                          (showCustomAddress && !formIsValid) ||
+                          isZeroAmount ||
+                          !isCorrectNetwork
+                        }
+                        isLoading={false}
+                        onClick={submitInfiniteAllowance}
+                        data-tip="React-tooltip"
+                      >
+                        <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
+                      </LoaderButton>
+                    )}
 
-                  {allowanceStatus === AllowanceStatus.Enough && (
-                    <LoaderButton
-                      className="btn btn-danger m-1"
-                      formNoValidate
-                      disabled={isSaving || !isCorrectNetwork}
-                      isLoading={false}
-                      onClick={submitClearAllowance}
-                    >
-                      <i className="fa fa-lock" /> Remove Approval
-                    </LoaderButton>
-                  )}
-                </Fragment>
-              )}
+                    <ReactTooltip type="dark" effect="solid">
+                      <p style={{ maxWidth: 250 }}>
+                        Infinite unlock will allow the Giveth Bridge smart contract to interact
+                        freely with the {selectedToken.name} in your wallet, this can be changed
+                        later by clicking Donate and choosing to Revoke unlike your bank irl..
+                        hehehehe
+                      </p>
+                    </ReactTooltip>
+
+                    {allowanceStatus === AllowanceStatus.Enough && (
+                      <LoaderButton
+                        className="btn btn-danger m-1"
+                        formNoValidate
+                        disabled={isSaving || !isCorrectNetwork}
+                        isLoading={false}
+                        onClick={submitClearAllowance}
+                      >
+                        <i className="fa fa-lock" /> Remove Approval
+                      </LoaderButton>
+                    )}
+                  </Fragment>
+                )}
+                <span className="m-1">
+                  <ExchangeButton />
+                </span>
+              </div>
             </Fragment>
           )}
-
-          <span className="m-1">
-            <ExchangeButton />
-          </span>
         </Form>
       )}
     </Fragment>
