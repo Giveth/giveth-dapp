@@ -59,7 +59,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
               description:
                 "Describe what you've done to finish the work of this Trace and attach proof if necessary. This information will be publicly visible and emailed to the reviewer.",
               required: false,
-              cta: 'Mark complete',
+              cta: 'Mark Complete',
               enableAttachProof: true,
               textPlaceholder: "Describe what you've done...",
             })
@@ -124,7 +124,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
             isForeignNetwork ? requestMarkComplete() : displayForeignNetRequiredWarning()
           }
         >
-          Mark complete
+          Mark Complete
         </button>
       )}
 

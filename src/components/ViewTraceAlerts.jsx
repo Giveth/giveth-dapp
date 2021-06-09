@@ -44,7 +44,7 @@ const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
       )}
 
       {trace.canUserMarkComplete(currentUser) && (
-        <ProjectViewActionAlert message="Request mark complete">
+        <ProjectViewActionAlert message="Mark this Trace as completed and ready for the Trace Reviewer to verify!">
           <RequestMarkTraceCompleteButton
             trace={trace}
             isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
