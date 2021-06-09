@@ -202,7 +202,7 @@ export const checkBalance = balance =>
         content: React.swal.msg(
           <p>
             Be patient, you need at least {React.minimumWalletBalance} {config.foreignNetworkName}{' '}
-            {config.nativeTokenName} in your wallet before you can interact with the Giveth DApp, We
+            {config.nativeTokenName} in your wallet before you can interact with the Giveth DApp. We
             are sending some to you now!
           </p>,
         ),
