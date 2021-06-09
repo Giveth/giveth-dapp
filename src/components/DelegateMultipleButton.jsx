@@ -1,9 +1,8 @@
 /* eslint-disable no-restricted-globals */
 import React, { useContext, useState, Fragment } from 'react';
-import Modal from 'react-modal';
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
-import { Button } from 'antd';
+import { Button, Modal } from 'antd';
 
 import { authenticateUser, checkBalance } from '../lib/middleware';
 import ModalContent from './DelegateMultipleButtonModal';
@@ -11,29 +10,9 @@ import ModalContent from './DelegateMultipleButtonModal';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
-Modal.setAppElement('#root');
-
 const modalStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    minWidth: '40%',
-    maxWidth: '80%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-20%',
-    transform: 'translate(-50%, -50%)',
-    boxShadow: '0 0 40px #ccc',
-    overflowY: 'auto',
-    maxHeight: '64%',
-    minHeight: '350px',
-  },
-};
-
-const closeButtonStyle = {
-  position: 'absolute',
-  top: '0px',
-  right: '0px',
+  minWidth: '60%',
+  maxWidth: '800px',
 };
 
 /**
@@ -85,23 +64,14 @@ const DelegateMultipleButton = props => {
         Delegate funds here
       </Button>
       <Modal
-        isOpen={modalVisible}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        centered
+        destroyOnClose
+        className="pb-0"
         style={modalStyles}
-        shouldCloseOnOverlayClick={false}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
       >
-        <button
-          type="button"
-          className="btn btn-sm"
-          style={closeButtonStyle}
-          onClick={() => {
-            setModalVisible(false);
-          }}
-        >
-          <i className="fa fa-close" />
-        </button>
         <ModalContent {...props} setModalVisible={setModalVisible} />
       </Modal>
     </Fragment>
