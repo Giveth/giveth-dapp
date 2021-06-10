@@ -111,8 +111,8 @@ const configurations = {
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
   },
-  beta: {
-    title: 'beta',
+  trace: {
+    title: 'trace',
     liquidPledgingAddress: '0x8eB047585ABeD935a73ba4b9525213F126A0c979',
     lppCampaignFactoryAddress: '0x71408CE2125b1F07f614b93C8Bd0340e8Fc31CFA',
     lppCappedMilestoneFactoryAddress: '0x19e88e279844f0201079b39c736a94b87b32b6b6',
@@ -122,14 +122,14 @@ const configurations = {
     tokenAddresses: { GivETH: '0xe3ee055346a9EfaF4AA2900847dEb04de0195398' },
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://etherscan.io/',
-    feathersConnection: 'https://feathers.beta.giveth.io',
+    feathersConnection: 'https://feathers.giveth.io',
     foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
-    homeUrl: 'https://beta.giveth.io',
+    homeUrl: 'https://trace.giveth.io',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,
@@ -175,6 +175,6 @@ config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
 config.projectsUpdatedAtLimitMonth = HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
-config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
+config.sendErrors = ['localhost', 'develop', 'release', 'trace'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

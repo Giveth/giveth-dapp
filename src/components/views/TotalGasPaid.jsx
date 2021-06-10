@@ -8,7 +8,7 @@ const tweetHashtags = 'blockchain4good';
 
 const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
   let entityText = '';
-  let url = 'https://beta.giveth.io';
+  let url = 'https://trace.giveth.io';
   let gasPaidInfo = `TOTAL GAS WE PAID FOR ${entity}`;
 
   if (entity === entityTypes.user) {
