@@ -316,9 +316,9 @@ const EditCampaign = ({ isNew, match }) => {
                   <Fragment>
                     <Title level={3}>Start a new Campaign!</Title>
                     <Text>
-                      A Campaign solves a specific cause by executing a project via its Milestones.
-                      Funds raised by a Campaign need to be delegated to its Milestones in order to
-                      be paid out.
+                      A Campaign solves a specific cause by executing a project via its Traces.
+                      Funds raised by a Campaign need to be delegated to its Traces in order to be
+                      paid out.
                     </Text>
                   </Fragment>
                 )}

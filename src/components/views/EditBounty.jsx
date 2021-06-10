@@ -3,22 +3,22 @@ import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestoneReviewer,
-  MilestoneTitle,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDescription,
+  TraceDonateToCommunity,
+  TraceReviewer,
+  TraceTitle,
+} from '../EditTraceCommons';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
 import { history, isOwner } from '../../lib/helpers';
 import config from '../../configuration';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import BridgedMilestone from '../../models/BridgedMilestone';
+import BridgedTrace from '../../models/BridgedTrace';
 
 function EditBounty(props) {
   const {
@@ -28,25 +28,22 @@ function EditBounty(props) {
     state: { isForeignNetwork },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
-  const { milestoneId } = props.match.params;
+  const { traceId } = props.match.params;
 
   const [campaign, setCampaign] = useState();
-  const [donateToDac, setDonateToDac] = useState(true);
-  const [milestone, setMilestone] = useState();
+  const [donateToCommunity, setDonateToCommunity] = useState(true);
+  const [trace, setTrace] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
-    donateToDac: true,
+    donateToCommunity: true,
     reviewerAddress: '',
   });
 
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+  const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
   const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+    trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
     history.goBack();
@@ -54,19 +51,19 @@ function EditBounty(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Milestone.BOUNTYTYPE ||
+      ms.formType !== Trace.BOUNTYTYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
-    if (milestone) {
-      if (isEditNotAllowed(milestone)) {
+    if (trace) {
+      if (isEditNotAllowed(trace)) {
         goBack();
       }
     } else if (currentUser.id) {
-      MilestoneService.get(milestoneId)
+      TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
             goBack();
@@ -75,16 +72,16 @@ function EditBounty(props) {
               title: res.title,
               description: res.description,
               reviewerAddress: res.reviewerAddress,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
             };
             setInitialValues(iValues);
-            setDonateToDac(!!res.dacId);
-            setMilestone(res);
+            setDonateToCommunity(!!res.communityId);
+            setTrace(res);
             setCampaign(res.campaign);
           }
         })
         .catch(err => {
-          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          const message = `Sadly we were unable to load the requested Trace details. Please try again.`;
           ErrorHandler(err, message);
         });
     }
@@ -103,12 +100,12 @@ function EditBounty(props) {
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
-    const ms = milestone;
+    const ms = trace;
     if (type === 'checkbox') {
-      setDonateToDac(checked);
+      setDonateToCommunity(checked);
     } else {
       ms[name] = value;
-      setMilestone(ms);
+      setTrace(ms);
     }
   };
 
@@ -129,16 +126,15 @@ function EditBounty(props) {
       return;
     }
 
-    const ms = new BridgedMilestone(milestone);
+    const ms = new BridgedTrace(trace);
 
     ms.parentProjectId = campaign.projectId;
-    ms.dacId = donateToDac ? config.defaultDacId : 0;
-    ms.status =
-      isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
+    ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
+    ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
     setLoading(true);
-    await MilestoneService.save({
-      milestone: ms,
+    await TraceService.save({
+      trace: ms,
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
@@ -164,7 +160,7 @@ function EditBounty(props) {
           notification.info({ description: notificationDescription });
         }
         setLoading(false);
-        history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
       },
       afterMined: (created, txUrl) => {
         notification.success({
@@ -189,7 +185,7 @@ function EditBounty(props) {
   return (
     <Fragment>
       <Web3ConnectWarning />
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -218,44 +214,44 @@ function EditBounty(props) {
                   <div className="title">Bounty</div>
                 </div>
 
-                <MilestoneCampaignInfo campaign={campaign} />
+                <TraceCampaignInfo campaign={campaign} />
 
                 <div className="section">
                   <div className="title">Bounty details</div>
 
-                  <MilestoneTitle
-                    value={milestone.title}
+                  <TraceTitle
+                    value={trace.title}
                     onChange={handleInputChange}
                     extra="What is this Bounty about?"
-                    disabled={milestoneHasFunded}
+                    disabled={traceHasFunded}
                   />
 
-                  <MilestoneDescription
-                    value={milestone.description}
+                  <TraceDescription
+                    value={trace.description}
                     onChange={handleInputChange}
                     extra="Explain the requirements and what success looks like."
                     placeholder="Describe the Bounty and define the acceptance criteria..."
                     id="description"
-                    disabled={milestoneHasFunded}
+                    disabled={traceHasFunded}
                   />
 
-                  <MilestoneDonateToDac
-                    value={donateToDac}
+                  <TraceDonateToCommunity
+                    value={donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />
 
-                  <MilestoneReviewer
-                    milestoneType="Bounty"
+                  <TraceReviewer
+                    traceType="Bounty"
                     setReviewer={setReviewer}
                     hasReviewer
                     initialValue={initialValues.reviewerAddress}
-                    milestoneReviewerAddress={milestone.reviewerAddress}
+                    traceReviewerAddress={trace.reviewerAddress}
                     disabled={!isProposed}
                   />
                 </div>
 
-                <div className="milestone-desc">
+                <div className="trace-desc">
                   Your Bounty will collect funds in any currency. The total amount collected will be
                   the Bounty Reward.
                 </div>
@@ -277,12 +273,12 @@ function EditBounty(props) {
 EditBounty.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string,
+      traceId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
 const isEqual = (prevProps, nextProps) =>
-  prevProps.match.params.milestoneId === nextProps.match.params.milestoneId;
+  prevProps.match.params.traceId === nextProps.match.params.traceId;
 
 export default memo(EditBounty, isEqual);

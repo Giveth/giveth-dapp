@@ -42,15 +42,16 @@ class Campaign extends BasicModel {
     this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
+    this._disableDonate = data.disableDonate;
     this.coownerAddress = data.coownerAddress;
     this.fundsForwarder = data.fundsForwarder || ZERO_SMALL_ADDRESS;
     this.mined = data.mined;
     this._id = data._id;
     this.commitTime = data.commitTime || 0;
-    this.archivedMilestones = new Set(data.archivedMilestones || []);
+    this.archivedTraces = new Set(data.archivedTraces || []);
     this.customThanksMessage = data.customThanksMessage;
     this.slug = data.slug;
-    this._gasPaidUsdValue = data.gasPaidUsdValue || '0';
+    this._gasPaidUsdValue = data.gasPaidUsdValue || 0;
   }
 
   toIpfs() {
@@ -59,7 +60,7 @@ class Campaign extends BasicModel {
       description: this.description,
       communityUrl: this.communityUrl,
       image: cleanIpfsPath(this.image),
-      archivedMilestones: Array.from(this.archivedMilestones),
+      archivedTraces: Array.from(this.archivedTraces),
       version: 1,
     };
   }
@@ -78,7 +79,7 @@ class Campaign extends BasicModel {
       reviewerAddress: this.reviewerAddress,
       fundsForwarder: ZERO_SMALL_ADDRESS,
       status: this.status,
-      archivedMilestones: Array.from(this.archivedMilestones),
+      archivedTraces: Array.from(this.archivedTraces),
     };
     if (!this.id) campaign.txHash = txHash;
     return campaign;
@@ -86,6 +87,10 @@ class Campaign extends BasicModel {
 
   get isActive() {
     return this.status === Campaign.ACTIVE;
+  }
+
+  get canReceiveDonate() {
+    return this.isActive && !this._disableDonate;
   }
 
   get isPending() {

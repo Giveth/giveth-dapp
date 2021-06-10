@@ -7,7 +7,7 @@ class AggregateDonationsService {
   /**
    * Get a aggregateDonation
    *
-   * @param id   ID of dac, campaign or milestone
+   * @param id   ID of community, campaign or trace
    * @param $limit    Amount of records to be loaded
    * @param $skip     Amount of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully

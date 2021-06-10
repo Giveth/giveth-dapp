@@ -10,7 +10,7 @@ import 'react-rangeslider/lib/index.css';
 
 import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
-import Milestone from 'models/Milestone';
+import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
 import DonationService from '../services/DonationService';
@@ -20,26 +20,23 @@ import AmountSliderMarks from './AmountSliderMarks';
 
 function getFilterType(types, donation) {
   return types.filter(
-    t =>
-      !(t instanceof Milestone) ||
-      !t.acceptsSingleToken ||
-      t.token.symbol === donation.token.symbol,
+    t => !(t instanceof Trace) || !t.acceptsSingleToken || t.token.symbol === donation.token.symbol,
   );
 }
 
 function getTypes(types) {
   return types.map(t => {
-    const isMilestone = t instanceof Milestone;
+    const isTrace = t instanceof Trace;
     const el = {};
     el.name = t.title;
-    el.type = isMilestone ? Milestone.type : Campaign.type;
+    el.type = isTrace ? Trace.type : Campaign.type;
     el.id = t._id;
     el.element = (
       <span>
-        {t.title} <em>{isMilestone ? 'Milestone' : 'Campaign'}</em>
+        {t.title} <em>{isTrace ? 'Trace' : 'Campaign'}</em>
       </span>
     );
-    if (isMilestone) {
+    if (isTrace) {
       el.campaignProjectId = t.campaign.projectId;
     }
     return el;
@@ -57,7 +54,7 @@ class DelegateButtonModal extends Component {
     this.state = {
       isSaving: false,
       objectsToDelegateToCampaign: [],
-      objectsToDelegateToMilestone: [],
+      objectsToDelegateToTrace: [],
       amount: convertEthHelper(amountRemaining, token.decimals),
       comment: '',
       maxAmount: roundBigNumber(amountRemaining, 18),
@@ -79,7 +76,7 @@ class DelegateButtonModal extends Component {
 
     let maxAmount = donation.amountRemaining;
 
-    if (admin && admin instanceof Milestone && admin.isCapped) {
+    if (admin && admin instanceof Trace && admin.isCapped) {
       const maxDelegationAmount = admin.maxAmount.minus(admin.currentBalance);
 
       if (maxDelegationAmount.lt(donation.amountRemaining)) {
@@ -97,10 +94,10 @@ class DelegateButtonModal extends Component {
       sliderMarks,
     });
 
-    if (type === Milestone.type) {
+    if (type === Trace.type) {
       this.setState(
         {
-          objectsToDelegateToMilestone: target.value,
+          objectsToDelegateToTrace: target.value,
         },
         this.toggleFormValid,
       );
@@ -122,13 +119,13 @@ class DelegateButtonModal extends Component {
         this.toggleFormValid,
       );
 
-      const { objectsToDelegateToMilestone } = this.state;
-      if (objectsToDelegateToMilestone.length > 0) {
-        const milestone = types.find(
-          t => t.type === Milestone.type && t._id === objectsToDelegateToMilestone[0],
+      const { objectsToDelegateToTrace } = this.state;
+      if (objectsToDelegateToTrace.length > 0) {
+        const trace = types.find(
+          t => t.type === Trace.type && t._id === objectsToDelegateToTrace[0],
         );
-        if (!admin || !milestone || milestone.campaign.projectId !== admin.projectId) {
-          this.setState({ objectsToDelegateToMilestone: [] }, this.toggleFormValid);
+        if (!admin || !trace || trace.campaign.projectId !== admin.projectId) {
+          this.setState({ objectsToDelegateToTrace: [] }, this.toggleFormValid);
         }
       }
     }
@@ -138,18 +135,18 @@ class DelegateButtonModal extends Component {
     const { donation } = this.props;
     this.setState({ isSaving: true });
 
-    const { objectsToDelegateToCampaign, objectsToDelegateToMilestone } = this.state;
-    const objectsToDelegateTo = objectsToDelegateToMilestone[0] || objectsToDelegateToCampaign[0];
+    const { objectsToDelegateToCampaign, objectsToDelegateToTrace } = this.state;
+    const objectsToDelegateTo = objectsToDelegateToTrace[0] || objectsToDelegateToCampaign[0];
     // find the type of where we delegate to
     const admin = this.props.types.find(t => t._id === objectsToDelegateTo);
 
     // TODO: find a more friendly way to do this.
     if (
-      admin instanceof Milestone &&
+      admin instanceof Trace &&
       admin.isCapped &&
       admin.maxAmount.lte(admin.currentBalance || 0)
     ) {
-      React.toast.error('That Milestone has reached its funding goal. Please pick another.');
+      React.toast.error('That Trace has reached its funding goal. Please pick another.');
       return;
     }
 
@@ -209,7 +206,7 @@ class DelegateButtonModal extends Component {
     this.setState({
       amount: '0',
       objectsToDelegateToCampaign: [],
-      objectsToDelegateToMilestone: [],
+      objectsToDelegateToTrace: [],
     });
 
     DonationService.delegate(
@@ -240,9 +237,8 @@ class DelegateButtonModal extends Component {
     }
 
     this.setState(prevState => {
-      const { objectsToDelegateToMilestone, objectsToDelegateToCampaign } = prevState;
-      const totalSelected =
-        objectsToDelegateToMilestone.length + objectsToDelegateToCampaign.length;
+      const { objectsToDelegateToTrace, objectsToDelegateToCampaign } = prevState;
+      const totalSelected = objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length;
       return {
         formIsValid: totalSelected !== 0,
       };
@@ -250,13 +246,13 @@ class DelegateButtonModal extends Component {
   }
 
   render() {
-    const { types, milestoneOnly, donation, closeDialog } = this.props;
+    const { types, traceOnly, donation, closeDialog } = this.props;
     const { token } = donation;
     const { decimals } = token;
 
     const {
       isSaving,
-      objectsToDelegateToMilestone,
+      objectsToDelegateToTrace,
       objectsToDelegateToCampaign,
       maxAmount,
       curProjectId,
@@ -269,16 +265,16 @@ class DelegateButtonModal extends Component {
     const pStyle = { whiteSpace: 'normal' };
 
     const campaignTypes = [];
-    const milestoneTypes = [];
+    const traceTypes = [];
 
-    const milestoneOnlyCampaignTypes = [];
+    const traceOnlyCampaignTypes = [];
     const filteredTypes = getFilterType(types, donation);
     const objectsToDelegateTypes = getTypes(filteredTypes);
 
     objectsToDelegateTypes.forEach(t => {
-      if (t.type === Milestone.type) {
+      if (t.type === Trace.type) {
         if ([null, t.campaignProjectId].includes(curProjectId)) {
-          milestoneTypes.push(t);
+          traceTypes.push(t);
         }
       } else {
         campaignTypes.push(t);
@@ -286,17 +282,16 @@ class DelegateButtonModal extends Component {
     });
 
     const campaignValue = [];
-    if (milestoneOnly && filteredTypes.length > 0) {
-      milestoneOnlyCampaignTypes.push(...getTypes([filteredTypes[0].campaign]));
-      campaignValue.push(milestoneOnlyCampaignTypes[0].id);
+    if (traceOnly && filteredTypes.length > 0) {
+      traceOnlyCampaignTypes.push(...getTypes([filteredTypes[0].campaign]));
+      campaignValue.push(traceOnlyCampaignTypes[0].id);
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
-
     return (
       <React.Fragment>
-        {milestoneOnly && <p>Select a Milestone to delegate this donation to:</p>}
-        {!milestoneOnly && <p>Select a Campaign or Milestone to delegate this donation to:</p>}
+        {traceOnly && <p>Select a Trace to delegate this donation to:</p>}
+        {!traceOnly && <p>Select a Campaign or Trace to delegate this donation to:</p>}
 
         <p style={pStyle}>
           You are delegating donation made on{' '}
@@ -323,33 +318,32 @@ class DelegateButtonModal extends Component {
                 data-for="delegateHint"
               />
               <ReactTooltip id="delegateHint" place="right" type="dark" effect="solid">
-                Just fill campaign field to delegate to campaign, otherwise fund is delegated to
-                milestone
+                Choose a Campaign or a Trace to delegate your funds to.
               </ReactTooltip>
             </span>
             <div>
               <InputToken
-                disabled={milestoneOnly}
+                disabled={traceOnly}
                 name="delegateTo"
                 label="Delegate to:"
                 placeholder="Select a Campaign"
                 value={campaignValue}
-                options={milestoneOnly ? milestoneOnlyCampaignTypes : campaignTypes}
+                options={traceOnly ? traceOnlyCampaignTypes : campaignTypes}
                 onSelect={v => this.selectedObject(Campaign.type, v)}
                 maxLength={1}
               />
               <InputToken
-                name="delegateToMilestone"
+                name="delegateToTrace"
                 label="Delegate to:"
-                placeholder="Select a Milestone"
-                value={objectsToDelegateToMilestone}
-                options={milestoneTypes}
-                onSelect={v => this.selectedObject(Milestone.type, v)}
+                placeholder="Select a Trace"
+                value={objectsToDelegateToTrace}
+                options={traceTypes}
+                onSelect={v => this.selectedObject(Trace.type, v)}
                 maxLength={1}
               />
             </div>
           </div>
-          {objectsToDelegateToMilestone.length + objectsToDelegateToCampaign.length !== 0 && (
+          {objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length !== 0 && (
             <React.Fragment>
               <span className="label">Amount to delegate:</span>
 
@@ -406,13 +400,13 @@ class DelegateButtonModal extends Component {
 
 DelegateButtonModal.propTypes = {
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  milestoneOnly: PropTypes.bool,
+  traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
   closeDialog: PropTypes.func.isRequired,
 };
 
 DelegateButtonModal.defaultProps = {
-  milestoneOnly: false,
+  traceOnly: false,
 };
 
 export default DelegateButtonModal;

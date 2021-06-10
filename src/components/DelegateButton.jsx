@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Modal from 'react-modal';
 import BigNumber from 'bignumber.js';
+import { Modal } from 'antd';
 
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
@@ -12,22 +12,9 @@ import User from '../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
 
 const modalStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-20%',
-    transform: 'translate(-50%, -50%)',
-    boxShadow: '0 0 40px #ccc',
-    overflowY: 'scroll',
-    maxHeight: '80%',
-    minHeight: '400px',
-    marginTop: '10px',
-  },
+  minWidth: '60%',
+  maxWidth: '800px',
 };
-
-Modal.setAppElement('#root');
 
 // FIXME: We need slider component that uses bignumbers, there are some precision issues here
 class DelegateButton extends Component {
@@ -79,10 +66,12 @@ class DelegateButton extends Component {
         </button>
 
         <Modal
-          isOpen={this.state.modalVisible}
-          onRequestClose={this.closeDialog}
-          shouldCloseOnOverlayClick={false}
-          contentLabel="Delegate Donation"
+          visible={this.state.modalVisible}
+          onCancel={this.closeDialog}
+          footer={null}
+          centered
+          destroyOnClose
+          className="pb-0"
           style={modalStyles}
         >
           <DelegateButtonModal {...this.props} closeDialog={this.closeDialog} />
@@ -95,13 +84,13 @@ class DelegateButton extends Component {
 DelegateButton.propTypes = {
   balance: PropTypes.instanceOf(BigNumber).isRequired,
   types: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
-  milestoneOnly: PropTypes.bool,
+  traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
 };
 
 DelegateButton.defaultProps = {
-  milestoneOnly: false,
+  traceOnly: false,
 };
 
 export default DelegateButton;

@@ -7,20 +7,20 @@ import { history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import LPMilestone from '../../models/LPMilestone';
-import { Milestone } from '../../models';
-import { MilestoneService } from '../../services';
+import LPTrace from '../../models/LPTrace';
+import { Trace } from '../../models';
+import { TraceService } from '../../services';
 import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
 import {
-  MilestoneCampaignInfo,
-  MilestoneDescription,
-  MilestoneDonateToDac,
-  MilestonePicture,
-  MilestoneReviewer,
-  MilestoneTitle,
-} from '../EditMilestoneCommons';
+  TraceCampaignInfo,
+  TraceDescription,
+  TraceDonateToCommunity,
+  TracePicture,
+  TraceReviewer,
+  TraceTitle,
+} from '../EditTraceCommons';
 
 function EditMilestone(props) {
   const {
@@ -31,17 +31,17 @@ function EditMilestone(props) {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
-  const { milestoneId } = props.match.params;
+  const { traceId } = props.match.params;
 
   const [image, setImage] = useState('');
   const [campaign, setCampaign] = useState();
   const [hasReviewer, setHasReviewer] = useState(true);
-  const [donateToDac, setDonateToDac] = useState(true);
-  const [milestone, setMilestone] = useState();
+  const [donateToCommunity, setDonateToCommunity] = useState(true);
+  const [trace, setTrace] = useState();
   const [initialValues, setInitialValues] = useState({
     title: '',
     description: '',
-    donateToDac: true,
+    donateToCommunity: true,
     reviewerAddress: '',
     image: '',
   });
@@ -51,13 +51,10 @@ function EditMilestone(props) {
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
-  const milestoneHasFunded =
-    milestone && milestone.donationCounters && milestone.donationCounters.length > 0;
+  const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
   const isProposed =
-    milestone &&
-    milestone.status &&
-    [Milestone.PROPOSED, Milestone.REJECTED].includes(milestone.status);
+    trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
     history.goBack();
@@ -65,19 +62,19 @@ function EditMilestone(props) {
 
   const isEditNotAllowed = ms => {
     return (
-      ms.formType !== Milestone.MILESTONETYPE ||
+      ms.formType !== Trace.MILESTONETYPE ||
       !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
-    if (milestone) {
-      if (isEditNotAllowed(milestone)) {
+    if (trace) {
+      if (isEditNotAllowed(trace)) {
         goBack();
       }
     } else if (currentUser.id) {
-      MilestoneService.get(milestoneId)
+      TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
             goBack();
@@ -88,23 +85,23 @@ function EditMilestone(props) {
               description: res.description,
               reviewerAddress: isReviewer ? res.reviewerAddress : null,
               image: res.image,
-              donateToDac: !!res.dacId,
+              donateToCommunity: !!res.communityId,
             };
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
             setInitialValues(iValues);
-            setDonateToDac(!!res.dacId);
+            setDonateToCommunity(!!res.communityId);
             setHasReviewer(isReviewer);
-            setMilestone(res);
+            setTrace(res);
             setImage(imageUrl);
             setCampaign(res.campaign);
           }
         })
         .catch(err => {
-          const message = `Sadly we were unable to load the requested Milestone details. Please try again.`;
+          const message = `Sadly we were unable to load the requested Trace details. Please try again.`;
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.id, isEditNotAllowed, trace, traceId]);
 
   useEffect(() => {
     setUserIsOwner(
@@ -116,16 +113,16 @@ function EditMilestone(props) {
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
-    const ms = milestone;
+    const ms = trace;
     if (type === 'checkbox' && name === 'hasReviewer') {
       setHasReviewer(checked);
-    } else if (type === 'checkbox' && name === 'donateToDac') {
-      setDonateToDac(checked);
+    } else if (type === 'checkbox' && name === 'donateToCommunity') {
+      setDonateToCommunity(checked);
     } else if (name === 'image') {
       setImage(value);
     } else {
       ms[name] = value;
-      setMilestone(ms);
+      setTrace(ms);
     }
   };
 
@@ -150,21 +147,20 @@ function EditMilestone(props) {
       return;
     }
 
-    const { reviewerAddress } = milestone;
-    const ms = new LPMilestone(milestone);
+    const { reviewerAddress } = trace;
+    const ms = new LPTrace(trace);
 
     ms.image = image;
     ms.reviewerAddress = hasReviewer ? reviewerAddress : ZERO_ADDRESS;
     ms.parentProjectId = campaign.projectId;
-    ms.dacId = donateToDac ? config.defaultDacId : 0;
+    ms.communityId = donateToCommunity ? config.defaultCommunityId : 0;
 
-    ms.status =
-      isProposed || milestone.status === Milestone.REJECTED ? Milestone.PROPOSED : milestone.status; // make sure not to change status!
+    ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
     setLoading(true);
 
-    await MilestoneService.save({
-      milestone: ms,
+    await TraceService.save({
+      trace: ms,
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
@@ -190,7 +186,7 @@ function EditMilestone(props) {
           notification.info({ description: notificationDescription });
         }
         setLoading(false);
-        history.push(`/campaigns/${campaign._id}/milestones/${res._id}`);
+        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
       },
       afterMined: (created, txUrl) => {
         notification.success({
@@ -216,7 +212,7 @@ function EditMilestone(props) {
     <Fragment>
       <Web3ConnectWarning />
 
-      <div id="create-milestone-view">
+      <div id="create-trace-view">
         <Row>
           <Col span={24}>
             <PageHeader
@@ -246,50 +242,46 @@ function EditMilestone(props) {
                   <div className="title">Milestone</div>
                 </div>
 
-                <MilestoneCampaignInfo campaign={campaign} />
+                <TraceCampaignInfo campaign={campaign} />
 
                 <div className="section">
                   <div className="title">Milestone details</div>
 
-                  <MilestoneTitle
-                    value={milestone.title}
+                  <TraceTitle
+                    value={trace.title}
                     onChange={handleInputChange}
-                    extra="What are you going to accomplish in this Milestone?"
-                    disabled={milestoneHasFunded}
+                    extra="What are you going to accomplish in this Trace?"
+                    disabled={traceHasFunded}
                   />
 
-                  <MilestoneDescription
-                    value={milestone.description}
+                  <TraceDescription
+                    value={trace.description}
                     onChange={handleInputChange}
                     extra="Explain how you are going to do this successfully."
                     placeholder="Describe how you are going to execute this milestone successfully..."
                     id="description"
-                    disabled={milestoneHasFunded}
+                    disabled={traceHasFunded}
                   />
 
-                  <MilestonePicture
-                    setPicture={setPicture}
-                    picture={image}
-                    milestoneTitle={milestone.title}
-                  />
+                  <TracePicture setPicture={setPicture} picture={image} traceTitle={trace.title} />
 
-                  <MilestoneDonateToDac
-                    value={donateToDac}
+                  <TraceDonateToCommunity
+                    value={donateToCommunity}
                     onChange={handleInputChange}
                     disabled={!isProposed}
                   />
 
-                  <MilestoneReviewer
+                  <TraceReviewer
                     toggleHasReviewer={handleInputChange}
                     setReviewer={setReviewer}
                     hasReviewer={hasReviewer}
-                    milestoneReviewerAddress={milestone.reviewerAddress}
-                    milestoneType="Milestone"
+                    traceReviewerAddress={trace.reviewerAddress}
+                    traceType="Milestone"
                     initialValue={initialValues.reviewerAddress}
                     disabled={!isProposed}
                   />
 
-                  <div className="milestone-desc">
+                  <div className="trace-desc">
                     Contributions to this milestone will be sent directly to the
                     <strong>{` ${campaign && campaign.title} `}</strong>
                     Campaign address. As a preventative measure, please confirm that someone working
@@ -313,12 +305,12 @@ function EditMilestone(props) {
 EditMilestone.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      milestoneId: PropTypes.string,
+      traceId: PropTypes.string,
     }).isRequired,
   }).isRequired,
 };
 
 const isEqual = (prevProps, nextProps) =>
-  prevProps.match.params.milestoneId === nextProps.match.params.milestoneId;
+  prevProps.match.params.traceId === nextProps.match.params.traceId;
 
 export default memo(EditMilestone, isEqual);

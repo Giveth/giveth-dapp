@@ -6,32 +6,32 @@ import Profile from '../components/views/Profile';
 // import UserWallet from '../components/views/UserWallet';
 import EditProfile from '../components/views/EditProfile';
 
-import ViewMilestone from '../components/views/ViewMilestone';
-import EditDAC from '../components/views/EditDAC';
-import ViewDAC from '../components/views/ViewDAC';
+import ViewTrace from '../components/views/ViewTrace';
+import EditCommunity from '../components/views/EditCommunity';
+import ViewCommunity from '../components/views/ViewCommunity';
 import Donations from '../components/views/Donations';
 import Delegations from '../components/views/Delegations';
-import MyDACs from '../components/views/MyDACs';
+import MyCommunities from '../components/views/MyCommunities';
 import MyCampaigns from '../components/views/MyCampaigns';
-import MyMilestones from '../components/views/MyMilestones';
+import MyTraces from '../components/views/MyTraces';
 import NotFound from '../components/views/NotFound';
 import Explore from '../components/views/Explore';
-import Milestones from '../components/views/Milestones';
+import Traces from '../components/views/Traces';
 import Campaigns from '../components/views/Campaigns';
-import DACs from '../components/views/DACs';
+import Communities from '../components/views/Communities';
 
 import ViewCampaign from '../components/views/ViewCampaign';
-import EditMilestoneOld from '../components/views/EditMilestoneOld';
+import EditTraceOld from '../components/views/EditTraceOld';
 
-import MilestoneCreateOptionsMenu from '../components/views/MilestoneCreateOptionsMenu';
+import TraceCreateOptionsMenu from '../components/views/TraceCreateOptionsMenu';
 import CreatePayment from '../components/views/CreatePayment';
 import CreateBounty from '../components/views/CreateBounty';
 import CreateMilestone from '../components/views/CreateMilestone';
 import CreateExpense from '../components/views/CreateExpense';
 import EditBounty from '../components/views/EditBounty';
-import EditMilestone from '../components/views/EditMilestone';
 import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
+import EditMilestone from '../components/views/EditMilestone';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
@@ -56,16 +56,14 @@ const Routes = () => {
     <Switch>
       {/* All routes ending '/' will bre redirected to path with omitted last character */}
       <Redirect from="/:url*(/+)" to={pathname.slice(0, -1)} />
-
       {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
                             */}
-
       <Route
         exact
-        path="/dacs/new"
+        path="/communities/new"
         render={props => (
-          <EditDAC
+          <EditCommunity
             isNew
             balance={balance}
             isForeignNetwork={isForeignNetwork}
@@ -76,19 +74,29 @@ const Routes = () => {
       />
       <Route
         exact
+        path={getViewEntityPathsList('/communities/:id')}
+        render={props => <ViewCommunity {...props} />}
+      />
+      <Route
+        exact
+        path={getViewEntityPathsList('/community/:slug')}
+        render={props => <ViewCommunity {...props} />}
+      />
+      <Route
+        exact
         path={getViewEntityPathsList('/dacs/:id')}
-        render={props => <ViewDAC {...props} />}
+        render={({ match }) => <Redirect to={`/communities/${match.params.id}`} />}
       />
       <Route
         exact
         path={getViewEntityPathsList('/dac/:slug')}
-        render={props => <ViewDAC {...props} />}
+        render={({ match }) => <Redirect to={`/community/${match.params.slug}`} />}
       />
       <Route
         exact
-        path="/dacs/:id/edit"
+        path="/communities/:id/edit"
         render={props => (
-          <EditDAC
+          <EditCommunity
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -96,7 +104,6 @@ const Routes = () => {
           />
         )}
       />
-
       <Route
         exact
         path="/campaigns/new"
@@ -135,7 +142,7 @@ const Routes = () => {
       <Route
         exact
         path="/campaign/:slug/new"
-        render={props => <MilestoneCreateOptionsMenu {...props} />}
+        render={props => <TraceCreateOptionsMenu {...props} />}
       />
       <Route
         exact
@@ -159,9 +166,9 @@ const Routes = () => {
       />
       <Route
         exact
-        path="/campaigns/:id/milestones/new"
+        path="/campaigns/:id/traces/new"
         render={props => (
-          <EditMilestoneOld
+          <EditTraceOld
             isNew
             balance={balance}
             isForeignNetwork={isForeignNetwork}
@@ -172,9 +179,9 @@ const Routes = () => {
       />
       <Route
         exact
-        path="/campaigns/:id/milestones/propose"
+        path="/campaigns/:id/traces/propose"
         render={props => (
-          <EditMilestoneOld
+          <EditTraceOld
             isNew
             isProposed
             isForeignNetwork={isForeignNetwork}
@@ -186,19 +193,27 @@ const Routes = () => {
       />
       <Route
         exact
-        path={getViewEntityPathsList('/campaigns/:id/milestones/:milestoneId')}
-        render={props => <ViewMilestone currentUser={currentUser} balance={balance} {...props} />}
+        path={[
+          ...getViewEntityPathsList('/campaigns/:id/milestones/:traceId'),
+          ...getViewEntityPathsList('/campaigns/:id/traces/:traceId'),
+        ]}
+        render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
       />
       <Route
         exact
-        path={getViewEntityPathsList('/milestone/:milestoneSlug')}
-        render={props => <ViewMilestone currentUser={currentUser} balance={balance} {...props} />}
+        path={getViewEntityPathsList('/trace/:traceSlug')}
+        render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
       />
       <Route
         exact
-        path="/campaigns/:id/milestones/:milestoneId/edit"
+        path={getViewEntityPathsList('/milestone/:traceSlug')}
+        render={({ match }) => <Redirect to={`/trace/${match.params.traceSlug}`} />}
+      />
+      <Route
+        exact
+        path="/campaigns/:id/traces/:traceId/edit"
         render={props => (
-          <EditMilestoneOld
+          <EditTraceOld
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -208,9 +223,9 @@ const Routes = () => {
       />
       <Route
         exact
-        path="/campaigns/:id/milestones/:milestoneId/edit/proposed"
+        path="/campaigns/:id/traces/:traceId/edit/proposed"
         render={props => (
-          <EditMilestoneOld
+          <EditTraceOld
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
@@ -219,17 +234,13 @@ const Routes = () => {
           />
         )}
       />
-      <Route exact path="/bounty/:milestoneId/edit" render={props => <EditBounty {...props} />} />
-      <Route exact path="/expense/:milestoneId/edit" render={props => <EditExpense {...props} />} />
-      <Route exact path="/payment/:milestoneId/edit" render={props => <EditPayment {...props} />} />
+      <Route exact path="/bounty/:traceId/edit" render={props => <EditBounty {...props} />} />
+      <Route exact path="/expense/:traceId/edit" render={props => <EditExpense {...props} />} />
+      <Route exact path="/payment/:traceId/edit" render={props => <EditPayment {...props} />} />
+      <Route exact path="/milestone/:traceId/edit" render={props => <EditMilestone {...props} />} />
       <Route
         exact
-        path="/milestone/:milestoneId/edit"
-        render={props => <EditMilestone {...props} />}
-      />
-      <Route
-        exact
-        path="/campaigns/:id/milestones"
+        path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
       <Route
@@ -258,9 +269,9 @@ const Routes = () => {
       />
       <Route
         exact
-        path="/my-dacs"
+        path="/my-communities"
         render={props => (
-          <MyDACs
+          <MyCommunities
             key={currentUser ? currentUser.id : 0}
             currentUser={currentUser}
             balance={balance}
@@ -268,6 +279,7 @@ const Routes = () => {
           />
         )}
       />
+      <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
       <Route
         exact
         path="/my-campaigns"
@@ -280,8 +292,7 @@ const Routes = () => {
           />
         )}
       />
-      <Route exact path="/my-milestones" render={() => <MyMilestones />} />
-
+      <Route exact path="/my-traces" render={() => <MyTraces />} />
       {/* <Route
                                         exact
                                         path="/wallet"
@@ -293,6 +304,8 @@ const Routes = () => {
                                           />
                                         )}
                                       /> */}
+      <Route exact path="/my-milestones" render={() => <Redirect to="/my-traces/" />} />
+
       <Route
         exact
         path="/profile"
@@ -306,12 +319,12 @@ const Routes = () => {
         )}
       />
       <Route exact path="/profile/:userAddress" render={props => <Profile {...props} />} />
-
       <Route exact path="/" render={props => <Explore {...props} />} />
-      <Route exact path="/milestones" render={props => <Milestones {...props} />} />
+      <Route exact path="/traces" render={props => <Traces {...props} />} />
+      <Route exact path="/milestones" render={() => <Redirect to="/traces" />} />
       <Route exact path="/campaigns" render={() => <Campaigns />} />
-      <Route exact path="/dacs" render={() => <DACs />} />
-
+      <Route exact path="/communities" render={() => <Communities />} />
+      <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
       <Route component={NotFound} />
     </Switch>
   );

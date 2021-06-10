@@ -6,10 +6,10 @@ export default (type, title, successCallback) => {
   const sweetContent = document.createElement('div');
   sweetContent.style.display = 'flex';
   sweetContent.style['flex-direction'] = 'column';
-  if (type === 'milestone') {
-    dialogTitle = 'Delete Milestone?';
-    dialogText = `Are you sure you want to delete this Milestone?
-          Please enter the first 5 characters of the Milestone title while skipping any spaces:
+  if (type === 'trace') {
+    dialogTitle = 'Delete Trace?';
+    dialogText = `Are you sure you want to delete this Trace?
+          Please enter the first 5 characters of the Trace title while skipping any spaces:
     `;
   } else if (type === 'refund') {
     dialogTitle = 'Refund Donation?';

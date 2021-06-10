@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
 
 import Campaign from 'models/Campaign';
-import Milestone from 'models/Milestone';
+import Trace from 'models/Trace';
 import { Button } from 'antd';
 import { ZERO_ADDRESS } from '../lib/helpers';
 import { isLoggedIn, checkBalance } from '../lib/middleware';
@@ -18,9 +18,9 @@ import CampaignService from '../services/CampaignService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
-import BridgedMilestone from '../models/BridgedMilestone';
-import LPPCappedMilestone from '../models/LPPCappedMilestone';
-import LPMilestone from '../models/LPMilestone';
+import BridgedTrace from '../models/BridgedTrace';
+import LPPCappedTrace from '../models/LPPCappedTrace';
+import LPTrace from '../models/LPTrace';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 Modal.setAppElement('#root');
@@ -42,7 +42,7 @@ const modalStyles = {
  * Retrieves the oldest 100 donations that the user can delegate
  *
  * @prop {Campaign}     campaign    If the delegation is towards campaign, this contains the campaign
- * @prop {Milestone}    milestone   It the delegation is towards campaign, this contains the milestone
+ * @prop {Trace}    trace   It the delegation is towards campaign, this contains the trace
  * @prop {Object}       style       Styles added to the button
  */
 const ChangeOwnershipButton = props => {
@@ -58,7 +58,7 @@ const ChangeOwnershipButton = props => {
 
   const [isSaving, setSaving] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const { campaign, milestone } = props;
+  const { campaign, trace } = props;
 
   const form = useRef();
 
@@ -121,8 +121,8 @@ const ChangeOwnershipButton = props => {
           <Fragment>
             <p>
               Changing ownership for
-              {!milestone && <strong> {campaign.title}</strong>}
-              {milestone && <strong> {milestone.title}</strong>}
+              {!trace && <strong> {campaign.title}</strong>}
+              {trace && <strong> {trace.title}</strong>}
             </p>
             <Form
               onSubmit={submit}
@@ -175,15 +175,15 @@ const ChangeOwnershipButton = props => {
 
 ChangeOwnershipButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign),
-  milestone: PropTypes.oneOfType(
-    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  trace: PropTypes.oneOfType(
+    [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ),
   style: PropTypes.shape(),
 };
 
 ChangeOwnershipButton.defaultProps = {
   campaign: undefined,
-  milestone: undefined,
+  trace: undefined,
   style: {},
 };
 

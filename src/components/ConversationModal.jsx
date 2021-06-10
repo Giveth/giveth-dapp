@@ -5,18 +5,18 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Lottie from 'lottie-react';
 
-import Milestone from 'models/Milestone';
-import MilestoneProof from 'components/MilestoneProof';
+import Trace from 'models/Trace';
+import TraceProof from 'components/TraceProof';
 import { Button, Form, Modal, Row, Col } from 'antd';
 import Editor from './Editor';
 import { getHtmlText } from '../lib/helpers';
-import BridgedMilestone from '../models/BridgedMilestone';
-import LPPCappedMilestone from '../models/LPPCappedMilestone';
-import LPMilestone from '../models/LPMilestone';
+import BridgedTrace from '../models/BridgedTrace';
+import LPPCappedTrace from '../models/LPPCappedTrace';
+import LPTrace from '../models/LPTrace';
 import AcceptProposedAnimation from '../assets/checkmark.json';
 
 /**
-  A promise modal to file proof when taking action on a milestone
+  A promise modal to file proof when taking action on a trace
 
   STEP 1 - Create a ref
   this.conversationModal = React.createRef();
@@ -33,7 +33,7 @@ import AcceptProposedAnimation from '../assets/checkmark.json';
     required: false,
     cta: 'Save'
   })
-    .then( proof => console.log("Here's your milestone proof: ", proof))
+    .then( proof => console.log("Here's your trace proof: ", proof))
     .catch( () => console.log("canceled!"))
 * */
 
@@ -141,7 +141,7 @@ class ConversationModal extends Component {
       type,
     } = this.state;
 
-    const { milestone } = this.props;
+    const { trace } = this.props;
 
     let LottieAnimation;
     if (type === 'AcceptProposed') {
@@ -214,12 +214,12 @@ class ConversationModal extends Component {
             {enableAttachProof && (
               <div className="col-md-6">
                 <span className="label">Attachments</span>
-                <MilestoneProof
+                <TraceProof
                   isEditMode
                   refreshList={items}
                   onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
-                  milestoneStatus={milestone.status}
-                  token={milestone.token}
+                  traceStatus={trace.status}
+                  token={trace.token}
                 />
               </div>
             )}
@@ -255,8 +255,8 @@ class ConversationModal extends Component {
 }
 
 ConversationModal.propTypes = {
-  milestone: PropTypes.oneOfType(
-    [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
+  trace: PropTypes.oneOfType(
+    [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ).isRequired,
 };
 

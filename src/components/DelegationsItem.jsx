@@ -9,13 +9,13 @@ import config from '../configuration';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Provider } from '../contextProviders/Web3Provider';
-import { Milestone } from '../models';
+import { Trace } from '../models';
 import Campaign from '../models/Campaign';
-import BridgedMilestone from '../models/BridgedMilestone';
-import LPPCappedMilestone from '../models/LPPCappedMilestone';
-import LPMilestone from '../models/LPMilestone';
+import BridgedTrace from '../models/BridgedTrace';
+import LPPCappedTrace from '../models/LPPCappedTrace';
+import LPTrace from '../models/LPTrace';
 
-function DelegationsItem({ campaigns, donation, milestones }) {
+function DelegationsItem({ campaigns, donation, traces }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -26,15 +26,15 @@ function DelegationsItem({ campaigns, donation, milestones }) {
   return (
     <tr name={donation.id}>
       <td className="td-actions">
-        {/* When donated to a dac, allow delegation
-                                    to campaigns and milestones */}
+        {/* When donated to a community, allow delegation
+                                    to campaigns and traces */}
         {(donation.delegateId > 0 ||
           (currentUser.address && donation.ownerTypeId === currentUser.address)) &&
           isForeignNetwork &&
           donation.status === Donation.WAITING &&
           donation.amountRemaining > 0 && (
             <DelegateButton
-              types={campaigns.concat(milestones)}
+              types={campaigns.concat(traces)}
               donation={donation}
               balance={balance}
               currentUser={currentUser}
@@ -43,13 +43,13 @@ function DelegationsItem({ campaigns, donation, milestones }) {
           )}
 
         {/* When donated to a campaign, only allow delegation
-                                      to milestones of that campaign */}
+                                      to traces of that campaign */}
         {donation.ownerType === 'campaign' &&
           isForeignNetwork &&
           donation.status === Donation.COMMITTED &&
           donation.amountRemaining > 0 && (
             <DelegateButton
-              types={milestones.filter(
+              types={traces.filter(
                 m =>
                   m.campaignId === donation.ownerTypeId &&
                   (!m.acceptsSingleToken || m.token.symbol === donation.token.symbol),
@@ -57,7 +57,7 @@ function DelegationsItem({ campaigns, donation, milestones }) {
               donation={donation}
               balance={balance}
               currentUser={currentUser}
-              milestoneOnly
+              traceOnly
             />
           )}
       </td>
@@ -93,10 +93,8 @@ function DelegationsItem({ campaigns, donation, milestones }) {
 
 DelegationsItem.propTypes = {
   donation: PropTypes.instanceOf(Donation).isRequired,
-  milestones: PropTypes.arrayOf(
-    PropTypes.oneOfType(
-      [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
-    ),
+  traces: PropTypes.arrayOf(
+    PropTypes.oneOfType([Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf)),
   ).isRequired,
   campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
 };

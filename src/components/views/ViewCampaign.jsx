@@ -6,11 +6,14 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import Balances from 'components/Balances';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
-import { Button, Input, Row, Col } from 'antd';
+import { Button, Col, Input, Row } from 'antd';
+import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
+import Lottie from 'lottie-react';
+import debounce from 'lodash.debounce';
+
 import Loader from '../Loader';
-import MilestoneCard from '../MilestoneCard';
-import { getUserName, getUserAvatar, history } from '../../lib/helpers';
-import { checkBalance } from '../../lib/middleware';
+import TraceCard from '../TraceCard';
+import { getUserAvatar, getUserName, history } from '../../lib/helpers';
 import BackgroundImageHeader from '../BackgroundImageHeader';
 import DonateButton from '../DonateButton';
 import CommunityButton from '../CommunityButton';
@@ -28,17 +31,16 @@ import DescriptionRender from '../DescriptionRender';
 import Donation from '../../models/Donation';
 import Campaign from '../../models/Campaign';
 import CampaignService from '../../services/CampaignService';
-
-import ErrorPopup from '../ErrorPopup';
 import ErrorBoundary from '../ErrorBoundary';
 import config from '../../configuration';
-import CreateDonationAddressButton from '../CreateDonationAddressButton';
 import NotFound from './NotFound';
 import ProjectViewActionAlert from '../projectViewActionAlert';
 import GoBackSection from '../GoBackSection';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
+import SearchAnimation from '../../assets/search-file.json';
+import CancelCampaignButton from '../CancelCampaignButton';
+import EditCampaignButton from '../EditCampaignButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -52,18 +54,16 @@ const helmetContext = {};
 
 const ViewCampaign = ({ match }) => {
   const {
-    state: { balance },
-  } = useContext(Web3Context);
-  const {
     state: { currentUser },
   } = useContext(UserContext);
 
   const [isLoading, setLoading] = useState(true);
-  const [isLoadingMilestones, setLoadingMilestones] = useState(true);
+  const [isLoadingTraces, setLoadingTraces] = useState(true);
+  const [isLoadingFromScratch, setLoadingFromScratch] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
-  const [milestones, setMilestones] = useState([]);
-  const [milestonesTotal, setMilestonesTotal] = useState(0);
+  const [traces, setTraces] = useState([]);
+  const [tracesTotal, setTracesTotal] = useState(0);
   const [donationsTotal, setDonationsTotal] = useState(0);
   const [aggregateDonationsTotal, setAggregateDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
@@ -73,9 +73,10 @@ const ViewCampaign = ({ match }) => {
   const [searchPhrase, setSearchPhrase] = useState('');
 
   const donationsObserver = useRef();
+  const debouncedSearch = useRef();
 
   const donationsPerBatch = 5;
-  const milestonesPerBatch = 12;
+  const tracesPerBatch = 12;
 
   const loadMoreAggregateDonations = (
     loadFromScratch = false,
@@ -87,7 +88,20 @@ const ViewCampaign = ({ match }) => {
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
+        let nDonations;
+        if (loadFromScratch) {
+          nDonations = _donations.map(item => {
+            const _item = aggregateDonations.find(
+              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
+            );
+            if (_item) {
+              item.isNew = true;
+              return item;
+            }
+            return item;
+          });
+        }
+        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
@@ -98,23 +112,23 @@ const ViewCampaign = ({ match }) => {
     );
   };
 
-  const loadMoreMilestones = (loadFromScratch = false) => {
-    setLoadingMilestones(true);
-
-    CampaignService.getMilestones(
+  const loadMoreTraces = (loadFromScratch = false, query) => {
+    setLoadingTraces(true);
+    CampaignService.getTraces(
       campaign.id,
-      searchPhrase,
-      milestonesPerBatch,
-      loadFromScratch ? 0 : milestones.length,
-      (_milestones, _milestonesTotal) => {
-        const newMilestones = loadFromScratch ? _milestones : milestones.concat(_milestones);
-        setMilestones(newMilestones);
-        setLoadingMilestones(false);
-        setMilestonesTotal(_milestonesTotal);
+      query || searchPhrase,
+      tracesPerBatch,
+      loadFromScratch ? 0 : traces.length,
+      (_traces, _tracesTotal) => {
+        const newTraces = loadFromScratch ? _traces : traces.concat(_traces);
+        setTraces(newTraces);
+        setLoadingTraces(false);
+        setLoadingFromScratch(false);
+        setTracesTotal(_tracesTotal);
       },
       err => {
-        setLoadingMilestones(false);
-        ErrorHandler(err, 'Some error on fetching campaign milestones, please try later');
+        setLoadingTraces(false);
+        ErrorHandler(err, 'Some error on fetching campaign traces, please try later');
       },
     );
   };
@@ -156,9 +170,12 @@ const ViewCampaign = ({ match }) => {
   }, [donationsTotal]);
 
   useEffect(() => {
-    if (campaign._id && donationsObserver.current === undefined) {
-      loadMoreMilestones(true);
-      loadDonations(campaign._id);
+    if (campaign.id && !debouncedSearch.current) {
+      debouncedSearch.current = debounce(query => loadMoreTraces(true, query), 1000);
+    }
+    if (campaign.id && donationsObserver.current === undefined) {
+      loadMoreTraces(true);
+      loadDonations(campaign.id);
       loadMoreAggregateDonations(true);
       // subscribe to donation count
       donationsObserver.current = CampaignService.subscribeNewDonations(
@@ -166,8 +183,8 @@ const ViewCampaign = ({ match }) => {
         _newDonations => {
           setNewDonations(_newDonations);
           if (_newDonations > 0) {
-            loadDonations(campaign._id);
-            loadMoreAggregateDonations(true, aggregateDonations.length); // load how many donations that was previously loaded
+            loadDonations(campaign.id);
+            loadMoreAggregateDonations(true);
           }
         },
         () => setNewDonations(0),
@@ -183,7 +200,12 @@ const ViewCampaign = ({ match }) => {
   }, [campaign]);
 
   useEffect(() => {
-    loadMoreMilestones(true);
+    // Skip initial render
+    if (campaign.id) {
+      debouncedSearch.current(searchPhrase);
+      setLoadingFromScratch(true);
+      setLoadingTraces(true);
+    }
   }, [searchPhrase]);
 
   const downloadCsv = campaignId => {
@@ -207,25 +229,11 @@ const ViewCampaign = ({ match }) => {
       });
   };
 
-  const editCampaign = id => {
-    checkBalance(balance)
-      .then(() => {
-        history.push(`/campaigns/${id}/edit`);
-      })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
-  };
-
   const renderDescription = () => {
     return DescriptionRender(campaign.description);
   };
 
-  const gotoCreateMilestone = () => {
+  const gotoCreateTrace = () => {
     history.push(`/campaign/${campaign.slug}/new`);
   };
 
@@ -238,14 +246,11 @@ const ViewCampaign = ({ match }) => {
   const userAddress = currentUser.address;
   const ownerAddress = campaign && campaign.ownerAddress;
   const userIsOwner = userAddress && userAddress === ownerAddress;
-  const donationAddress = campaign && campaign.donationAddress;
-
-  const showDonateAddress = donationAddress || userIsOwner;
 
   const leaderBoardTitle = `Leaderboard${
     aggregateDonationsTotal ? ` (${aggregateDonationsTotal})` : ''
   }`;
-  const milestonesTitle = `Milestones${milestonesTotal ? ` (${milestonesTotal})` : ''}`;
+  const tracesTitle = `Traces${tracesTotal ? ` (${tracesTotal})` : ''}`;
 
   const goBackSectionLinks = [
     { title: 'About', inPageId: 'description' },
@@ -255,15 +260,15 @@ const ViewCampaign = ({ match }) => {
     },
     { title: 'Funding', inPageId: 'funding' },
     {
-      title: milestonesTitle,
-      inPageId: 'milestones',
+      title: tracesTitle,
+      inPageId: 'traces',
     },
   ];
 
   return (
     <HelmetProvider context={helmetContext}>
       <UserConsumer>
-        {({ state: { userIsDacOwner } }) => (
+        {({ state: { userIsCommunityOwner } }) => (
           <ErrorBoundary>
             <div id="view-campaign-view">
               {isLoading && <Loader className="fixed" />}
@@ -274,17 +279,17 @@ const ViewCampaign = ({ match }) => {
                     <title>{campaign.title}</title>
                   </Helmet>
 
-                  <BackgroundImageHeader
-                    image={campaign.image}
-                    height={300}
-                    adminId={campaign.projectId}
-                    projectType="Campaign"
-                    editProject={userIsOwner && (() => editCampaign(campaign.id))}
-                    cancelProject={userIsOwner && (() => {})}
-                  >
-                    <h6>Campaign</h6>
+                  <BackgroundImageHeader image={campaign.image} adminId={campaign.projectId}>
+                    <h6>CAMPAIGN</h6>
                     <h1>{campaign.title}</h1>
-                    {campaign.isActive && (
+
+                    <EditCampaignButton
+                      campaign={campaign}
+                      className="m-1 ghostButtonHeader btn-primary"
+                    />
+                    <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
+
+                    {campaign.canReceiveDonate && (
                       <div className="mt-4">
                         <DonateButton
                           model={{
@@ -294,8 +299,6 @@ const ViewCampaign = ({ match }) => {
                             adminId: campaign.projectId,
                             customThanksMessage: campaign.customThanksMessage,
                           }}
-                          currentUser={currentUser}
-                          history={history}
                           autoPopup
                           className="header-donate"
                           size="large"
@@ -318,20 +321,7 @@ const ViewCampaign = ({ match }) => {
                         <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
                       </div>
 
-                      {showDonateAddress && (
-                        <ProjectViewActionAlert message="Send money to an address to contribute">
-                          <CreateDonationAddressButton
-                            campaignTitle={campaign.title}
-                            campaignOwner={ownerAddress}
-                            campaignId={campaign.id}
-                            receiverId={campaign.projectId}
-                            giverId={(campaign._owner || {}).giverId}
-                            currentUser={currentUser}
-                          />
-                        </ProjectViewActionAlert>
-                      )}
-
-                      {userIsDacOwner && (
+                      {userIsCommunityOwner && campaign.canReceiveDonate && (
                         <ProjectViewActionAlert message="Delegate some donation to this project">
                           <DelegateMultipleButton campaign={campaign} />
                         </ProjectViewActionAlert>
@@ -373,11 +363,19 @@ const ViewCampaign = ({ match }) => {
 
                     <div id="donations" className="spacer-top-50">
                       <Row justify="space-between" className="spacer-bottom-16">
-                        <Col span={12}>
-                          <h5>{leaderBoardTitle}</h5>
+                        <Col span={12} className="align-items-center d-flex">
+                          <h5 className="mb-0">{leaderBoardTitle}</h5>
+                          {newDonations > 0 && (
+                            <span
+                              className="badge badge-primary ml-4"
+                              style={{ fontSize: '12px', padding: '6px' }}
+                            >
+                              {newDonations} NEW
+                            </span>
+                          )}
                         </Col>
                         <Col span={12}>
-                          {campaign.isActive && (
+                          {campaign.canReceiveDonate && (
                             <Row gutter={[16, 16]} justify="end">
                               <Col xs={24} sm={12} lg={8}>
                                 <DonateButton
@@ -389,8 +387,6 @@ const ViewCampaign = ({ match }) => {
                                     customThanksMessage: campaign.customThanksMessage,
                                     token: { symbol: config.nativeTokenName },
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                   size="large"
                                 />
                               </Col>
@@ -424,9 +420,9 @@ const ViewCampaign = ({ match }) => {
                                 Download this Campaign&apos;s Financial History
                               </Button>
                             </Col>
-                            {campaign.isActive && (
+                            {campaign.canReceiveDonate && (
                               <Fragment>
-                                {userIsDacOwner && (
+                                {userIsCommunityOwner && (
                                   <Col xs={12} md={7} lg={7} xl={5}>
                                     <DelegateMultipleButton size="large" campaign={campaign} />
                                   </Col>
@@ -443,8 +439,6 @@ const ViewCampaign = ({ match }) => {
                                         symbol: config.nativeTokenName,
                                       },
                                     }}
-                                    currentUser={currentUser}
-                                    history={history}
                                     size="large"
                                   />
                                 </Col>
@@ -466,20 +460,40 @@ const ViewCampaign = ({ match }) => {
                       {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                     </Row>
 
-                    <div id="milestones" className="spacer-bottom-50 spacer-top-50">
+                    <div id="traces" className="spacer-bottom-50 spacer-top-50">
                       <Row justify="space-between" className="spacer-bottom-16">
                         <Col lg={8}>
-                          <h5>{milestonesTitle}</h5>
+                          <h5>{tracesTitle}</h5>
                         </Col>
                         <Col xs={24} lg={16}>
                           <Row gutter={[16, 16]}>
+                            {!campaign.canReceiveDonate && <Col xs={12} sm={6} />}
                             {campaign.projectId > 0 && (
                               <Col xs={24} sm={12}>
-                                <Input.Search
-                                  placeholder="input search text"
-                                  onSearch={setSearchPhrase}
-                                  size="large"
-                                />
+                                <div className="customSearchBox">
+                                  <Input
+                                    className="pr-5"
+                                    placeholder="Search Traces ..."
+                                    size="large"
+                                    value={searchPhrase}
+                                    onChange={query => {
+                                      setSearchPhrase(query.target.value);
+                                    }}
+                                  />
+                                  <div>
+                                    <CloseOutlined
+                                      className={!searchPhrase ? 'd-none' : ''}
+                                      onClick={() => setSearchPhrase('')}
+                                    />
+                                    <SearchOutlined
+                                      className={searchPhrase ? 'd-none' : ''}
+                                      onClick={() => {
+                                        loadMoreTraces(true);
+                                        setLoadingFromScratch(true);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
                               </Col>
                             )}
 
@@ -487,13 +501,18 @@ const ViewCampaign = ({ match }) => {
                               campaign.isActive &&
                               (userIsOwner || currentUser) && (
                                 <Col xs={12} sm={6}>
-                                  <Button onClick={gotoCreateMilestone} block size="large">
+                                  <Button
+                                    type="primary"
+                                    onClick={gotoCreateTrace}
+                                    block
+                                    size="large"
+                                  >
                                     Create New
                                   </Button>
                                 </Col>
                               )}
 
-                            {campaign.isActive && (
+                            {campaign.canReceiveDonate && (
                               <Col xs={12} sm={6}>
                                 <DonateButton
                                   model={{
@@ -506,8 +525,6 @@ const ViewCampaign = ({ match }) => {
                                       symbol: config.nativeTokenName,
                                     },
                                   }}
-                                  currentUser={currentUser}
-                                  history={history}
                                   size="large"
                                 />
                               </Col>
@@ -516,29 +533,62 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                       </Row>
 
-                      {isLoadingMilestones && milestonesTotal === 0 && (
-                        <Loader className="relative" />
+                      {((tracesTotal === 0 && !isLoadingTraces) ||
+                        (isLoadingFromScratch && isLoadingTraces)) && (
+                        <div className="text-center mb-5 pb-5 pt-4">
+                          <Lottie
+                            animationData={SearchAnimation}
+                            className="m-auto"
+                            loop={false}
+                            style={{ width: '250px' }}
+                            autoplay={isLoadingTraces}
+                          />
+                          {!isLoadingTraces &&
+                            (searchPhrase ? (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                                <p
+                                  style={{
+                                    fontSize: '18px',
+                                    fontFamily: 'Lato',
+                                    color: '#6B7087',
+                                  }}
+                                >
+                                  We couldn’t find any matches for your search or it doesn’t exist.
+                                  <br />
+                                  Try adjusting your search.
+                                </p>
+                              </Fragment>
+                            ) : (
+                              <Fragment>
+                                <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
+                              </Fragment>
+                            ))}
+                        </div>
                       )}
-                      <div className="milestone-cards-grid-container">
-                        {milestones.map(m => (
-                          <MilestoneCard milestone={m} key={m._id} history={history} />
-                        ))}
-                      </div>
 
-                      {milestones.length < milestonesTotal && (
+                      {!isLoadingFromScratch && (
+                        <div className="trace-cards-grid-container">
+                          {traces.map(t => (
+                            <TraceCard trace={t} key={t._id} history={history} />
+                          ))}
+                        </div>
+                      )}
+
+                      {traces.length < tracesTotal && !isLoadingFromScratch && (
                         <div className="text-center">
                           <button
                             type="button"
                             className="btn btn-sm btn-info"
-                            onClick={() => loadMoreMilestones()}
-                            disabled={isLoadingMilestones}
+                            onClick={() => loadMoreTraces()}
+                            disabled={isLoadingTraces}
                           >
-                            {isLoadingMilestones && (
+                            {isLoadingTraces && (
                               <span>
                                 <i className="fa fa-circle-o-notch fa-spin" /> Loading
                               </span>
                             )}
-                            {!isLoadingMilestones && <span>Load More</span>}
+                            {!isLoadingTraces && <span>Load More</span>}
                           </button>
                         </div>
                       )}

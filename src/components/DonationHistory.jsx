@@ -36,8 +36,8 @@ class DonationHistory extends Component {
         );
       case 'campaign':
         return <Link to={`/campaigns/${entity._id}`}>{getTruncatedText(entity.title, 45)}</Link>;
-      case 'dac':
-        return <Link to={`/dacs/${entity._id}`}>{getTruncatedText(entity.title, 45)}</Link>;
+      case 'community':
+        return <Link to={`/communities/${entity._id}`}>{getTruncatedText(entity.title, 45)}</Link>;
       default:
         return null;
     }

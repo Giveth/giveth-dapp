@@ -21,9 +21,9 @@ const UserRoleTag = ({ user }) => {
       )}
       {user.isDelegator && (
         <span className="badge badge-primary" data-tip="React-tooltip" data-for="delegator">
-          DAC Owner
+          Community Owner
           <ReactTooltip id="delegator" place="top" type="dark" effect="solid">
-            Can define new Decentralized Altruistic Community
+            Can define new Community
           </ReactTooltip>
         </span>
       )}

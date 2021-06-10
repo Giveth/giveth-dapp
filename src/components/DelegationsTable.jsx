@@ -2,16 +2,16 @@ import React from 'react';
 import Pagination from 'react-js-pagination';
 import PropTypes from 'prop-types';
 import DelegationsItem from './DelegationsItem';
-import { Donation, Milestone } from '../models';
+import { Donation, Trace } from '../models';
 import Campaign from '../models/Campaign';
-import BridgedMilestone from '../models/BridgedMilestone';
-import LPPCappedMilestone from '../models/LPPCappedMilestone';
-import LPMilestone from '../models/LPMilestone';
+import BridgedTrace from '../models/BridgedTrace';
+import LPPCappedTrace from '../models/LPPCappedTrace';
+import LPTrace from '../models/LPTrace';
 
 function DelegationsTable({
   delegations,
   campaigns,
-  milestones,
+  traces,
   totalResults,
   skipPages,
   itemsPerPage,
@@ -37,12 +37,7 @@ function DelegationsTable({
             </thead>
             <tbody>
               {delegations.map(d => (
-                <DelegationsItem
-                  key={d.id}
-                  donation={d}
-                  campaigns={campaigns}
-                  milestones={milestones}
-                />
+                <DelegationsItem key={d.id} donation={d} campaigns={campaigns} traces={traces} />
               ))}
             </tbody>
           </table>
@@ -81,10 +76,8 @@ function DelegationsTable({
 DelegationsTable.propTypes = {
   delegations: PropTypes.arrayOf(PropTypes.instanceOf(Donation)).isRequired,
   campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
-  milestones: PropTypes.arrayOf(
-    PropTypes.oneOfType(
-      [Milestone, BridgedMilestone, LPPCappedMilestone, LPMilestone].map(PropTypes.instanceOf),
-    ),
+  traces: PropTypes.arrayOf(
+    PropTypes.oneOfType([Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf)),
   ).isRequired,
   totalResults: PropTypes.number.isRequired,
   skipPages: PropTypes.number.isRequired,

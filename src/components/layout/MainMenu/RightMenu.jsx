@@ -47,7 +47,7 @@ const RightMenu = () => {
         setSelectedKeys('profile:1');
         break;
 
-      case pathname === '/my-milestones':
+      case pathname === '/my-traces':
         setSelectedKeys('Manage:1');
         break;
 
@@ -59,7 +59,7 @@ const RightMenu = () => {
         setSelectedKeys('Manage:3');
         break;
 
-      case pathname === '/my-dacs':
+      case pathname === '/my-communities':
         setSelectedKeys('Manage:4');
         break;
 
@@ -81,7 +81,7 @@ const RightMenu = () => {
       {validProvider && currentUser.address && (
         <SubMenu key="Manage" title="Manage">
           <Menu.Item key="Manage:1">
-            <Link to="/my-milestones">My Milestones</Link>
+            <Link to="/my-traces">My Traces</Link>
           </Menu.Item>
           <Menu.Item key="Manage:2">
             <Link to="/donations">My Donations</Link>
@@ -91,7 +91,7 @@ const RightMenu = () => {
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
             <Menu.Item key="Manage:4">
-              <Link to="/my-dacs">My Communities</Link>
+              <Link to="/my-communities">My Communities</Link>
             </Menu.Item>
           )}
           {(userIsCampaignManager || userIsReviewer) && (
@@ -140,14 +140,9 @@ const RightMenu = () => {
             <Menu.Item key="profile:1">
               <Link to="/profile">Profile</Link>
             </Menu.Item>
-            {currentUser.gasPaidUsdValue && (
-              <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
-                <TotalGasPaid
-                  gasPaidUsdValue={currentUser.gasPaidUsdValue}
-                  className="menuGasPaid"
-                />
-              </Menu.Item>
-            )}
+            <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
+              <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
+            </Menu.Item>
           </SubMenu>
         </React.Fragment>
       )}

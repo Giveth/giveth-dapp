@@ -5,8 +5,8 @@ import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
 
 import Donation from '../models/Donation';
-import DAC from '../models/DAC';
-import Milestone from '../models/Milestone';
+import Community from '../models/Community';
+import Trace from '../models/Trace';
 import Campaign from '../models/Campaign';
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
@@ -99,7 +99,7 @@ const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amou
 
 class DonationService {
   /**
-   * Delegate multiple donations to some entity (either Campaign or Milestone)
+   * Delegate multiple donations to some entity (either Campaign or Trace)
    *
    * @param {Array}    donations   Array of donations that can be delegated
    * @param {string}   amount      Total amount in wei to be delegated - needs to be between 0 and total donation amount
@@ -118,7 +118,6 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
-    onCancel = () => {},
   ) {
     const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
@@ -243,13 +242,13 @@ class DonationService {
                   delegateId: donation.delegateId,
                   delegateTypeId: donation.delegateTypeId,
                   delegateType: donation.delegateType,
-                  intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
+                  intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
                   intendedProjectType: delegateTo.type,
                   intendedProjectTypeId: delegateTo.id,
                 });
               } else {
                 // owner of the donation is making the transfer
-                // only support delegating to campaigns/milestones right now
+                // only support delegating to campaigns/traces right now
                 Object.assign(newDonation, {
                   status: Donation.COMMITTED,
                   ownerId: delegateTo.projectId,
@@ -269,10 +268,7 @@ class DonationService {
             });
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => {
-            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
-            ErrorHandler(err, message, false, onError, onCancel);
-          });
+          .catch(err => onError(err, txHash));
       })
       .catch(err => {
         ErrorPopup('Unable to initiate the delegation transaction.', err);
@@ -281,7 +277,7 @@ class DonationService {
   }
 
   /**
-   * Delegate the donation to some entity (either Campaign or Milestone)
+   * Delegate the donation to some entity (either Campaign or Trace)
    *
    * @param {Donation} donation    Donation to be delegated
    * @param {string}   amount      Amount of the donation that is to be delegated - needs to be between 0 and donation amount
@@ -310,7 +306,8 @@ class DonationService {
             ? donation.delegateEntity.ownerAddress
             : donation.ownerEntity.ownerAddress;
         const senderId = donation.delegateId > 0 ? donation.delegateId : donation.ownerId;
-        const receiverId = delegateTo.type === 'dac' ? delegateTo.delegateId : delegateTo.projectId;
+        const receiverId =
+          delegateTo.type === 'community' ? delegateTo.delegateId : delegateTo.projectId;
 
         const executeTransfer = () => {
           if (donation.ownerType === 'campaign') {
@@ -359,13 +356,13 @@ class DonationService {
                 delegateId: donation.delegateId,
                 delegateTypeId: donation.delegateTypeId,
                 delegateType: donation.delegateType,
-                intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/milestones right now
+                intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
                 intendedProjectType: delegateTo.type,
                 intendedProjectTypeId: delegateTo.id,
               });
             } else {
               // owner of the donation is making the transfer
-              // only support delegating to campaigns/milestones right now
+              // only support delegating to campaigns/traces right now
               Object.assign(newDonation, {
                 status: Donation.COMMITTED,
                 ownerId: delegateTo.projectId,
@@ -765,7 +762,7 @@ class DonationService {
     };
 
     // donation to a delegate
-    if (toAdmin.type === DAC.type) {
+    if (toAdmin.type === Community.type) {
       Object.assign(newDonation, {
         ownerType: 'giver',
         ownerTypeId: giver.address,
@@ -781,7 +778,7 @@ class DonationService {
         ownerId: toAdmin.adminId,
         campaignId: toAdmin.id,
       });
-    } else if (toAdmin.type === Milestone.type) {
+    } else if (toAdmin.type === Trace.type) {
       Object.assign(newDonation, {
         ownerType: toAdmin.type,
         ownerTypeId: toAdmin.id,
@@ -814,13 +811,13 @@ class DonationService {
       );
   }
 
-  static getMilestoneDonationsCount(milestoneId) {
+  static getTraceDonationsCount(traceId) {
     return feathersClient
       .service('/donations')
       .find({
         query: {
-          ownerType: 'milestone',
-          ownerTypeId: milestoneId,
+          ownerType: 'trace',
+          ownerTypeId: traceId,
           lessThanCutoff: { $ne: true },
           pendingAmountRemaining: { $ne: 0 },
           status: Donation.COMMITTED,
@@ -830,7 +827,7 @@ class DonationService {
       .then(({ total }) => total);
   }
 
-  static async getMilestoneDonations(milestoneId) {
+  static async getTraceDonations(traceId) {
     const service = feathersClient.service('/donations');
     let data = [];
     let total;
@@ -838,8 +835,8 @@ class DonationService {
     const pledgeSet = new Set();
     do {
       const query = {
-        ownerType: 'milestone',
-        ownerTypeId: milestoneId,
+        ownerType: 'trace',
+        ownerTypeId: traceId,
         lessThanCutoff: { $ne: true },
         pendingAmountRemaining: { $ne: 0 },
         status: Donation.COMMITTED,

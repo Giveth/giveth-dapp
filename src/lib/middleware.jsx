@@ -147,23 +147,6 @@ export const authenticateUser = async (currentUser, redirectOnFail) => {
 };
 
 /**
- * Check if the user has registered a profile after doanation. If not, ask the user to register one.
- */
-export const checkProfileAfterDonation = async currentUser => {
-  // already created a profile
-  if (!currentUser || currentUser.name) return;
-
-  const redirect = await React.swal({
-    title: 'Please Register!',
-    text:
-      'Thank you for donating, fill out your Giveth Profile if you want recognition for your contribution!',
-    icon: 'info',
-    buttons: ['No Thanks', 'Ok'],
-  });
-  if (redirect) history.push('/profile');
-};
-
-/**
  * Check if the user has registered a profile. If not, ask the user to register one.
  */
 export const checkProfile = async currentUser => {
@@ -219,8 +202,8 @@ export const checkBalance = balance =>
         content: React.swal.msg(
           <p>
             Be patient, you need at least {React.minimumWalletBalance} {config.foreignNetworkName}{' '}
-            {config.nativeTokenName} in your wallet to take actions on the Giveth DApp, we are
-            sending some to you now.
+            {config.nativeTokenName} in your wallet before you can interact with the Giveth DApp. We
+            are sending some to you now!
           </p>,
         ),
         icon: 'warning',
