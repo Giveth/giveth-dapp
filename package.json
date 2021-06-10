@@ -1,6 +1,6 @@
 {
   "name": "giveth-dapp",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
