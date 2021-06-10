@@ -289,7 +289,7 @@ const ViewCampaign = ({ match }) => {
                     />
                     <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
 
-                    {campaign.isActive && (
+                    {campaign.canReceiveDonate && (
                       <div className="mt-4">
                         <DonateButton
                           model={{
@@ -321,7 +321,7 @@ const ViewCampaign = ({ match }) => {
                         <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
                       </div>
 
-                      {userIsCommunityOwner && (
+                      {userIsCommunityOwner && campaign.canReceiveDonate && (
                         <ProjectViewActionAlert message="Delegate some donation to this project">
                           <DelegateMultipleButton campaign={campaign} />
                         </ProjectViewActionAlert>
@@ -375,7 +375,7 @@ const ViewCampaign = ({ match }) => {
                           )}
                         </Col>
                         <Col span={12}>
-                          {campaign.isActive && (
+                          {campaign.canReceiveDonate && (
                             <Row gutter={[16, 16]} justify="end">
                               <Col xs={24} sm={12} lg={8}>
                                 <DonateButton
@@ -420,7 +420,7 @@ const ViewCampaign = ({ match }) => {
                                 Download this Campaign&apos;s Financial History
                               </Button>
                             </Col>
-                            {campaign.isActive && (
+                            {campaign.canReceiveDonate && (
                               <Fragment>
                                 {userIsCommunityOwner && (
                                   <Col xs={12} md={7} lg={7} xl={5}>
@@ -467,6 +467,7 @@ const ViewCampaign = ({ match }) => {
                         </Col>
                         <Col xs={24} lg={16}>
                           <Row gutter={[16, 16]}>
+                            {!campaign.canReceiveDonate && <Col xs={12} sm={6} />}
                             {campaign.projectId > 0 && (
                               <Col xs={24} sm={12}>
                                 <div className="customSearchBox">
@@ -511,7 +512,7 @@ const ViewCampaign = ({ match }) => {
                                 </Col>
                               )}
 
-                            {campaign.isActive && (
+                            {campaign.canReceiveDonate && (
                               <Col xs={12} sm={6}>
                                 <DonateButton
                                   model={{
