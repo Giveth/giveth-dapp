@@ -42,6 +42,7 @@ class Campaign extends BasicModel {
     this.requiredConfirmations = data.requiredConfirmations;
     this.reviewerAddress = data.reviewerAddress;
     this.ownerAddress = data.ownerAddress;
+    this._disableDonate = data.disableDonate;
     this.coownerAddress = data.coownerAddress;
     this.fundsForwarder = data.fundsForwarder || ZERO_SMALL_ADDRESS;
     this.mined = data.mined;
@@ -86,6 +87,10 @@ class Campaign extends BasicModel {
 
   get isActive() {
     return this.status === Campaign.ACTIVE;
+  }
+
+  get canReceiveDonate() {
+    return this.isActive && !this._disableDonate;
   }
 
   get isPending() {
