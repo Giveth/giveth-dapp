@@ -71,7 +71,7 @@ const Application = () => {
   return (
     <ErrorBoundary>
       {/* Header stuff goes here */}
-      {config.analytics.useHotjar && window.location.origin.includes('beta') && (
+      {config.analytics.useHotjar && window.location.origin.includes('trace') && (
         <Helmet>
           <script>{`
             (function(h,o,t,j,a,r){
