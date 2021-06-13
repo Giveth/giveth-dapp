@@ -20,7 +20,7 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
   }
 
   const tweetMessage =
-    'Giveth pays gas fees to collect or disburse funds donated on Giveth TRACE so ' +
+    'Giveth pays gas fees to collect or disburse funds donated on Giveth TRACE so' +
     ` the users don't have to! To date, Giveth has covered ${gasPaidUsdValue} USD for ${entityText}. Check it out here:`;
 
   return (
