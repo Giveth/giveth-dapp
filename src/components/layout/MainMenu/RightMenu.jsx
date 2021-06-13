@@ -48,23 +48,23 @@ const RightMenu = () => {
         break;
 
       case pathname === '/my-traces':
-        setSelectedKeys('Manage:1');
+        setSelectedKeys('profile:2');
         break;
 
       case pathname === '/donations':
-        setSelectedKeys('Manage:2');
+        setSelectedKeys('profile:3');
         break;
 
       case pathname === '/delegations':
-        setSelectedKeys('Manage:3');
+        setSelectedKeys('profile:4');
         break;
 
       case pathname === '/my-communities':
-        setSelectedKeys('Manage:4');
+        setSelectedKeys('profile:5');
         break;
 
       case pathname === '/my-campaigns':
-        setSelectedKeys('Manage:5');
+        setSelectedKeys('profile:6');
         break;
 
       default:
@@ -79,26 +79,50 @@ const RightMenu = () => {
       </Menu.Item>
 
       {validProvider && currentUser.address && (
-        <SubMenu key="Manage" title="Manage">
-          <Menu.Item key="Manage:1">
+        <SubMenu
+          key="profile"
+          title={
+            <React.Fragment>
+              {currentUser.avatar && (
+                <Avatar className="mr-2" size={30} src={currentUser.avatar} round />
+              )}
+              <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
+            </React.Fragment>
+          }
+        >
+          <Menu.Item
+            key="profile:1"
+            className="mt-0"
+            style={{
+              borderBottom: '1px solid #EAEBEE',
+              paddingBottom: '44px',
+              paddingTop: '6px',
+            }}
+          >
+            <Link to="/profile">Profile</Link>
+          </Menu.Item>
+          <Menu.Item key="profile:2">
             <Link to="/my-traces">My Traces</Link>
           </Menu.Item>
-          <Menu.Item key="Manage:2">
+          <Menu.Item key="profile:3">
             <Link to="/donations">My Donations</Link>
           </Menu.Item>
-          <Menu.Item key="Manage:3">
+          <Menu.Item key="profile:4">
             <Link to="/delegations">My Delegations</Link>
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
-            <Menu.Item key="Manage:4">
+            <Menu.Item key="profile:5">
               <Link to="/my-communities">My Communities</Link>
             </Menu.Item>
           )}
           {(userIsCampaignManager || userIsReviewer) && (
-            <Menu.Item key="Manage:5">
+            <Menu.Item key="profile:6">
               <Link to="/my-campaigns">My Campaigns</Link>
             </Menu.Item>
           )}
+          <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
+            <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
+          </Menu.Item>
         </SubMenu>
       )}
 
@@ -124,27 +148,6 @@ const RightMenu = () => {
             Sign Up!
           </button>
         </Menu.Item>
-      )}
-
-      {currentUser.address && (
-        <React.Fragment>
-          <SubMenu
-            key="profile"
-            title={
-              <React.Fragment>
-                {currentUser.avatar && <Avatar size={30} src={currentUser.avatar} round />}
-                <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
-              </React.Fragment>
-            }
-          >
-            <Menu.Item key="profile:1">
-              <Link to="/profile">Profile</Link>
-            </Menu.Item>
-            <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
-              <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
-            </Menu.Item>
-          </SubMenu>
-        </React.Fragment>
       )}
     </Menu>
   );
