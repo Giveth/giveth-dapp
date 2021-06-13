@@ -734,9 +734,9 @@ const DonateButtonModal = props => {
               )}
               {model.type.toLowerCase() !== Community.type && (
                 <span>
-                  You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
-                  you have filled out contact information in your <Link to="/profile">Profile</Link>{' '}
-                  notified about how your funds are spent
+                  You&apos;re committing your funds to this {capitalizeAdminType(model.type)}. If
+                  you have added your contact information to your <Link to="/profile">Profile</Link>{' '}
+                  you will be notified about how your funds are spent.
                 </span>
               )}
             </p>
