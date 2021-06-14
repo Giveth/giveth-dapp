@@ -14,7 +14,7 @@ import Campaign from './Campaign';
  */
 class Donation extends Model {
   static get PENDING() {
-    return 'Pending';
+    return 'pending';
   }
 
   static get TO_APPROVE() {
