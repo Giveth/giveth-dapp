@@ -116,7 +116,7 @@ class DelegateButtonModal extends Component {
     }
   }
 
-  submit(model) {
+  submit() {
     const { donation } = this.props;
     this.setState({ isSaving: true });
 
@@ -136,6 +136,7 @@ class DelegateButtonModal extends Component {
     }
 
     const onCreated = txLink => {
+      this.props.closeDialog();
       this.setState({ isSaving: false });
       const msg =
         donation.delegateId > 0 ? (
@@ -184,10 +185,9 @@ class DelegateButtonModal extends Component {
 
     const onError = () => {
       this.setState({ isSaving: false });
+      this.props.closeDialog();
     };
 
-    // FIXME: This is super ugly, there is a short flash period when the submit button is pressed before the unlock/success appears
-    this.props.closeDialog();
     this.setState({
       amount: '0',
       objectsToDelegateToCampaign: [],
@@ -195,8 +195,8 @@ class DelegateButtonModal extends Component {
     });
 
     DonationService.delegate(
-      this.props.donation,
-      utils.toWei(model.amount),
+      donation,
+      utils.toWei(this.state.amount),
       this.state.delegationComment,
       admin,
       onCreated,
