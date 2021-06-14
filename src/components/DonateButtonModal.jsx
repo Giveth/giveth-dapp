@@ -12,11 +12,10 @@ import React, {
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import Toggle from 'react-toggle';
 import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Slider, Form, Select, Input, InputNumber } from 'antd';
+import { Slider, Form, Select, Input, InputNumber, Checkbox } from 'antd';
 
 import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
@@ -816,19 +815,19 @@ const DonateButtonModal = props => {
                   )}
 
                   {showCustomAddress && (
-                    <div className="alert alert-success py-1">
+                    <div className="alert alert-success py-1 mb-1">
                       <i className="fa fa-exclamation-triangle" />
                       The donation will be donated on behalf of address:
                     </div>
                   )}
 
-                  <div className="react-toggle-container mb-1">
-                    <Toggle
-                      id="show-recipient-address"
-                      defaultChecked={showCustomAddress}
+                  <div className="mb-1">
+                    <Checkbox
+                      checked={showCustomAddress}
                       onChange={() => setShowCustomAddress(!showCustomAddress)}
-                    />
-                    <div className="label">I want to donate on behalf of another address</div>
+                    >
+                      <div className="label">I want to donate on behalf of another address</div>
+                    </Checkbox>
                   </div>
                   {showCustomAddress && (
                     <Form.Item
