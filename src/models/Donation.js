@@ -18,36 +18,36 @@ class Donation extends Model {
   }
 
   static get TO_APPROVE() {
-    return 'To Approve';
+    return 'ToApprove';
   }
 
   static get WAITING() {
-    return 'Waiting';
+    return 'waiting';
   }
 
   static get COMMITTED() {
-    return 'Committed';
+    return 'committed';
   }
 
   static get PAYING() {
-    return 'Paying';
+    return 'paying';
   }
 
   static get PAID() {
-    return 'Paid';
+    return 'paid';
   }
 
   static get CANCELED() {
     // The Canceled is misspelled but we have no choice because in db and backend side it's misspelled
-    return 'Canceled';
+    return 'canceled';
   }
 
   static get REJECTED() {
-    return 'Rejected';
+    return 'rejected';
   }
 
   static get FAILED() {
-    return 'Failed';
+    return 'failed';
   }
 
   static get statuses() {
