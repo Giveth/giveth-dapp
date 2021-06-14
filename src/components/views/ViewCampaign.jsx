@@ -460,7 +460,7 @@ const ViewCampaign = ({ match }) => {
                       {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
                     </Row>
 
-                    <div id="traces" className="spacer-bottom-50 spacer-top-50">
+                    <div id="traces" className="pb-5">
                       <Row justify="space-between" className="spacer-bottom-16">
                         <Col lg={8}>
                           <h5>{tracesTitle}</h5>

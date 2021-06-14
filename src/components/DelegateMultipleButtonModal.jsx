@@ -2,12 +2,10 @@
 import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import { Form, Textarea } from 'formsy-react-components';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
 import 'react-rangeslider/lib/index.css';
-import InputToken from 'react-input-token';
-import { Slider } from 'antd';
+import { Input, InputNumber, Select, Slider, Form } from 'antd';
 
 import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
@@ -15,9 +13,7 @@ import Trace from 'models/Trace';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
-import SelectFormsy from './SelectFormsy';
 import ActionNetworkWarning from './ActionNetworkWarning';
-import NumericInput from './NumericInput';
 import AmountSliderMarks from './AmountSliderMarks';
 
 import DonationService from '../services/DonationService';
@@ -59,7 +55,6 @@ const ModalContent = props => {
   const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isCommunitiesFetched, setIsCommunitiesFetched] = useState(false);
   const [isSaving, setSaving] = useState(false);
-  const [formIsValid, setFormIsValid] = useState(false);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [delegations, setDelegations] = useState([]);
   const [totalDonations, setTotalDonations] = useState(0);
@@ -67,6 +62,7 @@ const ModalContent = props => {
   const [amount, setAmount] = useState('0');
   const [delegationOptions, setDelegationOptions] = useState([]);
   const [objectToDelegateFrom, setObjectToDelegateFrom] = useState([]);
+  const [delegationComment, setDelegationComment] = useState('');
   const [selectedToken, setSelectedToken] = useState(
     props.trace && props.trace.acceptsSingleToken ? props.trace.token : tokenWhitelist[0],
   );
@@ -203,8 +199,8 @@ const ModalContent = props => {
     loadDonations().then();
   }, [objectToDelegateFrom, loadDonations, selectedToken]);
 
-  function selectedObject({ target }) {
-    setObjectToDelegateFrom(target.value);
+  function selectedObject(value) {
+    setObjectToDelegateFrom([value]);
   }
 
   const getCommunities = useCallback(() => {
@@ -249,7 +245,7 @@ const ModalContent = props => {
       });
   }, [currentUser, campaign, trace]);
 
-  function submit({ comment }) {
+  function submit() {
     setSaving(true);
 
     const delegate = delegationOptions.find(o => o.id === objectToDelegateFrom[0]);
@@ -283,17 +279,13 @@ const ModalContent = props => {
       delegations,
       utils.toWei(amount),
       props.trace || props.campaign,
-      comment,
+      delegationComment,
       onCreated,
       onSuccess,
       onError,
       onCancel,
     );
   }
-
-  const toggleFormIsValid = state => {
-    setFormIsValid(state);
-  };
 
   const prevUser = useRef({});
 
@@ -312,7 +304,7 @@ const ModalContent = props => {
 
   useEffect(() => {
     if (delegationOptions.length === 1) {
-      selectedObject({ target: { value: [delegationOptions[0].id] } });
+      selectedObject(delegationOptions[0].id);
     }
   }, [delegationOptions]);
 
@@ -323,10 +315,13 @@ const ModalContent = props => {
   }, [objectToDelegateFrom]);
 
   const { decimals } = selectedToken;
+  let isZeroAmount = false;
+  if (Number(amount) === 0) {
+    isZeroAmount = true;
+  }
 
   const modalContent = (
     <Fragment>
-      {' '}
       <p>
         You are delegating donations to
         {!trace && <strong> {campaign.title}</strong>}
@@ -345,23 +340,23 @@ const ModalContent = props => {
             </p>
           </div>
         )}
-        <Form
-          onSubmit={submit}
-          layout="vertical"
-          onValid={() => toggleFormIsValid(true)}
-          onInvalid={() => toggleFormIsValid(false)}
-        >
-          <div className="form-group">
-            <span className="label">Delegate from:</span>
-            <InputToken
+        <Form onFinish={submit}>
+          <div>
+            <div className="label">Delegate from:</div>
+            <Select
               name="delegateFrom"
-              label="Delegate from:"
               placeholder={trace ? 'Select a Community or Campaign' : 'Select a Community'}
               value={objectToDelegateFrom}
-              options={delegationOptions}
-              onSelect={v => selectedObject(v)}
-              maxLength={1}
-            />
+              onChange={selectedObject}
+              style={{ minWidth: '200px' }}
+              className="mr-3 mb-3"
+            >
+              {delegationOptions.map(item => (
+                <Select.Option value={item.id} key={item.id}>
+                  {item.name}
+                </Select.Option>
+              ))}
+            </Select>
           </div>
 
           {objectToDelegateFrom.length !== 1 && (
@@ -374,15 +369,25 @@ const ModalContent = props => {
           {objectToDelegateFrom.length === 1 && !isLoadingDonations && (
             <div>
               {(!props.trace || !props.trace.acceptsSingleToken) && (
-                <SelectFormsy
-                  name="token"
-                  id="token-select"
-                  label={`Select token or ${config.nativeTokenName} to delegate`}
-                  helpText=""
-                  value={selectedToken && selectedToken.address}
-                  options={tokenWhitelistOptions}
-                  onChange={address => setToken(address)}
-                />
+                <Fragment>
+                  <div className="label">
+                    {`Select token or ${config.nativeTokenName} to delegate`}
+                  </div>
+                  <Select
+                    name="token"
+                    id="token-select"
+                    value={selectedToken && selectedToken.address}
+                    onChange={setToken}
+                    style={{ minWidth: '200px' }}
+                    className="mb-3"
+                  >
+                    {tokenWhitelistOptions.map(item => (
+                      <Select.Option value={item.value} key={item.value}>
+                        {item.title}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Fragment>
               )}
 
               {delegations.length === 0 || maxAmount.isZero() ? (
@@ -410,35 +415,38 @@ const ModalContent = props => {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <NumericInput
-                      onChange={setAmount}
-                      token={selectedToken}
-                      value={amount}
-                      lteMessage={`The donations you are delegating have combined value of ${maxAmount.toNumber()}. Do not input higher amount than that.`}
+                  <div className="form-group pt-2">
+                    <InputNumber
+                      min={0}
+                      max={maxAmount
+                        .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
+                        .toNumber()}
                       id="amount-input"
-                      maxAmount={maxAmount}
+                      value={amount}
+                      onChange={setAmount}
+                      autoFocus
+                      style={{ minWidth: '200px' }}
+                      className="rounded"
+                      size="large"
+                      precision={decimals}
                     />
                   </div>
                   <div className="form-group">
-                    <Textarea name="comment" id="comment-input" value="" placeholder="Comment" />
+                    <Input.TextArea
+                      name="comment"
+                      id="comment-input"
+                      className="rounded"
+                      placeholder="Comment"
+                      onChange={e => setDelegationComment(e.target.value)}
+                    />
                   </div>
                   <button
                     className="btn btn-success"
                     formNoValidate
                     type="submit"
-                    disabled={isSaving || !isForeignNetwork || !formIsValid}
+                    disabled={isSaving || isZeroAmount || !isForeignNetwork}
                   >
                     {isSaving ? 'Delegating...' : 'Delegate here'}
-                  </button>
-                  <button
-                    className="btn btn-light float-right"
-                    type="button"
-                    onClick={() => {
-                      setModalVisible(false);
-                    }}
-                  >
-                    Close
                   </button>
                 </div>
               )}
