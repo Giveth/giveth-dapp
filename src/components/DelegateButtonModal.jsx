@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
-import { Slider } from 'antd';
-
+import { Input, Select, Slider, Form, InputNumber } from 'antd';
 import { utils } from 'web3';
-import { Form, Textarea } from 'formsy-react-components';
-import InputToken from 'react-input-token';
 import PropTypes from 'prop-types';
 import 'react-rangeslider/lib/index.css';
 
@@ -14,7 +11,6 @@ import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
 import DonationService from '../services/DonationService';
-import NumericInput from './NumericInput';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
 import AmountSliderMarks from './AmountSliderMarks';
 
@@ -56,17 +52,15 @@ class DelegateButtonModal extends Component {
       objectsToDelegateToCampaign: [],
       objectsToDelegateToTrace: [],
       amount: convertEthHelper(amountRemaining, token.decimals),
-      comment: '',
+      delegationComment: '',
       maxAmount: roundBigNumber(amountRemaining, 18),
       curProjectId: null,
-      formIsValid: false,
     };
 
     this.form = React.createRef();
 
     this.submit = this.submit.bind(this);
     this.selectedObject = this.selectedObject.bind(this);
-    this.toggleFormValid = this.toggleFormValid.bind(this);
   }
 
   selectedObject(type, { target }) {
@@ -95,29 +89,20 @@ class DelegateButtonModal extends Component {
     });
 
     if (type === Trace.type) {
-      this.setState(
-        {
-          objectsToDelegateToTrace: target.value,
-        },
-        this.toggleFormValid,
-      );
+      this.setState({
+        objectsToDelegateToTrace: target.value,
+      });
       if (admin) {
         const campaign = types.find(t => admin.campaign.projectId === t.projectId);
-        this.setState(
-          {
-            objectsToDelegateToCampaign: campaign ? [campaign._id] : [],
-          },
-          this.toggleFormValid,
-        );
+        this.setState({
+          objectsToDelegateToCampaign: campaign ? [campaign._id] : [],
+        });
       }
     } else {
-      this.setState(
-        {
-          curProjectId: admin ? admin.projectId : null,
-          objectsToDelegateToCampaign: target.value,
-        },
-        this.toggleFormValid,
-      );
+      this.setState({
+        curProjectId: admin ? admin.projectId : null,
+        objectsToDelegateToCampaign: target.value,
+      });
 
       const { objectsToDelegateToTrace } = this.state;
       if (objectsToDelegateToTrace.length > 0) {
@@ -125,7 +110,7 @@ class DelegateButtonModal extends Component {
           t => t.type === Trace.type && t._id === objectsToDelegateToTrace[0],
         );
         if (!admin || !trace || trace.campaign.projectId !== admin.projectId) {
-          this.setState({ objectsToDelegateToTrace: [] }, this.toggleFormValid);
+          this.setState({ objectsToDelegateToTrace: [] });
         }
       }
     }
@@ -212,7 +197,7 @@ class DelegateButtonModal extends Component {
     DonationService.delegate(
       this.props.donation,
       utils.toWei(model.amount),
-      model.comment,
+      this.state.delegationComment,
       admin,
       onCreated,
       onSuccess,
@@ -220,33 +205,8 @@ class DelegateButtonModal extends Component {
     );
   }
 
-  toggleFormValid(formIsValid) {
-    if (formIsValid === false) {
-      this.setState({ formIsValid: false });
-      return;
-    }
-
-    // not called by Form component
-    if (formIsValid === undefined) {
-      const form = this.form.current.formsyForm;
-      const isValid = form && form.state.isValid;
-      if (!isValid) {
-        this.setState({ formIsValid: false });
-        return;
-      }
-    }
-
-    this.setState(prevState => {
-      const { objectsToDelegateToTrace, objectsToDelegateToCampaign } = prevState;
-      const totalSelected = objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length;
-      return {
-        formIsValid: totalSelected !== 0,
-      };
-    });
-  }
-
   render() {
-    const { types, traceOnly, donation, closeDialog } = this.props;
+    const { types, traceOnly, donation } = this.props;
     const { token } = donation;
     const { decimals } = token;
 
@@ -257,8 +217,6 @@ class DelegateButtonModal extends Component {
       maxAmount,
       curProjectId,
       amount,
-      comment,
-      formIsValid,
       sliderMarks,
     } = this.state;
 
@@ -288,6 +246,14 @@ class DelegateButtonModal extends Component {
     } else {
       campaignValue.push(...objectsToDelegateToCampaign);
     }
+
+    let isZeroAmount = false;
+    if (Number(amount) === 0) {
+      isZeroAmount = true;
+    }
+    const totalSelected = objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length;
+    const formIsValid = totalSelected !== 0 && !isZeroAmount;
+
     return (
       <React.Fragment>
         {traceOnly && <p>Select a Trace to delegate this donation to:</p>}
@@ -302,13 +268,7 @@ class DelegateButtonModal extends Component {
           </strong>{' '}
           that has been donated to <strong>{donation.donatedTo.name}</strong>
         </p>
-        <Form
-          onSubmit={this.submit}
-          layout="vertical"
-          onValid={() => this.toggleFormValid(true)}
-          onInvalid={() => this.toggleFormValid(false)}
-          ref={this.form}
-        >
+        <Form onFinish={this.submit}>
           <div className="form-group">
             <span className="label">
               Delegate to:
@@ -322,25 +282,38 @@ class DelegateButtonModal extends Component {
               </ReactTooltip>
             </span>
             <div>
-              <InputToken
-                disabled={traceOnly}
+              <Select
                 name="delegateTo"
-                label="Delegate to:"
                 placeholder="Select a Campaign"
+                showSearch
+                optionFilterProp="children"
                 value={campaignValue}
-                options={traceOnly ? traceOnlyCampaignTypes : campaignTypes}
-                onSelect={v => this.selectedObject(Campaign.type, v)}
-                maxLength={1}
-              />
-              <InputToken
+                onSelect={v => this.selectedObject(Campaign.type, { target: { value: [v] } })}
+                style={{ width: '100%' }}
+                className="mb-3"
+              >
+                {(traceOnly ? traceOnlyCampaignTypes : campaignTypes).map(item => (
+                  <Select.Option value={item.id} key={item.id}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Select
                 name="delegateToTrace"
-                label="Delegate to:"
                 placeholder="Select a Trace"
+                showSearch
+                optionFilterProp="children"
                 value={objectsToDelegateToTrace}
-                options={traceTypes}
-                onSelect={v => this.selectedObject(Trace.type, v)}
-                maxLength={1}
-              />
+                onSelect={v => this.selectedObject(Trace.type, { target: { value: [v] } })}
+                style={{ width: '100%' }}
+                className="mb-3"
+              >
+                {traceTypes.map(item => (
+                  <Select.Option value={item.id} key={item.id}>
+                    {item.name}
+                  </Select.Option>
+                ))}
+              </Select>
             </div>
           </div>
           {objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length !== 0 && (
@@ -361,22 +334,28 @@ class DelegateButtonModal extends Component {
               </div>
 
               <div className="form-group">
-                <NumericInput
-                  token={token}
-                  maxAmount={maxAmount}
+                <InputNumber
+                  min={0}
+                  max={maxAmount.decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN).toNumber()}
                   id="amount-input"
                   value={amount}
                   onChange={newAmount => this.setState({ amount: newAmount })}
-                  lteMessage={`The donation maximum amount you can delegate is ${convertEthHelper(
-                    maxAmount,
-                    token.decimals,
-                  )}. Do not input higher amount.`}
                   autoFocus
+                  style={{ minWidth: '200px' }}
+                  className="rounded"
+                  size="large"
+                  precision={decimals}
                 />
               </div>
 
               <div className="form-group">
-                <Textarea name="comment" id="comment-input" value={comment} placeholder="Comment" />
+                <Input.TextArea
+                  name="comment"
+                  id="comment-input"
+                  className="rounded"
+                  placeholder="Comment"
+                  onChange={e => this.setState({ delegationComment: e.target.value })}
+                />
               </div>
             </React.Fragment>
           )}
@@ -388,9 +367,6 @@ class DelegateButtonModal extends Component {
             disabled={isSaving || !formIsValid}
           >
             {isSaving ? 'Delegating...' : 'Delegate here'}
-          </button>
-          <button className="btn btn-light float-right" type="button" onClick={closeDialog}>
-            Close
           </button>
         </Form>
       </React.Fragment>

@@ -1,7 +1,6 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import 'react-input-token/lib/style.css';
 
 import {
   Button,
