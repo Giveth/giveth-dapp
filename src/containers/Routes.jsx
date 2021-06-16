@@ -243,55 +243,19 @@ const Routes = () => {
         path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
-      <Route
-        exact
-        path="/donations"
-        render={props => (
-          <Donations
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/delegations"
-        render={props => (
-          <Delegations
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/donations" render={props => <Donations {...props} />} />
+      <Route exact path="/delegations" render={props => <Delegations {...props} />} />
       <Route
         exact
         path="/my-communities"
-        render={props => (
-          <MyCommunities
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
+        render={props =>
+          currentUser.address && (
+            <MyCommunities currentUser={currentUser} balance={balance} {...props} />
+          )
+        }
       />
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
-      <Route
-        exact
-        path="/my-campaigns"
-        render={props => (
-          <MyCampaigns
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/my-campaigns" render={props => <MyCampaigns {...props} />} />
       <Route exact path="/my-traces" render={() => <MyTraces />} />
       {/* <Route
                                         exact

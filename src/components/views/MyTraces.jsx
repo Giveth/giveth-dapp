@@ -41,9 +41,6 @@ const MyTraces = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [traceStatus, setTraceStatus] = useState(traceTabs[0]);
 
-  const itemsPerPage = 10;
-  const visiblePages = 10;
-
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -58,14 +55,17 @@ const MyTraces = () => {
     TraceService.unsubscribe();
   }
 
+  const itemsPerPage = 10;
+  const visiblePages = 10;
+  const userAddress = currentUser.address;
+
   const loadTraces = useCallback(() => {
-    const myAddress = currentUser.address;
-    if (myAddress) {
+    if (userAddress) {
       TraceService.subscribeMyTraces({
         traceStatus,
-        ownerAddress: myAddress,
-        coownerAddress: myAddress,
-        recipientAddress: myAddress,
+        ownerAddress: userAddress,
+        coownerAddress: userAddress,
+        recipientAddress: userAddress,
         skipPages,
         itemsPerPage,
         onResult: resp => {
@@ -84,7 +84,7 @@ const MyTraces = () => {
       setTotalResults(0);
       setLoading(false);
     }
-  }, [currentUser.address, traceStatus, skipPages]);
+  }, [userAddress, traceStatus, skipPages]);
 
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
@@ -115,7 +115,7 @@ const MyTraces = () => {
     setLoading(true);
     loadTraces();
     return cleanUp;
-  }, [currentUser.address, loadTraces, traceStatus, skipPages]);
+  }, [userAddress, loadTraces, traceStatus, skipPages]);
 
   return (
     <div id="traces-view">
