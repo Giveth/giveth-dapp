@@ -14,7 +14,7 @@ import Campaign from './Campaign';
  */
 class Donation extends Model {
   static get PENDING() {
-    return 'pending';
+    return 'Pending';
   }
 
   static get TO_APPROVE() {
@@ -22,32 +22,32 @@ class Donation extends Model {
   }
 
   static get WAITING() {
-    return 'waiting';
+    return 'Waiting';
   }
 
   static get COMMITTED() {
-    return 'committed';
+    return 'Committed';
   }
 
   static get PAYING() {
-    return 'paying';
+    return 'Paying';
   }
 
   static get PAID() {
-    return 'paid';
+    return 'Paid';
   }
 
   static get CANCELED() {
     // The Canceled is misspelled but we have no choice because in db and backend side it's misspelled
-    return 'canceled';
+    return 'Canceled';
   }
 
   static get REJECTED() {
-    return 'rejected';
+    return 'Rejected';
   }
 
   static get FAILED() {
-    return 'failed';
+    return 'Failed';
   }
 
   static get statuses() {
