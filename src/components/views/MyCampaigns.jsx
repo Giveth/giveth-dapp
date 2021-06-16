@@ -32,13 +32,15 @@ function MyCampaigns() {
 
   const visiblePages = 10;
   const itemsPerPage = 10;
+  const userAddress = currentUser.address;
 
   const campaignsObserver = useRef();
 
   const loadCampaigns = useCallback(() => {
-    if (currentUser.address) {
+    if (userAddress) {
+      console.log(userAddress);
       campaignsObserver.current = CampaignService.getUserCampaigns(
-        currentUser.address,
+        userAddress,
         skipPages,
         itemsPerPage,
         cs => {
@@ -48,22 +50,18 @@ function MyCampaigns() {
         () => setLoading(false),
       );
     }
-  }, [currentUser.address, skipPages]);
-
-  useEffect(() => {
-    loadCampaigns();
-
-    return () => {
-      if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
-    };
-  }, [loadCampaigns]);
+  }, [userAddress, skipPages]);
 
   useEffect(() => {
     setLoading(true);
     setSkipPages(0);
     if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
     loadCampaigns();
-  }, [loadCampaigns, currentUser.address]);
+
+    return () => {
+      if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
+    };
+  }, [loadCampaigns, userAddress]);
 
   useEffect(() => loadCampaigns, [loadCampaigns, skipPages]);
 
@@ -71,7 +69,6 @@ function MyCampaigns() {
     setSkipPages(newPage - 1);
   }
 
-  const userAddress = currentUser.address;
   const isPendingCampaign =
     (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
     false;
