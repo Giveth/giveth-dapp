@@ -54,7 +54,7 @@ function ProjectSubscription({ projectTypeId, projectType }) {
     <div>
       <div className="project-subscription  vertical-align flex-row">
         <span className="flex-grow-1">
-          Get notifications whenever there is an activity in this {projectType}
+          Get notifications whenever there&apos;s activity in this {projectType}
         </span>
         {!subscribed && (
           <button

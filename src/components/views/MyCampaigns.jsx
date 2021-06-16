@@ -124,7 +124,7 @@ function MyCampaigns() {
                               {c.reviewerAddress === userAddress && (
                                 <span className="badge badge-info">
                                   <i className="fa fa-eye" />
-                                  &nbsp;I&apos;m reviewer
+                                  &nbsp;You&apos;re the Reviewer
                                 </span>
                               )}
                             </td>
@@ -183,7 +183,7 @@ function MyCampaigns() {
                 {campaigns && campaigns.data.length === 0 && (
                   <div>
                     <div className="text-center">
-                      <h3>You didn&apos;t create any Campaigns yet!</h3>
+                      <h3>You haven&apos;t created any Campaigns yet!</h3>
                       <img
                         className="empty-state-img"
                         src={`${process.env.PUBLIC_URL}/img/campaign.svg`}

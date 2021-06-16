@@ -53,10 +53,7 @@ const Traces = ({ step }) => {
           <h4>Traces {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
           {!hasError && traces.length > 0 && (
             <div>
-              <p>
-                Here are a few of the latest Traces. Help them realise their goals by giving Ether
-                or tokens!
-              </p>
+              <p>Requests for funding from a Campaign or its members.</p>
               <div className="cards-grid-container">
                 {traces.map(trace => (
                   <TraceCard key={trace.id} trace={trace} />
