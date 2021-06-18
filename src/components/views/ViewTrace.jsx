@@ -242,11 +242,11 @@ const ViewTrace = props => {
       case 0:
         return <p>No token is defined to contribute.</p>;
       case 1:
-        return <p>This trace accepts only ${symbols}</p>;
+        return <p>This Trace accepts only ${symbols}</p>;
 
       default: {
         const symbolsStr = `${symbols.slice(0, -1).join(', ')} or ${symbols[symbols.length - 1]}`;
-        return <p>This trace accepts {symbolsStr}</p>;
+        return <p>This Trace accepts {symbolsStr}</p>;
       }
     }
   };
@@ -500,7 +500,7 @@ const ViewTrace = props => {
                                 <DetailLabel
                                   id="community-delegation"
                                   title="Delegating 3% to Community"
-                                  explanation="The Community that this trace is contributing to on every donation"
+                                  explanation="The Community that this Trace is contributing to on every donation"
                                 />
                                 {communityTitle}
                               </div>

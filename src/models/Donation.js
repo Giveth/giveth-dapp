@@ -158,29 +158,29 @@ class Donation extends Model {
   get statusDescription() {
     switch (this._status) {
       case Donation.PENDING:
-        return 'pending successful transaction';
+        return 'Pending Successful Transaction';
       case Donation.TO_APPROVE:
-        return 'proposed delegation';
+        return 'Proposed Delegation';
       case Donation.WAITING:
-        return 'ready for delegation';
+        return 'Ready for Delegation';
       case Donation.COMMITTED:
-        return 'committed';
+        return 'Committed';
       case Donation.PAYING:
-        return 'paying';
+        return 'Paying';
       case Donation.PAID:
         if (this._bridgeStatus === Donation.PAID) {
           // I dont know what to do if bridgeStatus is something like Cancelled or Expired
-          return 'paid';
+          return 'Paid';
         }
-        return 'processing';
+        return 'Processing';
       case Donation.CANCELED:
-        return 'canceled';
+        return 'Canceled';
       case Donation.REJECTED:
-        return 'rejected';
+        return 'Rejected';
       case Donation.FAILED:
-        return 'failed';
+        return 'Failed';
       default:
-        return 'unknown';
+        return 'Unknown';
     }
   }
 
