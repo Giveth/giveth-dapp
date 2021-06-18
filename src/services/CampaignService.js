@@ -17,6 +17,10 @@ const etherScanUrl = config.etherscan;
 const campaigns = feathersClient.service('campaigns');
 
 class CampaignService {
+  constructor() {
+    this.campaignSubscription = null;
+  }
+
   /**
    * Get a Campaign defined by ID
    *
@@ -272,27 +276,56 @@ class CampaignService {
    * @param onSuccess   Callback function once response is obtained successfully
    * @param onError     Callback function if error is encountered
    */
-  static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
-    return campaigns
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          $or: [
-            { ownerAddress: userAddress },
-            { reviewerAddress: userAddress },
-            { coownerAddress: userAddress },
-          ],
-          $sort: {
-            createdAt: -1,
-          },
-          $limit: itemsPerPage,
-          $skip: skipPages * itemsPerPage,
+  static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
+    const find = {
+      query: {
+        $or: [
+          { ownerAddress: userAddress },
+          { reviewerAddress: userAddress },
+          { coownerAddress: userAddress },
+        ],
+        $sort: {
+          createdAt: -1,
         },
+        $limit: itemsPerPage,
+        $skip: skipPages * itemsPerPage,
+      },
+    };
+
+    if (subscribe) {
+      return this.subscribe(find, onSuccess, onError);
+    }
+    return this.getQuery(find, onSuccess, onError);
+  }
+
+  static getQuery(find, onSuccess, onError) {
+    campaigns
+      .find(find)
+      .then(resp => {
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Campaign(c)),
+        });
       })
+      .catch(onError);
+  }
+
+  static subscribe(find, onSuccess, onError) {
+    this.campaignSubscription = campaigns
+      .watch({ listStrategy: 'always' })
+      .find(find)
       .subscribe(resp => {
-        const newResp = { ...resp, data: resp.data.map(c => new Campaign(c)) };
-        onSuccess(newResp);
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Campaign(c)),
+        });
       }, onError);
+
+    return this.campaignSubscription;
+  }
+
+  static unsubscribe() {
+    if (this.campaignSubscription) this.campaignSubscription.unsubscribe();
   }
 
   /**

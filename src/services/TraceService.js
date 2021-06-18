@@ -120,7 +120,7 @@ class TraceService {
    *  reject:
    *    error message
    */
-  static async subscribeMyTraces({
+  static async getUserTraces({
     traceStatus,
     ownerAddress,
     coownerAddress,
@@ -129,6 +129,7 @@ class TraceService {
     itemsPerPage,
     onResult,
     onError,
+    subscribe,
   }) {
     const query = {
       $sort: {
@@ -233,7 +234,11 @@ class TraceService {
       ];
     }
 
-    this.subscribe(query, onResult, onError);
+    if (!subscribe) {
+      this.getTraces(query, onResult, onError);
+    } else {
+      this.subscribe(query, onResult, onError);
+    }
   }
 
   /**
@@ -271,6 +276,25 @@ class TraceService {
 
         onError,
       );
+  }
+
+  /**
+   * Load traces
+   *
+   * @param query     A feathers query
+   *
+   */
+
+  static getTraces(query, onResult, onError) {
+    return traces
+      .find({ query })
+      .then(resp => {
+        onResult({
+          ...resp,
+          data: resp.data.map(m => TraceFactory.create(m)),
+        });
+      })
+      .catch(onError);
   }
 
   /**

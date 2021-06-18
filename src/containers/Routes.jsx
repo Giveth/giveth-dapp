@@ -9,8 +9,8 @@ import EditProfile from '../components/views/EditProfile';
 import ViewTrace from '../components/views/ViewTrace';
 import EditCommunity from '../components/views/EditCommunity';
 import ViewCommunity from '../components/views/ViewCommunity';
-import Donations from '../components/views/Donations';
-import Delegations from '../components/views/Delegations';
+import MyDonations from '../components/views/MyDonations';
+import MyDelegations from '../components/views/myDelegations/MyDelegations';
 import MyCommunities from '../components/views/MyCommunities';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyTraces from '../components/views/MyTraces';
@@ -243,19 +243,17 @@ const Routes = () => {
         path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
-      <Route exact path="/donations" render={props => <Donations {...props} />} />
-      <Route exact path="/delegations" render={props => <Delegations {...props} />} />
+      <Route exact path="/donations" render={() => <MyDonations />} />
+      <Route exact path="/delegations" render={() => <MyDelegations />} />
       <Route
         exact
         path="/my-communities"
-        render={props =>
-          currentUser.address && (
-            <MyCommunities currentUser={currentUser} balance={balance} {...props} />
-          )
+        render={() =>
+          currentUser.address && <MyCommunities currentUser={currentUser} balance={balance} />
         }
       />
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
-      <Route exact path="/my-campaigns" render={props => <MyCampaigns {...props} />} />
+      <Route exact path="/my-campaigns" render={() => <MyCampaigns />} />
       <Route exact path="/my-traces" render={() => <MyTraces />} />
       {/* <Route
                                         exact

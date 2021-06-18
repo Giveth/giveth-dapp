@@ -200,6 +200,7 @@ export default class Trace extends BasicModel {
       CANCELED: 'Canceled',
       PAYING: 'Paying',
       PAID: 'Paid',
+      ACTIVE: 'Active',
       FAILED: 'Failed',
       ARCHIVED: 'Archived',
     };

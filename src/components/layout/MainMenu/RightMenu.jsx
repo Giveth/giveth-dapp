@@ -10,6 +10,16 @@ import { Context as WhiteListContext } from '../../../contextProviders/WhiteList
 import { signUpSwal } from '../../../lib/helpers';
 import MenuBarCreateButton from '../../MenuBarCreateButton';
 import TotalGasPaid from '../../views/TotalGasPaid';
+import TraceService from '../../../services/TraceService';
+import GetDonationsService from '../../../services/GetDonationsService';
+import ErrorPopup from '../../ErrorPopup';
+import Trace from '../../../models/Trace';
+import LoadProjectsInfo from '../../views/myDelegations/LoadProjectsInfo';
+import GetDonations from '../../views/myDelegations/GetDonations';
+import Campaign from '../../../models/Campaign';
+import ErrorHandler from '../../../lib/ErrorHandler';
+import CampaignService from '../../../services/CampaignService';
+import CommunityService from '../../../services/CommunityService';
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -17,6 +27,11 @@ const { useBreakpoint } = Grid;
 const RightMenu = () => {
   const { lg } = useBreakpoint();
   const [selectedKeys, setSelectedKeys] = useState('');
+  const [userTotalTraces, setUserTotalTraces] = useState(0);
+  const [userTotalDelegations, setUserTotalDelegations] = useState();
+  const [userTotalDonations, setUserTotalDonations] = useState();
+  const [userTotalCampaigns, setUserTotalCampaigns] = useState();
+  const [userTotalCommunities, setUserTotalCommunities] = useState();
 
   const MenuBarCreateButtonWithRouter = withRouter(MenuBarCreateButton);
 
@@ -36,14 +51,96 @@ const RightMenu = () => {
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
   const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
+  const userAddress = currentUser.address;
 
   const { pathname } = useLocation();
 
+  const getUserTraces = () =>
+    TraceService.getUserTraces({
+      traceStatus: Trace.ACTIVE,
+      ownerAddress: userAddress,
+      coownerAddress: userAddress,
+      recipientAddress: userAddress,
+      skipPages: 0,
+      itemsPerPage: 0,
+      onResult: resp => {
+        setUserTotalTraces(resp.total);
+      },
+      onError: err => {
+        ErrorPopup('Something went wrong on getting user Traces!', err);
+      },
+    });
+
+  const getUserDonations = () => {
+    GetDonationsService.getUserDonations({
+      currentUser,
+      itemsPerPage: 0,
+      skipPages: 0,
+      subscribe: false,
+      onResult: resp => {
+        setUserTotalDonations(resp.total);
+      },
+      onError: err => {
+        ErrorPopup('Something went wrong on getting user donations!', err);
+      },
+    });
+  };
+
+  const getUserDelegations = () => {
+    LoadProjectsInfo({ userAddress })
+      .then(resArray => {
+        const communities = resArray[0].data;
+        const campaigns = resArray[1].data.map(c => new Campaign(c));
+        GetDonations({
+          userAddress,
+          communities,
+          campaigns,
+          itemsPerPage: 0,
+          skipPages: 0,
+          onResult: resp => setUserTotalDelegations(resp.total),
+          onError: err => {
+            const message = `Error in fetching delegations info. ${err}`;
+            ErrorHandler(err, message);
+          },
+        }).then();
+      })
+      .catch(err => {
+        const message = `Unable to load communities, Campaigns or Traces. ${err}`;
+        ErrorHandler(err, message);
+      });
+  };
+
+  const getUserCommunities = () => {
+    CommunityService.getUserCommunities(
+      userAddress,
+      0,
+      0,
+      communities => setUserTotalCommunities(communities.total),
+      err => {
+        const message = `Something went wrong on getting user Communities! ${err}`;
+        ErrorHandler(err, message);
+      },
+    );
+  };
+
+  const getUserCampaigns = () => {
+    CampaignService.getUserCampaigns(
+      userAddress,
+      0,
+      0,
+      camp => setUserTotalCampaigns(camp.total),
+      err => {
+        const message = `Something went wrong on getting user Campaigns! ${err}`;
+        ErrorHandler(err, message);
+      },
+    );
+  };
+
   useEffect(() => {
-    const userAddress = currentUser._address && currentUser._address.toLowerCase();
+    const userAddressLC = userAddress && userAddress.toLowerCase();
     switch (true) {
       case pathname === '/profile':
-      case pathname.toLowerCase() === `/profile/${userAddress}`:
+      case pathname.toLowerCase() === `/profile/${userAddressLC}`:
         setSelectedKeys('profile:1');
         break;
 
@@ -70,7 +167,17 @@ const RightMenu = () => {
       default:
         setSelectedKeys('');
     }
-  }, [pathname, currentUser]);
+  }, [pathname, userAddress]);
+
+  useEffect(() => {
+    if (userAddress) {
+      getUserTraces().then();
+      getUserDelegations();
+      getUserDonations();
+      getUserCampaigns();
+      getUserCommunities();
+    }
+  }, [userAddress]);
 
   return (
     <Menu selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
@@ -102,22 +209,32 @@ const RightMenu = () => {
             <Link to="/profile">Profile</Link>
           </Menu.Item>
           <Menu.Item key="profile:2">
-            <Link to="/my-traces">My Traces</Link>
+            <Link className="d-flex justify-content-between" to="/my-traces">
+              My Traces<span>{userTotalTraces}</span>
+            </Link>
           </Menu.Item>
           <Menu.Item key="profile:3">
-            <Link to="/donations">My Donations</Link>
+            <Link className="d-flex justify-content-between" to="/donations">
+              My Donations<span>{userTotalDonations}</span>
+            </Link>
           </Menu.Item>
           <Menu.Item key="profile:4">
-            <Link to="/delegations">My Delegations</Link>
+            <Link className="d-flex justify-content-between" to="/delegations">
+              My Delegations<span>{userTotalDelegations}</span>
+            </Link>
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
             <Menu.Item key="profile:5">
-              <Link to="/my-communities">My Communities</Link>
+              <Link className="d-flex justify-content-between" to="/my-communities">
+                My Communities<span>{userTotalCommunities}</span>
+              </Link>
             </Menu.Item>
           )}
           {(userIsCampaignManager || userIsReviewer) && (
             <Menu.Item key="profile:6">
-              <Link to="/my-campaigns">My Campaigns</Link>
+              <Link className="d-flex justify-content-between" to="/my-campaigns">
+                My Campaigns<span>{userTotalCampaigns}</span>
+              </Link>
             </Menu.Item>
           )}
           <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>

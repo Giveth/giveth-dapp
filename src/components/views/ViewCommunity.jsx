@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
@@ -59,16 +59,9 @@ const ViewCommunity = ({ match }) => {
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
 
-  const donationsObserver = useRef();
-
   const donationsPerBatch = 5;
 
-  const cleanUp = () => {
-    if (donationsObserver.current) {
-      donationsObserver.current.unsubscribe();
-      donationsObserver.current = null;
-    }
-  };
+  const cleanUp = () => CommunityService.unsubscribeNewDonations();
 
   const loadMoreAggregateDonations = (
     loadFromScratch = false,
@@ -145,7 +138,7 @@ const ViewCommunity = ({ match }) => {
 
   useEffect(() => {
     const subscribeFunc = async () => {
-      if (community.id && donationsObserver.current === undefined) {
+      if (community.id) {
         const relatedCampaigns = await CampaignService.getCampaignsByIdArray(
           community.campaigns || [],
         );
@@ -154,7 +147,7 @@ const ViewCommunity = ({ match }) => {
         loadMoreAggregateDonations(true);
         loadDonations(community.id);
         // subscribe to donation count
-        donationsObserver.current = CommunityService.subscribeNewDonations(
+        CommunityService.subscribeNewDonations(
           community.id,
           _newDonations => {
             setNewDonations(_newDonations);
@@ -173,7 +166,7 @@ const ViewCommunity = ({ match }) => {
     subscribeFunc().then();
 
     return cleanUp;
-  }, [community]);
+  }, [community.id]);
 
   const editCommunity = id => {
     checkBalance(balance)

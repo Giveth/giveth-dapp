@@ -13,10 +13,10 @@ import Donation from 'models/Donation';
 import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
-import DonationService from '../services/DonationService';
-import NumericInput from './NumericInput';
-import { convertEthHelper, roundBigNumber } from '../lib/helpers';
-import AmountSliderMarks from './AmountSliderMarks';
+import DonationService from '../../../services/DonationService';
+import NumericInput from '../../NumericInput';
+import { convertEthHelper, roundBigNumber } from '../../../lib/helpers';
+import AmountSliderMarks from '../../AmountSliderMarks';
 
 function getFilterType(types, donation) {
   return types.filter(

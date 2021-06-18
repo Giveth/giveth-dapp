@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import Donation from '../models/Donation';
+import Donation from '../../../models/Donation';
 import DelegateButton from './DelegateButton';
-import config from '../configuration';
-import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
-import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as Web3Provider } from '../contextProviders/Web3Provider';
-import { Trace } from '../models';
-import Campaign from '../models/Campaign';
-import BridgedTrace from '../models/BridgedTrace';
-import LPPCappedTrace from '../models/LPPCappedTrace';
-import LPTrace from '../models/LPTrace';
+import config from '../../../configuration';
+import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpers';
+import { Context as UserContext } from '../../../contextProviders/UserProvider';
+import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
+import { Trace } from '../../../models';
+import Campaign from '../../../models/Campaign';
+import BridgedTrace from '../../../models/BridgedTrace';
+import LPPCappedTrace from '../../../models/LPPCappedTrace';
+import LPTrace from '../../../models/LPTrace';
 
 function DelegationsItem({ campaigns, donation, traces }) {
   const {
