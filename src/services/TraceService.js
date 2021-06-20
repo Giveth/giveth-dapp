@@ -123,7 +123,6 @@ class TraceService {
   static async getUserTraces({
     traceStatus,
     ownerAddress,
-    coownerAddress,
     recipientAddress,
     skipPages,
     itemsPerPage,
@@ -175,7 +174,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             // { reviewerAddress: myAddress }, // Not really "My Traces"
             { recipientAddress },
           ],
@@ -185,7 +183,7 @@ class TraceService {
     } else {
       const resp = await feathersClient.service('campaigns').find({
         query: {
-          $or: [{ ownerAddress }, { coownerAddress }],
+          ownerAddress,
           $select: ['_id'],
         },
       });
@@ -194,7 +192,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             {
               $and: [
                 { reviewerAddress: ownerAddress },

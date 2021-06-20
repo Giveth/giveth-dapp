@@ -55,11 +55,10 @@ const RightMenu = () => {
 
   const { pathname } = useLocation();
 
-  const getUserTraces = () =>
+  const getUserTraces = () => {
     TraceService.getUserTraces({
       traceStatus: Trace.ACTIVE,
       ownerAddress: userAddress,
-      coownerAddress: userAddress,
       recipientAddress: userAddress,
       skipPages: 0,
       itemsPerPage: 0,
@@ -69,7 +68,8 @@ const RightMenu = () => {
       onError: err => {
         ErrorPopup('Something went wrong on getting user Traces!', err);
       },
-    });
+    }).then();
+  };
 
   const getUserDonations = () => {
     GetDonationsService.getUserDonations({
@@ -171,7 +171,7 @@ const RightMenu = () => {
 
   useEffect(() => {
     if (userAddress) {
-      getUserTraces().then();
+      getUserTraces();
       getUserDelegations();
       getUserDonations();
       getUserCampaigns();

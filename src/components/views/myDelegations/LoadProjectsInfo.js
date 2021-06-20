@@ -20,6 +20,7 @@ const LoadProjectsInfo = async ({ userAddress }) => {
     feathersClient.service('campaigns').find({
       query: {
         status: Campaign.ACTIVE,
+        ownerAddress: userAddress,
         $select: ['ownerAddress', 'title', '_id', 'projectId'],
         $limit: 100,
         $sort: {

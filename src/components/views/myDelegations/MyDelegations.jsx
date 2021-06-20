@@ -39,10 +39,11 @@ const MyDelegations = () => {
     () =>
       LoadProjectsInfo({ userAddress })
         .then(resArray => {
+          const [{ data: communities }, { data: campaigns }, { data: traces }] = resArray;
           setProjectsInfo({
-            communities: resArray[0].data,
-            campaigns: resArray[1].data.map(c => new Campaign(c)),
-            traces: resArray[2].data.map(m => new Trace(m)),
+            communities,
+            campaigns: campaigns.map(c => new Campaign(c)),
+            traces: traces.map(m => new Trace(m)),
           });
         })
         .catch(err => {

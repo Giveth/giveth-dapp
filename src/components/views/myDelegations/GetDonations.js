@@ -19,7 +19,7 @@ const GetDonations = async ({
 
   if (userAddress) {
     const communitiesIds = communities.map(c => c._id);
-    const campaignIds = campaigns.filter(c => c.ownerAddress === userAddress).map(c => c._id);
+    const campaignIds = campaigns.map(c => c._id);
 
     const query = paramsForServer({
       query: {
