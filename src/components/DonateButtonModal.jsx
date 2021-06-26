@@ -64,7 +64,7 @@ const AllowanceApprovalType = {
 };
 
 const DonateButtonModal = props => {
-  const { model, setModalVisible, customThanksMessage } = props;
+  const { model, setModalVisible, customThanksMessage, afterDonateCb } = props;
   const {
     state: { tokenWhitelist },
   } = useContext(WhiteListContext);
@@ -157,7 +157,7 @@ const DonateButtonModal = props => {
   }, [selectedToken, model, props, NativeTokenBalance]);
 
   const updateAllowance = useCallback(
-    (delay = 0) => {
+    (delay = 100) => {
       const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
       if (!isDonationInToken) {
         setAllowance(new BigNumber(0));
@@ -421,7 +421,7 @@ const DonateButtonModal = props => {
             const { nonce } = await web3.eth.getTransaction(transactionHash);
             txHash = transactionHash;
 
-            await DonationService.newFeathersDonation(
+            const newDonation = await DonationService.newFeathersDonation(
               donationOwner,
               toAdmin,
               amountWei,
@@ -431,6 +431,7 @@ const DonateButtonModal = props => {
               comment,
             );
 
+            afterDonateCb(newDonation);
             resolve(true);
             setModalVisible(false);
 

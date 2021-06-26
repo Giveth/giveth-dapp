@@ -113,6 +113,7 @@ Root.propTypes = {
   model: modelTypes.isRequired,
   autoPopup: PropTypes.bool,
   className: PropTypes.string,
+  afterDonateCb: PropTypes.func.isRequired,
 };
 
 Root.defaultProps = {

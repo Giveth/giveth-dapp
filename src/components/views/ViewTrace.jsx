@@ -95,7 +95,7 @@ const ViewTrace = props => {
 
   function loadMoreDonations(loadFromScratch = false, donationsBatch = donationsPerBatch) {
     setLoadingDonations(true);
-    TraceService.getDonations(
+    return TraceService.getDonations(
       trace.id,
       donationsBatch,
       loadFromScratch ? 0 : donations.length,
@@ -163,6 +163,14 @@ const ViewTrace = props => {
       }
     };
   }, [trace]);
+
+  const addNewPendigDonation = newDonation => {
+    if (newDonation) {
+      loadMoreDonations(true).then(() => {
+        setNewDonations(1);
+      });
+    }
+  };
 
   const calculateTraceCurrentBalanceValue = async () => {
     if (
@@ -351,6 +359,7 @@ const ViewTrace = props => {
                       size="large"
                       autoPopup
                       className="header-donate"
+                      afterDonateCb={addNewPendigDonation}
                     />
                   </div>
                 )}
@@ -688,7 +697,10 @@ const ViewTrace = props => {
                               {isActiveTrace() && (
                                 <Row gutter={[16, 16]} justify="end">
                                   <Col xs={24} sm={12} lg={8}>
-                                    <DonateButton {...donateButtonProps} />
+                                    <DonateButton
+                                      {...donateButtonProps}
+                                      afterDonateCb={addNewPendigDonation}
+                                    />
                                   </Col>
                                 </Row>
                               )}
