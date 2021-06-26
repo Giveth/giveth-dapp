@@ -43,7 +43,7 @@ const TransactionModalContent = ({
       Your transaction has been processed.
       <a href={txUrl} target="_blank" rel="noopener noreferrer">
         {' '}
-        View on Etherescan
+        View on Etherscan
       </a>
     </Fragment>
   );
@@ -174,7 +174,7 @@ const TransactionModalContent = ({
         <div className="text-center py-1">
           <Button className="px-5">
             <a href={txUrl} target="_blank" rel="noopener noreferrer">
-              View on Etherescan
+              View on Etherscan
             </a>
           </Button>
         </div>
@@ -201,7 +201,7 @@ TransactionModalContent.propTypes = {
 
 TransactionModalContent.defaultProps = {
   isCommunity: false,
-  msg: 'Something went wrong. Please check transaction details on Etherescan.',
+  msg: 'Something went wrong. Please check transaction details on Etherscan.',
   txUrl: undefined,
   customThanksMessage: undefined,
   closeModal: () => {},
