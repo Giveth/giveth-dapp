@@ -38,6 +38,7 @@ import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
+import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -78,6 +79,9 @@ const DonateButtonModal = props => {
     actions: { donationPending, donationSuccessful, donationFailed },
   } = useContext(NotificationContext);
 
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
   const isCorrectNetwork = isHomeNetwork;
 
   const tokenWhitelistOptions = useMemo(
@@ -101,7 +105,6 @@ const DonateButtonModal = props => {
       tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0] || {},
     [tokenWhitelist],
   );
-
   const [selectedToken, setSelectedToken] = useState({});
   const [isSaving, setSaving] = useState(false);
   const [amount, setAmount] = useState('0');
@@ -591,11 +594,12 @@ const DonateButtonModal = props => {
     return result;
   };
 
-  const submit = () => {
+  const submit = async () => {
     const { adminId, communityId } = model;
 
     const donationOwnerAddress = customAddress || currentUser.address;
-
+    const { rates } = await getConversionRates(new Date(), selectedToken.symbol, 'USD');
+    const usdValue = rates.USD * amount;
     if (allowanceApprovalType.current === AllowanceApprovalType.Clear) {
       DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
         .then(() => {
@@ -609,7 +613,7 @@ const DonateButtonModal = props => {
           setSaving(false);
           setModalVisible(false);
         });
-    } else if (communityId) {
+    } else if (communityId && usdValue > config.minimumUsdValueForDonate3PercentToCommunity) {
       donateToCommunity(
         adminId,
         communityId,
