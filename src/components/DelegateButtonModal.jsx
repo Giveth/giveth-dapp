@@ -287,6 +287,7 @@ class DelegateButtonModal extends Component {
                 placeholder="Select a Campaign"
                 showSearch
                 optionFilterProp="children"
+                disabled={!!traceOnly}
                 value={campaignValue}
                 onSelect={v => this.selectedObject(Campaign.type, { target: { value: [v] } })}
                 style={{ width: '100%' }}
