@@ -7,6 +7,7 @@ import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
+import { Helmet } from 'react-helmet';
 import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
@@ -14,7 +15,7 @@ import AuthenticationWarning from '../AuthenticationWarning';
 import GetDonationsService from '../../services/GetDonationsService';
 import ErrorPopup from '../ErrorPopup';
 import { authenticateUser, checkBalance } from '../../lib/middleware';
-import DonationService from '../../services/DonationService';
+import DonationBlockchainService from '../../services/DonationBlockchainService';
 import confirmationDialog from '../../lib/confirmationDialog';
 
 const etherScanUrl = config.etherscan;
@@ -112,7 +113,7 @@ const MyDonations = () => {
               };
 
               // Reject the delegation of the donation
-              DonationService.reject(donation, userAddress, afterCreate, afterMined);
+              DonationBlockchainService.reject(donation, userAddress, afterCreate, afterMined);
             }
           }),
         )
@@ -168,8 +169,12 @@ const MyDonations = () => {
               };
 
               // Commit the donation's delegation
-              DonationService.commit(donation, userAddress, afterCreate, afterMined, err =>
-                ErrorPopup('Something went wrong.', err),
+              DonationBlockchainService.commit(
+                donation,
+                userAddress,
+                afterCreate,
+                afterMined,
+                err => ErrorPopup('Something went wrong.', err),
               );
             }
           }),
@@ -217,7 +222,7 @@ const MyDonations = () => {
           };
 
           // Refund the donation
-          DonationService.refund(donation, userAddress, afterCreate, afterMined);
+          DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       });
@@ -242,154 +247,159 @@ const MyDonations = () => {
   }, [userAddress]);
 
   return (
-    <div className="container-fluid page-layout dashboard-table-view">
-      <div className="row">
-        <div className="col-md-10 m-auto">
-          {(isLoading || (donations && donations.length > 0)) && <h1>My donations</h1>}
+    <Fragment>
+      <Helmet>
+        <title>My Donations</title>
+      </Helmet>
+      <div className="container-fluid page-layout dashboard-table-view">
+        <div className="row">
+          <div className="col-md-10 m-auto">
+            {(isLoading || (donations && donations.length > 0)) && <h1>My Donations</h1>}
 
-          <ViewNetworkWarning
-            incorrectNetwork={!isForeignNetwork}
-            networkName={config.foreignNetworkName}
-          />
+            <ViewNetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              networkName={config.foreignNetworkName}
+            />
 
-          <AuthenticationWarning />
+            <AuthenticationWarning />
 
-          {isLoading && <Loader className="fixed" />}
+            {isLoading && <Loader className="fixed" />}
 
-          {!isLoading && (
-            <div className="table-container dashboard-table-view">
-              {donations && donations.length > 0 && (
-                <table className="table table-responsive table-striped table-hover">
-                  <thead>
-                    <tr>
-                      {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                      <th className="td-action" />
-                      <th className="td-transaction-status">Status</th>
-                      <th className="td-date">Date</th>
-                      <th className="td-donated-to">Donated to</th>
-                      <th className="td-donations-amount">Amount</th>
-                      <th className="td-tx-address">Address</th>
-                      <th className="td-confirmations">
-                        {donations.some(d => d.isPending) && 'Confirmations'}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {donations.map(d => (
-                      <tr key={d.id} name={d.id} className={d.isPending ? 'pending' : ''}>
-                        <td className="td-actions">
-                          {d.canRefund(currentUser, isForeignNetwork) && (
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-danger"
-                              onClick={() => refund(d)}
-                            >
-                              Refund
-                            </button>
-                          )}
-                          {d.canApproveReject(currentUser, isForeignNetwork) && (
-                            <div>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-success"
-                                onClick={() => commit(d)}
-                              >
-                                Commit
-                              </button>
+            {!isLoading && (
+              <div className="table-container dashboard-table-view">
+                {donations && donations.length > 0 && (
+                  <table className="table table-responsive table-striped table-hover">
+                    <thead>
+                      <tr>
+                        {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                        <th className="td-action" />
+                        <th className="td-transaction-status">Status</th>
+                        <th className="td-date">Date</th>
+                        <th className="td-donated-to">Donated to</th>
+                        <th className="td-donations-amount">Amount</th>
+                        <th className="td-tx-address">Address</th>
+                        <th className="td-confirmations">
+                          {donations.some(d => d.isPending) && 'Confirmations'}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {donations.map(d => (
+                        <tr key={d.id} name={d.id} className={d.isPending ? 'pending' : ''}>
+                          <td className="td-actions">
+                            {d.canRefund(currentUser, isForeignNetwork) && (
                               <button
                                 type="button"
                                 className="btn btn-sm btn-danger"
-                                onClick={() => reject(d)}
+                                onClick={() => refund(d)}
                               >
-                                Reject
+                                Refund
                               </button>
-                            </div>
-                          )}
-                        </td>
-                        <td className="td-transaction-status">
-                          {d.isPending && (
-                            <span>
-                              <i className="fa fa-circle-o-notch fa-spin" />
-                              &nbsp;
-                            </span>
-                          )}
-                          {d.statusDescription}
-                        </td>
-
-                        <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
-
-                        <td className="td-donated-to">
-                          {d.intendedProjectId > 0 && (
-                            <Fragment>
-                              <span className="badge badge-info">
-                                <i className="fa fa-random" />
-                                &nbsp;Delegated
-                              </span>
-                              <span>&nbsp;</span>
-                            </Fragment>
-                          )}
-                          <Link to={d.donatedTo.url}>
-                            {d.donatedTo.type} <em>{d.donatedTo.name}</em>
-                          </Link>
-                        </td>
-                        <td className="td-donations-amount">
-                          {convertEthHelper(d.amountRemaining, d.token.decimals)}{' '}
-                          {d.token && d.token.symbol}
-                        </td>
-
-                        {etherScanUrl && (
-                          <td className="td-tx-address">
-                            <a
-                              href={`${etherScanUrl}address/${d.giverAddress}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {d.giverAddress}
-                            </a>
+                            )}
+                            {d.canApproveReject(currentUser, isForeignNetwork) && (
+                              <div>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success"
+                                  onClick={() => commit(d)}
+                                >
+                                  Commit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger"
+                                  onClick={() => reject(d)}
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            )}
                           </td>
-                        )}
-                        {!etherScanUrl && <td className="td-tx-address">{d.giverAddress}</td>}
+                          <td className="td-transaction-status">
+                            {d.isPending && (
+                              <span>
+                                <i className="fa fa-circle-o-notch fa-spin" />
+                                &nbsp;
+                              </span>
+                            )}
+                            {d.statusDescription}
+                          </td>
 
-                        <td className="td-confirmations">
-                          {donations.some(dn => dn.isPending) &&
-                            `${d.confirmations}/${d.requiredConfirmations}`}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-              {donations && totalResults > itemsPerPage && (
-                <div className="text-center">
-                  <Pagination
-                    activePage={skipPages + 1}
-                    itemsCountPerPage={itemsPerPage}
-                    totalItemsCount={totalResults}
-                    pageRangeDisplayed={visiblePages}
-                    onChange={handlePageChanged}
-                  />
-                </div>
-              )}
+                          <td className="td-date">{moment(d.createdAt).format('MM/DD/YYYY')}</td>
 
-              {donations && donations.length === 0 && (
-                <div>
+                          <td className="td-donated-to">
+                            {d.intendedProjectId > 0 && (
+                              <Fragment>
+                                <span className="badge badge-info">
+                                  <i className="fa fa-random" />
+                                  &nbsp;Delegated
+                                </span>
+                                <span>&nbsp;</span>
+                              </Fragment>
+                            )}
+                            <Link to={d.donatedTo.url}>
+                              {d.donatedTo.type} <em>{d.donatedTo.name}</em>
+                            </Link>
+                          </td>
+                          <td className="td-donations-amount">
+                            {convertEthHelper(d.amountRemaining, d.token.decimals)}{' '}
+                            {d.token && d.token.symbol}
+                          </td>
+
+                          {etherScanUrl && (
+                            <td className="td-tx-address">
+                              <a
+                                href={`${etherScanUrl}address/${d.giverAddress}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {d.giverAddress}
+                              </a>
+                            </td>
+                          )}
+                          {!etherScanUrl && <td className="td-tx-address">{d.giverAddress}</td>}
+
+                          <td className="td-confirmations">
+                            {donations.some(dn => dn.isPending) &&
+                              `${d.confirmations}/${d.requiredConfirmations}`}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                {donations && totalResults > itemsPerPage && (
                   <div className="text-center">
-                    <h3>You didn&apos;t make any donations yet!</h3>
-                    <img
-                      className="empty-state-img"
-                      src={`${process.env.PUBLIC_URL}/img/donation.svg`}
-                      width="200px"
-                      height="200px"
-                      alt="no-donations-icon"
+                    <Pagination
+                      activePage={skipPages + 1}
+                      itemsCountPerPage={itemsPerPage}
+                      totalItemsCount={totalResults}
+                      pageRangeDisplayed={visiblePages}
+                      onChange={handlePageChanged}
                     />
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+
+                {donations && donations.length === 0 && (
+                  <div>
+                    <div className="text-center">
+                      <h3>You didn&apos;t make any donations yet!</h3>
+                      <img
+                        className="empty-state-img"
+                        src={`${process.env.PUBLIC_URL}/img/donation.svg`}
+                        width="200px"
+                        height="200px"
+                        alt="no-donations-icon"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 };
 
