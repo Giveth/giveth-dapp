@@ -214,7 +214,7 @@ class CommunityService {
    * @param onError       Callback function if error is encountered
    */
   static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
-    const find = {
+    const query = {
       query: {
         ownerAddress: userAddress,
         $sort: {
@@ -225,15 +225,10 @@ class CommunityService {
       },
     };
     if (subscribe) {
-      return this.subscribe(find, onSuccess, onError);
+      return this.subscribe(query, onSuccess, onError);
     }
-    return this.getQuery(find, onSuccess, onError);
-  }
-
-  // All queries to communities service goes here
-  static getQuery(find, onSuccess, onError) {
-    communities
-      .find(find)
+    return communities
+      .find(query)
       .then(resp => {
         onSuccess({
           ...resp,

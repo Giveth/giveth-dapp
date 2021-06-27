@@ -16,7 +16,7 @@ import config from '../configuration';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import AmountSliderMarks from './AmountSliderMarks';
 
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -275,7 +275,7 @@ const ModalContent = props => {
       setSaving(false);
     };
 
-    DonationService.delegateMultiple(
+    DonationBlockchainService.delegateMultiple(
       delegations,
       utils.toWei(amount),
       props.trace || props.campaign,

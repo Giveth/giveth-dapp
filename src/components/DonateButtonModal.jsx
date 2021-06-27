@@ -24,7 +24,7 @@ import ErrorPopup from './ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
 
 import config from '../configuration';
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import CommunityService from '../services/CommunityService';
 import { feathersClient } from '../lib/feathersClient';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -166,7 +166,10 @@ const DonateButtonModal = props => {
         // Fetch from network after 1 sec inorder to new allowance value be returned in response
         setTimeout(
           () =>
-            DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
+            DonationBlockchainService.getERC20tokenAllowance(
+              selectedToken.address,
+              currentUser.address,
+            )
               .then(_allowance => {
                 console.log('Allowance:', _allowance);
                 setAllowance(new BigNumber(utils.fromWei(_allowance)));
@@ -421,7 +424,7 @@ const DonateButtonModal = props => {
             const { nonce } = await web3.eth.getTransaction(transactionHash);
             txHash = transactionHash;
 
-            await DonationService.newFeathersDonation(
+            await DonationBlockchainService.newFeathersDonation(
               donationOwner,
               toAdmin,
               amountWei,
@@ -487,7 +490,7 @@ const DonateButtonModal = props => {
             ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
             : amountWei;
         }
-        const allowed = await DonationService.approveERC20tokenTransfer(
+        const allowed = await DonationBlockchainService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser.address,
           allowanceRequired.toString(),
@@ -597,7 +600,7 @@ const DonateButtonModal = props => {
     const donationOwnerAddress = customAddress || currentUser.address;
 
     if (allowanceApprovalType.current === AllowanceApprovalType.Clear) {
-      DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
+      DonationBlockchainService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
         .then(() => {
           setSaving(false);
           setAllowance(new BigNumber(0));

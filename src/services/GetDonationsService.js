@@ -11,7 +11,7 @@ class GetDonationsService {
   }
 
   static getUserDonations({ currentUser, itemsPerPage, skipPages, subscribe, onResult, onError }) {
-    const find = paramsForServer({
+    const query = paramsForServer({
       schema: 'includeTypeDetails',
       query: {
         giverAddress: currentUser.address,
@@ -23,14 +23,14 @@ class GetDonationsService {
     });
 
     if (subscribe) {
-      return this.subscribe(find, onResult, onError);
+      return this.subscribe(query, onResult, onError);
     }
-    return this.getDonations(find, onResult, onError);
+    return this.getDonations(query, onResult, onError);
   }
 
-  static getDonations(find, onResult, onError) {
+  static getDonations(query, onResult, onError) {
     getDonations
-      .find(find)
+      .find(query)
       .then(resp => {
         onResult({
           ...resp,
@@ -40,10 +40,10 @@ class GetDonationsService {
       .catch(onError);
   }
 
-  static subscribe(find, onResult, onError) {
+  static subscribe(query, onResult, onError) {
     this.donationSubscription = getDonations
       .watch({ listStrategy: 'always' })
-      .find(find)
+      .find(query)
       .subscribe(resp => {
         onResult({
           ...resp,

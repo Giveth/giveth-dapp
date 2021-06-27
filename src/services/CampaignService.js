@@ -111,8 +111,7 @@ class CampaignService {
 
       query.updatedAt = { $gt: lastDate };
     }
-    return feathersClient
-      .service('campaigns')
+    return campaigns
       .find({
         query,
       })
@@ -131,9 +130,7 @@ class CampaignService {
       status: Campaign.ACTIVE,
       $sort: { updatedAt: -1 },
     };
-    const result = await feathersClient.service('campaigns').find({
-      query,
-    });
+    const result = await campaigns.find({ query });
     return result.data.map(c => new Campaign(c));
   }
 
@@ -277,7 +274,7 @@ class CampaignService {
    * @param onError     Callback function if error is encountered
    */
   static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
-    const find = {
+    const query = {
       query: {
         $or: [
           { ownerAddress: userAddress },
@@ -293,14 +290,10 @@ class CampaignService {
     };
 
     if (subscribe) {
-      return this.subscribe(find, onSuccess, onError);
+      return this.subscribe(query, onSuccess, onError);
     }
-    return this.getQuery(find, onSuccess, onError);
-  }
-
-  static getQuery(find, onSuccess, onError) {
-    campaigns
-      .find(find)
+    return campaigns
+      .find(query)
       .then(resp => {
         onSuccess({
           ...resp,
@@ -310,10 +303,10 @@ class CampaignService {
       .catch(onError);
   }
 
-  static subscribe(find, onSuccess, onError) {
+  static subscribe(query, onSuccess, onError) {
     this.campaignSubscription = campaigns
       .watch({ listStrategy: 'always' })
-      .find(find)
+      .find(query)
       .subscribe(resp => {
         onSuccess({
           ...resp,

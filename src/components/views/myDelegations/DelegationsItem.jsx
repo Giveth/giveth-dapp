@@ -24,7 +24,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
   } = useContext(Web3Provider);
 
   return (
-    <tr name={donation.id}>
+    <tr>
       <td className="td-actions">
         {/* When donated to a community, allow delegation
                                     to campaigns and traces */}
@@ -81,7 +81,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
       </td>
       <td className="td-user">
         <Link to={`profile/${donation.giverAddress}`}>
-          <Avatar size={30} src={getUserAvatar(donation.giver)} round />
+          <Avatar size={30} src={getUserAvatar(donation.giver)} round className="mr-2" />
           {getUserName(donation.giver)}
         </Link>
       </td>

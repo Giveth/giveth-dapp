@@ -16357,17 +16357,6 @@ react-image-file-resizer@^0.3.10:
   resolved "https://registry.yarnpkg.com/react-image-file-resizer/-/react-image-file-resizer-0.3.11.tgz#5064254a230c310a069866bb3e55b7417a31f495"
   integrity sha512-Xp+gKh+AWApLeM3vygOeeJZV8iNSpQ2YIXdGvnttMzGAkh6TvJbx+dPV214DYW5LVuk7otCMmz1QSBXjvlo9fw==
 
-react-input-token@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/react-input-token/-/react-input-token-1.1.2.tgz#0c7cb7ee76d9bf238d03e7049088f2580cbe8ea1"
-  integrity sha1-DHy37nbZvyONA+cEkIjyWAy+jqE=
-  dependencies:
-    classnames "^2.2.5"
-    gulp-sass "^3.1.0"
-    lodash "^4.17.4"
-    react "^15.4.2"
-    react-spinner "^0.2.7"
-
 react-is@^16.12.0, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"

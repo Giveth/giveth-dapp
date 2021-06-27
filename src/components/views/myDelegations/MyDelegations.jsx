@@ -1,8 +1,9 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
+import { Helmet } from 'react-helmet';
 import Loader from '../../Loader';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import AuthenticationWarning from '../../AuthenticationWarning';
@@ -98,35 +99,40 @@ const MyDelegations = () => {
   const handlePageChanged = newPage => setSkipPages(newPage - 1);
 
   return (
-    <div className="container-fluid page-layout dashboard-table-view">
-      <div className="row">
-        <div className="col-md-10 m-auto">
-          {(isLoading || (delegations && delegations.length > 0)) && <h1>My delegations</h1>}
+    <Fragment>
+      <Helmet>
+        <title>My Delegations</title>
+      </Helmet>
+      <div className="container-fluid page-layout dashboard-table-view">
+        <div className="row">
+          <div className="col-md-10 m-auto">
+            {(isLoading || (delegations && delegations.length > 0)) && <h1>My Delegations</h1>}
 
-          <ViewNetworkWarning
-            incorrectNetwork={!isForeignNetwork}
-            networkName={config.foreignNetworkName}
-          />
-
-          <AuthenticationWarning />
-
-          {isLoading && <Loader className="fixed" />}
-
-          {!isLoading && (
-            <DelegationsTable
-              delegations={delegations}
-              campaigns={projectsInfo.campaigns}
-              traces={projectsInfo.traces}
-              totalResults={totalResults}
-              itemsPerPage={itemsPerPage}
-              skipPages={skipPages}
-              pageRangeDisplayed={visiblePages}
-              handlePageChanged={handlePageChanged}
+            <ViewNetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              networkName={config.foreignNetworkName}
             />
-          )}
+
+            <AuthenticationWarning />
+
+            {isLoading && <Loader className="fixed" />}
+
+            {!isLoading && (
+              <DelegationsTable
+                delegations={delegations}
+                campaigns={projectsInfo.campaigns}
+                traces={projectsInfo.traces}
+                totalResults={totalResults}
+                itemsPerPage={itemsPerPage}
+                skipPages={skipPages}
+                pageRangeDisplayed={visiblePages}
+                handlePageChanged={handlePageChanged}
+              />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 };
 

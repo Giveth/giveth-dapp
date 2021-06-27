@@ -1,18 +1,22 @@
 import React from 'react';
+import { Helmet } from 'react-helmet';
 
 import { history } from '../../lib/helpers';
-import Communities from './Communities';
-import Campaigns from './Campaigns';
+import { CommunitiesRecent } from './Communities';
+import { CampaignsRecent } from './Campaigns';
 import Traces from './Traces';
 
 import JoinGivethCommunity from '../JoinGivethCommunity';
 
 const Explore = () => (
   <div>
+    <Helmet>
+      <title>Giveth Trace</title>
+    </Helmet>
     <JoinGivethCommunity history={history} />
 
-    <Communities onlyRecent />
-    <Campaigns onlyRecent />
+    <CommunitiesRecent />
+    <CampaignsRecent />
     <Traces />
   </div>
 );

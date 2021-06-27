@@ -87,7 +87,7 @@ const RightMenu = () => {
   };
 
   const getUserDelegations = () => {
-    LoadProjectsInfo({ userAddress })
+    LoadProjectsInfo({ userAddress, noTraces: true })
       .then(resArray => {
         const communities = resArray[0].data;
         const campaigns = resArray[1].data.map(c => new Campaign(c));
@@ -105,7 +105,7 @@ const RightMenu = () => {
         }).then();
       })
       .catch(err => {
-        const message = `Unable to load communities, Campaigns or Traces. ${err}`;
+        const message = `Unable to load Communities, Campaigns or Traces. ${err}`;
         ErrorHandler(err, message);
       });
   };

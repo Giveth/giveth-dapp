@@ -4,7 +4,7 @@ import moment from 'moment';
 import config from 'configuration';
 import { Link } from 'react-router-dom';
 import Donation from '../models/Donation';
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import { getUserName, convertEthHelper, getTruncatedText } from '../lib/helpers';
 
 class DonationHistory extends Component {
@@ -57,7 +57,7 @@ class DonationHistory extends Component {
   }
 
   async loadCommittedParents(historyItem) {
-    const parents = await DonationService.getDonationNextCommittedParents(
+    const parents = await DonationBlockchainService.getDonationNextCommittedParents(
       historyItem.parentIds,
       historyItem,
     );

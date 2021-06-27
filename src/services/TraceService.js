@@ -11,7 +11,7 @@ import { feathersClient } from 'lib/feathersClient';
 import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
-import DonationService from 'services/DonationService';
+import DonationBlockchainService from 'services/DonationBlockchainService';
 import { toast } from 'react-toastify';
 import Trace from '../models/Trace';
 import IPFSService from './IPFSService';
@@ -998,7 +998,7 @@ class TraceService {
   static withdraw({ trace, from, onTxHash, onConfirmation, onError }) {
     let txHash;
 
-    Promise.all([getWeb3(), DonationService.getTraceDonations(trace._id)])
+    Promise.all([getWeb3(), DonationBlockchainService.getTraceDonations(trace._id)])
       .then(([web3, data]) => {
         const traceContract = trace.contract(web3);
 
@@ -1016,7 +1016,7 @@ class TraceService {
           .once('transactionHash', hash => {
             txHash = hash;
 
-            DonationService.updateSpentDonations(data.donations)
+            DonationBlockchainService.updateSpentDonations(data.donations)
               .then(() => {
                 if (!data.hasMoreDonations && trace.fullyFunded) {
                   traces

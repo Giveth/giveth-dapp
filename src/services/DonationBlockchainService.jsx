@@ -97,7 +97,7 @@ const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amou
     });
 };
 
-class DonationService {
+class DonationBlockchainService {
   /**
    * Delegate multiple donations to some entity (either Campaign or Trace)
    *
@@ -923,11 +923,11 @@ class DonationService {
       }
       const parents = res.data.map(d => d.parentDonations).flat();
       if (parents.length > 0) {
-        return DonationService.getDonationNextCommittedParents(parents, donation);
+        return DonationBlockchainService.getDonationNextCommittedParents(parents, donation);
       }
     }
     return Promise.resolve([]);
   }
 }
 
-export default DonationService;
+export default DonationBlockchainService;
