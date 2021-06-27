@@ -18,7 +18,7 @@ const { Provider, Consumer } = Context;
 export { Context, Consumer };
 
 // TO DO: This is the minimum transaction view required to:
-// create a Community / Campaign / Milestone / Profile
+// create a Community / Campaign / Trace / Profile
 React.minimumWalletBalance = 0.01;
 React.minimumWalletBalanceInWei = new BigNumber(utils.toWei('0.01'));
 

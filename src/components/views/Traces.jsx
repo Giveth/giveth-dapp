@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 import TraceCard from '../TraceCard';
 import Loader from '../Loader';
 import LoadMore from '../LoadMore';
@@ -99,3 +100,14 @@ Traces.propTypes = {
 Traces.defaultProps = { step: 20 };
 
 export default Traces;
+
+export const TracesExplore = props => {
+  return (
+    <div>
+      <Helmet>
+        <title>Traces</title>
+      </Helmet>
+      <Traces {...props} />
+    </div>
+  );
+};
