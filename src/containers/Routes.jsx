@@ -16,9 +16,9 @@ import MyCampaigns from '../components/views/MyCampaigns';
 import MyTraces from '../components/views/MyTraces';
 import NotFound from '../components/views/NotFound';
 import Explore from '../components/views/Explore';
-import Traces from '../components/views/Traces';
-import Campaigns from '../components/views/Campaigns';
-import Communities from '../components/views/Communities';
+import { TracesExplore } from '../components/views/Traces';
+import { CampaignsExplore } from '../components/views/Campaigns';
+import { CommunitiesExplore } from '../components/views/Communities';
 
 import ViewCampaign from '../components/views/ViewCampaign';
 import EditTraceOld from '../components/views/EditTraceOld';
@@ -320,10 +320,10 @@ const Routes = () => {
       />
       <Route exact path="/profile/:userAddress" render={props => <Profile {...props} />} />
       <Route exact path="/" render={props => <Explore {...props} />} />
-      <Route exact path="/traces" render={props => <Traces {...props} />} />
+      <Route exact path="/traces" render={props => <TracesExplore {...props} />} />
       <Route exact path="/milestones" render={() => <Redirect to="/traces" />} />
-      <Route exact path="/campaigns" render={() => <Campaigns />} />
-      <Route exact path="/communities" render={() => <Communities />} />
+      <Route exact path="/campaigns" render={() => <CampaignsExplore />} />
+      <Route exact path="/communities" render={() => <CommunitiesExplore />} />
       <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
       <Route component={NotFound} />
     </Switch>

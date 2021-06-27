@@ -71,8 +71,8 @@ const Application = () => {
   return (
     <ErrorBoundary>
       {/* Header stuff goes here */}
-      {config.analytics.useHotjar && window.location.origin.includes('trace') && (
-        <Helmet>
+      <Helmet>
+        {config.analytics.useHotjar && window.location.origin.includes('trace') && (
           <script>{`
             (function(h,o,t,j,a,r){
               h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
@@ -83,8 +83,9 @@ const Application = () => {
               a.appendChild(r);
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
           `}</script>
-        </Helmet>
-      )}
+        )}
+        <title>Giveth Trace</title>
+      </Helmet>
 
       <Router history={history}>
         <WhiteListProvider>

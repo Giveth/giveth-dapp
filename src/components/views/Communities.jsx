@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 import CommunityCard from '../CommunityCard';
 import Loader from '../Loader';
 import CommunityService from '../../services/CommunityService';
@@ -103,4 +104,17 @@ Communities.propTypes = {
 
 Communities.defaultProps = { step: 20, onlyRecent: false };
 
-export default Communities;
+export const CommunitiesRecent = props => {
+  return <Communities onlyRecent {...props} />;
+};
+
+export const CommunitiesExplore = props => {
+  return (
+    <div>
+      <Helmet>
+        <title>Communities</title>
+      </Helmet>
+      <Communities {...props} />
+    </div>
+  );
+};
