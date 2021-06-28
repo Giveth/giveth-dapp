@@ -10,7 +10,7 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 - [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
-  - [Prerequisities](#prerequisities)
+  - [Prerequisites](#prerequisites)
   - [Install](#install)
     - [OSX and Linux](#osx-and-linux)
     - [Windows](#windows)
@@ -28,9 +28,9 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 ## Getting Started
 In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
 
-#### Prerequisities
+#### Prerequisites
 - You need to use NodeJS v10 LTS.
-- You need to use latest version of yarn to correctly install the dependencies.
+- You need to use the latest version of yarn to correctly install the dependencies.
 - You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 ### Install
@@ -41,7 +41,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
 
 #### OSX and Linux
-If your operative system is any distrubution of linux you can use an All in One installation scripts special thanks to Dapp contributor Jurek Brisbane, available [here](https://github.com/Giveth/giveth-dapp/files/3674808/givethBuildStartScripts_2019-09-29.zip) along with a youtube [video](https://www.youtube.com/watch?v=rzLhxxAz73k&feature=youtu.be), otherwise try the following:
+If your operative system is any distribution of linux you can use an All-in-One installation scripts special thanks to Dapp contributor Jurek Brisbane, available [here](https://github.com/Giveth/giveth-dapp/files/3674808/givethBuildStartScripts_2019-09-29.zip) along with a youtube [video](https://www.youtube.com/watch?v=rzLhxxAz73k&feature=youtu.be), otherwise try the following:
 
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
     ```
@@ -55,19 +55,19 @@ If your operative system is any distrubution of linux you can use an All in One 
     ```
     cd giveth-dapp
     ```
-3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
+3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and the latest version of [yarn](https://yarnpkg.com/) installed.
 4. Install dependencies from within giveth-dapp directory:
     ```
-    npm install
+    yarn install
     ```
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Install Microsoft Visual Studio 2017 (double check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
+1. Install Microsoft Visual Studio 2017 (double-check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
 2. After downloading, install the packages marked from this [image](./VSstudio.png).
 3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS).
 4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
-5. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
+5. Open the command line in administrator mode by right-clicking on the cmd.exe application and selecting "Run as administrator"
 6. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
@@ -137,7 +137,7 @@ REACT_APP_BLOCKEXPLORER='www.awesomeopensourceexplorer.io'
 The rest of the configuration can be found in `configuration.js`
 
 ### Analytics
-Google analytics and Hotjar can be enabled per environment:
+Google Analytics and Hotjar can be enabled per environment:
 ```
     analytics: {
       ga_UA: 'UA-12345678-1',     // Your Google Analytics tracking code
