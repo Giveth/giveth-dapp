@@ -29,7 +29,7 @@ class LeaderBoardItem extends Component {
   }
 
   render() {
-    const { d, rank, useAmountRemaining, isNew, hasNew } = this.props;
+    const { d, rank, useAmountRemaining, isNew } = this.props;
     const { donations, totalAmount, giver } = d;
     const { showDetails } = this.state;
     const roundTotalAmount = roundBigNumber(totalAmount, 2).toFixed();
@@ -42,19 +42,6 @@ class LeaderBoardItem extends Component {
           className={showDetails ? 'donation-item' : ''}
           onClick={this.toggleDetail}
         >
-          {hasNew && (
-            <td className="text-center">
-              {isNew && (
-                <div
-                  style={{
-                    borderRadius: '50%',
-                    border: '4px solid #5191F6',
-                    display: 'inline-block',
-                  }}
-                />
-              )}
-            </td>
-          )}
           <td className="toggle-details">
             <button type="button" className="btn btn-sm">
               <i className={showDetails ? 'fa fa-minus' : 'fa fa-plus'} />
@@ -95,12 +82,10 @@ LeaderBoardItem.propTypes = {
   rank: PropTypes.number.isRequired,
   useAmountRemaining: PropTypes.bool.isRequired,
   isNew: PropTypes.bool,
-  hasNew: PropTypes.bool,
 };
 
 LeaderBoardItem.defaultProps = {
   isNew: false,
-  hasNew: false,
 };
 
 const LeaderBoard = props => {
@@ -121,15 +106,11 @@ const LeaderBoard = props => {
             <table className="table table-hover mt-1">
               <thead>
                 <tr>
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  {!!newDonations && <th style={{ width: '35px' }} />}
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <th className="td-toggle" />
+                  <th className="td-toggle">&nbsp;</th>
                   <th className="td-rank">Rank</th>
                   <th className="td-person">Person</th>
                   <th className="td-donations-amount">Total Donated</th>
-                  {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <th className="td-donation-status" />
+                  <th className="td-donation-status">&nbsp;</th>
                   <th className="td-comment">Comment</th>
                 </tr>
               </thead>
