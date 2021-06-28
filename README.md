@@ -30,7 +30,7 @@ In the following sections you will learn all you need to know to run the DApp lo
 
 #### Prerequisites
 - You need to use NodeJS v10 LTS.
-- You need to use the latest version of yarn to correctly install the dependencies.
+- You need to use yarn (v1.22.10 or higher) to correctly install the dependencies.
 - You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 ### Install
@@ -55,7 +55,7 @@ If your operative system is any distribution of linux you can use an All-in-One 
     ```
     cd giveth-dapp
     ```
-3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and the latest version of [yarn](https://yarnpkg.com/) installed.
+3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and [yarn](https://yarnpkg.com/) (v1.22.10 or higher) installed.
 4. Install dependencies from within giveth-dapp directory:
     ```
     yarn install
