@@ -81,27 +81,28 @@ const ViewCampaign = ({ match }) => {
   const loadMoreAggregateDonations = (
     loadFromScratch = false,
     donationsBatch = donationsPerBatch,
+    firstLoad = false,
   ) => {
     setLoadingDonations(true);
-    AggregateDonationService.get(
+    return AggregateDonationService.get(
       campaign.id,
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        let nDonations;
-        if (loadFromScratch) {
-          nDonations = _donations.map(item => {
-            const _item = aggregateDonations.find(
-              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
-            );
-            if (_item) {
-              item.isNew = true;
-              return item;
+        if (loadFromScratch && !firstLoad) {
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < _donations.length; i++) {
+            const donate = _donations[i];
+            // TODO if doner is New!
+            const _donate = aggregateDonations.find(element => element._id === donate._id);
+            if (!_donate || (_donate && _donate.count !== donate.count)) {
+              console.log('new Donation founds', _donate);
+              donate.isNew = true;
             }
-            return item;
-          });
+          }
         }
-        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
+        console.log('_donations :>> ', _donations);
+        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
@@ -110,6 +111,15 @@ const ViewCampaign = ({ match }) => {
         ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
       },
     );
+  };
+
+  const addNewPendigDonation = newDonation => {
+    console.log('newDonation :>> ', newDonation);
+    if (newDonation) {
+      loadMoreAggregateDonations(true).then(() => {
+        setNewDonations(1);
+      });
+    }
   };
 
   const loadMoreTraces = (loadFromScratch = false, query) => {
@@ -176,7 +186,7 @@ const ViewCampaign = ({ match }) => {
     if (campaign.id && donationsObserver.current === undefined) {
       loadMoreTraces(true);
       loadDonations(campaign.id);
-      loadMoreAggregateDonations(true);
+      loadMoreAggregateDonations(true, undefined, true);
       // subscribe to donation count
       donationsObserver.current = CampaignService.subscribeNewDonations(
         campaign.id,
@@ -302,6 +312,7 @@ const ViewCampaign = ({ match }) => {
                           autoPopup
                           className="header-donate"
                           size="large"
+                          afterDonateCb={addNewPendigDonation}
                         />
                       </div>
                     )}
@@ -388,6 +399,7 @@ const ViewCampaign = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                   }}
                                   size="large"
+                                  afterDonateCb={addNewPendigDonation}
                                 />
                               </Col>
                             </Row>
@@ -440,6 +452,7 @@ const ViewCampaign = ({ match }) => {
                                       },
                                     }}
                                     size="large"
+                                    afterDonateCb={addNewPendigDonation}
                                   />
                                 </Col>
                               </Fragment>
@@ -526,6 +539,7 @@ const ViewCampaign = ({ match }) => {
                                     },
                                   }}
                                   size="large"
+                                  afterDonateCb={addNewPendigDonation}
                                 />
                               </Col>
                             )}
