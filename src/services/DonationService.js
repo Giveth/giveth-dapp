@@ -5,7 +5,7 @@ import Donation from '../models/Donation';
 
 const getDonations = feathersClient.service('donations');
 
-class GetDonationsService {
+class DonationService {
   constructor() {
     this.donationSubscription = null;
   }
@@ -59,4 +59,4 @@ class GetDonationsService {
   }
 }
 
-export default GetDonationsService;
+export default DonationService;

@@ -12,7 +12,7 @@ import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
-import GetDonationsService from '../../services/GetDonationsService';
+import DonationService from '../../services/DonationService';
 import ErrorPopup from '../ErrorPopup';
 import { authenticateUser, checkBalance } from '../../lib/middleware';
 import DonationBlockchainService from '../../services/DonationBlockchainService';
@@ -42,7 +42,7 @@ const MyDonations = () => {
   const userAddress = currentUser.address;
 
   const getUserDonations = () => {
-    GetDonationsService.getUserDonations({
+    DonationService.getUserDonations({
       currentUser,
       itemsPerPage,
       skipPages,
@@ -229,7 +229,7 @@ const MyDonations = () => {
     });
   };
 
-  const cleanup = () => GetDonationsService.unsubscribe();
+  const cleanup = () => DonationService.unsubscribe();
 
   useEffect(() => {
     if (userAddress) {

@@ -1,7 +1,7 @@
 import { paramsForServer } from 'feathers-hooks-common';
 
 import Donation from '../../../models/Donation';
-import GetDonationsService from '../../../services/GetDonationsService';
+import DonationService from '../../../services/DonationService';
 
 const GetDonations = async ({
   userAddress,
@@ -48,9 +48,9 @@ const GetDonations = async ({
     });
 
     if (subscribe) {
-      return GetDonationsService.subscribe(query, onResult, onError);
+      return DonationService.subscribe(query, onResult, onError);
     }
-    return GetDonationsService.getDonations(query, onResult, onError);
+    return DonationService.getDonations(query, onResult, onError);
   }
   return null;
 };

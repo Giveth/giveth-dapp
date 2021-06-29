@@ -13,7 +13,7 @@ import Trace from '../../../models/Trace';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
-import GetDonationsService from '../../../services/GetDonationsService';
+import DonationService from '../../../services/DonationService';
 
 /**
  * The my delegations view
@@ -78,7 +78,7 @@ const MyDelegations = () => {
     [userAddress, projectsInfo, itemsPerPage, skipPages],
   );
 
-  const cleanup = () => GetDonationsService.unsubscribe();
+  const cleanup = () => DonationService.unsubscribe();
 
   useEffect(() => {
     if (userAddress) {

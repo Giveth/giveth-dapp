@@ -11,7 +11,7 @@ import { signUpSwal } from '../../../lib/helpers';
 import MenuBarCreateButton from '../../MenuBarCreateButton';
 import TotalGasPaid from '../../views/TotalGasPaid';
 import TraceService from '../../../services/TraceService';
-import GetDonationsService from '../../../services/GetDonationsService';
+import DonationService from '../../../services/DonationService';
 import ErrorPopup from '../../ErrorPopup';
 import Trace from '../../../models/Trace';
 import LoadProjectsInfo from '../../views/myDelegations/LoadProjectsInfo';
@@ -72,7 +72,7 @@ const RightMenu = () => {
   };
 
   const getUserDonations = () => {
-    GetDonationsService.getUserDonations({
+    DonationService.getUserDonations({
       currentUser,
       itemsPerPage: 0,
       skipPages: 0,
