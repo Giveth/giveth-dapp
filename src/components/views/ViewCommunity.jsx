@@ -73,33 +73,31 @@ const ViewCommunity = ({ match }) => {
   const loadMoreAggregateDonations = (
     loadFromScratch = false,
     donationsBatch = donationsPerBatch,
+    firstLoad = false,
   ) => {
     setLoadingDonations(true);
-    AggregateDonationService.get(
+    return AggregateDonationService.get(
       community.id,
       donationsBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
-        let nDonations;
-        if (loadFromScratch) {
-          nDonations = _donations.map(item => {
-            const _item = aggregateDonations.find(
-              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
-            );
-            if (_item) {
-              item.isNew = true;
-              return item;
+        if (loadFromScratch && !firstLoad) {
+          // eslint-disable-next-line no-plusplus
+          for (let i = 0; i < _donations.length; i++) {
+            const donate = _donations[i];
+            const _donate = aggregateDonations.find(element => element._id === donate._id);
+            if (!_donate || (_donate && _donate.count !== donate.count)) {
+              donate.isNew = true;
             }
-            return item;
-          });
+          }
         }
-        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
-        setAggregateDonationsTotal(_donationsTotal);
+        setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
+        setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
       },
       err => {
         setLoadingDonations(false);
-        ErrorHandler(err, 'Some error on fetching donations, please try again later');
+        ErrorHandler(err, 'Some error on fetching community donations, please try later');
       },
     );
   };
@@ -118,6 +116,14 @@ const ViewCommunity = ({ match }) => {
         },
         Donation.WAITING,
       );
+    }
+  };
+
+  const addNewPendigDonation = newDonation => {
+    if (newDonation) {
+      loadMoreAggregateDonations(true).then(() => {
+        setNewDonations(1);
+      });
     }
   };
 
@@ -151,7 +157,7 @@ const ViewCommunity = ({ match }) => {
         );
         setCampaigns(relatedCampaigns);
         setLoadingCampaigns(false);
-        loadMoreAggregateDonations(true);
+        loadMoreAggregateDonations(true, undefined, true);
         loadDonations(community.id);
         // subscribe to donation count
         donationsObserver.current = CommunityService.subscribeNewDonations(
@@ -256,6 +262,7 @@ const ViewCommunity = ({ match }) => {
                       }}
                       autoPopup
                       size="large"
+                      afterDonateCb={addNewPendigDonation}
                     />
                   </div>
                 )}
@@ -330,6 +337,7 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
+                                  afterDonateCb={addNewPendigDonation}
                                 />
                               </Col>
                             </Row>
@@ -362,6 +370,7 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
+                                  afterDonateCb={addNewPendigDonation}
                                 />
                               </Col>
                             </Row>
@@ -388,6 +397,7 @@ const ViewCommunity = ({ match }) => {
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
                                   }}
+                                  afterDonateCb={addNewPendigDonation}
                                 />
                               </Col>
                             </Row>
