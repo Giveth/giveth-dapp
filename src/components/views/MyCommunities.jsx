@@ -2,7 +2,6 @@ import React, { Fragment, useContext, useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 import { Helmet } from 'react-helmet';
-import ErrorPopup from '../ErrorPopup';
 
 import { checkBalance } from '../../lib/middleware';
 import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
@@ -14,6 +13,7 @@ import Community from '../../models/Community';
 import AuthenticationWarning from '../AuthenticationWarning';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * The my communities view
@@ -30,17 +30,17 @@ const MyCommunities = () => {
   const [communities, setCommunities] = useState();
   const [skipPages, setSkipPages] = useState(0);
 
-  let communitiesObserver = useRef().current;
+  const communitiesObserver = useRef();
 
   const visiblePages = 10;
   const itemsPerPage = 2;
 
   const cleanup = () => {
-    if (communitiesObserver) communitiesObserver.unsubscribe();
+    if (communitiesObserver.current) communitiesObserver.current.unsubscribe();
   };
 
   const loadCommunities = _skipPages => {
-    communitiesObserver = CommunityService.getUserCommunities(
+    communitiesObserver.current = CommunityService.getUserCommunities(
       currentUser.address,
       _skipPages >= 0 ? _skipPages : skipPages,
       itemsPerPage,
@@ -50,7 +50,7 @@ const MyCommunities = () => {
       },
       err => {
         setLoading(false);
-        ErrorPopup('Something went wrong on fetching Communities!', err);
+        ErrorHandler(err, 'Something went wrong on fetching Communities.');
       },
     );
   };
@@ -68,9 +68,9 @@ const MyCommunities = () => {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
+          ErrorHandler(err, 'There is no balance left on the account.', true);
         } else if (err !== undefined) {
-          ErrorPopup('Something went wrong on getting balance.', err);
+          ErrorHandler(err, 'Something went wrong on getting balance.');
         }
       });
   };
