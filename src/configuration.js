@@ -51,6 +51,7 @@ const configurations = {
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
     defaultCommunityId: 0,
+    minimumUsdValueForDonate3PercentToCommunity: 1,
   },
   develop: {
     title: 'develop',
@@ -81,6 +82,7 @@ const configurations = {
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
     defaultCommunityId: 156,
+    minimumUsdValueForDonate3PercentToCommunity: 10,
   },
   release: {
     title: 'release',
@@ -110,6 +112,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
+    minimumUsdValueForDonate3PercentToCommunity: 50,
   },
   trace: {
     title: 'trace',
@@ -137,6 +140,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
+    minimumUsdValueForDonate3PercentToCommunity: 50,
     defaultCommunityId: 5, // Giveth Community
   },
 };

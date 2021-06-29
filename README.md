@@ -10,7 +10,7 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 
 - [Table of content](#table-of-content)
 - [Getting Started](#getting-started)
-    - [Prerequisities](#prerequisities)
+  - [Prerequisites](#prerequisites)
   - [Install](#install)
     - [OSX and Linux](#osx-and-linux)
     - [Windows](#windows)
@@ -28,25 +28,26 @@ Welcome to the code for Giveth's DApp. This is an open source effort to realize 
 ## Getting Started
 In the following sections you will learn all you need to know to run the DApp locally and to start contributing. All the steps are also described in this amazing [Video Tutorial Walkthrough](https://tinyurl.com/y9lx6jrl) by Oz.
 
-#### Prerequisities
-- You need to use Node > v8, however, v10 does not work correctly yet.
-- You need to use npm > v5.4, or yarn > v1.6 to correctly install the dependencies.
+#### Prerequisites
+- You need to use NodeJS v10 LTS.
+- You need to use yarn (v1.22.10 or higher) to correctly install the dependencies.
+- You need to have [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 ### Install
 1. Click **Star** on this repo near the top-right corner of this web page (if you want to).
-2. Join us on [Element](http://join.giveth.io) if you haven't already.
+2. Join us on [Element](http://join.giveth.io) or [Discord](https://discord.gg/Uq2TaXP9bC) if you haven't already.
 3. Fork this repo by clicking **Fork** button in top-right corner of this web page. Continue to follow instruction steps from your own giveth-dapp repo.
 4. Clone your own "giveth-dapp" repo. Copy the link from the "Clone or download" button near the top right of this repo's home page.
 5. The rest of these steps must be done from your machine's command line. See the [OSX and Linux](#for-osx-and-linux) or [Windows](#for-windows) section to continue.
 
 #### OSX and Linux
-If your operative system is any distrubution of linux you can use an All in One installation scripts special thanks to Dapp contributor Jurek Brisbane, available [here](https://github.com/Giveth/giveth-dapp/files/3674808/givethBuildStartScripts_2019-09-29.zip) along with a youtube [video](https://www.youtube.com/watch?v=rzLhxxAz73k&feature=youtu.be), otherwise try the following:
+If your operative system is any distribution of linux you can use an All-in-One installation scripts special thanks to Dapp contributor Jurek Brisbane, available [here](https://github.com/Giveth/giveth-dapp/files/3674808/givethBuildStartScripts_2019-09-29.zip) along with a youtube [video](https://www.youtube.com/watch?v=rzLhxxAz73k&feature=youtu.be), otherwise try the following:
 
 1. From the desired directory you wish to copy the "giveth-dapp" folder with source files to.
     ```
     git clone {paste your own repo link here}
     ```
-    NOTE: Please use `develop` branch for contributing.
+   NOTE: Please use `develop` branch for contributing.
     ```
     git clone -b develop {paste your own repo link here}
     ```
@@ -54,42 +55,32 @@ If your operative system is any distrubution of linux you can use an All in One 
     ```
     cd giveth-dapp
     ```
-3. Make sure you have [NodeJS](https://nodejs.org/) (v8.4.0 or higher) and [npm](https://www.npmjs.com/) (5.4.1 or higher) installed.
+3. Make sure you have [NodeJS](https://nodejs.org/) (v10) and [yarn](https://yarnpkg.com/) (v1.22.10 or higher) installed.
 4. Install dependencies from within giveth-dapp directory:
     ```
-    npm install
+    yarn install
     ```
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Make sure you have the LTS version of [64-bit NodeJS](https://nodejs.org/en/download/current) (v8.9.1)
-2. Run the node-v8.9.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
-3. Open the command line in administrator mode by right clicking on the cmd.exe application and selecting "Run as administrator"
-4. In the administrator command prompt, change to the directory where you want to store this repository.
+1. Install Microsoft Visual Studio 2017 (double-check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
+2. After downloading, install the packages marked from this [image](./VSstudio.png).
+3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS).
+4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
+5. Open the command line in administrator mode by right-clicking on the cmd.exe application and selecting "Run as administrator"
+6. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
    ```
-5. Update npm to the latest version (in order to make sure the next step has the latest dependencies to install) with:
+7. Double-check the node version with CMD command:
    ```
-   npm install npm@latest -g
+   node -v
    ```
-6. You must install the NodeJS/NPM dependcies for Windows before you are able to continue. This command will take a few minutes to install all of the necessary dependencies for building NodeJS applications on Windows.
+8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install", you should first delete "node modules" folder.
    ```
-   npm install -g windows-build-tools
+   yarn install
    ```
-7. Install dependencies from within giveth-dapp directory:
-    ```
-    npm install
-    ```
-8. For some reason the npm node-sass package does not install correctly in windows when using the 'npm install' command, so you must rebuild the node-sass package with:
-   ```
-   npm rebuild node-sass
-   ```
-9. The web3 package does not install correctly when using the 'npm install' command, so you must install it separately in order for this dapp to run. Use the following to install web3:
-   ```
-   npm install web3
-   ```
-10. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+9. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further. Alternatively, you could change the configuration to connect to the `develop` environment, see the [Configuration](#configuration) section.
@@ -101,14 +92,14 @@ If your operative system is any distrubution of linux you can use an All in One 
 4. For testing locally, choose any of the wallet files found in the `giveth-dapp/keystores/` folder using the wallet password: `password`. **DO NOT USE THESE ON ANY MAINNET EVMs.**
 
 5. Using the test token
-  To use the test token you need to import the keystore.json you use for your account to MetaMask.
-  After importing, click on 'Add token' > 'Custom token' and enter the MiniMe Token address that can be found when deploying the contracts
-  (should be `0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab` by default but make sure to check)
-  The token balance should show up automatically and the token symbol is MMT.
-  However, in the dApp the token symbol is referred to as ANT, b/c the dapp needs to be able to fetch a conversion rate.
+   To use the test token you need to import the keystore.json you use for your account to MetaMask.
+   After importing, click on 'Add token' > 'Custom token' and enter the MiniMe Token address that can be found when deploying the contracts
+   (should be `0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab` by default but make sure to check)
+   The token balance should show up automatically, and the token symbol is MMT.
+   However, in the dApp the token symbol is referred to as ANT, b/c the dapp needs to be able to fetch a conversion rate.
 
-  NOTE: 
-  When resetting feathers or redeploying the contracts, you need to remove the keystore from metamask and follow this procedure again.
+NOTE:
+When resetting feathers or redeploying the contracts, you need to remove the keystore from metamask and follow this procedure again.
 
 ### Build
 ```
@@ -146,7 +137,7 @@ REACT_APP_BLOCKEXPLORER='www.awesomeopensourceexplorer.io'
 The rest of the configuration can be found in `configuration.js`
 
 ### Analytics
-Google analytics and Hotjar can be enabled per environment:
+Google Analytics and Hotjar can be enabled per environment:
 ```
     analytics: {
       ga_UA: 'UA-12345678-1',     // Your Google Analytics tracking code
@@ -157,7 +148,7 @@ Google analytics and Hotjar can be enabled per environment:
 
 The following events are tracked with Google Analytics:
 - pageviews
-- signup 
+- signup
 - signin
 - creation of Communities/Campaigns/Traces
 - editing of Communities/Campaigns/Traces
@@ -223,9 +214,9 @@ Name | Blockchain | Branch Deployed | Auto Deploy | Use |
 You can change the environment to which the DApp connects through the node environment variables. See the [Configuration](#Configuration) section for more details.
 
 ### Release Process
-The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release 
+The development uses the Gitflow process with 2 weeks long sprints. This means there is new release to be tested every fortnight. We invite contributors to help us test the DApp in the release
 environment before we merge it to the master branch and deploy to production environments. If you are interested, write to the DApp Development channel on [Element
 ](https://join.giveth.io). You can read more about the release planning on [our wiki](https://wiki.giveth.io/documentation/DApp/product-development-testing/).
 
 ## Help
-Reach out to us on [Element](https://join.giveth.io) for any help or to share ideas.
+Reach out to us on [Element](https://join.giveth.io) or [Discord](https://discord.gg/Uq2TaXP9bC) for any help or to share ideas.
