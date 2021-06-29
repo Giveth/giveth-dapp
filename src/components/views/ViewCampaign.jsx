@@ -93,15 +93,12 @@ const ViewCampaign = ({ match }) => {
           // eslint-disable-next-line no-plusplus
           for (let i = 0; i < _donations.length; i++) {
             const donate = _donations[i];
-            // TODO if doner is New!
             const _donate = aggregateDonations.find(element => element._id === donate._id);
             if (!_donate || (_donate && _donate.count !== donate.count)) {
-              console.log('new Donation founds', _donate);
               donate.isNew = true;
             }
           }
         }
-        console.log('_donations :>> ', _donations);
         setAggregateDonations(loadFromScratch ? _donations : aggregateDonations.concat(_donations));
         setAggregateDonationsTotal(_donationsTotal || 0);
         setLoadingDonations(false);
@@ -114,7 +111,6 @@ const ViewCampaign = ({ match }) => {
   };
 
   const addNewPendigDonation = newDonation => {
-    console.log('newDonation :>> ', newDonation);
     if (newDonation) {
       loadMoreAggregateDonations(true).then(() => {
         setNewDonations(1);
