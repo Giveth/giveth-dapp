@@ -51,11 +51,11 @@ const RightMenu = () => {
         setSelectedKeys('Manage:1');
         break;
 
-      case pathname === '/donations':
+      case pathname === '/my-donations':
         setSelectedKeys('Manage:2');
         break;
 
-      case pathname === '/delegations':
+      case pathname === '/my-delegations':
         setSelectedKeys('Manage:3');
         break;
 
@@ -84,10 +84,10 @@ const RightMenu = () => {
             <Link to="/my-traces">My Traces</Link>
           </Menu.Item>
           <Menu.Item key="Manage:2">
-            <Link to="/donations">My Donations</Link>
+            <Link to="/my-donations">My Donations</Link>
           </Menu.Item>
           <Menu.Item key="Manage:3">
-            <Link to="/delegations">My Delegations</Link>
+            <Link to="/my-delegations">My Delegations</Link>
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
             <Menu.Item key="Manage:4">

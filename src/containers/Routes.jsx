@@ -32,14 +32,10 @@ import EditBounty from '../components/views/EditBounty';
 import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
 import EditMilestone from '../components/views/EditMilestone';
-import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
 
 const Routes = () => {
-  const {
-    state: { currentUser },
-  } = useContext(UserContext);
   const {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
@@ -81,8 +77,8 @@ const Routes = () => {
         path={getViewEntityPathsList('/dac/:slug')}
         render={({ match }) => <Redirect to={`/community/${match.params.slug}`} />}
       />
-      <Route exact path="/campaigns/new" render={props => <EditCampaign isNew {...props} />} />
-      <Route exact path="/campaigns/:id/edit" render={props => <EditCampaign {...props} />} />
+      <Route exact path="/campaigns/new" render={() => <EditCampaign />} />
+      <Route exact path="/campaigns/:id/edit" render={() => <EditCampaign />} />
       <Route
         exact
         path={getViewEntityPathsList('/campaigns/:id')}
@@ -193,13 +189,9 @@ const Routes = () => {
         path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
-      <Route exact path="/donations" render={() => <Donations />} />
-      <Route exact path="/delegations" render={() => <Delegations />} />
-      <Route
-        exact
-        path="/my-communities"
-        render={() => <MyCommunities currentUser={currentUser} balance={balance} />}
-      />
+      <Route exact path="/my-donations" render={() => <Donations />} />
+      <Route exact path="/my-delegations" render={() => <Delegations />} />
+      <Route exact path="/my-communities" render={() => <MyCommunities />} />
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
       <Route exact path="/my-campaigns" render={() => <MyCampaigns />} />
       <Route exact path="/my-traces" render={() => <MyTraces />} />

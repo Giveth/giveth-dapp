@@ -75,8 +75,7 @@ const MyTraces = () => {
           setLoading(false);
         },
         onError: err => {
-          ErrorPopup('Something went wrong.', err);
-          // TODO: handle error here in view
+          ErrorPopup('Something went wrong on fetching Traces!', err);
           setLoading(false);
         },
       });

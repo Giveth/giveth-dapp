@@ -1,8 +1,6 @@
-import React, { Component, Fragment } from 'react';
-import PropTypes from 'prop-types';
+import React, { Fragment, useContext, useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
-import { utils } from 'web3';
 import { Helmet } from 'react-helmet';
 import ErrorPopup from '../ErrorPopup';
 
@@ -11,65 +9,60 @@ import { getTruncatedText, convertEthHelper, history } from '../../lib/helpers';
 
 import Loader from '../Loader';
 
-import User from '../../models/User';
 import CommunityService from '../../services/CommunityService';
 import Community from '../../models/Community';
 import AuthenticationWarning from '../AuthenticationWarning';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 
 /**
  * The my communities view
  */
-class MyCommunities extends Component {
-  constructor() {
-    super();
+const MyCommunities = () => {
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
+  const {
+    state: { balance },
+  } = useContext(Web3Context);
 
-    this.state = {
-      isLoading: true,
-      communities: {},
-      visiblePages: 10,
-      skipPages: 0,
-      itemsPerPage: 50,
-    };
+  const [isLoading, setLoading] = useState(true);
+  const [communities, setCommunities] = useState();
+  const [skipPages, setSkipPages] = useState(0);
 
-    this.editCommunity = this.editCommunity.bind(this);
-    this.handlePageChanged = this.handlePageChanged.bind(this);
-  }
+  let communitiesObserver = useRef().current;
 
-  componentDidMount() {
-    if (this.props.currentUser) {
-      this.loadCommunities();
-    }
-  }
+  const visiblePages = 10;
+  const itemsPerPage = 2;
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.currentUser !== this.props.currentUser) {
-      // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({ isLoading: true });
-      if (this.communitiesObserver) this.communitiesObserver.unsubscribe();
-      this.loadCommunities();
-    }
-  }
+  const cleanup = () => {
+    if (communitiesObserver) communitiesObserver.unsubscribe();
+  };
 
-  componentWillUnmount() {
-    if (this.communitiesObserver) this.communitiesObserver.unsubscribe();
-  }
-
-  handlePageChanged(newPage) {
-    this.setState({ skipPages: newPage - 1 }, () => this.loadCommunities());
-  }
-
-  loadCommunities() {
-    this.communitiesObserver = CommunityService.getUserCommunities(
-      this.props.currentUser.address,
-      this.state.skipPages,
-      this.state.itemsPerPage,
-      communities => this.setState({ communities, isLoading: false }),
-      () => this.setState({ isLoading: false }),
+  const loadCommunities = _skipPages => {
+    communitiesObserver = CommunityService.getUserCommunities(
+      currentUser.address,
+      _skipPages >= 0 ? _skipPages : skipPages,
+      itemsPerPage,
+      _communities => {
+        setCommunities(_communities);
+        setLoading(false);
+      },
+      err => {
+        setLoading(false);
+        ErrorPopup('Something went wrong on fetching Communities!', err);
+      },
     );
-  }
+  };
 
-  editCommunity(id) {
-    checkBalance(this.props.balance)
+  const handlePageChanged = newPage => {
+    setSkipPages(newPage - 1);
+    cleanup();
+    loadCommunities(newPage - 1);
+  };
+
+  const editCommunity = id => {
+    checkBalance(balance)
       .then(() => {
         history.push(`/communities/${id}/edit`);
       })
@@ -77,154 +70,157 @@ class MyCommunities extends Component {
         if (err === 'noBalance') {
           ErrorPopup('There is no balance left on the account.', err);
         } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
+          ErrorPopup('Something went wrong on getting balance.', err);
         }
       });
-  }
+  };
 
-  render() {
-    const { communities, isLoading, visiblePages } = this.state;
-    const isPendingCommunity =
-      (communities.data &&
-        communities.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
-      false;
+  useEffect(() => {
+    if (currentUser.address) {
+      loadCommunities();
+    }
+  }, []);
 
-    return (
-      <Fragment>
-        <Helmet>
-          <title>Your Communities</title>
-        </Helmet>
-        <div id="communities-view">
-          <div className="container-fluid page-layout dashboard-table-view">
-            <div className="row">
-              <div className="col-md-10 m-auto">
-                {(isLoading || (communities && communities.data.length > 0)) && (
-                  <h1>Your Communities</h1>
-                )}
+  useEffect(() => {
+    if (currentUser.address) {
+      setLoading(false);
+      setSkipPages(0);
+      cleanup();
+      loadCommunities(0);
+    }
+    return cleanup;
+  }, [currentUser.address]);
 
-                <AuthenticationWarning />
+  const isPendingCommunity =
+    (communities && communities.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
+    false;
 
-                {isLoading && <Loader className="fixed" />}
+  return (
+    <Fragment>
+      <Helmet>
+        <title>My Communities</title>
+      </Helmet>
+      <div className="container-fluid page-layout dashboard-table-view">
+        <div className="row">
+          <div className="col-md-10 m-auto">
+            {(isLoading || (communities && communities.data.length > 0)) && <h1>My Communities</h1>}
 
-                {!isLoading && (
+            <AuthenticationWarning />
+
+            {isLoading && <Loader className="fixed" />}
+
+            {!isLoading && (
+              <div>
+                {communities && communities.data.length > 0 && (
                   <div>
-                    {communities && communities.data.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                              <th className="td-actions" />
-                              <th className="td-name">Name</th>
-                              <th className="td-donations-number">Donations</th>
-                              <th className="td-donations-amount">Amount</th>
-                              <th className="td-status">Status</th>
-                              <th className="td-confirmations">
-                                {isPendingCommunity && 'Confirmations'}
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {communities.data.map(d => (
-                              <tr
-                                key={d.id}
-                                className={d.status === Community.PENDING ? 'pending' : ''}
+                    <table className="table table-responsive table-striped table-hover">
+                      <thead>
+                        <tr>
+                          {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+                          <th className="td-actions" />
+                          <th className="td-name">Name</th>
+                          <th className="td-donations-number">Donations</th>
+                          <th className="td-donations-amount">Amount</th>
+                          <th className="td-status">Status</th>
+                          <th className="td-confirmations">
+                            {isPendingCommunity && 'Confirmations'}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {communities.data.map(d => (
+                          <tr
+                            key={d.id}
+                            className={d.status === Community.PENDING ? 'pending' : ''}
+                          >
+                            <td className="td-actions">
+                              <button
+                                type="button"
+                                className="btn btn-link"
+                                onClick={() => editCommunity(d.id)}
                               >
-                                <td className="td-actions">
-                                  <button
-                                    type="button"
-                                    className="btn btn-link"
-                                    onClick={() => this.editCommunity(d.id)}
-                                  >
-                                    <i className="fa fa-edit" />
-                                  </button>
-                                </td>
-                                <td className="td-name">
-                                  <Link to={`/community/${d.slug}`}>
-                                    {getTruncatedText(d.title, 45)}
-                                  </Link>
-                                </td>
-                                <td className="td-donations-number">
-                                  {d.donationCounters.length > 0 &&
-                                    d.donationCounters.map(counter => (
-                                      <p key={`donations_count-${d.key}-${counter.symbol}`}>
-                                        {counter.donationCount} donation(s) in {counter.symbol}
-                                      </p>
-                                    ))}
-                                  {d.donationCounters.length === 0 && <span>-</span>}
-                                </td>
-                                <td className="td-donations-amount">
-                                  {d.donationCounters.length > 0 &&
-                                    d.donationCounters.map(counter => (
-                                      <p key={`total_donated-${d.key}-${counter.symbol}`}>
-                                        {convertEthHelper(counter.totalDonated, counter.decimals)}{' '}
-                                        {counter.symbol}
-                                      </p>
-                                    ))}
+                                <i className="fa fa-edit" />
+                              </button>
+                            </td>
+                            <td className="td-name">
+                              <Link to={`/community/${d.slug}`}>
+                                {getTruncatedText(d.title, 45)}
+                              </Link>
+                            </td>
+                            <td className="td-donations-number">
+                              {d.donationCounters.length > 0 &&
+                                d.donationCounters.map(counter => (
+                                  <p key={`donations_count-${d.key}-${counter.symbol}`}>
+                                    {counter.donationCount} donation(s) in {counter.symbol}
+                                  </p>
+                                ))}
+                              {d.donationCounters.length === 0 && <span>-</span>}
+                            </td>
+                            <td className="td-donations-amount">
+                              {d.donationCounters.length > 0 &&
+                                d.donationCounters.map(counter => (
+                                  <p key={`total_donated-${d.key}-${counter.symbol}`}>
+                                    {convertEthHelper(counter.totalDonated, counter.decimals)}{' '}
+                                    {counter.symbol}
+                                  </p>
+                                ))}
 
-                                  {d.donationCounters.length === 0 && <span>-</span>}
-                                </td>
-                                <td className="td-status">
-                                  {d.status === Community.PENDING && (
-                                    <span>
-                                      <i className="fa fa-circle-o-notch fa-spin" />
-                                      &nbsp;
-                                    </span>
-                                  )}
-                                  {d.status}
-                                </td>
-                                <td className="td-confirmations">
-                                  {(isPendingCommunity ||
-                                    d.requiredConfirmations !== d.confirmations) &&
-                                    `${d.confirmations}/${d.requiredConfirmations}`}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                              {d.donationCounters.length === 0 && <span>-</span>}
+                            </td>
+                            <td className="td-status">
+                              {d.status === Community.PENDING && (
+                                <span>
+                                  <i className="fa fa-circle-o-notch fa-spin" />
+                                  &nbsp;
+                                </span>
+                              )}
+                              {d.status}
+                            </td>
+                            <td className="td-confirmations">
+                              {(isPendingCommunity ||
+                                d.requiredConfirmations !== d.confirmations) &&
+                                `${d.confirmations}/${d.requiredConfirmations}`}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-                        {communities.total > communities.limit && (
-                          <center>
-                            <Pagination
-                              activePage={communities.skip + 1}
-                              itemsCountPerPage={communities.limit}
-                              totalItemsCount={communities.total}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={this.handlePageChanged}
-                            />
-                          </center>
-                        )}
-                      </div>
-                    )}
-
-                    {communities && communities.data.length === 0 && (
-                      <div>
-                        <center>
-                          <h3>You haven&apos;t created any Communities yet!</h3>
-                          <img
-                            className="empty-state-img"
-                            src={`${process.env.PUBLIC_URL}/img/community.svg`}
-                            width="200px"
-                            height="200px"
-                            alt="no-communities-icon"
-                          />
-                        </center>
-                      </div>
+                    {communities.total > communities.limit && (
+                      <center>
+                        <Pagination
+                          activePage={skipPages + 1}
+                          itemsCountPerPage={communities.limit}
+                          totalItemsCount={communities.total}
+                          pageRangeDisplayed={visiblePages}
+                          onChange={handlePageChanged}
+                        />
+                      </center>
                     )}
                   </div>
                 )}
+
+                {communities && communities.data.length === 0 && (
+                  <div>
+                    <center>
+                      <h3>You haven&apos;t created any Communities yet!</h3>
+                      <img
+                        className="empty-state-img"
+                        src={`${process.env.PUBLIC_URL}/img/community.svg`}
+                        width="200px"
+                        height="200px"
+                        alt="no-communities-icon"
+                      />
+                    </center>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      </Fragment>
-    );
-  }
-}
-
-MyCommunities.propTypes = {
-  currentUser: PropTypes.instanceOf(User).isRequired,
-  balance: PropTypes.objectOf(utils.BN).isRequired,
+      </div>
+    </Fragment>
+  );
 };
 
 export default MyCommunities;
