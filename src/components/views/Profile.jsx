@@ -89,10 +89,6 @@ const Profile = props => {
 };
 
 Profile.propTypes = {
-  history: PropTypes.shape({
-    goBack: PropTypes.func.isRequired,
-    push: PropTypes.func.isRequired,
-  }).isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       userAddress: PropTypes.string,
