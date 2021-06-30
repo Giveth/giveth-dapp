@@ -68,7 +68,7 @@ const MyCommunities = () => {
       })
       .catch(err => {
         if (err === 'noBalance') {
-          ErrorHandler(err, 'There is no balance left on the account.', true);
+          ErrorHandler(err, 'There is no balance left on the account.');
         } else if (err !== undefined) {
           ErrorHandler(err, 'Something went wrong on getting balance.');
         }
