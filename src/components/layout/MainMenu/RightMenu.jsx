@@ -148,11 +148,11 @@ const RightMenu = () => {
         setSelectedKeys('profile:2');
         break;
 
-      case pathname === '/donations':
+      case pathname === '/my-donations':
         setSelectedKeys('profile:3');
         break;
 
-      case pathname === '/delegations':
+      case pathname === '/my-delegations':
         setSelectedKeys('profile:4');
         break;
 
@@ -214,12 +214,12 @@ const RightMenu = () => {
             </Link>
           </Menu.Item>
           <Menu.Item key="profile:3">
-            <Link className="d-flex justify-content-between" to="/donations">
+            <Link className="d-flex justify-content-between" to="/my-donations">
               My Donations<span>{userTotalDonations}</span>
             </Link>
           </Menu.Item>
           <Menu.Item key="profile:4">
-            <Link className="d-flex justify-content-between" to="/delegations">
+            <Link className="d-flex justify-content-between" to="/my-delegations">
               My Delegations<span>{userTotalDelegations}</span>
             </Link>
           </Menu.Item>

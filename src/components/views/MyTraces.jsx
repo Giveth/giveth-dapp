@@ -11,7 +11,6 @@ import { Helmet } from 'react-helmet';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 import AuthenticationWarning from '../AuthenticationWarning';
-import ErrorPopup from '../ErrorPopup';
 import Loader from '../Loader';
 
 import {
@@ -24,6 +23,7 @@ import config from '../../configuration';
 
 import TraceService from '../../services/TraceService';
 import Trace from '../../models/Trace';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 const reviewDue = updatedAt =>
   moment()
@@ -76,8 +76,7 @@ const MyTraces = () => {
           setLoading(false);
         },
         onError: err => {
-          ErrorPopup('Something went wrong.', err);
-          // TODO: handle error here in view
+          ErrorHandler(err, 'Something went wrong on fetching Traces.');
           setLoading(false);
         },
       }).then();
