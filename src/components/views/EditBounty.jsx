@@ -48,23 +48,31 @@ function EditBounty(props) {
     trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
+    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.BOUNTYTYPE ||
-      !(isOwner(ms.owner.address, currentUser) || userIsCampaignOwner) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
@@ -76,10 +84,14 @@ function EditBounty(props) {
               reviewerAddress: res.reviewerAddress,
               donateToCommunity: !!res.communityId,
             };
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setDonateToCommunity(!!res.communityId);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -87,15 +99,7 @@ function EditBounty(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
-
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
+  }, [currentUser.address]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;

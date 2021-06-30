@@ -89,14 +89,6 @@ function EditPayment(props) {
   }, [loadingAmount, userIsCampaignOwner]);
 
   useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
-
-  useEffect(() => {
     return () => {
       isMounted.current = false;
       clearTimeout(timer.current);
@@ -104,23 +96,31 @@ function EditPayment(props) {
   }, []);
 
   const goBack = () => {
-    props.history.goBack();
+    ErrorHandler({}, 'You are not allowed to edit.');
+    history.goBack();
   };
 
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.PAYMENTTYPE ||
-      !(isOwner(ms.owner.address, currentUser) || userIsCampaignOwner) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
@@ -140,10 +140,14 @@ function EditPayment(props) {
               image: imageUrl,
               date: res.date,
             };
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setPayment(iValues);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -151,7 +155,7 @@ function EditPayment(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.address]);
 
   // Update item of this item in trace token
   const updateAmount = () => {
