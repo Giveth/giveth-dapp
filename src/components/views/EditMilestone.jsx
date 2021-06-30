@@ -63,7 +63,7 @@ function EditMilestone(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.MILESTONETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(isOwner(ms.owner.address, currentUser) || userIsCampaignOwner) ||
       ms.donationCounters.length > 0
     );
   };

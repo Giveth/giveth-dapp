@@ -159,7 +159,7 @@ function EditExpense(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.EXPENSETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(isOwner(ms.owner.address, currentUser) || userIsCampaignOwner) ||
       ms.donationCounters.length > 0
     );
   };

@@ -39,6 +39,8 @@ function EditBounty(props) {
     donateToCommunity: true,
     reviewerAddress: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
@@ -52,7 +54,7 @@ function EditBounty(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.BOUNTYTYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(isOwner(ms.owner.address, currentUser) || userIsCampaignOwner) ||
       ms.donationCounters.length > 0
     );
   };
@@ -86,9 +88,6 @@ function EditBounty(props) {
         });
     }
   }, [currentUser.id]);
-
-  const [loading, setLoading] = useState(false);
-  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   useEffect(() => {
     setUserIsOwner(
