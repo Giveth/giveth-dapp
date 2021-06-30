@@ -38,7 +38,6 @@ import ViewTraceAlerts from '../ViewTraceAlerts';
 import CancelTraceButton from '../CancelTraceButton';
 import DeleteProposedTraceButton from '../DeleteProposedTraceButton';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
@@ -58,9 +57,6 @@ const ViewTrace = props => {
   const {
     actions: { convertMultipleRates },
   } = useContext(ConversionRateContext);
-  const {
-    state: { balance },
-  } = useContext(Web3Context);
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -621,8 +617,6 @@ const ViewTrace = props => {
                         <h4>Status updates</h4>
                         <TraceConversations
                           trace={trace}
-                          currentUser={currentUser}
-                          balance={balance}
                           isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                           maxHeight={`${detailsCardHeight}px`}
                         />
