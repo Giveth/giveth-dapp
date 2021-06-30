@@ -16,8 +16,10 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
-const noCoownerValue = '------ No co-owner ------';
-const noCoownerObject = { value: noCoownerValue, title: noCoownerValue };
+const noCoownerOption = {
+  value: ZERO_ADDRESS,
+  title: '------ No co-owner ------',
+};
 
 /**
  * Retrieves the oldest 100 donations that the user can delegate
@@ -69,7 +71,7 @@ const ChangeOwnershipButton = props => {
       campaign,
       currentUser.address,
       campaign.ownerAddress,
-      coownerAddress === noCoownerObject.value ? ZERO_ADDRESS : coownerAddress,
+      coownerAddress,
       afterCreate,
       afterMined,
     );
@@ -78,7 +80,7 @@ const ChangeOwnershipButton = props => {
   // Set initial value for select component
   useEffect(() => {
     if (campaignManagers.length > 0) {
-      if (campaign.coownerAddress > ZERO_ADDRESS) {
+      if (campaign.coownerAddress !== ZERO_ADDRESS) {
         setCoownerAddress(campaign.coownerAddress);
       }
       setFormIsReady(true);
@@ -86,7 +88,7 @@ const ChangeOwnershipButton = props => {
   }, [campaignManagers]);
 
   const coownerList = [
-    noCoownerObject,
+    noCoownerOption,
     ...campaignManagers.filter(item => item.value !== campaign.ownerAddress),
   ];
 
