@@ -1,6 +1,5 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Prompt } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { Prompt, useParams } from 'react-router-dom';
 
 import {
   Button,
@@ -40,12 +39,8 @@ const { Title, Text } = Typography;
 
 /**
  * View to create or edit a Campaign
- *
- * @param isNew    If set, component will load an empty model.
- *                 Otherwise component expects an id param and will load a campaign object
- * @param id       URL parameter which is an id of a campaign object
  */
-const EditCampaign = ({ isNew, match }) => {
+const EditCampaign = () => {
   const {
     state: { currentUser, isLoading: userIsLoading },
   } = useContext(UserContext);
@@ -73,6 +68,9 @@ const EditCampaign = ({ isNew, match }) => {
     }),
   );
   const mounted = useRef();
+
+  const { id: campaignId } = useParams();
+  const isNew = !campaignId;
 
   useEffect(() => {
     mounted.current = true;
@@ -107,7 +105,7 @@ const EditCampaign = ({ isNew, match }) => {
         setIsLoading(false);
       });
     } else {
-      CampaignService.get(match.params.id)
+      CampaignService.get(campaignId)
         .then(camp => {
           if (isOwner(camp.ownerAddress, currentUser)) {
             setCampaign({
@@ -467,19 +465,6 @@ const EditCampaign = ({ isNew, match }) => {
       )}
     </Fragment>
   );
-};
-
-EditCampaign.propTypes = {
-  isNew: PropTypes.bool,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
-};
-
-EditCampaign.defaultProps = {
-  isNew: false,
 };
 
 export default EditCampaign;

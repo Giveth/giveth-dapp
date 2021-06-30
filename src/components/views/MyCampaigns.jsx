@@ -15,6 +15,7 @@ import AuthenticationWarning from '../AuthenticationWarning';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * The my campaings view
@@ -46,7 +47,10 @@ function MyCampaigns() {
           setCampaigns(cs);
           setLoading(false);
         },
-        () => setLoading(false),
+        err => {
+          setLoading(false);
+          ErrorHandler(err, 'Something went wrong on fetching Campaigns.');
+        },
       );
     }
   }, [currentUser.address, skipPages]);
