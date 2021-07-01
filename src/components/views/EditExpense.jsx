@@ -83,14 +83,6 @@ function EditExpense(props) {
 
   const itemAmountMap = useRef({});
 
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
-
   const updateTotalAmount = () => {
     setTotalAmount(BigNumber.sum(...Object.values(itemAmountMap.current)));
   };
@@ -153,23 +145,31 @@ function EditExpense(props) {
   }
 
   function goBack() {
+    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.EXPENSETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
@@ -196,11 +196,15 @@ function EditExpense(props) {
               item.picture = imageUrl;
               items.push(item);
             });
+            const _campaign = res.campaign;
             setExpenseItems(items);
             setInitialValues(iValues);
             setExpenseForm(iValues);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -208,7 +212,7 @@ function EditExpense(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.address]);
 
   const submit = async () => {
     const authenticated = await authenticateUser(currentUser, false);

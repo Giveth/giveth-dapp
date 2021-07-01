@@ -57,23 +57,31 @@ function EditMilestone(props) {
     trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
+    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.MILESTONETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
@@ -88,12 +96,16 @@ function EditMilestone(props) {
               donateToCommunity: !!res.communityId,
             };
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setDonateToCommunity(!!res.communityId);
             setHasReviewer(isReviewer);
             setTrace(res);
             setImage(imageUrl);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -101,15 +113,7 @@ function EditMilestone(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id, isEditNotAllowed, trace, traceId]);
-
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
+  }, [currentUser.address]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;

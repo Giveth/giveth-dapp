@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import { Input, Select, Slider, Form, InputNumber } from 'antd';
 import { utils } from 'web3';
 import PropTypes from 'prop-types';
-import 'react-rangeslider/lib/index.css';
 
 import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';

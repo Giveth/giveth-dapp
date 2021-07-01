@@ -4,7 +4,6 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
-import 'react-rangeslider/lib/index.css';
 import { Input, InputNumber, Select, Slider, Form } from 'antd';
 
 import Donation from 'models/Donation';
