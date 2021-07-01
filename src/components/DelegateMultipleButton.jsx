@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import React, { useContext, useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import 'react-rangeslider/lib/index.css';
 import { Button, Modal } from 'antd';
 
 import { authenticateUser, checkBalance } from '../lib/middleware';
