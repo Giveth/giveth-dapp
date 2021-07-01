@@ -30,6 +30,7 @@ import ErrorHandler from '../../lib/ErrorHandler';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Donation from '../../models/Donation';
+import { feathersClient } from '../../lib/feathersClient';
 
 /**
  * The Community detail view mapped to /communities/id
@@ -55,38 +56,49 @@ const ViewCommunity = ({ match }) => {
   const [campaigns, setCampaigns] = useState([]);
   const [aggregateDonations, setAggregateDonations] = useState([]);
   const [aggregateDonationsTotal, setAggregateDonationsTotal] = useState(0);
-  const [donationsTotal, setDonationsTotal] = useState(0);
   const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
+  const [batchNumber, setBatchNumber] = useState(1);
 
   const donationsPerBatch = 5;
 
-  const cleanUp = () => CommunityService.unsubscribeNewDonations();
+  let subscribeDonations;
+  let _aggregateDonations = [];
 
-  const loadMoreAggregateDonations = (
-    loadFromScratch = false,
-    donationsBatch = donationsPerBatch,
-  ) => {
+  const cleanUp = () => {
+    if (subscribeDonations) {
+      subscribeDonations.unsubscribe();
+      subscribeDonations = undefined;
+    }
+  };
+
+  const loadMore = () => {
+    setBatchNumber(batchNumber + 1);
+  };
+
+  const loadMoreAggregateDonations = (loadFromScratch = false, _batchNumber = batchNumber) => {
     setLoadingDonations(true);
     AggregateDonationService.get(
       community.id,
-      donationsBatch,
+      loadFromScratch ? donationsPerBatch * _batchNumber : donationsPerBatch,
       loadFromScratch ? 0 : aggregateDonations.length,
       (_donations, _donationsTotal) => {
         let nDonations;
         if (loadFromScratch) {
-          nDonations = _donations.map(item => {
-            const _item = aggregateDonations.find(
-              element => element._id === item._id && _item.totalAmount !== item.totalAmount,
+          nDonations = _donations.map(_aggregate => {
+            // Finding the user who has newly donated to highlight it later
+            const oldAggregateItem = _aggregateDonations.filter(
+              aggregate => aggregate._id === _aggregate._id && aggregate.count !== _aggregate.count,
             );
-            if (_item) {
-              item.isNew = true;
-              return item;
+            if (oldAggregateItem.length) {
+              _aggregate.isNew = true;
+              return _aggregate;
             }
-            return item;
+            return _aggregate;
           });
         }
-        setAggregateDonations(loadFromScratch ? nDonations : aggregateDonations.concat(_donations));
+        _aggregateDonations = loadFromScratch ? nDonations : aggregateDonations.concat(_donations);
+        setAggregateDonations(_aggregateDonations);
         setAggregateDonationsTotal(_donationsTotal);
         setLoadingDonations(false);
       },
@@ -97,21 +109,28 @@ const ViewCommunity = ({ match }) => {
     );
   };
 
-  const loadDonations = communityId => {
-    if (communityId) {
-      CommunityService.getDonations(
-        communityId,
-        0,
-        0,
-        (_donations, _donationsTotal) => {
-          setDonationsTotal(_donationsTotal);
+  const subscribeNewDonations = (id, onSuccess, onError) => {
+    let initialTotal;
+    subscribeDonations = feathersClient
+      .service('donations')
+      .watch({ listStrategy: 'always' })
+      .find({
+        query: {
+          status: { $ne: Donation.FAILED },
+          delegateTypeId: id,
+          isReturn: false,
+          intendedProjectId: { $exists: false },
+          $limit: 0,
         },
-        err => {
-          ErrorHandler(err, 'Some error on fetching campaign donations, please try later');
-        },
-        Donation.WAITING,
-      );
-    }
+      })
+      .subscribe(resp => {
+        if (initialTotal === undefined) {
+          initialTotal = resp.total;
+          onSuccess(0);
+        } else {
+          onSuccess(resp.total - initialTotal);
+        }
+      }, onError);
   };
 
   useEffect(() => {
@@ -134,7 +153,7 @@ const ViewCommunity = ({ match }) => {
       });
 
     return cleanUp;
-  }, [donationsTotal]);
+  }, [newDonations]);
 
   useEffect(() => {
     const subscribeFunc = async () => {
@@ -145,15 +164,14 @@ const ViewCommunity = ({ match }) => {
         setCampaigns(relatedCampaigns);
         setLoadingCampaigns(false);
         loadMoreAggregateDonations(true);
-        loadDonations(community.id);
+        cleanUp();
         // subscribe to donation count
-        CommunityService.subscribeNewDonations(
+        subscribeNewDonations(
           community.id,
           _newDonations => {
-            setNewDonations(_newDonations);
-            if (_newDonations > 0) {
-              loadDonations(community.id);
-              loadMoreAggregateDonations(true);
+            if (_newDonations > newDonations) {
+              setNewDonations(_newDonations);
+              loadMoreAggregateDonations(true, batchNumber);
             }
           },
           err => {
@@ -166,7 +184,7 @@ const ViewCommunity = ({ match }) => {
     subscribeFunc().then();
 
     return cleanUp;
-  }, [community.id]);
+  }, [community.id, batchNumber]);
 
   const editCommunity = id => {
     checkBalance(balance)
@@ -333,7 +351,7 @@ const ViewCommunity = ({ match }) => {
                         aggregateDonations={aggregateDonations}
                         isLoading={isLoadingDonations}
                         total={aggregateDonationsTotal}
-                        loadMore={loadMoreAggregateDonations}
+                        loadMore={loadMore}
                         newDonations={newDonations}
                       />
                     </div>

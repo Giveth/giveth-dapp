@@ -21,7 +21,6 @@ const etherScanUrl = config.etherscan;
 
 class CommunityService {
   constructor() {
-    this.newDonationSubscription = null;
     this.communitySubscription = null;
   }
 
@@ -166,50 +165,11 @@ class CommunityService {
   }
 
   /**
-   * Subscribe to count of new donations. Initial resp will always be 0. Any new donations
-   * that come in while subscribed, the onSuccess will be called with the # of newDonations
-   * since initial subscribe
-   *
-   * @param id        ID of the Campaign which donations should be retrieved
-   * @param onSuccess Callback function once response is obtained successfully
-   * @param onError   Callback function if error is encountered
-   */
-  static subscribeNewDonations(id, onSuccess, onError) {
-    let initialTotal;
-    this.newDonationSubscription = feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          status: { $ne: Donation.FAILED },
-          delegateTypeId: id,
-          isReturn: false,
-          intendedProjectId: { $exists: false },
-          $limit: 0,
-        },
-      })
-      .subscribe(resp => {
-        if (initialTotal === undefined) {
-          initialTotal = resp.total;
-          onSuccess(0);
-        } else {
-          onSuccess(resp.total - initialTotal);
-        }
-      }, onError);
-
-    return this.newDonationSubscription;
-  }
-
-  static unsubscribeNewDonations() {
-    if (this.newDonationSubscription) this.newDonationSubscription.unsubscribe();
-  }
-
-  /**
    * Get the user's Communities
    *
    * @param userAddress   Address of the user whose Community list should be retrieved
    * @param skipPages     Amount of pages to skip
-   * @param itemsPerPage  Items to retreive
+   * @param itemsPerPage  Items to retrieve
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
    */
