@@ -28,8 +28,15 @@ const CommunityButton = ({ url, className, children }) => {
     }
   }, [url]);
 
+  let _url = '';
+  if (url.startsWith('http')) {
+    _url = url;
+  } else {
+    _url = `http://${url}`;
+  }
+
   return (
-    <a className={className} href={`//${url}`} target="_blank" rel="noopener noreferrer">
+    <a className={className} href={_url} target="_blank" rel="noopener noreferrer">
       <i className={`fa ${icon !== 'external-link' ? icon : 'd-none'}`}>&nbsp;</i>
       {children}
     </a>
