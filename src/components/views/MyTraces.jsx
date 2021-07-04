@@ -70,7 +70,6 @@ const MyTraces = () => {
       subscribeTraces.current = TraceService.getUserTraces({
         traceStatus,
         ownerAddress: userAddress,
-        coownerAddress: userAddress,
         recipientAddress: userAddress,
         skipPages,
         itemsPerPage,

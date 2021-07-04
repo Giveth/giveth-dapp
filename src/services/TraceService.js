@@ -183,7 +183,7 @@ class TraceService {
     } else {
       const resp = await feathersClient.service('campaigns').find({
         query: {
-          ownerAddress,
+          $or: [{ ownerAddress }, { coownerAddress: ownerAddress }],
           $select: ['_id'],
         },
       });
