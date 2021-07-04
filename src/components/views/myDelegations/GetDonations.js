@@ -40,7 +40,7 @@ const GetDonations = async ({
           // delegateTypeId: { $gt: 0 },
           // },
         ],
-        $sort: { createdAt: -1 },
+        $sort: { createdAt: 1 },
         $limit: itemsPerPage,
         $skip: skipPages * itemsPerPage,
       },
