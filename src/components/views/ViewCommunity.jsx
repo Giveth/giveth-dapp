@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { Link } from 'react-router-dom';
@@ -61,14 +61,14 @@ const ViewCommunity = ({ match }) => {
   const [batchNumber, setBatchNumber] = useState(1);
 
   const donationsPerBatch = 5;
-
-  let subscribeDonations;
   let _aggregateDonations = [];
 
+  const subscribeDonations = useRef();
+
   const cleanUp = () => {
-    if (subscribeDonations) {
-      subscribeDonations.unsubscribe();
-      subscribeDonations = undefined;
+    if (subscribeDonations.current) {
+      subscribeDonations.current.unsubscribe();
+      subscribeDonations.current = undefined;
     }
   };
 
@@ -111,7 +111,7 @@ const ViewCommunity = ({ match }) => {
 
   const subscribeNewDonations = (id, onSuccess, onError) => {
     let initialTotal;
-    subscribeDonations = feathersClient
+    subscribeDonations.current = feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
       .find({

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useContext, useCallback, Fragment, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -42,6 +42,8 @@ const MyTraces = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [traceStatus, setTraceStatus] = useState(traceTabs[0]);
 
+  const subscribeTraces = useRef(null);
+
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -53,7 +55,10 @@ const MyTraces = () => {
   } = useContext(WhiteListContext);
 
   function cleanUp() {
-    TraceService.unsubscribe();
+    if (subscribeTraces.current) {
+      subscribeTraces.current.then(res => res.unsubscribe());
+      subscribeTraces.current = null;
+    }
   }
 
   const itemsPerPage = 10;
@@ -62,7 +67,7 @@ const MyTraces = () => {
 
   const loadTraces = useCallback(() => {
     if (userAddress) {
-      TraceService.getUserTraces({
+      subscribeTraces.current = TraceService.getUserTraces({
         traceStatus,
         ownerAddress: userAddress,
         coownerAddress: userAddress,
@@ -79,7 +84,7 @@ const MyTraces = () => {
           ErrorHandler(err, 'Something went wrong on fetching Traces.');
           setLoading(false);
         },
-      }).then();
+      });
     } else {
       setTraces([]);
       setTotalResults(0);
@@ -113,6 +118,7 @@ const MyTraces = () => {
 
   useEffect(() => {
     setLoading(true);
+    cleanUp();
     loadTraces();
     return cleanUp;
   }, [loadTraces, traceStatus, skipPages]);
@@ -121,7 +127,6 @@ const MyTraces = () => {
     if (userAddress) {
       setSkipPages(0);
     }
-    return cleanUp;
   }, [userAddress]);
 
   return (

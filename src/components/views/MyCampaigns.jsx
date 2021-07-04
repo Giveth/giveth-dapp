@@ -39,7 +39,10 @@ function MyCampaigns() {
   const campaignsObserver = useRef();
 
   const cleanup = () => {
-    if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
+    if (campaignsObserver.current) {
+      campaignsObserver.current.unsubscribe();
+      campaignsObserver.current = undefined;
+    }
   };
 
   const loadCampaigns = useCallback(
@@ -67,6 +70,7 @@ function MyCampaigns() {
   useEffect(() => {
     if (userAddress) {
       setSkipPages(0);
+      cleanup();
       loadCampaigns(0);
     }
 
@@ -75,6 +79,7 @@ function MyCampaigns() {
 
   useEffect(() => {
     setLoading(true);
+    cleanup();
     loadCampaigns();
 
     return cleanup;

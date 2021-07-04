@@ -13,7 +13,6 @@ import TotalGasPaid from '../../views/TotalGasPaid';
 import TraceService from '../../../services/TraceService';
 import DonationService from '../../../services/DonationService';
 import ErrorPopup from '../../ErrorPopup';
-import Trace from '../../../models/Trace';
 import LoadProjectsInfo from '../../views/myDelegations/LoadProjectsInfo';
 import GetDonations from '../../views/myDelegations/GetDonations';
 import Campaign from '../../../models/Campaign';
@@ -57,7 +56,6 @@ const RightMenu = () => {
 
   const getUserTraces = () => {
     TraceService.getUserTraces({
-      traceStatus: Trace.ACTIVE,
       ownerAddress: userAddress,
       recipientAddress: userAddress,
       skipPages: 0,

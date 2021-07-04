@@ -232,74 +232,29 @@ class TraceService {
     }
 
     if (!subscribe) {
-      this.getTraces(query, onResult, onError);
-    } else {
-      this.subscribe(query, onResult, onError);
+      return traces
+        .find({ query })
+        .then(resp => {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        })
+        .catch(onError);
     }
-  }
-
-  /**
-   * Lazy-load Traces by subscribing to Trace listener
-   *
-   * @param query     A feathers query
-   *
-   * returns a Promise
-   *  resolve:
-   *    Object
-   *      data                (Array) Trace models
-   *      limit               (Number) items per page
-   *      skipped             (Number) pages skipped
-   *      totalResults        (Number) total results
-   *
-   *  reject:
-   *    error message
-   */
-
-  static subscribe(query, onResult, onError) {
-    this.traceSubscription = traces
+    return traces
       .watch({ listStrategy: 'always' })
       .find({ query })
-      .subscribe(
-        resp => {
-          try {
-            onResult({
-              ...resp,
-              data: resp.data.map(m => TraceFactory.create(m)),
-            });
-          } catch (e) {
-            onError(e);
-          }
-        },
-
-        onError,
-      );
-  }
-
-  /**
-   * Load traces
-   *
-   * @param query     A feathers query
-   *
-   */
-
-  static getTraces(query, onResult, onError) {
-    return traces
-      .find({ query })
-      .then(resp => {
-        onResult({
-          ...resp,
-          data: resp.data.map(m => TraceFactory.create(m)),
-        });
-      })
-      .catch(onError);
-  }
-
-  /**
-   * Unsubscribe from Trace listener
-   */
-
-  static unsubscribe() {
-    if (this.traceSubscription) this.traceSubscription.unsubscribe();
+      .subscribe(resp => {
+        try {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        } catch (e) {
+          onError(e);
+        }
+      }, onError);
   }
 
   /**
@@ -311,8 +266,7 @@ class TraceService {
    * @param onError   Callback function if error is encountered
    */
   static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
-    return feathersClient
-      .service('traces')
+    return traces
       .find({
         query: {
           status: Trace.IN_PROGRESS,

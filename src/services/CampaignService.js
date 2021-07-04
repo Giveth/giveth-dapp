@@ -304,7 +304,7 @@ class CampaignService {
   }
 
   static subscribe(query, onSuccess, onError) {
-    this.campaignSubscription = campaigns
+    return campaigns
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp => {
@@ -313,12 +313,6 @@ class CampaignService {
           data: resp.data.map(c => new Campaign(c)),
         });
       }, onError);
-
-    return this.campaignSubscription;
-  }
-
-  static unsubscribe() {
-    if (this.campaignSubscription) this.campaignSubscription.unsubscribe();
   }
 
   /**

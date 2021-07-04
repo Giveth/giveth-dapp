@@ -37,12 +37,13 @@ const MyCommunities = () => {
 
   const cleanup = () => {
     if (communitiesObserver.current) communitiesObserver.current.unsubscribe();
+    communitiesObserver.current = undefined;
   };
 
   const loadCommunities = _skipPages => {
     communitiesObserver.current = CommunityService.getUserCommunities(
       currentUser.address,
-      _skipPages || skipPages,
+      _skipPages >= 0 ? _skipPages : skipPages,
       itemsPerPage,
       _communities => {
         setCommunities(_communities);
