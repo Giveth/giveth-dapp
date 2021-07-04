@@ -9,8 +9,8 @@ import EditProfile from '../components/views/EditProfile';
 import ViewTrace from '../components/views/ViewTrace';
 import EditCommunity from '../components/views/EditCommunity';
 import ViewCommunity from '../components/views/ViewCommunity';
-import Donations from '../components/views/Donations';
-import Delegations from '../components/views/Delegations';
+import MyDonations from '../components/views/MyDonations';
+import MyDelegations from '../components/views/myDelegations/MyDelegations';
 import MyCommunities from '../components/views/MyCommunities';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyTraces from '../components/views/MyTraces';
@@ -189,8 +189,8 @@ const Routes = () => {
         path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
-      <Route exact path="/my-donations" render={() => <Donations />} />
-      <Route exact path="/my-delegations" render={() => <Delegations />} />
+      <Route exact path="/my-donations" render={() => <MyDonations />} />
+      <Route exact path="/my-delegations" render={() => <MyDelegations />} />
       <Route exact path="/my-communities" render={() => <MyCommunities />} />
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
       <Route exact path="/my-campaigns" render={() => <MyCampaigns />} />

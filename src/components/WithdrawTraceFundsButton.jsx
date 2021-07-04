@@ -7,7 +7,7 @@ import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import LPTrace from '../models/LPTrace';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -31,7 +31,10 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
     const userAddress = currentUser.address;
     const isRecipient = trace.recipientAddress === userAddress;
     actionWithLoggedIn(currentUser).then(() =>
-      Promise.all([checkBalance(balance), DonationService.getTraceDonationsCount(trace._id)])
+      Promise.all([
+        checkBalance(balance),
+        DonationBlockchainService.getTraceDonationsCount(trace._id),
+      ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
             minPayoutWarningInWithdraw();

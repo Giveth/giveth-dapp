@@ -17,6 +17,10 @@ const etherScanUrl = config.etherscan;
 const campaigns = feathersClient.service('campaigns');
 
 class CampaignService {
+  constructor() {
+    this.campaignSubscription = null;
+  }
+
   /**
    * Get a Campaign defined by ID
    *
@@ -107,8 +111,7 @@ class CampaignService {
 
       query.updatedAt = { $gt: lastDate };
     }
-    return feathersClient
-      .service('campaigns')
+    return campaigns
       .find({
         query,
       })
@@ -127,9 +130,7 @@ class CampaignService {
       status: Campaign.ACTIVE,
       $sort: { updatedAt: -1 },
     };
-    const result = await feathersClient.service('campaigns').find({
-      query,
-    });
+    const result = await campaigns.find({ query });
     return result.data.map(c => new Campaign(c));
   }
 
@@ -272,26 +273,45 @@ class CampaignService {
    * @param onSuccess   Callback function once response is obtained successfully
    * @param onError     Callback function if error is encountered
    */
-  static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
+  static getUserCampaigns(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
+    const query = {
+      query: {
+        $or: [
+          { ownerAddress: userAddress },
+          { reviewerAddress: userAddress },
+          { coownerAddress: userAddress },
+        ],
+        $sort: {
+          createdAt: -1,
+        },
+        $limit: itemsPerPage,
+        $skip: skipPages * itemsPerPage,
+      },
+    };
+
+    if (subscribe) {
+      return this.subscribe(query, onSuccess, onError);
+    }
+    return campaigns
+      .find(query)
+      .then(resp => {
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Campaign(c)),
+        });
+      })
+      .catch(onError);
+  }
+
+  static subscribe(query, onSuccess, onError) {
     return campaigns
       .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          $or: [
-            { ownerAddress: userAddress },
-            { reviewerAddress: userAddress },
-            { coownerAddress: userAddress },
-          ],
-          $sort: {
-            createdAt: -1,
-          },
-          $limit: itemsPerPage,
-          $skip: skipPages * itemsPerPage,
-        },
-      })
+      .find(query)
       .subscribe(resp => {
-        const newResp = { ...resp, data: resp.data.map(c => new Campaign(c)) };
-        onSuccess(newResp);
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Campaign(c)),
+        });
       }, onError);
   }
 

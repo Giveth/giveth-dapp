@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useContext, useCallback, Fragment, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -42,8 +42,7 @@ const MyTraces = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [traceStatus, setTraceStatus] = useState(traceTabs[0]);
 
-  const itemsPerPage = 10;
-  const visiblePages = 10;
+  const subscribeTraces = useRef(null);
 
   const {
     state: { currentUser },
@@ -56,19 +55,25 @@ const MyTraces = () => {
   } = useContext(WhiteListContext);
 
   function cleanUp() {
-    TraceService.unsubscribe();
+    if (subscribeTraces.current) {
+      subscribeTraces.current.then(res => res.unsubscribe());
+      subscribeTraces.current = null;
+    }
   }
 
+  const itemsPerPage = 10;
+  const visiblePages = 10;
+  const userAddress = currentUser.address;
+
   const loadTraces = useCallback(() => {
-    const myAddress = currentUser.address;
-    if (myAddress) {
-      TraceService.subscribeMyTraces({
+    if (userAddress) {
+      subscribeTraces.current = TraceService.getUserTraces({
         traceStatus,
-        ownerAddress: myAddress,
-        coownerAddress: myAddress,
-        recipientAddress: myAddress,
+        ownerAddress: userAddress,
+        recipientAddress: userAddress,
         skipPages,
         itemsPerPage,
+        subscribe: true,
         onResult: resp => {
           setTraces(resp.data);
           setTotalResults(resp.total);
@@ -84,7 +89,7 @@ const MyTraces = () => {
       setTotalResults(0);
       setLoading(false);
     }
-  }, [currentUser.address, traceStatus, skipPages]);
+  }, [userAddress, traceStatus, skipPages]);
 
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
@@ -111,163 +116,167 @@ const MyTraces = () => {
   }
 
   useEffect(() => {
-    // To skip initial render
     setLoading(true);
+    cleanUp();
     loadTraces();
     return cleanUp;
-  }, [currentUser.address, loadTraces, traceStatus, skipPages]);
+  }, [loadTraces, traceStatus, skipPages]);
+
+  useEffect(() => {
+    if (userAddress) {
+      setSkipPages(0);
+    }
+  }, [userAddress]);
 
   return (
     <Fragment>
       <Helmet>
-        <title>Your Traces</title>
+        <title>My Traces</title>
       </Helmet>
-      <div id="traces-view">
-        <div className="container-fluid page-layout">
-          <div className="row">
-            <div className="col-md-10 m-auto">
-              <h1>Your Traces</h1>
-              <ViewNetworkWarning
-                incorrectNetwork={!isForeignNetwork}
-                networkName={config.foreignNetworkName}
-              />
+      <div className="container-fluid page-layout dashboard-table-view">
+        <div className="row">
+          <div className="col-md-10 m-auto">
+            <h1>My Traces</h1>
+            <ViewNetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              networkName={config.foreignNetworkName}
+            />
 
-              <AuthenticationWarning />
+            <AuthenticationWarning />
 
-              <div className="dashboard-table-view">
-                <ul className="nav nav-tabs">
-                  {traceTabs.map(st => (
-                    <li className="nav-item" key={st}>
-                      <span
-                        role="button"
-                        className="nav-link"
-                        onKeyPress={() => changeTab(st)}
-                        tabIndex={0}
-                        onClick={() => changeTab(st)}
-                      >
-                        {st}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+            <div className="dashboard-table-view">
+              <ul className="nav nav-tabs">
+                {traceTabs.map(st => (
+                  <li className="nav-item" key={st}>
+                    <span
+                      role="button"
+                      className="nav-link"
+                      onKeyPress={() => changeTab(st)}
+                      tabIndex={0}
+                      onClick={() => changeTab(st)}
+                    >
+                      {st}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-                {isLoading && <Loader className="fixed" />}
+              {isLoading && <Loader className="fixed" />}
 
-                {!isLoading && (
-                  <div className="table-container">
-                    {traces && traces.length > 0 && (
-                      <div>
-                        <table className="table table-responsive table-striped table-hover">
-                          <thead>
-                            <tr>
-                              <th className="td-actions">Actions</th>
-                              <th className="td-created-at">Created</th>
-                              <th className="td-name">Name</th>
-                              <th className="td-status">Status</th>
-                              <th className="td-donations-number">Requested</th>
-                              <th className="td-donations-number">Donations</th>
-                              <th className="td-donations-amount">Amount</th>
-                              <th className="td-reviewer">Reviewer</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {traces.map(m => (
-                              <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
-                                <td className="td-actions">
-                                  <TraceActions trace={m} />
-                                </td>
-                                <td className="td-created-at">
-                                  {m.createdAt && (
-                                    <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
-                                  )}
-                                </td>
-                                <td className="td-name">
-                                  <strong>
-                                    <Link to={`/trace/${m.slug}`}>
-                                      TRACE <em>{getTruncatedText(m.title, 35)}</em>
-                                    </Link>
-                                  </strong>
-                                  <br />
-                                  <i className="fa fa-arrow-right" />
-                                  <Link
-                                    className="secondary-link"
-                                    to={`/campaigns/${m.campaign._id}`}
-                                  >
-                                    CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+              {!isLoading && (
+                <div className="table-container">
+                  {traces && traces.length > 0 && (
+                    <div>
+                      <table className="table table-responsive table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th className="td-actions">Actions</th>
+                            <th className="td-created-at">Created</th>
+                            <th className="td-name">Name</th>
+                            <th className="td-status">Status</th>
+                            <th className="td-donations-number">Requested</th>
+                            <th className="td-donations-number">Donations</th>
+                            <th className="td-donations-amount">Amount</th>
+                            <th className="td-reviewer">Reviewer</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {traces.map(m => (
+                            <tr key={m._id} className={m.status === 'Pending' ? 'pending' : ''}>
+                              <td className="td-actions">
+                                <TraceActions trace={m} />
+                              </td>
+                              <td className="td-created-at">
+                                {m.createdAt && (
+                                  <span>{moment.utc(m.createdAt).format('Do MMM YYYY')}</span>
+                                )}
+                              </td>
+                              <td className="td-name">
+                                <strong>
+                                  <Link to={`/trace/${m.slug}`}>
+                                    TRACE <em>{getTruncatedText(m.title, 35)}</em>
                                   </Link>
-                                </td>
-                                <td className="td-status">
-                                  {![Trace.PROPOSED, Trace.REJECTED].includes(m.status) &&
-                                    (m.status === Trace.PENDING || !m.mined) && (
-                                      <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />
-                                        &nbsp;
-                                      </span>
-                                    )}
-                                  {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
+                                </strong>
+                                <br />
+                                <i className="fa fa-arrow-right" />
+                                <Link
+                                  className="secondary-link"
+                                  to={`/campaigns/${m.campaign._id}`}
+                                >
+                                  CAMPAIGN <em>{getTruncatedText(m.campaign.title, 40)}</em>
+                                </Link>
+                              </td>
+                              <td className="td-status">
+                                {![Trace.PROPOSED, Trace.REJECTED].includes(m.status) &&
+                                  (m.status === Trace.PENDING || !m.mined) && (
                                     <span>
-                                      <i className="fa fa-exclamation-triangle" />
+                                      <i className="fa fa-circle-o-notch fa-spin" />
                                       &nbsp;
                                     </span>
                                   )}
-                                  {getReadableStatus(m.status)}
-                                </td>
-                                <td className="td-donations-number">
-                                  {m.isCapped &&
-                                    convertEthHelper(m.maxAmount, m.token && m.token.decimals)}{' '}
-                                  {getTokenSymbol(m.token)}
-                                </td>
-                                <td className="td-donations-number">{m.totalDonations}</td>
-                                <td className="td-donations-">
-                                  {m.totalDonated.map(td => (
-                                    <div key={td.symbol}>
-                                      {convertEthHelper(td.amount, td.decimals)} {td.symbol}
-                                    </div>
-                                  ))}
-                                </td>
-                                <td className="td-reviewer">
-                                  {m.reviewer && m.reviewerAddress && (
-                                    <Link to={`/profile/${m.reviewerAddress}`}>
-                                      {m.reviewer.name || 'Anonymous user'}
-                                    </Link>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                {m.status === 'NeedsReview' && reviewDue(m.updatedAt) && (
+                                  <span>
+                                    <i className="fa fa-exclamation-triangle" />
+                                    &nbsp;
+                                  </span>
+                                )}
+                                {getReadableStatus(m.status)}
+                              </td>
+                              <td className="td-donations-number">
+                                {m.isCapped &&
+                                  convertEthHelper(m.maxAmount, m.token && m.token.decimals)}{' '}
+                                {getTokenSymbol(m.token)}
+                              </td>
+                              <td className="td-donations-number">{m.totalDonations}</td>
+                              <td className="td-donations-">
+                                {m.totalDonated.map(td => (
+                                  <div key={td.symbol}>
+                                    {convertEthHelper(td.amount, td.decimals)} {td.symbol}
+                                  </div>
+                                ))}
+                              </td>
+                              <td className="td-reviewer">
+                                {m.reviewer && m.reviewerAddress && (
+                                  <Link to={`/profile/${m.reviewerAddress}`}>
+                                    {m.reviewer.name || 'Anonymous user'}
+                                  </Link>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
 
-                        {totalResults > itemsPerPage && (
-                          <center>
-                            <Pagination
-                              activePage={skipPages + 1}
-                              itemsCountPerPage={itemsPerPage}
-                              totalItemsCount={totalResults}
-                              pageRangeDisplayed={visiblePages}
-                              onChange={handlePageChanged}
-                            />
-                          </center>
-                        )}
-                      </div>
-                    )}
-
-                    {traces && traces.length === 0 && (
-                      <div className="no-results">
+                      {totalResults > itemsPerPage && (
                         <center>
-                          <h3>No Traces here!</h3>
-                          <img
-                            className="empty-state-img"
-                            src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-                            width="200px"
-                            height="200px"
-                            alt="no-traces-icon"
+                          <Pagination
+                            activePage={skipPages + 1}
+                            itemsCountPerPage={itemsPerPage}
+                            totalItemsCount={totalResults}
+                            pageRangeDisplayed={visiblePages}
+                            onChange={handlePageChanged}
                           />
                         </center>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                      )}
+                    </div>
+                  )}
+
+                  {traces && traces.length === 0 && (
+                    <div className="no-results">
+                      <center>
+                        <h3>No Traces here!</h3>
+                        <img
+                          className="empty-state-img"
+                          src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+                          width="200px"
+                          height="200px"
+                          alt="no-traces-icon"
+                        />
+                      </center>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,14 @@
 //Custom styles for Ant Design
+
+.ant-menu {
+  font-family: 'Red Hat Text', sans-serif;
+}
+
+// Padding for profile menu
+.ant-menu.ant-menu-sub.ant-menu-vertical > .ant-menu-item.ant-menu-item-only-child {
+  padding: 0 20px;
+}
+
 .custom-form-item {
 	& > .ant-form-item-label {
 		display: block;

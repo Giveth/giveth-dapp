@@ -5,9 +5,9 @@ import { Modal } from 'antd';
 import PropTypes from 'prop-types';
 
 import Donation from 'models/Donation';
-import ErrorPopup from './ErrorPopup';
-import { authenticateUser, checkBalance } from '../lib/middleware';
-import User from '../models/User';
+import ErrorPopup from '../../ErrorPopup';
+import { authenticateUser, checkBalance } from '../../../lib/middleware';
+import User from '../../../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
 
 const modalStyles = {

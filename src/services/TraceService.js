@@ -11,7 +11,7 @@ import { feathersClient } from 'lib/feathersClient';
 import getNetwork from 'lib/blockchain/getNetwork';
 import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
-import DonationService from 'services/DonationService';
+import DonationBlockchainService from 'services/DonationBlockchainService';
 import { toast } from 'react-toastify';
 import Trace from '../models/Trace';
 import IPFSService from './IPFSService';
@@ -120,15 +120,15 @@ class TraceService {
    *  reject:
    *    error message
    */
-  static async subscribeMyTraces({
+  static async getUserTraces({
     traceStatus,
     ownerAddress,
-    coownerAddress,
     recipientAddress,
     skipPages,
     itemsPerPage,
     onResult,
     onError,
+    subscribe,
   }) {
     const query = {
       $sort: {
@@ -174,7 +174,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             // { reviewerAddress: myAddress }, // Not really "My Traces"
             { recipientAddress },
           ],
@@ -184,7 +183,7 @@ class TraceService {
     } else {
       const resp = await feathersClient.service('campaigns').find({
         query: {
-          $or: [{ ownerAddress }, { coownerAddress }],
+          $or: [{ ownerAddress }, { coownerAddress: ownerAddress }],
           $select: ['_id'],
         },
       });
@@ -193,7 +192,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             {
               $and: [
                 { reviewerAddress: ownerAddress },
@@ -233,52 +231,30 @@ class TraceService {
       ];
     }
 
-    this.subscribe(query, onResult, onError);
-  }
-
-  /**
-   * Lazy-load Traces by subscribing to Trace listener
-   *
-   * @param query     A feathers query
-   *
-   * returns a Promise
-   *  resolve:
-   *    Object
-   *      data                (Array) Trace models
-   *      limit               (Number) items per page
-   *      skipped             (Number) pages skipped
-   *      totalResults        (Number) total results
-   *
-   *  reject:
-   *    error message
-   */
-
-  static subscribe(query, onResult, onError) {
-    this.traceSubscription = traces
+    if (!subscribe) {
+      return traces
+        .find({ query })
+        .then(resp => {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        })
+        .catch(onError);
+    }
+    return traces
       .watch({ listStrategy: 'always' })
       .find({ query })
-      .subscribe(
-        resp => {
-          try {
-            onResult({
-              ...resp,
-              data: resp.data.map(m => TraceFactory.create(m)),
-            });
-          } catch (e) {
-            onError(e);
-          }
-        },
-
-        onError,
-      );
-  }
-
-  /**
-   * Unsubscribe from Trace listener
-   */
-
-  static unsubscribe() {
-    if (this.traceSubscription) this.traceSubscription.unsubscribe();
+      .subscribe(resp => {
+        try {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        } catch (e) {
+          onError(e);
+        }
+      }, onError);
   }
 
   /**
@@ -290,8 +266,7 @@ class TraceService {
    * @param onError   Callback function if error is encountered
    */
   static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
-    return feathersClient
-      .service('traces')
+    return traces
       .find({
         query: {
           status: Trace.IN_PROGRESS,
@@ -977,7 +952,7 @@ class TraceService {
   static withdraw({ trace, from, onTxHash, onConfirmation, onError }) {
     let txHash;
 
-    Promise.all([getWeb3(), DonationService.getTraceDonations(trace._id)])
+    Promise.all([getWeb3(), DonationBlockchainService.getTraceDonations(trace._id)])
       .then(([web3, data]) => {
         const traceContract = trace.contract(web3);
 
@@ -995,7 +970,7 @@ class TraceService {
           .once('transactionHash', hash => {
             txHash = hash;
 
-            DonationService.updateSpentDonations(data.donations)
+            DonationBlockchainService.updateSpentDonations(data.donations)
               .then(() => {
                 if (!data.hasMoreDonations && trace.fullyFunded) {
                   traces

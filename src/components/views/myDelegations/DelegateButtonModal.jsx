@@ -9,9 +9,9 @@ import Donation from 'models/Donation';
 import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
-import DonationService from '../services/DonationService';
-import { convertEthHelper, roundBigNumber } from '../lib/helpers';
-import AmountSliderMarks from './AmountSliderMarks';
+import DonationBlockchainService from '../../../services/DonationBlockchainService';
+import { convertEthHelper, roundBigNumber } from '../../../lib/helpers';
+import AmountSliderMarks from '../../AmountSliderMarks';
 
 function getFilterType(types, donation) {
   return types.filter(
@@ -193,7 +193,7 @@ class DelegateButtonModal extends Component {
       objectsToDelegateToTrace: [],
     });
 
-    DonationService.delegate(
+    DonationBlockchainService.delegate(
       donation,
       utils.toWei(this.state.amount),
       this.state.delegationComment,

@@ -20,6 +20,10 @@ const communities = feathersClient.service('communities');
 const etherScanUrl = config.etherscan;
 
 class CommunityService {
+  constructor() {
+    this.communitySubscription = null;
+  }
+
   /**
    * Get a Community defined by ID
    *
@@ -112,8 +116,7 @@ class CommunityService {
 
       query.updatedAt = { $gt: lastDate };
     }
-    return feathersClient
-      .service('communities')
+    return communities
       .find({
         query,
       })
@@ -162,64 +165,54 @@ class CommunityService {
   }
 
   /**
-   * Subscribe to count of new donations. Initial resp will always be 0. Any new donations
-   * that come in while subscribed, the onSuccess will be called with the # of newDonations
-   * since initial subscribe
-   *
-   * @param id        ID of the Campaign which donations should be retrieved
-   * @param onSuccess Callback function once response is obtained successfully
-   * @param onError   Callback function if error is encountered
-   */
-  static subscribeNewDonations(id, onSuccess, onError) {
-    let initalTotal;
-    return feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          status: { $ne: Donation.FAILED },
-          delegateTypeId: id,
-          isReturn: false,
-          intendedProjectId: { $exists: false },
-          $limit: 0,
-        },
-      })
-      .subscribe(resp => {
-        if (initalTotal === undefined) {
-          initalTotal = resp.total;
-          onSuccess(0);
-        } else {
-          onSuccess(resp.total - initalTotal);
-        }
-      }, onError);
-  }
-
-  /**
    * Get the user's Communities
    *
    * @param userAddress   Address of the user whose Community list should be retrieved
    * @param skipPages     Amount of pages to skip
-   * @param itemsPerPage  Items to retreive
+   * @param itemsPerPage  Items to retrieve
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
    */
-  static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
-    return communities
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          ownerAddress: userAddress,
-          $sort: {
-            createdAt: -1,
-          },
-          $limit: itemsPerPage,
-          $skip: skipPages * itemsPerPage,
+  static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
+    const query = {
+      query: {
+        ownerAddress: userAddress,
+        $sort: {
+          createdAt: -1,
         },
+        $limit: itemsPerPage,
+        $skip: skipPages * itemsPerPage,
+      },
+    };
+    if (subscribe) {
+      return this.subscribe(query, onSuccess, onError);
+    }
+    return communities
+      .find(query)
+      .then(resp => {
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Community(c)),
+        });
       })
+      .catch(onError);
+  }
+
+  // All subscriptions goes here
+  static subscribe(find, onSuccess, onError) {
+    this.communitySubscription = communities
+      .watch({ listStrategy: 'always' })
+      .find(find)
       .subscribe(resp => {
         const newResp = { ...resp, data: resp.data.map(d => new Community(d)) };
         onSuccess(newResp);
       }, onError);
+
+    return this.communitySubscription;
+  }
+
+  static unsubscribe() {
+    if (this.communitySubscription) this.communitySubscription.unsubscribe();
   }
 
   /**

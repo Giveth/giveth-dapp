@@ -10,6 +10,15 @@ import { Context as WhiteListContext } from '../../../contextProviders/WhiteList
 import { signUpSwal } from '../../../lib/helpers';
 import MenuBarCreateButton from '../../MenuBarCreateButton';
 import TotalGasPaid from '../../views/TotalGasPaid';
+import TraceService from '../../../services/TraceService';
+import DonationService from '../../../services/DonationService';
+import ErrorPopup from '../../ErrorPopup';
+import LoadProjectsInfo from '../../views/myDelegations/LoadProjectsInfo';
+import GetDonations from '../../views/myDelegations/GetDonations';
+import Campaign from '../../../models/Campaign';
+import ErrorHandler from '../../../lib/ErrorHandler';
+import CampaignService from '../../../services/CampaignService';
+import CommunityService from '../../../services/CommunityService';
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -17,6 +26,11 @@ const { useBreakpoint } = Grid;
 const RightMenu = () => {
   const { lg } = useBreakpoint();
   const [selectedKeys, setSelectedKeys] = useState('');
+  const [userTotalTraces, setUserTotalTraces] = useState(0);
+  const [userTotalDelegations, setUserTotalDelegations] = useState();
+  const [userTotalDonations, setUserTotalDonations] = useState();
+  const [userTotalCampaigns, setUserTotalCampaigns] = useState();
+  const [userTotalCommunities, setUserTotalCommunities] = useState();
 
   const MenuBarCreateButtonWithRouter = withRouter(MenuBarCreateButton);
 
@@ -36,41 +50,132 @@ const RightMenu = () => {
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
   const userIsReviewer = currentUser.isReviewer || !reviewerWhitelistEnabled;
+  const userAddress = currentUser.address;
 
   const { pathname } = useLocation();
 
+  const getUserTraces = () => {
+    TraceService.getUserTraces({
+      ownerAddress: userAddress,
+      recipientAddress: userAddress,
+      skipPages: 0,
+      itemsPerPage: 0,
+      onResult: resp => {
+        setUserTotalTraces(resp.total);
+      },
+      onError: err => {
+        ErrorPopup('Something went wrong on getting user Traces!', err);
+      },
+    }).then();
+  };
+
+  const getUserDonations = () => {
+    DonationService.getUserDonations({
+      currentUser,
+      itemsPerPage: 0,
+      skipPages: 0,
+      subscribe: false,
+      onResult: resp => {
+        setUserTotalDonations(resp.total);
+      },
+      onError: err => {
+        ErrorPopup('Something went wrong on getting user donations!', err);
+      },
+    });
+  };
+
+  const getUserDelegations = () => {
+    LoadProjectsInfo({ userAddress, noTraces: true })
+      .then(resArray => {
+        const communities = resArray[0].data;
+        const campaigns = resArray[1].data.map(c => new Campaign(c));
+        GetDonations({
+          userAddress,
+          communities,
+          campaigns,
+          itemsPerPage: 0,
+          skipPages: 0,
+          onResult: resp => setUserTotalDelegations(resp.total),
+          onError: err => {
+            const message = `Error in fetching delegations info. ${err}`;
+            ErrorHandler(err, message);
+          },
+        }).then();
+      })
+      .catch(err => {
+        const message = `Unable to load Communities, Campaigns or Traces. ${err}`;
+        ErrorHandler(err, message);
+      });
+  };
+
+  const getUserCommunities = () => {
+    CommunityService.getUserCommunities(
+      userAddress,
+      0,
+      0,
+      communities => setUserTotalCommunities(communities.total),
+      err => {
+        const message = `Something went wrong on getting user Communities! ${err}`;
+        ErrorHandler(err, message);
+      },
+    );
+  };
+
+  const getUserCampaigns = () => {
+    CampaignService.getUserCampaigns(
+      userAddress,
+      0,
+      0,
+      camp => setUserTotalCampaigns(camp.total),
+      err => {
+        const message = `Something went wrong on getting user Campaigns! ${err}`;
+        ErrorHandler(err, message);
+      },
+    );
+  };
+
   useEffect(() => {
-    const userAddress = currentUser._address && currentUser._address.toLowerCase();
+    const userAddressLC = userAddress && userAddress.toLowerCase();
     switch (true) {
       case pathname === '/profile':
-      case pathname.toLowerCase() === `/profile/${userAddress}`:
+      case pathname.toLowerCase() === `/profile/${userAddressLC}`:
         setSelectedKeys('profile:1');
         break;
 
       case pathname === '/my-traces':
-        setSelectedKeys('Manage:1');
+        setSelectedKeys('profile:2');
         break;
 
       case pathname === '/my-donations':
-        setSelectedKeys('Manage:2');
+        setSelectedKeys('profile:3');
         break;
 
       case pathname === '/my-delegations':
-        setSelectedKeys('Manage:3');
+        setSelectedKeys('profile:4');
         break;
 
       case pathname === '/my-communities':
-        setSelectedKeys('Manage:4');
+        setSelectedKeys('profile:5');
         break;
 
       case pathname === '/my-campaigns':
-        setSelectedKeys('Manage:5');
+        setSelectedKeys('profile:6');
         break;
 
       default:
         setSelectedKeys('');
     }
-  }, [pathname, currentUser]);
+  }, [pathname, userAddress]);
+
+  useEffect(() => {
+    if (userAddress) {
+      getUserTraces();
+      getUserDelegations();
+      getUserDonations();
+      getUserCampaigns();
+      getUserCommunities();
+    }
+  }, [userAddress]);
 
   return (
     <Menu selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
@@ -79,26 +184,60 @@ const RightMenu = () => {
       </Menu.Item>
 
       {validProvider && currentUser.address && (
-        <SubMenu key="Manage" title="Manage">
-          <Menu.Item key="Manage:1">
-            <Link to="/my-traces">My Traces</Link>
+        <SubMenu
+          key="profile"
+          title={
+            <React.Fragment>
+              {currentUser.avatar && (
+                <Avatar className="mr-2" size={30} src={currentUser.avatar} round />
+              )}
+              <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
+            </React.Fragment>
+          }
+        >
+          <Menu.Item
+            key="profile:1"
+            className="mt-0"
+            style={{
+              borderBottom: '1px solid #EAEBEE',
+              paddingBottom: '44px',
+              paddingTop: '6px',
+            }}
+          >
+            <Link to="/profile">Profile</Link>
           </Menu.Item>
-          <Menu.Item key="Manage:2">
-            <Link to="/my-donations">My Donations</Link>
+          <Menu.Item key="profile:2">
+            <Link className="d-flex justify-content-between" to="/my-traces">
+              My Traces<span>{userTotalTraces}</span>
+            </Link>
           </Menu.Item>
-          <Menu.Item key="Manage:3">
-            <Link to="/my-delegations">My Delegations</Link>
+          <Menu.Item key="profile:3">
+            <Link className="d-flex justify-content-between" to="/my-donations">
+              My Donations<span>{userTotalDonations}</span>
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="profile:4">
+            <Link className="d-flex justify-content-between" to="/my-delegations">
+              My Delegations<span>{userTotalDelegations}</span>
+            </Link>
           </Menu.Item>
           {(userIsDelegator || userIsReviewer) && (
-            <Menu.Item key="Manage:4">
-              <Link to="/my-communities">My Communities</Link>
+            <Menu.Item key="profile:5">
+              <Link className="d-flex justify-content-between" to="/my-communities">
+                My Communities<span>{userTotalCommunities}</span>
+              </Link>
             </Menu.Item>
           )}
           {(userIsCampaignManager || userIsReviewer) && (
-            <Menu.Item key="Manage:5">
-              <Link to="/my-campaigns">My Campaigns</Link>
+            <Menu.Item key="profile:6">
+              <Link className="d-flex justify-content-between" to="/my-campaigns">
+                My Campaigns<span>{userTotalCampaigns}</span>
+              </Link>
             </Menu.Item>
           )}
+          <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
+            <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
+          </Menu.Item>
         </SubMenu>
       )}
 
@@ -124,27 +263,6 @@ const RightMenu = () => {
             Sign Up!
           </button>
         </Menu.Item>
-      )}
-
-      {currentUser.address && (
-        <React.Fragment>
-          <SubMenu
-            key="profile"
-            title={
-              <React.Fragment>
-                {currentUser.avatar && <Avatar size={30} src={currentUser.avatar} round />}
-                <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
-              </React.Fragment>
-            }
-          >
-            <Menu.Item key="profile:1">
-              <Link to="/profile">Profile</Link>
-            </Menu.Item>
-            <Menu.Item className="p-0 mb-0" style={{ height: '70px' }}>
-              <TotalGasPaid gasPaidUsdValue={currentUser.gasPaidUsdValue} className="menuGasPaid" />
-            </Menu.Item>
-          </SubMenu>
-        </React.Fragment>
       )}
     </Menu>
   );

@@ -2,11 +2,11 @@ import React from 'react';
 import Pagination from 'react-js-pagination';
 import PropTypes from 'prop-types';
 import DelegationsItem from './DelegationsItem';
-import { Donation, Trace } from '../models';
-import Campaign from '../models/Campaign';
-import BridgedTrace from '../models/BridgedTrace';
-import LPPCappedTrace from '../models/LPPCappedTrace';
-import LPTrace from '../models/LPTrace';
+import { Donation, Trace } from '../../../models';
+import Campaign from '../../../models/Campaign';
+import BridgedTrace from '../../../models/BridgedTrace';
+import LPPCappedTrace from '../../../models/LPPCappedTrace';
+import LPTrace from '../../../models/LPTrace';
 
 function DelegationsTable({
   delegations,

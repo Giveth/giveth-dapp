@@ -33,10 +33,11 @@ const MyCommunities = () => {
   const communitiesObserver = useRef();
 
   const visiblePages = 10;
-  const itemsPerPage = 2;
+  const itemsPerPage = 10;
 
   const cleanup = () => {
     if (communitiesObserver.current) communitiesObserver.current.unsubscribe();
+    communitiesObserver.current = undefined;
   };
 
   const loadCommunities = _skipPages => {
@@ -52,6 +53,7 @@ const MyCommunities = () => {
         setLoading(false);
         ErrorHandler(err, 'Something went wrong on fetching Communities.');
       },
+      true,
     );
   };
 
