@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
 import queryString from 'query-string';
 import Trace from 'models/Trace';
 import TraceFactory from 'models/TraceFactory';
@@ -721,8 +720,16 @@ class EditTraceOld extends Component {
         trace,
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
+          const analyticsData = {
+            formType: 'old',
+            id: trace.id,
+            title: trace.title,
+            campaignTitle: trace.campaign.title,
+          };
+
           if (created) {
             if (isNew) {
+              console.log('is new');
               const url = res ? `/trace/${res._slug}` : undefined;
               React.toast.info(
                 <Fragment>
@@ -730,6 +737,15 @@ class EditTraceOld extends Component {
                   {url && <Link to={url}>View trace</Link>}
                 </Fragment>,
               );
+              window.analytics.track('Trace Edit', {
+                action: 'proposed',
+                ...analyticsData,
+              });
+            } else {
+              window.analytics.track('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             React.toast.info(
@@ -741,6 +757,10 @@ class EditTraceOld extends Component {
                 </a>
               </p>,
             );
+            window.analytics.track('Trace Edit', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             React.toast.success(
               <p>
@@ -748,10 +768,9 @@ class EditTraceOld extends Component {
                 <br />
               </p>,
             );
-            GA.trackEvent({
-              category: 'Trace',
+            window.analytics.track('Trace Edit', {
               action: 'updated',
-              label: this.state.id,
+              ...analyticsData,
             });
           }
 

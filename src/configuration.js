@@ -15,7 +15,8 @@ const {
   REACT_APP_NATIVE_TOKEN_NAME,
   REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
-  HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
+  REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
+  REACT_APP_ANALYTICS_KEY = '',
 } = process.env;
 
 const configurations = {
@@ -172,13 +173,14 @@ config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feather
 config.foreignNodeConnection = REACT_APP_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
+config.analyticsKey = REACT_APP_ANALYTICS_KEY;
 config.githubUrl = REACT_APP_GITHUB_URL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
-config.projectsUpdatedAtLimitMonth = HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
+config.projectsUpdatedAtLimitMonth = REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
 config.sendErrors = ['localhost', 'develop', 'release', 'trace'].includes(REACT_APP_ENVIRONMENT);
 
 export default config;

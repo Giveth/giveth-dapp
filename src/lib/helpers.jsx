@@ -104,6 +104,14 @@ export const getReadableStatus = status => {
 };
 
 export const history = createBrowserHistory();
+let prevPath;
+// listen and notify Segment of client-side page updates
+history.listen(location => {
+  if (location.pathname !== prevPath) {
+    prevPath = location.pathname;
+    window.analytics.page();
+  }
+});
 
 // Get start of the day in UTC for a given date or start of current day in UTC
 export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');

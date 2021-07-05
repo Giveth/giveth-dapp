@@ -12,7 +12,6 @@ import React, {
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
 import { Slider, Form, Select, Input, InputNumber, Checkbox } from 'antd';
@@ -159,31 +158,28 @@ const DonateButtonModal = props => {
     return maxAmount;
   }, [selectedToken, model, props, NativeTokenBalance]);
 
-  const updateAllowance = useCallback(
-    (delay = 0) => {
-      const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
-      if (!isDonationInToken) {
-        setAllowance(new BigNumber(0));
-        setAllowanceStatus(AllowanceStatus.NotNeeded);
-      } else if (validProvider && currentUser.address) {
-        // Fetch from network after 1 sec inorder to new allowance value be returned in response
-        setTimeout(
-          () =>
-            DonationBlockchainService.getERC20tokenAllowance(
-              selectedToken.address,
-              currentUser.address,
-            )
-              .then(_allowance => {
-                console.log('Allowance:', _allowance);
-                setAllowance(new BigNumber(utils.fromWei(_allowance)));
-              })
-              .catch(() => {}),
-          delay,
-        );
-      }
-    },
-    [selectedToken, setAllowance, currentUser.address, validProvider],
-  );
+  const updateAllowance = (delay = 0) => {
+    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
+    if (!isDonationInToken) {
+      setAllowance(new BigNumber(0));
+      setAllowanceStatus(AllowanceStatus.NotNeeded);
+    } else if (validProvider && currentUser.address) {
+      // Fetch from network after 1 sec inorder to new allowance value be returned in response
+      setTimeout(
+        () =>
+          DonationBlockchainService.getERC20tokenAllowance(
+            selectedToken.address,
+            currentUser.address,
+          )
+            .then(_allowance => {
+              console.log('Allowance:', _allowance);
+              setAllowance(new BigNumber(utils.fromWei(_allowance)));
+            })
+            .catch(() => {}),
+        delay,
+      );
+    }
+  };
 
   const setToken = useCallback(
     address => {
@@ -280,7 +276,7 @@ const DonateButtonModal = props => {
     } else {
       clearUp();
     }
-  }, [selectedToken, isHomeNetwork, currentUser, pollToken, updateAllowance]);
+  }, [selectedToken, isHomeNetwork, currentUser]);
 
   const canDonateToProject = useCallback(() => {
     const { acceptsSingleToken, token } = model;
@@ -323,7 +319,7 @@ const DonateButtonModal = props => {
     }
 
     return clearUp;
-  }, [canDonateToProject, getMaxAmount, updateAllowance, model]);
+  }, [canDonateToProject, model]);
 
   /**
    *
@@ -448,11 +444,16 @@ const DonateButtonModal = props => {
 
             txUrl = `${etherscanUrl}tx/${txHash}`;
 
-            GA.trackEvent({
-              category: 'Donation',
+            window.analytics.track('Donated', {
               action: 'donated',
-              label: txUrl,
+              url: txUrl,
+              userAddress,
+              donationOwnerAddress,
+              to: toAdmin,
+              amount: _amount,
+              token: selectedToken,
             });
+
             donationPending(txUrl);
           })
           .then(() => {
@@ -464,6 +465,14 @@ const DonateButtonModal = props => {
 
             if (txHash === undefined) {
               if (err.code === 4001) {
+                window.analytics.track('Rejected Donation', {
+                  action: 'donated',
+                  userAddress,
+                  donationOwnerAddress,
+                  to: toAdmin,
+                  amount: _amount,
+                  token: selectedToken,
+                });
                 donationFailed(null, 'User denied transaction signature');
               } else {
                 donationFailed(
