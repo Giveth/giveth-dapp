@@ -110,9 +110,19 @@ function CreateBounty(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'bounty',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Bounty proposed to the Campaign Owner';
+              window.analytics.track('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -124,6 +134,10 @@ function CreateBounty(props) {
                 </a>
               </p>
             );
+            window.analytics.track('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Bounty has been updated!, this should not be happened';

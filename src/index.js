@@ -63,6 +63,7 @@ if (!analytics.initialize)
     analytics.SNIPPET_VERSION = '4.13.2';
   }
 window.analytics.load(config.analyticsKey);
+window.analytics.page();
 
 const rootElement = document.getElementById('root');
 

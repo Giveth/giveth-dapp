@@ -284,9 +284,25 @@ function EditPayment(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'payment',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the campaign owner';
+              window.analytics.track('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
+            } else {
+              notificationDescription = 'The Bounty has been updated!';
+              window.analytics.track('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -298,8 +314,16 @@ function EditPayment(props) {
                 </a>
               </p>
             );
+            window.analytics.track('Trace Edit', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             notificationDescription = 'Your Payment has been updated!';
+            window.analytics.track('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
 
           if (notificationDescription) {
