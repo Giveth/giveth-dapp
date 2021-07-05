@@ -47,6 +47,11 @@ const TraceConversationComment = ({ trace }) => {
           })
           .then(() => {
             setCreating(false);
+            window.analytics.track('Comment Added', {
+              traceId: trace.id,
+              traceTitle: trace.title,
+              userAddress: currentUser.address,
+            });
             closeModal();
           })
           .catch(err => {

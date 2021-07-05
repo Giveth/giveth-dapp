@@ -445,6 +445,7 @@ const DonateButtonModal = props => {
             txUrl = `${etherscanUrl}tx/${txHash}`;
 
             window.analytics.track('Donated', {
+              category: 'Donation',
               action: 'donated',
               url: txUrl,
               userAddress,

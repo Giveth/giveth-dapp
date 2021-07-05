@@ -31,7 +31,6 @@ import { IPFSService, CommunityService } from '../../services';
 import config from '../../configuration';
 import Community from '../../models/Community';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import GA from '../../lib/GoogleAnalytics';
 
 const { Title, Text } = Typography;
 
@@ -244,10 +243,12 @@ const EditCommunity = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          GA.trackEvent({
+          window.analytics.track('Community Created', {
             category: 'Community',
             action: 'created',
-            label: id,
+            id,
+            userAddress: currentUser.address,
+            txUrl: url,
           });
           history.push('/my-communities');
         }

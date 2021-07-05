@@ -125,6 +125,7 @@ REACT_APP_MILESTONE_FACTORY_ADDRESS | Differs per REACT_APP_ENVIRONMENT | Overwr
 REACT_APP_TOKEN_ADDRESSES | Differs per REACT_APP_ENVIRONMENT | Overwrites the bridged token addresses. This is a JSON object string w/ token name : token address. |
 REACT_APP_BLOCKEXPLORER | Differs per REACT_APP_ENVIRONMENT | Overwrites the block explorer base URL. The DApp assumes such blockexplorer api is `\<BLOCKEXPLORER\>/tx/\<TRANSACTION_HASH\>` |
 REACT_APP_DEFAULT_GASPRICE | 10 | Overwrites the default gasPrice that is used if ethgasstation service is down. The value is in gwei. |
+REACT_APP_ANALYTICS_KEY | "" | Overwrites `Segment` analytics key
 
 Example of `.env.local` file that makes the DApp run on port 8080, connects to the **develop** environment and uses custom blockexplorer:
 
@@ -137,25 +138,7 @@ REACT_APP_BLOCKEXPLORER='www.awesomeopensourceexplorer.io'
 The rest of the configuration can be found in `configuration.js`
 
 ### Analytics
-Google Analytics and Hotjar can be enabled per environment:
-```
-    analytics: {
-      ga_UA: 'UA-12345678-1',     // Your Google Analytics tracking code
-      useGoogleAnalytics: true,   // Whether to enable GA
-      useHotjar: false            // Whether to enable Hotjar
-    }
-```
-
-The following events are tracked with Google Analytics:
-- pageviews
-- signup
-- signin
-- creation of Communities/Campaigns/Traces
-- editing of Communities/Campaigns/Traces
-- making donations
-- actions on milestones
-
-**DO NO USE ANY OTHER THAN DEVELOP ENVIRONMENT FOR DEVELOPING AND TESTING.**
+Segment Analytics can be enabled by setting REACT_APP_ANALYTICS_KEY
 
 ### Query Strings
 The milestone creation/proposal view now supports query string arguments!

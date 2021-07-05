@@ -11,8 +11,6 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import GA from 'lib/GoogleAnalytics';
-
 import { history } from '../lib/helpers';
 
 import config from '../configuration';
@@ -104,8 +102,6 @@ const Application = () => {
                                 {({ state: { hasError } }) => (
                                   <div>
                                     <NotificationModalProvider>
-                                      {GA.init() && <GA.RouteTracker />}
-
                                       {!hasError && (
                                         <div>
                                           <Header />

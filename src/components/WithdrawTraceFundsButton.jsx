@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
@@ -78,10 +77,13 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                 trace,
                 from: userAddress,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  window.analytics.track('Trace Withdraw', {
                     category: 'Trace',
                     action: 'initiated withdrawal',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    txUrl,
                   });
 
                   React.toast.info(

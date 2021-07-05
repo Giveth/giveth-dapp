@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
-import GA from 'lib/GoogleAnalytics';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { actionWithLoggedIn } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -43,10 +42,12 @@ function ReproposeRejectedTraceButton({ trace }) {
           trace,
           reason,
           onSuccess: () => {
-            GA.trackEvent({
+            window.analytics.track('Rejected Trace Reproposed', {
               category: 'Trace',
               action: 'reproposed rejected trace',
-              label: trace._id,
+              id: trace._id,
+              title: trace.title,
+              userAddress: currentUser.address,
             });
             React.toast.info(<p>The Trace has been re-proposed.</p>);
           },

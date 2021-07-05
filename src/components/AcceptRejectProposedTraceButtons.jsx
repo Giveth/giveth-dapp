@@ -6,7 +6,6 @@ import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
@@ -66,10 +65,13 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  window.analytics.track('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    txUrl,
                   });
 
                   React.toast.info(

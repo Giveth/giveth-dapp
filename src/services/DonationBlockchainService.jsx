@@ -371,14 +371,26 @@ class DonationBlockchainService {
               });
             }
 
+            const txLink = `${etherScanUrl}tx/${txHash}`;
+
             feathersClient
               .service('/donations')
               .create(newDonation)
-              .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
+              .then(() => onCreated(txLink))
               .catch(err => {
                 ErrorPopup('Unable to update the donation in feathers', err);
                 onError(err);
               });
+
+            window.analytics.track('Delegated', {
+              category: 'Donation',
+              action: 'delegated',
+              id: donation._id,
+              txUrl: txLink,
+              userAddress: from,
+              receiverId,
+              delegateTo,
+            });
           })
           .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {

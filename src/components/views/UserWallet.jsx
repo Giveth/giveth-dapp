@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import GA from 'lib/GoogleAnalytics';
 import BackupWalletButton from '../BackupWalletButton';
 import { isLoggedIn } from '../../lib/middleware';
 // import WithdrawButton from '../WithdrawButton';
@@ -50,12 +49,7 @@ class UserWallet extends Component {
   }
 
   /* eslint-disable class-methods-use-this */
-  onBackup() {
-    GA.trackEvent({
-      category: 'User',
-      action: 'backed up wallet',
-    });
-  }
+  onBackup() {}
 
   hasTokenBalance() {
     return Object.values(config.tokenAddresses).some(a => this.props.wallet.getTokenBalance(a) > 0);

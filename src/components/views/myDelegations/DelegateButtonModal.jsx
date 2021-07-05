@@ -4,7 +4,6 @@ import { Input, Select, Slider, Form, InputNumber } from 'antd';
 import { utils } from 'web3';
 import PropTypes from 'prop-types';
 
-import GA from 'lib/GoogleAnalytics';
 import Donation from 'models/Donation';
 import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
@@ -146,12 +145,6 @@ class DelegateButtonModal extends Component {
         ) : (
           <p>The Giver has been notified.</p>
         );
-
-      GA.trackEvent({
-        category: 'Donation',
-        action: 'delegated',
-        label: donation._id,
-      });
 
       React.swal({
         title: 'Delegated!',

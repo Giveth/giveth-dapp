@@ -1,7 +1,6 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import GA from 'lib/GoogleAnalytics';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
 import Campaign from '../models/Campaign';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -35,10 +34,13 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.info(msg);
-            GA.trackEvent({
+            window.analytics.track('Campaign Canceled', {
               category: 'Campaign',
-              action: 'canceled',
-              label: campaign.id,
+              action: 'cancel',
+              id: campaign.id,
+              title: campaign.title,
+              donationCounters: campaign.donationCounters,
+              txUrl: url,
             });
           };
 

@@ -5,7 +5,6 @@ import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
 import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -47,10 +46,14 @@ const CancelTraceButton = ({ trace, className }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  window.analytics.track('Trace Canceled', {
                     category: 'Trace',
-                    action: 'canceled',
-                    label: trace._id,
+                    action: 'cancel',
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    donationCounters: trace.donationCounters,
+                    txUrl,
                   });
 
                   React.toast.info(
