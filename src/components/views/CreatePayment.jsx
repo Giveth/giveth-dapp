@@ -244,9 +244,19 @@ function CreatePayment(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'payment',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the Campaign Owner';
+              window.analytics.track('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -258,6 +268,10 @@ function CreatePayment(props) {
                 </a>
               </p>
             );
+            window.analytics.track('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Payment has been updated!, this should not be happened';

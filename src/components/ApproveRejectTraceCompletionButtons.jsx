@@ -5,7 +5,6 @@ import Trace from 'models/Trace';
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
 import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -44,10 +43,13 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  window.analytics.track('Approved Trace', {
                     category: 'Trace',
-                    action: 'approved completion',
-                    label: trace._id,
+                    action: 'approved',
+                    userAddress: currentUser.address,
+                    id: trace._id,
+                    title: trace.title,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -115,10 +117,12 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  window.analytics.track('Trace Rejected', {
                     category: 'Trace',
                     action: 'rejected completion',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
                   });
 
                   React.toast.info(

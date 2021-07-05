@@ -209,9 +209,19 @@ function CreateExpense(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'expense',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Expense proposed to the Campaign Owner';
+              window.analytics.track('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -223,6 +233,10 @@ function CreateExpense(props) {
                 </a>
               </p>
             );
+            window.analytics.track('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Expense has been updated!, this should not be happened';

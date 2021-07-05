@@ -4,6 +4,7 @@ import { hydrate, render } from 'react-dom';
 import { unregister } from './lib/registerServiceWorker';
 import Application from './containers/Application';
 import './styles/application.css';
+import './lib/SegmentAnalytics';
 
 unregister();
 

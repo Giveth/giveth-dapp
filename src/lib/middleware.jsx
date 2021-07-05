@@ -68,6 +68,7 @@ const authenticate = async (address, redirectOnFail) => {
 
   try {
     await feathersClient.authenticate(authData);
+    window.analytics.identify(address);
     return true;
   } catch (response) {
     // normal flow will issue a 401 with a challenge message we need to sign and send to
@@ -108,6 +109,7 @@ const authenticate = async (address, redirectOnFail) => {
             const signature = await web3.eth.personal.sign(msg, address);
             authData.signature = signature;
             await feathersClient.authenticate(authData);
+            window.analytics.identify(address);
             clearTimeout(timeOut);
             resolve(true);
           } catch (e) {

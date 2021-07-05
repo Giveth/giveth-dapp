@@ -141,9 +141,26 @@ function EditBounty(props) {
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
+        const analyticsData = {
+          formType: 'bounty',
+          id: res._id,
+          title: ms.title,
+          campaignTitle: campaign.title,
+        };
+
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Bounty proposed to the campaign owner';
+            window.analytics.track('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
+          } else {
+            notificationDescription = 'The Bounty has been updated!';
+            window.analytics.track('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
         } else if (txUrl) {
           notificationDescription = (
@@ -155,8 +172,16 @@ function EditBounty(props) {
               </a>
             </p>
           );
+          window.analytics.track('Trace Edit', {
+            action: 'created',
+            ...analyticsData,
+          });
         } else {
           notificationDescription = 'Your Bounty has been updated!';
+          window.analytics.track('Trace Edit', {
+            action: 'updated proposed',
+            ...analyticsData,
+          });
         }
 
         if (notificationDescription) {

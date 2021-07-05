@@ -168,9 +168,25 @@ function EditMilestone(props) {
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
+        const analyticsData = {
+          formType: 'milestone',
+          id: res._id,
+          title: ms.title,
+          campaignTitle: campaign.title,
+        };
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Milestone proposed to the Campaign Owner';
+            window.analytics.track('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
+          } else {
+            notificationDescription = 'The Bounty has been updated!';
+            window.analytics.track('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
         } else if (txUrl) {
           notificationDescription = (
@@ -182,8 +198,16 @@ function EditMilestone(props) {
               </a>
             </p>
           );
+          window.analytics.track('Trace Edit', {
+            action: 'created',
+            ...analyticsData,
+          });
         } else {
           notificationDescription = 'Your Milestone has been updated!';
+          window.analytics.track('Trace Edit', {
+            action: 'updated proposed',
+            ...analyticsData,
+          });
         }
 
         if (notificationDescription) {

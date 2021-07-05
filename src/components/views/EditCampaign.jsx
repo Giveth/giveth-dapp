@@ -32,7 +32,6 @@ import { IPFSService } from '../../services';
 import config from '../../configuration';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import GA from '../../lib/GoogleAnalytics';
 import useReviewers from '../../hooks/useReviewers';
 
 const { Title, Text } = Typography;
@@ -252,10 +251,13 @@ const EditCampaign = () => {
             </p>
           );
           notification.info({ description: msg });
-          GA.trackEvent({
+          window.analytics.track('Campaign Created', {
             category: 'Campaign',
             action: 'created',
-            label: id,
+            userAddress: currentUser.address,
+            id,
+            title: campaign.title,
+            txUrl: url,
           });
           history.push('/my-campaigns');
         }

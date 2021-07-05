@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 
 import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
 import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
@@ -125,17 +124,19 @@ class EditProfile extends Component {
       showToast(msg, url, true);
 
       if (created) {
-        GA.trackEvent({
+        window.analytics.track('User Created', {
           category: 'User',
           action: 'created',
-          label: this.state.user.address,
+          userAddress: this.state.user.address,
+          txUrl: url,
         });
       } else {
         if (this.mounted) this.setState({ isSaving: false });
-        GA.trackEvent({
+        window.analytics.track('User Updated', {
           category: 'User',
           action: 'updated',
           label: this.state.user.address,
+          txUrl: url,
         });
       }
     };
