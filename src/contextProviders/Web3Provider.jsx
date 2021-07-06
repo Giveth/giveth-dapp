@@ -2,7 +2,7 @@ import React, { Component, createContext, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import Onboard from 'bnc-onboard';
-import Web3 from 'web3';
+// import Web3 from 'web3';
 
 import config from '../configuration';
 import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
@@ -44,7 +44,6 @@ class Web3Provider extends Component {
       validProvider: false,
       isHomeNetwork: false,
       isForeignNetwork: false,
-      isEnabled: false,
       setupTimeout: false,
       showForeignNetRequiredWarning: false,
       showHomeNetRequiredWarning: false,
@@ -78,8 +77,8 @@ class Web3Provider extends Component {
         wallet: wallet => {
           // instantiate web3 when the user has selected a wallet
           window.localStorage.setItem('selectedWallet', wallet.name);
-          const web3 = new Web3(wallet.provider);
-          console.log(web3);
+          // const web3 = new Web3(wallet.provider);
+          // console.log(web3);
           this.setState({ validProvider: !!wallet.provider });
           console.log(`${wallet.name} connected!`);
         },
@@ -131,12 +130,13 @@ class Web3Provider extends Component {
       validProvider,
       isHomeNetwork,
       isForeignNetwork,
-      isEnabled,
       setupTimeout,
       showForeignNetRequiredWarning,
       showHomeNetRequiredWarning,
     } = this.state;
-    // console.log(balance, network, address);
+
+    const isEnabled = !!account;
+
     return (
       <Fragment>
         <ForeignRequiredModal

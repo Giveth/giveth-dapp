@@ -54,13 +54,12 @@ class UserProvider extends Component {
 
   componentDidUpdate(prevProps) {
     const { currentUser } = this.state;
-
     const { account } = this.props;
     if (
       (account && !currentUser.address) ||
       (currentUser.address && account !== prevProps.account)
     ) {
-      this.getUserData(account);
+      this.getUserData(account).then();
       this.checkGivethWallet();
     }
   }
@@ -81,7 +80,7 @@ class UserProvider extends Component {
         .then(
           resp => {
             const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-            if (currentUser.address === address) {
+            if (currentUser.address.toLowerCase() === address.toLowerCase()) {
               this.setState({ currentUser }, () => {
                 this.authenticateFeathers();
 
@@ -198,7 +197,6 @@ class UserProvider extends Component {
 
   render() {
     const { currentUser, hasError, userIsCommunityOwner, isLoading } = this.state;
-
     return (
       <Provider
         value={{
