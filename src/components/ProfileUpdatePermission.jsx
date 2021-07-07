@@ -4,7 +4,7 @@ import { CheckboxGroup, Form } from 'formsy-react-components';
 import { User } from '../models';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { feathersClient } from '../lib/feathersClient';
-import { actionWithLoggedIn } from '../lib/middleware';
+import { authenticateUser } from '../lib/middleware';
 import ErrorHandler from '../lib/ErrorHandler';
 
 function ProfileUpdatePermission({ user, updateUser }) {
@@ -45,7 +45,7 @@ function ProfileUpdatePermission({ user, updateUser }) {
     roleAccessKeys.forEach(key => {
       mutation[key] = roles.includes(key);
     });
-    actionWithLoggedIn(currentUser).then(() => {
+    authenticateUser(currentUser, false).then(() => {
       feathersClient
         .service('users')
         .patch(user.address, mutation)

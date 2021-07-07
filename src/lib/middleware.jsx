@@ -7,7 +7,6 @@ import { history } from './helpers';
 import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
-import ErrorPopup from '../components/ErrorPopup';
 
 /**
  * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
@@ -211,17 +210,4 @@ export const checkBalance = balance =>
         icon: 'warning',
       });
     }
-  });
-
-export const actionWithLoggedIn = currentUser =>
-  new Promise(resolve => {
-    isLoggedIn(currentUser, false)
-      .then(resolve)
-      .catch(err => {
-        if (err === 'notLoggedIn') {
-          ErrorPopup('You are not logged in.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
   });

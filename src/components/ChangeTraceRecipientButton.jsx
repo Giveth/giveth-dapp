@@ -4,7 +4,7 @@ import { utils } from 'web3';
 
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import Trace from '../models/Trace';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -22,7 +22,7 @@ function ChangeTraceRecipientButton({ trace }) {
   } = useContext(Web3Context);
 
   const changeRecipient = () => {
-    actionWithLoggedIn(currentUser).then(() => {
+    authenticateUser(currentUser, false).then(() => {
       checkBalance(balance)
         .then(async () => {
           try {

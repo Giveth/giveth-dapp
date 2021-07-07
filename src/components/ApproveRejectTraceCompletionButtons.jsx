@@ -5,7 +5,7 @@ import Trace from 'models/Trace';
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
@@ -24,7 +24,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   const conversationModal = useRef();
 
   const approveTraceCompleted = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -98,7 +98,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   };
 
   const rejectTraceCompleted = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       checkBalance(balance)
         .then(() => {
           conversationModal.current

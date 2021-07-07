@@ -5,7 +5,7 @@ import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
-import { actionWithLoggedIn } from '../lib/middleware';
+import { authenticateUser } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
@@ -21,7 +21,7 @@ function ReproposeRejectedTraceButton({ trace }) {
   } = useContext(Web3Context);
 
   const repropose = () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       React.swal({
         title: 'Re-propose Trace?',
         text: 'Are you sure you want to re-propose this Trace?',
