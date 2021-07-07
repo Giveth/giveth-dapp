@@ -8,21 +8,6 @@ import { feathersClient } from './feathersClient';
 import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
 
-/**
- * Check if there is a currentUser. If not, routes back. If yes, resolves returned promise
- *
- * @param currentUser {object} Current User object
- * @param history     {object} Standard browser history object
- *
- * @return new Promise
- *
- * usage:
- *    isLoggedIn(currentUser)
- *      .then(()=> ...do something when logged in)
- *      .catch((err) ...do something when not logged in
- *      returns new Error 'notLoggedIn' if not logged in
- */
-
 export const historyBackWFallback = fallbackUrl => {
   const destUrl = fallbackUrl || '/';
   const prevPage = window.location.href;
@@ -35,18 +20,6 @@ export const historyBackWFallback = fallbackUrl => {
     }
   }, 500);
 };
-
-export const isLoggedIn = (currentUser, redirectOnFail) =>
-  new Promise((resolve, reject) => {
-    if (currentUser.address && currentUser.authenticated) resolve();
-    else {
-      // this refers to UserProvider
-      React.signIn(redirectOnFail);
-      reject();
-    }
-  }).catch({
-    // ErrorPopup('An error has ocurred', e);
-  });
 
 const authenticate = async (address, redirectOnFail) => {
   const web3 = await getWeb3();
