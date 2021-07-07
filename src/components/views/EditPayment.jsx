@@ -96,7 +96,6 @@ function EditPayment(props) {
   }, []);
 
   const goBack = () => {
-    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   };
 
@@ -118,12 +117,14 @@ function EditPayment(props) {
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
       );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
     } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';

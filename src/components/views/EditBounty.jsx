@@ -48,7 +48,6 @@ function EditBounty(props) {
     trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
-    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
@@ -70,12 +69,14 @@ function EditBounty(props) {
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
       );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
     } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const iValues = {
