@@ -10,20 +10,6 @@ import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWa
 const Context = createContext();
 const { Provider, Consumer } = Context;
 
-// const getAccount = async web3 => {
-//   try {
-//     const addrs = await web3.eth.getAccounts();
-//     if (addrs.length > 0) return addrs[0];
-//   } catch (e) {
-//     // ignore
-//   }
-//   return undefined;
-// };
-
-// const fetchNetwork = async web3 => ({
-//   networkId: await web3.eth.net.getId(),
-// });
-
 const getNetworkState = networkId => ({
   isHomeNetwork: networkId === config.homeNetworkId,
   isForeignNetwork: networkId === config.foreignNetworkId,
@@ -31,7 +17,7 @@ const getNetworkState = networkId => ({
 
 const wallets = [
   { walletName: 'metamask', preferred: true },
-  // { walletName: 'torus', preferred: true }
+  { walletName: 'torus', preferred: true },
 ];
 
 class Web3Provider extends Component {
@@ -52,9 +38,6 @@ class Web3Provider extends Component {
       onHomeNetWarningClose: undefined,
       homeNetWarningButtonLabel: 'Close',
     };
-
-    this.enableTimedout = false;
-
     this.enableProvider = this.enableProvider.bind(this);
     this.displayForeignNetRequiredWarning = this.displayForeignNetRequiredWarning.bind(this);
     this.displayHomeNetRequiredWarning = this.displayHomeNetRequiredWarning.bind(this);
@@ -65,24 +48,24 @@ class Web3Provider extends Component {
     this.initOnBoard();
   }
 
-  initOnBoard() {
-    const dappId = '4b28f36b-c725-4475-8cef-af4850473e50';
-    const networkId = 4;
+  componentDidUpdate(prevProps, prevState, _) {
+    if (prevState.networkId !== this.state.networkId) {
+      this.state.onboard.config({ networkId: this.state.networkId });
+    }
+  }
 
-    // initialize onboard
+  initOnBoard() {
     const onboard = Onboard({
-      dappId,
-      networkId,
+      dappId: config.onboardDappId,
+      networkId: config.foreignNetworkId,
       subscriptions: {
         wallet: wallet => {
-          // instantiate web3 when the user has selected a wallet
           window.localStorage.setItem('selectedWallet', wallet.name);
           // const web3 = new Web3(wallet.provider);
           // console.log(web3);
           this.setState({ validProvider: !!wallet.provider });
-          console.log(`${wallet.name} connected!`);
         },
-        network: network => this.setState({ ...getNetworkState(network) }),
+        network: network => this.setState({ ...getNetworkState(network), networkId: network }),
         address: address => this.setState({ account: address }),
         balance: balance => this.setState({ balance: new BigNumber(balance) }),
       },
@@ -97,14 +80,12 @@ class Web3Provider extends Component {
     } else {
       onboard.walletSelect().then();
     }
-
-    this.setState({ onboard });
     this.props.onLoaded();
+    this.setState({ onboard });
   }
 
   enableProvider() {
     this.state.onboard.walletCheck().then();
-    // console.log(this.state.onboard.getState())
   }
 
   displayForeignNetRequiredWarning(onClose, buttonLabel = 'Close') {
