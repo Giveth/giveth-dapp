@@ -298,7 +298,7 @@ function EditPayment(props) {
                 ...analyticsData,
               });
             } else {
-              notificationDescription = 'The Bounty has been updated!';
+              notificationDescription = 'The Payment has been updated!';
               window.analytics.track('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,

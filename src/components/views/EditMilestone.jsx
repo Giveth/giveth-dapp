@@ -182,7 +182,7 @@ function EditMilestone(props) {
               ...analyticsData,
             });
           } else {
-            notificationDescription = 'The Bounty has been updated!';
+            notificationDescription = 'The Milestone has been updated!';
             window.analytics.track('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,

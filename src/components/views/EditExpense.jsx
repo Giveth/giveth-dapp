@@ -269,7 +269,7 @@ function EditExpense(props) {
                 ...analyticsData,
               });
             } else {
-              notificationDescription = 'The Bounty has been updated!';
+              notificationDescription = 'The Expense has been updated!';
               window.analytics.track('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
