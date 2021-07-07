@@ -68,6 +68,10 @@ const EditCommunity = ({ isNew, match }) => {
   );
   const mounted = useRef();
 
+  const goBack = () => {
+    history.goBack();
+  };
+
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -113,7 +117,10 @@ const EditCommunity = ({ isNew, match }) => {
             });
             communityObject.current = communityItem;
             setIsLoading(false);
-          } else history.goBack();
+          } else {
+            ErrorHandler({}, 'You are not allowed to edit this Community.');
+            goBack();
+          }
         })
         .catch(err => {
           if (err.status === 404) {
@@ -188,10 +195,6 @@ const EditCommunity = ({ isNew, match }) => {
 
   const removePicture = () => {
     setPicture('');
-  };
-
-  const goBack = () => {
-    history.goBack();
   };
 
   const submit = async () => {

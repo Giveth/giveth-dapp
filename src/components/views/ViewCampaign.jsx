@@ -21,10 +21,7 @@ import DelegateMultipleButton from '../DelegateMultipleButton';
 import ChangeOwnershipButton from '../ChangeOwnershipButton';
 import LeaderBoard from '../LeaderBoard';
 import AggregateDonationService from '../../services/AggregateDonationService';
-import {
-  Consumer as UserConsumer,
-  Context as UserContext,
-} from '../../contextProviders/UserProvider';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 import DescriptionRender from '../DescriptionRender';
 
@@ -54,7 +51,7 @@ const helmetContext = {};
 
 const ViewCampaign = ({ match }) => {
   const {
-    state: { currentUser },
+    state: { currentUser, userIsCommunityOwner },
   } = useContext(UserContext);
 
   const [isLoading, setLoading] = useState(true);
@@ -267,339 +264,327 @@ const ViewCampaign = ({ match }) => {
 
   return (
     <HelmetProvider context={helmetContext}>
-      <UserConsumer>
-        {({ state: { userIsCommunityOwner } }) => (
-          <ErrorBoundary>
-            <div id="view-campaign-view">
-              {isLoading && <Loader className="fixed" />}
+      <ErrorBoundary>
+        <div id="view-campaign-view">
+          {isLoading && <Loader className="fixed" />}
 
-              {!isLoading && (
-                <div>
-                  <Helmet>
-                    <title>{campaign.title}</title>
-                  </Helmet>
+          {!isLoading && (
+            <div>
+              <Helmet>
+                <title>{campaign.title}</title>
+              </Helmet>
 
-                  <BackgroundImageHeader image={campaign.image} adminId={campaign.projectId}>
-                    <h6>CAMPAIGN</h6>
-                    <h1>{campaign.title}</h1>
+              <BackgroundImageHeader image={campaign.image} adminId={campaign.projectId}>
+                <h6>CAMPAIGN</h6>
+                <h1>{campaign.title}</h1>
 
-                    <EditCampaignButton
-                      campaign={campaign}
-                      className="m-1 ghostButtonHeader btn-primary"
+                <EditCampaignButton
+                  campaign={campaign}
+                  className="m-1 ghostButtonHeader btn-primary"
+                />
+                <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
+
+                {campaign.canReceiveDonate && (
+                  <div className="mt-4">
+                    <DonateButton
+                      model={{
+                        type: Campaign.type,
+                        title: campaign.title,
+                        id: campaign.id,
+                        adminId: campaign.projectId,
+                        customThanksMessage: campaign.customThanksMessage,
+                      }}
+                      autoPopup
+                      className="header-donate"
+                      size="large"
                     />
-                    <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
+                  </div>
+                )}
+              </BackgroundImageHeader>
 
-                    {campaign.canReceiveDonate && (
-                      <div className="mt-4">
-                        <DonateButton
-                          model={{
-                            type: Campaign.type,
-                            title: campaign.title,
-                            id: campaign.id,
-                            adminId: campaign.projectId,
-                            customThanksMessage: campaign.customThanksMessage,
-                          }}
-                          autoPopup
-                          className="header-donate"
-                          size="large"
-                        />
-                      </div>
-                    )}
-                  </BackgroundImageHeader>
+              <GoBackSection
+                backUrl="/campaigns"
+                backButtonTitle="Campaigns"
+                projectTitle={campaign.title}
+                inPageLinks={goBackSectionLinks}
+              />
 
-                  <GoBackSection
-                    backUrl="/campaigns"
-                    backButtonTitle="Campaigns"
-                    projectTitle={campaign.title}
-                    inPageLinks={goBackSectionLinks}
-                  />
+              <div className="container mt-4">
+                <div>
+                  <div>
+                    <h5 className="title">Subscribe to updates </h5>
+                    <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                  </div>
 
-                  <div className="container mt-4">
-                    <div>
-                      <div>
-                        <h5 className="title">Subscribe to updates </h5>
-                        <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
-                      </div>
+                  {userIsCommunityOwner && campaign.canReceiveDonate && (
+                    <ProjectViewActionAlert message="Delegate some donation to this project">
+                      <DelegateMultipleButton campaign={campaign} />
+                    </ProjectViewActionAlert>
+                  )}
 
-                      {userIsCommunityOwner && campaign.canReceiveDonate && (
-                        <ProjectViewActionAlert message="Delegate some donation to this project">
-                          <DelegateMultipleButton campaign={campaign} />
-                        </ProjectViewActionAlert>
-                      )}
+                  {userIsOwner && (
+                    <ProjectViewActionAlert message="Change Co-Owner of Campaign">
+                      <ChangeOwnershipButton campaign={campaign} />
+                    </ProjectViewActionAlert>
+                  )}
+                </div>
 
-                      {userIsOwner && (
-                        <ProjectViewActionAlert message="Change Co-Owner of Campaign">
-                          <ChangeOwnershipButton campaign={campaign} />
-                        </ProjectViewActionAlert>
-                      )}
-                    </div>
-
-                    <div id="description">
-                      <div className="about-section-header">
-                        <h5 className="title">About</h5>
-                        <div className="text-center">
-                          <Link to={`/profile/${ownerAddress}`}>
-                            <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
-                            <p className="small">{getUserName(campaign.owner)}</p>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="card content-card ">
-                        <div className="card-body content">{renderDescription()}</div>
-
-                        {campaign.communityUrl && (
-                          <div className="pl-3 pb-4">
-                            <CommunityButton
-                              className="btn btn-secondary"
-                              url={campaign.communityUrl}
-                            >
-                              Join our Community
-                            </CommunityButton>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div id="donations" className="spacer-top-50">
-                      <Row justify="space-between" className="spacer-bottom-16">
-                        <Col span={12} className="align-items-center d-flex">
-                          <h5 className="mb-0">{leaderBoardTitle}</h5>
-                          {newDonations > 0 && (
-                            <span
-                              className="badge badge-primary ml-4"
-                              style={{ fontSize: '12px', padding: '6px' }}
-                            >
-                              {newDonations} NEW
-                            </span>
-                          )}
-                        </Col>
-                        <Col span={12}>
-                          {campaign.canReceiveDonate && (
-                            <Row gutter={[16, 16]} justify="end">
-                              <Col xs={24} sm={12} lg={8}>
-                                <DonateButton
-                                  model={{
-                                    type: Campaign.type,
-                                    title: campaign.title,
-                                    id: campaign.id,
-                                    adminId: campaign.projectId,
-                                    customThanksMessage: campaign.customThanksMessage,
-                                    token: { symbol: config.nativeTokenName },
-                                  }}
-                                  size="large"
-                                />
-                              </Col>
-                            </Row>
-                          )}
-                        </Col>
-                      </Row>
-                      <LeaderBoard
-                        aggregateDonations={aggregateDonations}
-                        isLoading={isLoadingDonations}
-                        total={aggregateDonationsTotal}
-                        loadMore={loadMoreAggregateDonations}
-                        newDonations={newDonations}
-                      />
-                    </div>
-
-                    <div id="funding" className="spacer-top-50">
-                      <Row justify="space-between" className="spacer-bottom-16">
-                        <Col lg={4}>
-                          <h5>Funding</h5>
-                        </Col>
-                        <Col xs={24} lg={20}>
-                          <Row gutter={[16, 16]} justify="end">
-                            <Col xs={24} md={13} lg={12} xl={10}>
-                              <Button
-                                onClick={() => downloadCsv(campaign.id)}
-                                loading={downloadingCsv}
-                                block
-                                size="large"
-                              >
-                                Download this Campaign&apos;s Financial History
-                              </Button>
-                            </Col>
-                            {campaign.canReceiveDonate && (
-                              <Fragment>
-                                {userIsCommunityOwner && (
-                                  <Col xs={12} md={7} lg={7} xl={5}>
-                                    <DelegateMultipleButton size="large" campaign={campaign} />
-                                  </Col>
-                                )}
-                                <Col xs={12} md={4} lg={5}>
-                                  <DonateButton
-                                    model={{
-                                      type: Campaign.type,
-                                      title: campaign.title,
-                                      id: campaign.id,
-                                      adminId: campaign.projectId,
-                                      customThanksMessage: campaign.customThanksMessage,
-                                      token: {
-                                        symbol: config.nativeTokenName,
-                                      },
-                                    }}
-                                    size="large"
-                                  />
-                                </Col>
-                              </Fragment>
-                            )}
-                          </Row>
-                        </Col>
-                      </Row>
-                      <Balances entity={campaign} />
-                    </div>
-
-                    <Row justify="space-between" className="spacer-bottom-50 spacer-top-50">
-                      <h5>Campaign Reviewer</h5>
-                      {campaign && campaign.reviewer && (
-                        <Link to={`/profile/${campaign.reviewerAddress}`}>
-                          {getUserName(campaign.reviewer)}
-                        </Link>
-                      )}
-                      {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
-                    </Row>
-
-                    <div id="traces" className="pb-5">
-                      <Row justify="space-between" className="spacer-bottom-16">
-                        <Col lg={8}>
-                          <h5>{tracesTitle}</h5>
-                        </Col>
-                        <Col xs={24} lg={16}>
-                          <Row gutter={[16, 16]}>
-                            {!campaign.canReceiveDonate && <Col xs={12} sm={6} />}
-                            {campaign.projectId > 0 && (
-                              <Col xs={24} sm={12}>
-                                <div className="customSearchBox">
-                                  <Input
-                                    className="pr-5"
-                                    placeholder="Search Traces ..."
-                                    size="large"
-                                    value={searchPhrase}
-                                    onChange={query => {
-                                      setSearchPhrase(query.target.value);
-                                    }}
-                                  />
-                                  <div>
-                                    <CloseOutlined
-                                      className={!searchPhrase ? 'd-none' : ''}
-                                      onClick={() => setSearchPhrase('')}
-                                    />
-                                    <SearchOutlined
-                                      className={searchPhrase ? 'd-none' : ''}
-                                      onClick={() => {
-                                        loadMoreTraces(true);
-                                        setLoadingFromScratch(true);
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              </Col>
-                            )}
-
-                            {campaign.projectId > 0 &&
-                              campaign.isActive &&
-                              (userIsOwner || currentUser) && (
-                                <Col xs={12} sm={6}>
-                                  <Button
-                                    type="primary"
-                                    onClick={gotoCreateTrace}
-                                    block
-                                    size="large"
-                                  >
-                                    Create New
-                                  </Button>
-                                </Col>
-                              )}
-
-                            {campaign.canReceiveDonate && (
-                              <Col xs={12} sm={6}>
-                                <DonateButton
-                                  model={{
-                                    type: Campaign.type,
-                                    title: campaign.title,
-                                    id: campaign.id,
-                                    adminId: campaign.projectId,
-                                    customThanksMessage: campaign.customThanksMessage,
-                                    token: {
-                                      symbol: config.nativeTokenName,
-                                    },
-                                  }}
-                                  size="large"
-                                />
-                              </Col>
-                            )}
-                          </Row>
-                        </Col>
-                      </Row>
-
-                      {((tracesTotal === 0 && !isLoadingTraces) ||
-                        (isLoadingFromScratch && isLoadingTraces)) && (
-                        <div className="text-center mb-5 pb-5 pt-4">
-                          <Lottie
-                            animationData={SearchAnimation}
-                            className="m-auto"
-                            loop={false}
-                            style={{ width: '250px' }}
-                            autoplay={isLoadingTraces}
-                          />
-                          {!isLoadingTraces &&
-                            (searchPhrase ? (
-                              <Fragment>
-                                <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
-                                <p
-                                  style={{
-                                    fontSize: '18px',
-                                    fontFamily: 'Lato',
-                                    color: '#6B7087',
-                                  }}
-                                >
-                                  We couldn’t find any matches for your search or it doesn’t exist.
-                                  <br />
-                                  Try adjusting your search.
-                                </p>
-                              </Fragment>
-                            ) : (
-                              <Fragment>
-                                <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
-                              </Fragment>
-                            ))}
-                        </div>
-                      )}
-
-                      {!isLoadingFromScratch && (
-                        <div className="trace-cards-grid-container">
-                          {traces.map(t => (
-                            <TraceCard trace={t} key={t._id} history={history} />
-                          ))}
-                        </div>
-                      )}
-
-                      {traces.length < tracesTotal && !isLoadingFromScratch && (
-                        <div className="text-center">
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-info"
-                            onClick={() => loadMoreTraces()}
-                            disabled={isLoadingTraces}
-                          >
-                            {isLoadingTraces && (
-                              <span>
-                                <i className="fa fa-circle-o-notch fa-spin" /> Loading
-                              </span>
-                            )}
-                            {!isLoadingTraces && <span>Load More</span>}
-                          </button>
-                        </div>
-                      )}
+                <div id="description">
+                  <div className="about-section-header">
+                    <h5 className="title">About</h5>
+                    <div className="text-center">
+                      <Link to={`/profile/${ownerAddress}`}>
+                        <Avatar size={50} src={getUserAvatar(campaign.owner)} round />
+                        <p className="small">{getUserName(campaign.owner)}</p>
+                      </Link>
                     </div>
                   </div>
+
+                  <div className="card content-card ">
+                    <div className="card-body content">{renderDescription()}</div>
+
+                    {campaign.communityUrl && (
+                      <div className="pl-3 pb-4">
+                        <CommunityButton className="btn btn-secondary" url={campaign.communityUrl}>
+                          Join our Community
+                        </CommunityButton>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                <div id="donations" className="spacer-top-50">
+                  <Row justify="space-between" className="spacer-bottom-16">
+                    <Col span={12} className="align-items-center d-flex">
+                      <h5 className="mb-0">{leaderBoardTitle}</h5>
+                      {newDonations > 0 && (
+                        <span
+                          className="badge badge-primary ml-4"
+                          style={{ fontSize: '12px', padding: '6px' }}
+                        >
+                          {newDonations} NEW
+                        </span>
+                      )}
+                    </Col>
+                    <Col span={12}>
+                      {campaign.canReceiveDonate && (
+                        <Row gutter={[16, 16]} justify="end">
+                          <Col xs={24} sm={12} lg={8}>
+                            <DonateButton
+                              model={{
+                                type: Campaign.type,
+                                title: campaign.title,
+                                id: campaign.id,
+                                adminId: campaign.projectId,
+                                customThanksMessage: campaign.customThanksMessage,
+                                token: { symbol: config.nativeTokenName },
+                              }}
+                              size="large"
+                            />
+                          </Col>
+                        </Row>
+                      )}
+                    </Col>
+                  </Row>
+                  <LeaderBoard
+                    aggregateDonations={aggregateDonations}
+                    isLoading={isLoadingDonations}
+                    total={aggregateDonationsTotal}
+                    loadMore={loadMoreAggregateDonations}
+                    newDonations={newDonations}
+                  />
+                </div>
+
+                <div id="funding" className="spacer-top-50">
+                  <Row justify="space-between" className="spacer-bottom-16">
+                    <Col lg={4}>
+                      <h5>Funding</h5>
+                    </Col>
+                    <Col xs={24} lg={20}>
+                      <Row gutter={[16, 16]} justify="end">
+                        <Col xs={24} md={13} lg={12} xl={10}>
+                          <Button
+                            onClick={() => downloadCsv(campaign.id)}
+                            loading={downloadingCsv}
+                            block
+                            size="large"
+                          >
+                            Download this Campaign&apos;s Financial History
+                          </Button>
+                        </Col>
+                        {campaign.canReceiveDonate && (
+                          <Fragment>
+                            {userIsCommunityOwner && (
+                              <Col xs={12} md={7} lg={7} xl={5}>
+                                <DelegateMultipleButton size="large" campaign={campaign} />
+                              </Col>
+                            )}
+                            <Col xs={12} md={4} lg={5}>
+                              <DonateButton
+                                model={{
+                                  type: Campaign.type,
+                                  title: campaign.title,
+                                  id: campaign.id,
+                                  adminId: campaign.projectId,
+                                  customThanksMessage: campaign.customThanksMessage,
+                                  token: {
+                                    symbol: config.nativeTokenName,
+                                  },
+                                }}
+                                size="large"
+                              />
+                            </Col>
+                          </Fragment>
+                        )}
+                      </Row>
+                    </Col>
+                  </Row>
+                  <Balances entity={campaign} />
+                </div>
+
+                <Row justify="space-between" className="spacer-bottom-50 spacer-top-50">
+                  <h5>Campaign Reviewer</h5>
+                  {campaign && campaign.reviewer && (
+                    <Link to={`/profile/${campaign.reviewerAddress}`}>
+                      {getUserName(campaign.reviewer)}
+                    </Link>
+                  )}
+                  {(!campaign || !campaign.reviewer) && <span>Unknown user</span>}
+                </Row>
+
+                <div id="traces" className="pb-5">
+                  <Row justify="space-between" className="spacer-bottom-16">
+                    <Col lg={8}>
+                      <h5>{tracesTitle}</h5>
+                    </Col>
+                    <Col xs={24} lg={16}>
+                      <Row gutter={[16, 16]}>
+                        {!campaign.canReceiveDonate && <Col xs={12} sm={6} />}
+                        {campaign.projectId > 0 && (
+                          <Col xs={24} sm={12}>
+                            <div className="customSearchBox">
+                              <Input
+                                className="pr-5"
+                                placeholder="Search Traces ..."
+                                size="large"
+                                value={searchPhrase}
+                                onChange={query => {
+                                  setSearchPhrase(query.target.value);
+                                }}
+                              />
+                              <div>
+                                <CloseOutlined
+                                  className={!searchPhrase ? 'd-none' : ''}
+                                  onClick={() => setSearchPhrase('')}
+                                />
+                                <SearchOutlined
+                                  className={searchPhrase ? 'd-none' : ''}
+                                  onClick={() => {
+                                    loadMoreTraces(true);
+                                    setLoadingFromScratch(true);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </Col>
+                        )}
+
+                        {campaign.projectId > 0 &&
+                          campaign.isActive &&
+                          (userIsOwner || currentUser) && (
+                            <Col xs={12} sm={6}>
+                              <Button type="primary" onClick={gotoCreateTrace} block size="large">
+                                Create New
+                              </Button>
+                            </Col>
+                          )}
+
+                        {campaign.canReceiveDonate && (
+                          <Col xs={12} sm={6}>
+                            <DonateButton
+                              model={{
+                                type: Campaign.type,
+                                title: campaign.title,
+                                id: campaign.id,
+                                adminId: campaign.projectId,
+                                customThanksMessage: campaign.customThanksMessage,
+                                token: {
+                                  symbol: config.nativeTokenName,
+                                },
+                              }}
+                              size="large"
+                            />
+                          </Col>
+                        )}
+                      </Row>
+                    </Col>
+                  </Row>
+
+                  {((tracesTotal === 0 && !isLoadingTraces) ||
+                    (isLoadingFromScratch && isLoadingTraces)) && (
+                    <div className="text-center mb-5 pb-5 pt-4">
+                      <Lottie
+                        animationData={SearchAnimation}
+                        className="m-auto"
+                        loop={false}
+                        style={{ width: '250px' }}
+                        autoplay={isLoadingTraces}
+                      />
+                      {!isLoadingTraces &&
+                        (searchPhrase ? (
+                          <Fragment>
+                            <h3 style={{ color: '#2C0B3F' }}>No results found</h3>
+                            <p
+                              style={{
+                                fontSize: '18px',
+                                fontFamily: 'Lato',
+                                color: '#6B7087',
+                              }}
+                            >
+                              We couldn’t find any matches for your search or it doesn’t exist.
+                              <br />
+                              Try adjusting your search.
+                            </p>
+                          </Fragment>
+                        ) : (
+                          <Fragment>
+                            <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
+                          </Fragment>
+                        ))}
+                    </div>
+                  )}
+
+                  {!isLoadingFromScratch && (
+                    <div className="trace-cards-grid-container">
+                      {traces.map(t => (
+                        <TraceCard trace={t} key={t._id} history={history} />
+                      ))}
+                    </div>
+                  )}
+
+                  {traces.length < tracesTotal && !isLoadingFromScratch && (
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-info"
+                        onClick={() => loadMoreTraces()}
+                        disabled={isLoadingTraces}
+                      >
+                        {isLoadingTraces && (
+                          <span>
+                            <i className="fa fa-circle-o-notch fa-spin" /> Loading
+                          </span>
+                        )}
+                        {!isLoadingTraces && <span>Load More</span>}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </ErrorBoundary>
-        )}
-      </UserConsumer>
+          )}
+        </div>
+      </ErrorBoundary>
     </HelmetProvider>
   );
 };

@@ -71,6 +71,10 @@ const EditCampaign = () => {
   const { id: campaignId } = useParams();
   const isNew = !campaignId;
 
+  const goBack = () => {
+    history.goBack();
+  };
+
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -116,7 +120,10 @@ const EditCampaign = () => {
             });
             campaignObject.current = camp;
             setIsLoading(false);
-          } else history.goBack();
+          } else {
+            ErrorHandler({}, 'You are not allowed to edit this Campaign.');
+            goBack();
+          }
         })
         .catch(err => {
           if (err.status === 404) {
@@ -196,10 +203,6 @@ const EditCampaign = () => {
 
   const removePicture = () => {
     setPicture('');
-  };
-
-  const goBack = () => {
-    history.goBack();
   };
 
   const submit = async () => {
