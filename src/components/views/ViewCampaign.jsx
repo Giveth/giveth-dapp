@@ -56,7 +56,7 @@ const ViewCampaign = ({ match }) => {
 
   const [isLoading, setLoading] = useState(true);
   const [isLoadingTraces, setLoadingTraces] = useState(true);
-  const [isLoadingFromScratch, setLoadingFromScratch] = useState(false);
+  const [isLoadingFromScratch, setLoadingFromScratch] = useState(true);
   const [isLoadingDonations, setLoadingDonations] = useState(true);
   const [aggregateDonations, setAggregateDonations] = useState([]);
   const [traces, setTraces] = useState([]);
