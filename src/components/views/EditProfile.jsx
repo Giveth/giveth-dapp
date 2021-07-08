@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js';
 import { Form, Input } from 'formsy-react-components';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
-import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
+import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
@@ -73,7 +73,7 @@ class EditProfile extends Component {
     const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
     checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() =>
-        isLoggedIn(currentUser, true)
+        authenticateUser(currentUser, true)
           .then(() => checkBalance(balance))
           .then(() => this.setState({ isLoading: false }))
           .catch(err => {

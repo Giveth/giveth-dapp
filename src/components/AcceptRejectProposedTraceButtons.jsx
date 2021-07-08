@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -23,7 +23,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
   } = useContext(Web3Context);
 
   const rejectProposedTrace = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       conversationModal.current
         .openModal({
           title: 'Reject proposed Trace',
@@ -46,7 +46,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
   };
 
   const acceptProposedTrace = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       checkBalance(balance)
         .then(() =>
           conversationModal.current

@@ -6,7 +6,7 @@ import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import confirmationDialog from 'lib/confirmationDialog';
 
-import { actionWithLoggedIn } from '../lib/middleware';
+import { authenticateUser } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
@@ -25,7 +25,7 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
   };
 
   const deleteProposedTrace = () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       confirmationDialog('trace', trace.title, _confirmDeleteTrace),
     );
   };

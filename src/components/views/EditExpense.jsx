@@ -145,7 +145,6 @@ function EditExpense(props) {
   }
 
   function goBack() {
-    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
@@ -167,12 +166,14 @@ function EditExpense(props) {
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
       );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
     } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const iValues = {
@@ -269,7 +270,7 @@ function EditExpense(props) {
                 ...analyticsData,
               });
             } else {
-              notificationDescription = 'The Bounty has been updated!';
+              notificationDescription = 'The Expense has been updated!';
               window.analytics.track('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,

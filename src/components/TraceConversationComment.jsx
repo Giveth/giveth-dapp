@@ -7,7 +7,7 @@ import { Button, Col, Form, Row } from 'antd';
 import Lottie from 'lottie-react';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
-import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
+import { authenticateUser, checkProfile } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
@@ -70,7 +70,7 @@ const TraceConversationComment = ({ trace }) => {
   const showModal = () => {
     checkUser().then(() => {
       if (currentUser.authenticated) {
-        actionWithLoggedIn(currentUser).then(() => {
+        authenticateUser(currentUser, false).then(() => {
           setVisible(true);
         });
       }

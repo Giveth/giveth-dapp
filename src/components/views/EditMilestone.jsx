@@ -57,7 +57,6 @@ function EditMilestone(props) {
     trace && trace.status && [Trace.PROPOSED, Trace.REJECTED].includes(trace.status);
 
   function goBack() {
-    ErrorHandler({}, 'You are not allowed to edit.');
     history.goBack();
   }
 
@@ -79,12 +78,14 @@ function EditMilestone(props) {
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
       );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
     } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const isReviewer = res.reviewerAddress !== ZERO_ADDRESS;
@@ -182,7 +183,7 @@ function EditMilestone(props) {
               ...analyticsData,
             });
           } else {
-            notificationDescription = 'The Bounty has been updated!';
+            notificationDescription = 'The Milestone has been updated!';
             window.analytics.track('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,

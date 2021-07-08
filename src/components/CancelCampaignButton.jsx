@@ -1,7 +1,7 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import Campaign from '../models/Campaign';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -20,7 +20,7 @@ const CancelCampaignButton = ({ campaign, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false).then(() =>
       checkBalance(balance).then(() => {
         const confirmCancelCampaign = () => {
           const afterCreate = url => {

@@ -9,7 +9,7 @@ import WalletService from '../services/WalletService';
 import { getGasPrice } from '../lib/helpers';
 import config from '../configuration';
 
-import { actionWithLoggedIn } from '../lib/middleware';
+import { authenticateUser } from '../lib/middleware';
 import ErrorHandler from '../lib/ErrorHandler';
 
 const modalStyles = {
@@ -45,7 +45,7 @@ class WithdrawButton extends Component {
   }
 
   openDialog() {
-    actionWithLoggedIn(this.props.currentUser).then(() =>
+    authenticateUser(this.props.currentUser, false).then(() =>
       getGasPrice().then(gasPrice =>
         this.setState({
           gasPrice,
