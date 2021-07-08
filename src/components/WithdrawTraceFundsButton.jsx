@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import DonationBlockchainService from '../services/DonationBlockchainService';
@@ -29,7 +29,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = trace.recipientAddress === userAddress;
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       Promise.all([
         checkBalance(balance),
         DonationBlockchainService.getTraceDonationsCount(trace._id),

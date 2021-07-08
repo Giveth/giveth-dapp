@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Button, Modal, Select, Form } from 'antd';
 
 import Campaign from 'models/Campaign';
-import { isLoggedIn, checkBalance } from '../lib/middleware';
+import { checkBalance, authenticateUser } from '../lib/middleware';
 import { ZERO_ADDRESS } from '../lib/helpers';
 import config from '../configuration';
 import ActionNetworkWarning from './ActionNetworkWarning';
@@ -47,7 +47,7 @@ const ChangeOwnershipButton = props => {
   const [formIsReady, setFormIsReady] = useState(false);
 
   const openDialog = () => {
-    isLoggedIn(currentUser)
+    authenticateUser(currentUser, false)
       .then(() => checkBalance(balance))
       .then(() => setModalVisible(true));
   };

@@ -2,7 +2,7 @@ import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import Trace from 'models/Trace';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
 import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -24,7 +24,7 @@ const EditTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false).then(() =>
       checkBalance(balance)
         .then(() => {
           const { formType } = trace;

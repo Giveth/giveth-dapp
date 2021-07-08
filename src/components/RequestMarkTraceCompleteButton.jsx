@@ -5,7 +5,7 @@ import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
@@ -30,7 +30,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
   const requestMarkComplete = () => {
     const userAddress = currentUser.address;
 
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false).then(() =>
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {

@@ -3,7 +3,6 @@ import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 
 // views
 import Profile from '../components/views/Profile';
-// import UserWallet from '../components/views/UserWallet';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewTrace from '../components/views/ViewTrace';
@@ -195,17 +194,6 @@ const Routes = () => {
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
       <Route exact path="/my-campaigns" render={() => <MyCampaigns />} />
       <Route exact path="/my-traces" render={() => <MyTraces />} />
-      {/* <Route
-                                        exact
-                                        path="/wallet"
-                                        render={props => (
-                                          <UserWallet
-                                            currentUser={currentUser}
-                                            // wallet={wallet}
-                                            {...props}
-                                          />
-                                        )}
-                                      /> */}
       <Route exact path="/my-milestones" render={() => <Redirect to="/my-traces/" />} />
 
       <Route
