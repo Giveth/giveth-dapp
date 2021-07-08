@@ -276,7 +276,7 @@ const ModalContent = props => {
 
     DonationBlockchainService.delegateMultiple(
       delegations,
-      utils.toWei(amount),
+      utils.toWei(String(amount)),
       props.trace || props.campaign,
       delegationComment,
       onCreated,
