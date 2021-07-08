@@ -807,9 +807,10 @@ class DonationBlockchainService {
       .service('donations')
       .create(newDonation)
       .catch(err => {
-        const message =
-          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
-        ErrorHandler(err, message);
+        // const message =
+        // 'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
+        console.log('err :>> ', err);
+        ErrorHandler(err, err.name);
       });
   }
 
