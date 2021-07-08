@@ -16,6 +16,7 @@ import config from '../configuration';
 
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const etherScanUrl = config.etherscan;
 
@@ -382,7 +383,7 @@ class DonationBlockchainService {
                 onError(err);
               });
 
-            window.analytics.track('Delegated', {
+            sendAnalyticsTracking('Delegated', {
               category: 'Donation',
               action: 'delegated',
               id: donation._id,

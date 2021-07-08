@@ -38,6 +38,7 @@ import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -444,7 +445,7 @@ const DonateButtonModal = props => {
 
             txUrl = `${etherscanUrl}tx/${txHash}`;
 
-            window.analytics.track('Donated', {
+            sendAnalyticsTracking('Donated', {
               category: 'Donation',
               action: 'donated',
               url: txUrl,
@@ -466,7 +467,7 @@ const DonateButtonModal = props => {
 
             if (txHash === undefined) {
               if (err.code === 4001) {
-                window.analytics.track('Rejected Donation', {
+                sendAnalyticsTracking('Rejected Donation', {
                   action: 'donated',
                   userAddress,
                   donationOwnerAddress,

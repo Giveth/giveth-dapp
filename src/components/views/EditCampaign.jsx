@@ -33,6 +33,7 @@ import config from '../../configuration';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import useReviewers from '../../hooks/useReviewers';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const { Title, Text } = Typography;
 
@@ -254,7 +255,7 @@ const EditCampaign = () => {
             </p>
           );
           notification.info({ description: msg });
-          window.analytics.track('Campaign Created', {
+          sendAnalyticsTracking('Campaign Created', {
             category: 'Campaign',
             action: 'created',
             userAddress: currentUser.address,

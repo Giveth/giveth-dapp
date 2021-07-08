@@ -11,6 +11,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   const {
@@ -43,7 +44,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  window.analytics.track('Approved Trace', {
+                  sendAnalyticsTracking('Approved Trace', {
                     category: 'Trace',
                     action: 'approved',
                     userAddress: currentUser.address,
@@ -117,7 +118,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  window.analytics.track('Trace Rejected', {
+                  sendAnalyticsTracking('Trace Rejected', {
                     category: 'Trace',
                     action: 'rejected completion',
                     id: trace._id,

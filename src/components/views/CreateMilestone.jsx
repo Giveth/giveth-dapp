@@ -21,6 +21,7 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateMilestone(props) {
   const {
@@ -127,7 +128,7 @@ function CreateMilestone(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Milestone proposed to the Campaign Owner';
-              window.analytics.track('Trace Create', {
+              sendAnalyticsTracking('Trace Create', {
                 action: 'proposed',
                 ...analyticsData,
               });
@@ -142,7 +143,7 @@ function CreateMilestone(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Create', {
+            sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
             });

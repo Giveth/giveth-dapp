@@ -21,6 +21,7 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditMilestone(props) {
   const {
@@ -178,13 +179,13 @@ function EditMilestone(props) {
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Milestone proposed to the Campaign Owner';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });
           } else {
             notificationDescription = 'The Milestone has been updated!';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });
@@ -199,13 +200,13 @@ function EditMilestone(props) {
               </a>
             </p>
           );
-          window.analytics.track('Trace Edit', {
+          sendAnalyticsTracking('Trace Edit', {
             action: 'created',
             ...analyticsData,
           });
         } else {
           notificationDescription = 'Your Milestone has been updated!';
-          window.analytics.track('Trace Edit', {
+          sendAnalyticsTracking('Trace Edit', {
             action: 'updated proposed',
             ...analyticsData,
           });
