@@ -1,12 +1,10 @@
 import React from 'react';
 import 'whatwg-fetch';
-import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import Resizer from 'react-image-file-resizer';
 
-import { feathersClient } from './feathersClient';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 
@@ -71,26 +69,6 @@ export const getUserAvatar = owner => {
 };
 
 export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
-
-export const getGasPrice = () =>
-  feathersClient
-    .service('/gasprice')
-    .find()
-    .then(resp => {
-      // let gasPrice = resp.safeLow * 1.1;
-      // hack: temp while network gas is so erratic
-      let gasPrice = resp.average;
-      gasPrice = gasPrice > resp.average ? resp.average : gasPrice;
-      // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
-      // we're only interested in gwei.
-      // we round to prevent errors relating to too many decimals
-      gasPrice = Math.round(gasPrice) / 10;
-
-      // sometimes the API is down, we need to return a gasprice or the dapp breaks
-      if (!gasPrice) gasPrice = config.defaultGasPrice;
-
-      return utils.toWei(`${gasPrice}`, 'gwei');
-    });
 
 export const getReadableStatus = status => {
   switch (status) {
