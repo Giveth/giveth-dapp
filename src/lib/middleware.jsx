@@ -5,7 +5,6 @@ import { Modal, message } from 'antd';
 import jwt_decode from 'jwt-decode';
 import { history } from './helpers';
 import { feathersClient } from './feathersClient';
-import getWeb3 from './blockchain/getWeb3';
 import config from '../configuration';
 
 export const historyBackWFallback = fallbackUrl => {
@@ -21,9 +20,7 @@ export const historyBackWFallback = fallbackUrl => {
   }, 500);
 };
 
-const authenticate = async (address, redirectOnFail) => {
-  const web3 = await getWeb3();
-
+const authenticate = async (address, redirectOnFail, web3) => {
   const authData = {
     strategy: 'web3',
     address,
@@ -106,14 +103,14 @@ let authPromise;
  *
  * @returns {boolean} true if authenticate, otherwise false
  */
-export const authenticateUser = async (currentUser, redirectOnFail) => {
+export const authenticateUser = async (currentUser, redirectOnFail, web3) => {
   if (authPromise) return !!(await authPromise);
   if (!currentUser || !currentUser.address) return false;
 
   if (currentUser.authenticated) return true;
 
   // prevent asking user to sign multiple msgs if currently authenticating
-  authPromise = authenticate(currentUser.address, redirectOnFail);
+  authPromise = authenticate(currentUser.address, redirectOnFail, web3);
   currentUser.authenticated = await authPromise;
   authPromise = undefined;
 

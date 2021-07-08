@@ -11,11 +11,16 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 const DeleteProposedTraceButton = ({ trace, className }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
+
   const _confirmDeleteTrace = () => {
     TraceService.deleteProposedTrace({
       trace,
@@ -25,7 +30,7 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
   };
 
   const deleteProposedTrace = () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       confirmationDialog('trace', trace.title, _confirmDeleteTrace),
     );
   };

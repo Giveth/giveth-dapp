@@ -32,7 +32,7 @@ const MyDonations = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
   } = useContext(Web3Context);
 
   const {
@@ -70,7 +70,7 @@ const MyDonations = () => {
   };
 
   const reject = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }
@@ -128,7 +128,7 @@ const MyDonations = () => {
   };
 
   const commit = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }
@@ -190,7 +190,7 @@ const MyDonations = () => {
   };
 
   const refund = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }

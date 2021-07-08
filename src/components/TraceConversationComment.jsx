@@ -14,11 +14,16 @@ import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import Editor from './Editor';
 import CommentAnimation from '../assets/pencil.json';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 const TraceConversationComment = ({ trace }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
+
   const [message, setMessage] = useState('');
   const [isVisble, setVisible] = useState(false);
   const [isCreating, setCreating] = useState(false);
@@ -26,7 +31,7 @@ const TraceConversationComment = ({ trace }) => {
   const [form] = Form.useForm();
 
   function checkUser() {
-    return authenticateUser(currentUser, false).then(() => checkProfile(currentUser));
+    return authenticateUser(currentUser, false, web3).then(() => checkProfile(currentUser));
   }
 
   const closeModal = () => {
@@ -70,7 +75,7 @@ const TraceConversationComment = ({ trace }) => {
   const showModal = () => {
     checkUser().then(() => {
       if (currentUser.authenticated) {
-        authenticateUser(currentUser, false).then(() => {
+        authenticateUser(currentUser, false, web3).then(() => {
           setVisible(true);
         });
       }

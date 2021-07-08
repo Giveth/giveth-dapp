@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode';
 import React, { Component, createContext } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import Web3, { utils } from 'web3';
 import { authenticateUser } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -146,7 +146,7 @@ class UserProvider extends Component {
     const { currentUser } = this.state;
 
     if (currentUser.address) {
-      authenticateUser(currentUser, redirectOnFail).then(isAuthenticated => {
+      authenticateUser(currentUser, redirectOnFail, this.props.web3).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
           this.setState({
@@ -222,6 +222,7 @@ UserProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   account: PropTypes.string,
   onLoaded: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 UserProvider.defaultProps = {

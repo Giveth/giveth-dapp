@@ -92,12 +92,12 @@ const Application = () => {
               <div>
                 <Web3Provider onLoaded={web3Loaded}>
                   <Web3Consumer>
-                    {({ state: { account } }) => (
+                    {({ state: { account, web3 } }) => (
                       <div>
                         {web3Loading && <Loader className="fixed" />}
                         {!web3Loading && (
                           <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                            <UserProvider account={account}>
+                            <UserProvider account={account} web3={web3}>
                               <UserConsumer>
                                 {({ state: { hasError } }) => (
                                   <div>

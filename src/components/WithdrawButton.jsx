@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 import { Form, Input } from 'formsy-react-components';
+import Web3 from 'web3';
 
 import User from '../models/User';
 import GivethWallet from '../lib/blockchain/GivethWallet';
@@ -45,7 +46,7 @@ class WithdrawButton extends Component {
   }
 
   openDialog() {
-    authenticateUser(this.props.currentUser, false).then(() =>
+    authenticateUser(this.props.currentUser, false, this.props.web3).then(() =>
       getGasPrice().then(gasPrice =>
         this.setState({
           gasPrice,
@@ -203,6 +204,7 @@ class WithdrawButton extends Component {
 WithdrawButton.propTypes = {
   currentUser: PropTypes.instanceOf(User).isRequired,
   wallet: PropTypes.instanceOf(GivethWallet).isRequired,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 export default WithdrawButton;

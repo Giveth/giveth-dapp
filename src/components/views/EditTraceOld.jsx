@@ -9,7 +9,7 @@ import { Form, Input } from 'formsy-react-components';
 import queryString from 'query-string';
 import Trace from 'models/Trace';
 import TraceFactory from 'models/TraceFactory';
-import { utils } from 'web3';
+import Web3, { utils } from 'web3';
 import { notification } from 'antd';
 
 import Loader from '../Loader';
@@ -53,6 +53,7 @@ import LPTrace from '../../models/LPTrace';
 import BridgedTrace from '../../models/BridgedTrace';
 import DescriptionRender from '../DescriptionRender';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -566,7 +567,7 @@ class EditTraceOld extends Component {
       return Promise.reject();
     }
 
-    return authenticateUser(this.props.currentUser, true)
+    return authenticateUser(this.props.currentUser, true, this.props.web3)
       .then(async () => {
         if (!this.props.isProposed && !this.props.currentUser) {
           historyBackWFallback();
@@ -699,8 +700,8 @@ class EditTraceOld extends Component {
   }
 
   async submit() {
-    const { currentUser, currentRate, isProposed, isNew } = this.props;
-    const authenticated = await authenticateUser(currentUser, false);
+    const { currentUser, currentRate, isProposed, isNew, web3 } = this.props;
+    const authenticated = await authenticateUser(currentUser, false, web3);
     const { trace } = this.state;
 
     if (!authenticated) {
@@ -1387,6 +1388,7 @@ class EditTraceOld extends Component {
 }
 
 EditTraceOld.propTypes = {
+  web3: PropTypes.instanceOf(Web3).isRequired,
   currentUser: PropTypes.instanceOf(User),
   location: PropTypes.shape().isRequired,
   history: PropTypes.shape({
@@ -1427,17 +1429,22 @@ export default getConversionRatesContext(props => (
     {({ state: { activeTokenWhitelist, reviewers, isLoading: whitelistIsLoading } }) => (
       <UserConsumer>
         {({ state: { currentUser, isLoading: userIsLoading } }) => (
-          <Fragment>
-            {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
-            {!(whitelistIsLoading || userIsLoading) && (
-              <EditTraceOld
-                tokenWhitelist={activeTokenWhitelist}
-                reviewers={reviewers}
-                currentUser={currentUser}
-                {...props}
-              />
+          <Web3Consumer>
+            {({ state: { web3 } }) => (
+              <Fragment>
+                {(whitelistIsLoading || userIsLoading) && <Loader className="fixed" />}
+                {!(whitelistIsLoading || userIsLoading) && (
+                  <EditTraceOld
+                    web3={web3}
+                    tokenWhitelist={activeTokenWhitelist}
+                    reviewers={reviewers}
+                    currentUser={currentUser}
+                    {...props}
+                  />
+                )}
+              </Fragment>
             )}
-          </Fragment>
+          </Web3Consumer>
         )}
       </UserConsumer>
     )}

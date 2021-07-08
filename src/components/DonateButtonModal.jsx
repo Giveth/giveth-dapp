@@ -33,7 +33,6 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import ActionNetworkWarning from './ActionNetworkWarning';
 import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
-import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
@@ -72,12 +71,11 @@ const DonateButtonModal = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isHomeNetwork, validProvider, balance: NativeTokenBalance },
+    state: { isHomeNetwork, validProvider, balance: NativeTokenBalance, web3 },
   } = useContext(Web3Context);
   const {
     actions: { donationPending, donationSuccessful, donationFailed },
   } = useContext(NotificationContext);
-
   const {
     actions: { getConversionRates },
   } = useContext(ConversionRateContext);
@@ -231,7 +229,7 @@ const DonateButtonModal = props => {
               return selectedToken.balance;
             }
 
-            const { tokens } = await getNetwork();
+            const { tokens } = getNetwork({ web3, tokenWhitelist });
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
@@ -290,9 +288,7 @@ const DonateButtonModal = props => {
   }, [model, tokenWhitelist]);
 
   useEffect(() => {
-    getNetwork().then(network => {
-      givethBridge.current = network.givethBridge;
-    });
+    givethBridge.current = getNetwork({ web3, tokenWhitelist }).givethBridge;
 
     updateAllowance();
 
@@ -419,8 +415,8 @@ const DonateButtonModal = props => {
         let txUrl;
         method
           .on('transactionHash', async transactionHash => {
-            const web3 = await getWeb3();
             const { nonce } = await web3.eth.getTransaction(transactionHash);
+
             txHash = transactionHash;
 
             await DonationBlockchainService.newFeathersDonation(

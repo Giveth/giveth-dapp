@@ -13,7 +13,7 @@ import LPTrace from '../models/LPTrace';
 
 const EditTraceButton = ({ trace, className }) => {
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -24,7 +24,7 @@ const EditTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false).then(() =>
+    return authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(() => {
           const { formType } = trace;

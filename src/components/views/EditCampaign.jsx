@@ -49,7 +49,7 @@ const EditCampaign = () => {
   } = useContext(WhiteListContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -206,7 +206,7 @@ const EditCampaign = () => {
   };
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (!isForeignNetwork) {

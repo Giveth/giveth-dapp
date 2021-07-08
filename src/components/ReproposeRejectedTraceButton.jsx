@@ -16,12 +16,12 @@ function ReproposeRejectedTraceButton({ trace }) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const repropose = () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       React.swal({
         title: 'Re-propose Trace?',
         text: 'Are you sure you want to re-propose this Trace?',

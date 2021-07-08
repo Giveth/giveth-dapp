@@ -19,7 +19,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -29,7 +29,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = trace.recipientAddress === userAddress;
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       Promise.all([
         checkBalance(balance),
         DonationBlockchainService.getTraceDonationsCount(trace._id),

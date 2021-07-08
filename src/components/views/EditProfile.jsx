@@ -1,8 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
+import Web3 from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
+import SelectFormsy from '../SelectFormsy';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
@@ -11,8 +13,8 @@ import User from '../../models/User';
 import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
-import SelectFormsy from '../SelectFormsy';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 
 /**
@@ -70,10 +72,16 @@ class EditProfile extends Component {
   }
 
   checkNetwork() {
-    const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
+    const {
+      currentUser,
+      balance,
+      isForeignNetwork,
+      displayForeignNetRequiredWarning,
+      web3,
+    } = this.props;
     checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() =>
-        authenticateUser(currentUser, true)
+        authenticateUser(currentUser, true, web3)
           .then(() => checkBalance(balance))
           .then(() => this.setState({ isLoading: false }))
           .catch(err => {
@@ -331,6 +339,7 @@ EditProfile.propTypes = {
   isForeignNetwork: PropTypes.bool.isRequired,
   displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   updateUserData: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 EditProfile.defaultProps = {
@@ -341,12 +350,21 @@ EditProfile.defaultProps = {
 export default props => (
   <UserConsumer>
     {({ state: { currentUser, isLoading: userIsLoading }, actions: { updateUserData } }) => (
-      <Fragment>
-        {userIsLoading && <Loader className="fixed" />}
-        {!userIsLoading && (
-          <EditProfile currentUser={currentUser} updateUserData={updateUserData} {...props} />
+      <Web3Consumer>
+        {({ state: { web3 } }) => (
+          <Fragment>
+            {userIsLoading && <Loader className="fixed" />}
+            {!userIsLoading && (
+              <EditProfile
+                web3={web3}
+                currentUser={currentUser}
+                updateUserData={updateUserData}
+                {...props}
+              />
+            )}
+          </Fragment>
         )}
-      </Fragment>
+      </Web3Consumer>
     )}
   </UserConsumer>
 );

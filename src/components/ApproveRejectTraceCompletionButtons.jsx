@@ -17,14 +17,14 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const conversationModal = useRef();
 
   const approveTraceCompleted = async () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -98,7 +98,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   };
 
   const rejectTraceCompleted = async () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(() => {
           conversationModal.current

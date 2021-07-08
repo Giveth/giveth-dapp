@@ -4,17 +4,21 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import { updateSubscription, inquirySubscriptionStatus } from '../services/subscriptionService';
 import ErrorHandler from '../lib/ErrorHandler';
 import { authenticateUser } from '../lib/middleware';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 function ProjectSubscription({ projectTypeId, projectType }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
 
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const toggleSubscription = async enabled => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }

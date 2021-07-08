@@ -17,12 +17,12 @@ function ChangeTraceRecipientButton({ trace }) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const changeRecipient = () => {
-    authenticateUser(currentUser, false).then(() => {
+    authenticateUser(currentUser, false, web3).then(() => {
       checkBalance(balance)
         .then(async () => {
           try {
