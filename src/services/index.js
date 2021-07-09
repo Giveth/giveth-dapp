@@ -4,7 +4,6 @@ import DonationBlockchainService from './DonationBlockchainService';
 import IPFSService from './IPFSService';
 import TraceService from './TraceService';
 import UserService from './UserService';
-import WalletService from './WalletService';
 
 export {
   CampaignService,
@@ -13,5 +12,4 @@ export {
   IPFSService,
   TraceService,
   UserService,
-  WalletService,
 };
