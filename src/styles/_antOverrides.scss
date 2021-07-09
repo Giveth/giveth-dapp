@@ -184,6 +184,16 @@
 	padding-top: 60px;
 }
 
+.ant-notification .ant-notification-notice {
+  line-height: 2;
+}
+
+.ant-message .ant-message-custom-content {
+  display: flex;
+  align-items: center;
+  line-height: 2;
+}
+
 .quill-wrapper {
 	.ql-toolbar{
 		border: 2px solid #dfdae8;
