@@ -56,7 +56,7 @@ const CancelCampaignButton = ({ campaign, className }) => {
             );
             React.toast.success(msg);
           };
-          campaign.cancel(currentUser.address, afterCreate, afterMined);
+          campaign.cancel(currentUser.address, afterCreate, afterMined, web3);
         };
         confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
       }),

@@ -79,7 +79,6 @@ class Web3Provider extends Component {
     } else {
       onboard.walletSelect().then();
     }
-    this.props.onLoaded();
     this.setState({ onboard });
   }
 
@@ -178,7 +177,6 @@ class Web3Provider extends Component {
 
 Web3Provider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
-  onLoaded: PropTypes.func.isRequired,
 };
 
 export { Consumer, Context };

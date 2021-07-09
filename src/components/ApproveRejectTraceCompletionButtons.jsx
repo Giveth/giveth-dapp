@@ -83,6 +83,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             })
             .catch(_ => {});
@@ -156,6 +157,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             })
             .catch(_ => {});

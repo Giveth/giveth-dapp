@@ -84,22 +84,7 @@ function ChangeTraceRecipientButton({ trace }) {
                   </p>,
                 );
               },
-              onError: (err, txUrl) => {
-                if (err === 'patch-error') {
-                  if (!currentUser.authenticated) return;
-                  ErrorPopup(
-                    `Something went wrong ${
-                      trace.hasRecipient ? 'changing ' : 'setting '
-                    } the Trace recipient.`,
-                    err,
-                  );
-                } else {
-                  ErrorPopup(
-                    'Something went wrong with the transaction.',
-                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
-                  );
-                }
-              },
+              web3,
             });
           } catch (e) {
             console.error(e);

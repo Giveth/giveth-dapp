@@ -168,6 +168,7 @@ function CreateBounty(props) {
           setLoading(false);
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

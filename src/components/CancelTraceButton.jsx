@@ -87,6 +87,7 @@ const CancelTraceButton = ({ trace, className }) => {
                     );
                   }
                 },
+                web3,
               }),
             ),
         )

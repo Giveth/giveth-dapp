@@ -324,6 +324,7 @@ function EditExpense(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

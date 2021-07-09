@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { Helmet } from 'react-helmet';
 
@@ -60,12 +60,6 @@ const Application = () => {
     name: 'giveth',
   });
 
-  const [web3Loading, setWeb3Loading] = useState(true);
-
-  const web3Loaded = () => {
-    setWeb3Loading(false);
-  };
-
   return (
     <ErrorBoundary>
       {/* Header stuff goes here */}
@@ -90,12 +84,12 @@ const Application = () => {
           <WhiteListConsumer>
             {({ state: { fiatWhitelist } }) => (
               <div>
-                <Web3Provider onLoaded={web3Loaded}>
+                <Web3Provider>
                   <Web3Consumer>
                     {({ state: { account, web3 } }) => (
                       <div>
-                        {web3Loading && <Loader className="fixed" />}
-                        {!web3Loading && (
+                        {(!account || !web3) && <Loader className="fixed" />}
+                        {account && web3 && (
                           <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
                             <UserProvider account={account} web3={web3}>
                               <UserConsumer>

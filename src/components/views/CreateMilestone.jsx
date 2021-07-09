@@ -175,6 +175,7 @@ function CreateMilestone(props) {
           setLoading(false);
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

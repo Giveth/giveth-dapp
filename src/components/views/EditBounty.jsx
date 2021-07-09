@@ -209,6 +209,7 @@ function EditBounty(props) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
+      web3,
     });
   };
 

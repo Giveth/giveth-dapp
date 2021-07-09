@@ -2,6 +2,7 @@ import React, { Fragment, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
+import { LiquidPledging } from 'giveth-liquidpledging';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
@@ -112,8 +113,15 @@ const MyDonations = () => {
                 );
               };
 
+              const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
               // Reject the delegation of the donation
-              DonationBlockchainService.reject(donation, userAddress, afterCreate, afterMined);
+              DonationBlockchainService.reject(
+                donation,
+                userAddress,
+                afterCreate,
+                afterMined,
+                liquidPledging,
+              );
             }
           }),
         )
@@ -168,13 +176,14 @@ const MyDonations = () => {
                 );
               };
 
+              const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
               // Commit the donation's delegation
               DonationBlockchainService.commit(
                 donation,
                 userAddress,
                 afterCreate,
                 afterMined,
-                err => ErrorPopup('Something went wrong.', err),
+                liquidPledging,
               );
             }
           }),
@@ -221,8 +230,15 @@ const MyDonations = () => {
             );
           };
 
+          const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
           // Refund the donation
-          DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined);
+          DonationBlockchainService.refund(
+            donation,
+            userAddress,
+            afterCreate,
+            afterMined,
+            liquidPledging,
+          );
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       });

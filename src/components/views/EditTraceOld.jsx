@@ -817,6 +817,7 @@ class EditTraceOld extends Component {
 
           this.setState({ isSaving: false });
         },
+        web3,
       });
 
     this.setState(

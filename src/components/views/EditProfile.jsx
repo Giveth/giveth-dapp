@@ -100,7 +100,7 @@ class EditProfile extends Component {
 
   submit() {
     const { user } = this.state;
-    const { currentUser } = this.props;
+    const { currentUser, web3 } = this.props;
 
     if (!this.state.user.name) return;
     const pushToNetwork =
@@ -164,7 +164,7 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined, reset, pushToNetwork).finally(() => {
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork, web3).finally(() => {
           this.setState({ isSaving: false });
         });
       },

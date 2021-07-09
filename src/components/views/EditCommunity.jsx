@@ -259,7 +259,7 @@ const EditCommunity = ({ isNew, match }) => {
 
       setIsSaving(true);
       setIsBlocking(false);
-      communityObject.current.save(afterCreate, afterMined).finally(() => {
+      communityObject.current.save(afterCreate, afterMined, web3).finally(() => {
         setIsSaving(false);
       });
     }

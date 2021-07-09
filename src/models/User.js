@@ -71,7 +71,7 @@ class User extends Model {
     return user;
   }
 
-  save(onSave, afterEmit, reset, pushToNetwork) {
+  save(onSave, afterEmit, reset, pushToNetwork, web3) {
     if (this._newAvatar) {
       return IPFSService.upload(this._newAvatar)
         .then(hash => {
@@ -79,10 +79,10 @@ class User extends Model {
           this._avatar = hash;
           delete this._newAvatar;
         })
-        .then(_ => UserService.save(this, onSave, afterEmit, reset))
+        .then(_ => UserService.save(this, onSave, afterEmit, reset, true, web3))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return UserService.save(this, onSave, afterEmit, reset, pushToNetwork);
+    return UserService.save(this, onSave, afterEmit, reset, pushToNetwork, web3);
   }
 
   // eslint-disable-next-line class-methods-use-this

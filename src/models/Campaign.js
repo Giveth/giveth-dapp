@@ -100,10 +100,11 @@ class Campaign extends BasicModel {
   /**
    * Save the campaign to feathers and blockchain if necessary
    *
-   * @param afterSve Callback function once the campaign has been saved to feathers
+   * @param afterSave   Callback function once the campaign has been saved to feathers
    * @param afterMined  Callback function once the transaction is mined
+   * @param web3        web3 instance
    */
-  save(afterSave, afterMined) {
+  save(afterSave, afterMined, web3) {
     if (this.newImage) {
       return IPFSService.upload(this.image)
         .then(hash => {
@@ -111,10 +112,10 @@ class Campaign extends BasicModel {
           this.image = hash;
           this.newImage = false;
         })
-        .then(_ => CampaignService.save(this, this.owner.address, afterSave, afterMined))
+        .then(_ => CampaignService.save(this, this.owner.address, afterSave, afterMined, web3))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return CampaignService.save(this, this.owner.address, afterSave, afterMined);
+    return CampaignService.save(this, this.owner.address, afterSave, afterMined, web3);
   }
 
   /**
@@ -123,9 +124,10 @@ class Campaign extends BasicModel {
    * @param from        Either the owner or reviewer. Whoever is canceling the campaign
    * @param afterCreate Callback function once a transaction is created
    * @param afterMined  Callback function once the transaction is mined and feathers updated
+   * @param web3        web3 instance
    */
-  cancel(from, afterCreate, afterMined) {
-    CampaignService.cancel(this, from, afterCreate, afterMined);
+  cancel(from, afterCreate, afterMined, web3) {
+    CampaignService.cancel(this, from, afterCreate, afterMined, web3);
   }
 
   get communityUrl() {

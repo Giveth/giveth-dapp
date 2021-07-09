@@ -135,6 +135,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                     icon: 'error',
                   });
                 },
+                web3,
               });
             }
           });

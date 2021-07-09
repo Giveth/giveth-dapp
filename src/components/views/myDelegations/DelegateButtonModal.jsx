@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import { Input, Select, Slider, Form, InputNumber } from 'antd';
-import { utils } from 'web3';
+import Web3, { utils } from 'web3';
 import PropTypes from 'prop-types';
 
 import Donation from 'models/Donation';
@@ -194,6 +194,7 @@ class DelegateButtonModal extends Component {
       onCreated,
       onSuccess,
       onError,
+      this.props.web3,
     );
   }
 
@@ -372,6 +373,7 @@ DelegateButtonModal.propTypes = {
   traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
   closeDialog: PropTypes.func.isRequired,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 DelegateButtonModal.defaultProps = {

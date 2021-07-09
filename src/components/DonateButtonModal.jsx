@@ -15,8 +15,9 @@ import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
 import { Slider, Form, Select, Input, InputNumber, Checkbox } from 'antd';
+import { GivethBridge } from 'giveth-bridge';
 
-import getNetwork from '../lib/blockchain/getNetwork';
+import getTokens from '../lib/blockchain/getTokens';
 import extraGas from '../lib/blockchain/extraGas';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
@@ -30,13 +31,13 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
-import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -79,6 +80,8 @@ const DonateButtonModal = props => {
   const {
     actions: { getConversionRates },
   } = useContext(ConversionRateContext);
+
+  const tokens = getTokens({ web3, tokenWhitelist });
   const isCorrectNetwork = isHomeNetwork;
 
   const tokenWhitelistOptions = useMemo(
@@ -168,6 +171,7 @@ const DonateButtonModal = props => {
           DonationBlockchainService.getERC20tokenAllowance(
             selectedToken.address,
             currentUser.address,
+            tokens[selectedToken.address],
           )
             .then(_allowance => {
               console.log('Allowance:', _allowance);
@@ -229,7 +233,6 @@ const DonateButtonModal = props => {
               return selectedToken.balance;
             }
 
-            const { tokens } = getNetwork({ web3, tokenWhitelist });
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
@@ -288,7 +291,7 @@ const DonateButtonModal = props => {
   }, [model, tokenWhitelist]);
 
   useEffect(() => {
-    givethBridge.current = getNetwork({ web3, tokenWhitelist }).givethBridge;
+    givethBridge.current = new GivethBridge(web3, config.givethBridgeAddress);
 
     updateAllowance();
 
@@ -504,6 +507,8 @@ const DonateButtonModal = props => {
           currentUser.address,
           allowanceRequired.toString(),
           () => updateAllowance(UPDATE_ALLOWANCE_DELAY),
+          web3,
+          tokens[selectedToken.address],
         );
 
         // Maybe user has canceled the allowance approval transaction
@@ -610,7 +615,11 @@ const DonateButtonModal = props => {
     const { rates } = await getConversionRates(new Date(), selectedToken.symbol, 'USD');
     const usdValue = rates.USD * amount;
     if (allowanceApprovalType.current === AllowanceApprovalType.Clear) {
-      DonationBlockchainService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
+      DonationBlockchainService.clearERC20TokenApproval(
+        selectedToken.address,
+        currentUser.address,
+        tokens[selectedToken.address],
+      )
         .then(() => {
           setSaving(false);
           setAllowance(new BigNumber(0));

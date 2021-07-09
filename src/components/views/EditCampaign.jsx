@@ -268,7 +268,7 @@ const EditCampaign = () => {
 
       setIsSaving(true);
       setIsBlocking(false);
-      campaignObject.current.save(afterCreate, afterMined).finally(() => {
+      campaignObject.current.save(afterCreate, afterMined, web3).finally(() => {
         setIsSaving(false);
       });
     }

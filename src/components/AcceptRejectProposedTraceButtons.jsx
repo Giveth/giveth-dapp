@@ -105,6 +105,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             }),
         )

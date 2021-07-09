@@ -269,6 +269,7 @@ function CreateExpense(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

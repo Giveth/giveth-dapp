@@ -304,6 +304,7 @@ function CreatePayment(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

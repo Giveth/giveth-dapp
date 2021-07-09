@@ -353,6 +353,7 @@ function EditPayment(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

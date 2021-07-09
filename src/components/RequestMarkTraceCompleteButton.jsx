@@ -108,6 +108,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                     );
                   }
                 },
+                web3,
               });
             });
         })

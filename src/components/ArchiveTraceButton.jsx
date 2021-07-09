@@ -96,11 +96,12 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
               afterSave,
               afterMined,
               onError,
-            });
+              web3,
+            }).then();
           } else {
             const campaign = new Campaign(trace.campaign);
             campaign.archivedTraces.add(trace.projectId);
-            campaign.save(afterSave, afterMined);
+            campaign.save(afterSave, afterMined, web3).then();
           }
         })
         .catch(err => {
