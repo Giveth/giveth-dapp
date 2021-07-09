@@ -86,6 +86,7 @@ const TraceDescription = ({
       className="custom-form-item"
       extra={extra}
       required
+      initialValue={initialValue}
       rules={[
         {
           type: 'string',
