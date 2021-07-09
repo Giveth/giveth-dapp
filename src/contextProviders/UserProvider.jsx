@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import Web3, { utils } from 'web3';
 import { authenticateUser } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import ErrorHandler from '../lib/ErrorHandler';
 
 // models
@@ -60,7 +59,6 @@ class UserProvider extends Component {
       (currentUser.address && account !== prevProps.account)
     ) {
       this.getUserData(account).then();
-      this.checkGivethWallet();
     }
   }
 
@@ -102,44 +100,6 @@ class UserProvider extends Component {
           },
         );
     }
-  }
-
-  // TODO: this can be removed after a sufficient time has passed w/ new Web3 support
-  // eslint-disable-next-line class-methods-use-this
-  checkGivethWallet() {
-    GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        React.swal({
-          title: 'Giveth Wallet Deprecation Notice',
-          text:
-            'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import your keystore file directly into MetaMask to continue to using your Giveth wallet.',
-          icon: 'warning',
-          buttons: ['Remind me later', 'Download Keystore'],
-        }).then(download => {
-          if (download) {
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(
-              new Blob([JSON.stringify(keystore[0])], {
-                type: 'application/json',
-              }),
-            );
-            downloadLink.download = `UTC--${new Date().toISOString()}-${keystore[0].address}.json`;
-
-            downloadLink.click();
-
-            React.swal({
-              title: 'Giveth Wallet Deprecation Notice',
-              text:
-                'Please confirm the wallet has been downloaded correctly and you can import it in MetaMask. We strongly advice to save this file in a secure location. Can we erase the original file?',
-              icon: 'warning',
-              buttons: ['Not Yet', 'Yes erase'],
-            }).then(isConfirmed => {
-              if (isConfirmed) GivethWallet.removeCachedKeystore();
-            });
-          }
-        });
-      })
-      .catch(() => {});
   }
 
   signIn(redirectOnFail) {
