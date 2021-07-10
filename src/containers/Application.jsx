@@ -18,7 +18,6 @@ import config from '../configuration';
 // components
 import Routes from './Routes';
 import Header from '../components/layout/MainMenu';
-import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 // context providers
@@ -88,47 +87,44 @@ const Application = () => {
                   <Web3Consumer>
                     {({ state: { account, web3 } }) => (
                       <div>
-                        {(!account || !web3) && <Loader className="fixed" />}
-                        {account && web3 && (
-                          <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                            <UserProvider account={account} web3={web3}>
-                              <UserConsumer>
-                                {({ state: { hasError } }) => (
-                                  <div>
-                                    <NotificationModalProvider>
-                                      {!hasError && (
-                                        <div>
-                                          <Header />
-                                          <Routes />
-                                        </div>
-                                      )}
+                        <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                          <UserProvider account={account} web3={web3}>
+                            <UserConsumer>
+                              {({ state: { hasError } }) => (
+                                <div>
+                                  <NotificationModalProvider>
+                                    {!hasError && (
+                                      <div>
+                                        <Header />
+                                        <Routes />
+                                      </div>
+                                    )}
 
-                                      {hasError && (
-                                        <div className="text-center">
-                                          <h2>Oops, something went wrong...</h2>
-                                          <p>
-                                            The Giveth dapp could not load for some reason. Please
-                                            try again...
-                                          </p>
-                                        </div>
-                                      )}
+                                    {hasError && (
+                                      <div className="text-center">
+                                        <h2>Oops, something went wrong...</h2>
+                                        <p>
+                                          The Giveth dapp could not load for some reason. Please try
+                                          again...
+                                        </p>
+                                      </div>
+                                    )}
 
-                                      <ToastContainer
-                                        position="top-right"
-                                        type="default"
-                                        autoClose={5000}
-                                        hideProgressBar
-                                        newestOnTop={false}
-                                        closeOnClick
-                                        pauseOnHover
-                                      />
-                                    </NotificationModalProvider>
-                                  </div>
-                                )}
-                              </UserConsumer>
-                            </UserProvider>
-                          </ConversionRateProvider>
-                        )}
+                                    <ToastContainer
+                                      position="top-right"
+                                      type="default"
+                                      autoClose={5000}
+                                      hideProgressBar
+                                      newestOnTop={false}
+                                      closeOnClick
+                                      pauseOnHover
+                                    />
+                                  </NotificationModalProvider>
+                                </div>
+                              )}
+                            </UserConsumer>
+                          </UserProvider>
+                        </ConversionRateProvider>
                       </div>
                     )}
                   </Web3Consumer>

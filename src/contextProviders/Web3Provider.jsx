@@ -26,11 +26,9 @@ class Web3Provider extends Component {
 
     this.state = {
       account: undefined,
-      balance: new BigNumber(0),
       validProvider: false,
       isHomeNetwork: false,
       isForeignNetwork: false,
-      setupTimeout: false,
       showForeignNetRequiredWarning: false,
       showHomeNetRequiredWarning: false,
       onForeignNetWarningClose: undefined,
@@ -109,13 +107,12 @@ class Web3Provider extends Component {
       validProvider,
       isHomeNetwork,
       isForeignNetwork,
-      setupTimeout,
       showForeignNetRequiredWarning,
       showHomeNetRequiredWarning,
       web3,
     } = this.state;
 
-    const isEnabled = !!account;
+    const isEnabled = !!account && !!balance;
 
     return (
       <Fragment>
@@ -152,7 +149,6 @@ class Web3Provider extends Component {
         <Provider
           value={{
             state: {
-              failedToLoad: setupTimeout,
               account,
               balance,
               validProvider,

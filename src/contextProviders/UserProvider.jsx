@@ -64,8 +64,10 @@ class UserProvider extends Component {
 
   async getUserData(address) {
     if (!address) {
-      this.setState({ currentUser: {}, userIsCommunityOwner: false, isLoading: false }, () => {
-        this.props.onLoaded();
+      this.setState({
+        currentUser: {},
+        userIsCommunityOwner: false,
+        isLoading: false,
       });
     } else {
       feathersClient
@@ -113,7 +115,6 @@ class UserProvider extends Component {
             currentUser: new User(currentUser),
             isLoading: false,
           });
-          this.props.onLoaded();
         }
       });
     }
@@ -144,7 +145,6 @@ class UserProvider extends Component {
     }
 
     this.setState({ isLoading: false });
-    this.props.onLoaded();
   }
 
   async updateUserData() {
@@ -181,13 +181,12 @@ class UserProvider extends Component {
 UserProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   account: PropTypes.string,
-  onLoaded: PropTypes.func,
-  web3: PropTypes.instanceOf(Web3).isRequired,
+  web3: PropTypes.instanceOf(Web3),
 };
 
 UserProvider.defaultProps = {
-  onLoaded: () => {},
   account: undefined,
+  web3: undefined,
 };
 
 export default UserProvider;

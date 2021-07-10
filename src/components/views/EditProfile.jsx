@@ -53,9 +53,9 @@ class EditProfile extends Component {
   componentDidUpdate(prevProps) {
     const { currentUser, balance, isForeignNetwork } = this.props;
     if (
-      currentUser !== prevProps.currentUser ||
+      currentUser.address !== prevProps.currentUser.address ||
       isForeignNetwork !== prevProps.isForeignNetwork ||
-      balance !== prevProps.balance
+      balance.toNumber() !== prevProps.balance.toNumber()
     ) {
       this.checkNetwork();
     }
@@ -349,12 +349,12 @@ EditProfile.defaultProps = {
 
 export default props => (
   <UserConsumer>
-    {({ state: { currentUser, isLoading: userIsLoading }, actions: { updateUserData } }) => (
+    {({ state: { currentUser }, actions: { updateUserData } }) => (
       <Web3Consumer>
-        {({ state: { web3 } }) => (
+        {({ state: { web3, isEnabled } }) => (
           <Fragment>
-            {userIsLoading && <Loader className="fixed" />}
-            {!userIsLoading && (
+            {(!currentUser.address || !isEnabled) && <Loader className="fixed" />}
+            {currentUser.address && isEnabled && (
               <EditProfile
                 web3={web3}
                 currentUser={currentUser}
