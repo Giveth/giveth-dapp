@@ -17,6 +17,7 @@ const {
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
   REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
   REACT_APP_ANALYTICS_KEY = '',
+  REACT_APP_SENTRY_DSN = '',
 } = process.env;
 
 const configurations = {
@@ -174,6 +175,7 @@ config.foreignNodeConnection = REACT_APP_NODE_CONNECTION_URL || config.foreignNo
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
 config.analyticsKey = REACT_APP_ANALYTICS_KEY;
+config.sentryDsn = REACT_APP_SENTRY_DSN;
 config.githubUrl = REACT_APP_GITHUB_URL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
