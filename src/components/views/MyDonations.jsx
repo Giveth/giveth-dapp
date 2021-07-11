@@ -2,7 +2,6 @@ import React, { Fragment, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
-import { LiquidPledging } from 'giveth-liquidpledging';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
@@ -113,14 +112,13 @@ const MyDonations = () => {
                 );
               };
 
-              const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
               // Reject the delegation of the donation
               DonationBlockchainService.reject(
                 donation,
                 userAddress,
                 afterCreate,
                 afterMined,
-                liquidPledging,
+                web3,
               );
             }
           }),
@@ -176,14 +174,13 @@ const MyDonations = () => {
                 );
               };
 
-              const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
               // Commit the donation's delegation
               DonationBlockchainService.commit(
                 donation,
                 userAddress,
                 afterCreate,
                 afterMined,
-                liquidPledging,
+                web3,
               );
             }
           }),
@@ -230,15 +227,8 @@ const MyDonations = () => {
             );
           };
 
-          const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
           // Refund the donation
-          DonationBlockchainService.refund(
-            donation,
-            userAddress,
-            afterCreate,
-            afterMined,
-            liquidPledging,
-          );
+          DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined, web3);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       });

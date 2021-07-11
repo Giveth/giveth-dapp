@@ -3,8 +3,8 @@ import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
-
 import { LiquidPledging } from 'giveth-liquidpledging';
+
 import Donation from '../models/Donation';
 import Community from '../models/Community';
 import Trace from '../models/Trace';
@@ -405,11 +405,12 @@ class DonationBlockchainService {
    * @param {string}   address   Address of the user who calls reject
    * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param liquidPledging       liquidPledging
+   * @param web3
    */
-  static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, liquidPledging) {
+  static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
     let txHash;
     const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
     return liquidPledging
       .transfer(donation.ownerId, donation.pledgeId, _amountRemainingInWei, donation.delegateId, {
@@ -471,12 +472,13 @@ class DonationBlockchainService {
    * @param {string}   address   Address of the user who calls commit
    * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param liquidPledging       liquidPledging
+   * @param web3
    */
-  static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, liquidPledging) {
+  static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
     let txHash;
 
     const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
     return liquidPledging
       .transfer(
@@ -536,12 +538,13 @@ class DonationBlockchainService {
    * @param {string}   address   Address of the user who calls refund
    * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param liquidPledging       liquidPledging
+   * @param web3
    */
-  static refund(donation, address, onCreated = () => {}, onSuccess = () => {}, liquidPledging) {
+  static refund(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
     let txHash;
 
     const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
     // this isn't the most gas efficient, but should always work. If the canceledPledge
     // has been partially transferred already, then it will have been normalized and the entire

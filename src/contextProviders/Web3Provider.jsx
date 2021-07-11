@@ -25,15 +25,12 @@ class Web3Provider extends Component {
     super(props);
 
     this.state = {
-      account: undefined,
       validProvider: false,
       isHomeNetwork: false,
       isForeignNetwork: false,
       showForeignNetRequiredWarning: false,
       showHomeNetRequiredWarning: false,
-      onForeignNetWarningClose: undefined,
       foreignNetWarningButtonLabel: 'Close',
-      onHomeNetWarningClose: undefined,
       homeNetWarningButtonLabel: 'Close',
     };
     this.enableProvider = this.enableProvider.bind(this);
@@ -110,9 +107,10 @@ class Web3Provider extends Component {
       showForeignNetRequiredWarning,
       showHomeNetRequiredWarning,
       web3,
+      networkId,
     } = this.state;
 
-    const isEnabled = !!account && !!balance;
+    const isEnabled = !!web3 && !!account && !!balance && !!networkId;
 
     return (
       <Fragment>

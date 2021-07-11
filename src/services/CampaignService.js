@@ -465,6 +465,7 @@ class CampaignService {
    * @param from        Address of the user cancelling the Campaign
    * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param web3
    */
   static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}, web3) {
     let txHash;
@@ -480,7 +481,7 @@ class CampaignService {
             mined: false,
             // txHash, // TODO create a transaction entry
           })
-          .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
+          .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
             ErrorPopup('Something went wrong with updating campaign', err);
           });
