@@ -28,7 +28,8 @@ const CancelTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false, web3).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -98,8 +99,8 @@ const CancelTraceButton = ({ trace, className }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

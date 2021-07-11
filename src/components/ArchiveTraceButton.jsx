@@ -33,7 +33,8 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
       ? Trace.COMPLETED
       : Trace.PAID;
 
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
@@ -110,8 +111,8 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

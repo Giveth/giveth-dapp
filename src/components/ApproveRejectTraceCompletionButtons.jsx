@@ -25,7 +25,8 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   const conversationModal = useRef();
 
   const approveTraceCompleted = async () => {
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -95,12 +96,13 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   const rejectTraceCompleted = async () => {
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -169,8 +171,8 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

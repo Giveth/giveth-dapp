@@ -49,7 +49,8 @@ function ProfileUpdatePermission({ user, updateUser }) {
     roleAccessKeys.forEach(key => {
       mutation[key] = roles.includes(key);
     });
-    authenticateUser(currentUser, false, web3).then(() => {
+    authenticateUser(currentUser, false, web3).then(isAuthenticated => {
+      if (!isAuthenticated) return;
       feathersClient
         .service('users')
         .patch(user.address, mutation)

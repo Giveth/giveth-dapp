@@ -20,11 +20,12 @@ const EditCampaignButton = ({ campaign, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false, web3).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance).then(() => {
         history.push(`/campaigns/${campaign.id}/edit`);
-      }),
-    );
+      });
+    });
   };
 
   const userAddress = currentUser.address;

@@ -24,7 +24,8 @@ const EditTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false, web3).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           const { formType } = trace;
@@ -51,8 +52,8 @@ const EditTraceButton = ({ trace, className }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

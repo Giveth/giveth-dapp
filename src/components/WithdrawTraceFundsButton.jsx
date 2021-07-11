@@ -30,7 +30,8 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = trace.recipientAddress === userAddress;
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       Promise.all([
         checkBalance(balance),
         DonationBlockchainService.getTraceDonationsCount(trace._id),
@@ -147,8 +148,8 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else if (err !== undefined) {
             ErrorHandler(err, 'Something went wrong.', true);
           }
-        }),
-    );
+        });
+    });
   }
 
   const userAddress = currentUser.address;

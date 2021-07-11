@@ -31,7 +31,8 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
   const requestMarkComplete = () => {
     const userAddress = currentUser.address;
 
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
@@ -113,8 +114,8 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
               });
             });
         })
-        .catch(console.error),
-    );
+        .catch(console.error);
+    });
   };
 
   return (

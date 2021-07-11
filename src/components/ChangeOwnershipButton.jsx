@@ -47,9 +47,10 @@ const ChangeOwnershipButton = props => {
   const [formIsReady, setFormIsReady] = useState(false);
 
   const openDialog = () => {
-    authenticateUser(currentUser, false, web3)
-      .then(() => checkBalance(balance))
-      .then(() => setModalVisible(true));
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      checkBalance(balance).then(() => setModalVisible(true));
+    });
   };
 
   const submit = () => {
