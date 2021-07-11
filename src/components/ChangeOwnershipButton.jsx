@@ -30,7 +30,7 @@ const noCoownerOption = {
  */
 const ChangeOwnershipButton = props => {
   const {
-    state: { balance, isForeignNetwork, validProvider },
+    state: { balance, isForeignNetwork, validProvider, web3 },
   } = useContext(Web3Context);
   const {
     state: { currentUser },
@@ -47,7 +47,7 @@ const ChangeOwnershipButton = props => {
   const [formIsReady, setFormIsReady] = useState(false);
 
   const openDialog = () => {
-    authenticateUser(currentUser, false)
+    authenticateUser(currentUser, false, web3)
       .then(() => checkBalance(balance))
       .then(() => setModalVisible(true));
   };

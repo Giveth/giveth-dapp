@@ -28,7 +28,7 @@ function CreateMilestone(props) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -81,7 +81,7 @@ function CreateMilestone(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -176,6 +176,7 @@ function CreateMilestone(props) {
           setLoading(false);
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

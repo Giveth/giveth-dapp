@@ -1,6 +1,6 @@
-import getNetwork from '../lib/blockchain/getNetwork';
-import { feathersClient } from '../lib/feathersClient';
+import { LiquidPledging } from 'giveth-liquidpledging';
 
+import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
 import IPFSService from './IPFSService';
@@ -18,6 +18,9 @@ class UserService {
    * @param user        User object to be saved
    * @param afterSave   Callback to be triggered after the user is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param reset
+   * @param pushToNetwork
+   * @param web3
    */
   static async save(
     user,
@@ -25,6 +28,7 @@ class UserService {
     afterMined = () => {},
     reset = () => {},
     pushToNetwork = true,
+    web3,
   ) {
     if (user.giverId === 0) {
       throw new Error(
@@ -45,9 +49,6 @@ class UserService {
         ErrorPopup('Failed to upload profile to ipfs');
       }
 
-      const network = await getNetwork();
-
-      const { liquidPledging } = network;
       const from = user.address;
 
       // nothing to update or failed ipfs upload
@@ -62,6 +63,7 @@ class UserService {
       if (pushToNetwork) {
         // lp function updateGiver(uint64 idGiver,address newAddr,string newName,string newUrl,uint64 newCommitTime)
         // lp function addGiver(string name,string url,uint64 commitTime,address plugin)
+        const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
         const promise = user.giverId
           ? liquidPledging.updateGiver(
               user.giverId,

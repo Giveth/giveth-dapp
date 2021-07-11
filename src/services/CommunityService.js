@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
-import getNetwork from '../lib/blockchain/getNetwork';
+import { LiquidPledging } from 'giveth-liquidpledging';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Community from '../models/Community';
@@ -244,14 +244,9 @@ class CommunityService {
    * @param from        address of the user creating the Community
    * @param afterSave   Callback to be triggered after the Community is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param web3
    */
-  static async save(
-    community,
-    from,
-    afterSave = () => {},
-    afterMined = () => {},
-    onError = () => {},
-  ) {
+  static async save(community, from, afterSave = () => {}, afterMined = () => {}, web3) {
     if (community.id && community.delegateId === 0) {
       throw new Error(
         'You must wait for your Community to be creation to finish before you can update it',
@@ -271,7 +266,6 @@ class CommunityService {
         }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       }
       ErrorHandler(err, message, showMessageInPopup);
-      onError();
     };
     try {
       // upload Community info to IPFS
@@ -282,8 +276,7 @@ class CommunityService {
         ErrorPopup('Failed to upload Community to IPFS');
       }
 
-      const network = await getNetwork();
-      const { liquidPledging } = network;
+      const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
       // nothing to update or failed ipfs upload
       if (community.delegateId && (community.url === ipfsHash || !ipfsHash)) {

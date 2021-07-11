@@ -6,11 +6,15 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import { feathersClient } from '../lib/feathersClient';
 import { authenticateUser } from '../lib/middleware';
 import ErrorHandler from '../lib/ErrorHandler';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 function ProfileUpdatePermission({ user, updateUser }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
 
   const [rolesInitValue, setRolesInitValue] = useState([]);
 
@@ -45,7 +49,7 @@ function ProfileUpdatePermission({ user, updateUser }) {
     roleAccessKeys.forEach(key => {
       mutation[key] = roles.includes(key);
     });
-    authenticateUser(currentUser, false).then(() => {
+    authenticateUser(currentUser, false, web3).then(() => {
       feathersClient
         .service('users')
         .patch(user.address, mutation)

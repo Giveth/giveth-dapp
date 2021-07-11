@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode';
 import React, { Component, createContext } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import Web3, { utils } from 'web3';
 import { authenticateUser } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorHandler from '../lib/ErrorHandler';
@@ -53,20 +53,21 @@ class UserProvider extends Component {
 
   componentDidUpdate(prevProps) {
     const { currentUser } = this.state;
-
     const { account } = this.props;
     if (
       (account && !currentUser.address) ||
       (currentUser.address && account !== prevProps.account)
     ) {
-      this.getUserData(account);
+      this.getUserData(account).then();
     }
   }
 
   async getUserData(address) {
     if (!address) {
-      this.setState({ currentUser: {}, userIsCommunityOwner: false, isLoading: false }, () => {
-        this.props.onLoaded();
+      this.setState({
+        currentUser: {},
+        userIsCommunityOwner: false,
+        isLoading: false,
       });
     } else {
       feathersClient
@@ -79,7 +80,7 @@ class UserProvider extends Component {
         .then(
           resp => {
             const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-            if (currentUser.address === address) {
+            if (currentUser.address.toLowerCase() === address.toLowerCase()) {
               this.setState({ currentUser }, () => {
                 this.authenticateFeathers();
 
@@ -107,14 +108,13 @@ class UserProvider extends Component {
     const { currentUser } = this.state;
 
     if (currentUser.address) {
-      authenticateUser(currentUser, redirectOnFail).then(isAuthenticated => {
+      authenticateUser(currentUser, redirectOnFail, this.props.web3).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
           this.setState({
             currentUser: new User(currentUser),
             isLoading: false,
           });
-          this.props.onLoaded();
         }
       });
     }
@@ -145,7 +145,6 @@ class UserProvider extends Component {
     }
 
     this.setState({ isLoading: false });
-    this.props.onLoaded();
   }
 
   async updateUserData() {
@@ -158,7 +157,6 @@ class UserProvider extends Component {
 
   render() {
     const { currentUser, hasError, userIsCommunityOwner, isLoading } = this.state;
-
     return (
       <Provider
         value={{
@@ -183,12 +181,12 @@ class UserProvider extends Component {
 UserProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   account: PropTypes.string,
-  onLoaded: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3),
 };
 
 UserProvider.defaultProps = {
-  onLoaded: () => {},
   account: undefined,
+  web3: undefined,
 };
 
 export default UserProvider;

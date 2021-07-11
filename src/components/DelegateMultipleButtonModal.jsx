@@ -37,7 +37,7 @@ const ModalContent = props => {
     state: { currentUser, isLoading: userContextIsLoading },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, validProvider, isEnabled: Web3ContextIsEnabled },
+    state: { isForeignNetwork, validProvider, isEnabled: Web3ContextIsEnabled, web3 },
   } = useContext(Web3Context);
   const {
     actions: { delegationPending, delegationSuccessful, delegationFailed },
@@ -253,7 +253,7 @@ const ModalContent = props => {
     const onCreated = txLink => {
       setSaving(false);
       setModalVisible(false);
-      loadDonations();
+      loadDonations().then();
       delegationPending(txLink, delegateType === 'community');
     };
 
@@ -270,10 +270,6 @@ const ModalContent = props => {
       }
     };
 
-    const onCancel = () => {
-      setSaving(false);
-    };
-
     DonationBlockchainService.delegateMultiple(
       delegations,
       utils.toWei(String(amount)),
@@ -282,7 +278,7 @@ const ModalContent = props => {
       onCreated,
       onSuccess,
       onError,
-      onCancel,
+      web3,
     );
   }
 

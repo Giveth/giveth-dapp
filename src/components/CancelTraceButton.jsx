@@ -18,7 +18,7 @@ const CancelTraceButton = ({ trace, className }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -28,7 +28,7 @@ const CancelTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false).then(() =>
+    return authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -88,6 +88,7 @@ const CancelTraceButton = ({ trace, className }) => {
                     );
                   }
                 },
+                web3,
               }),
             ),
         )

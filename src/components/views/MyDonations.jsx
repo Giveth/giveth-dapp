@@ -32,7 +32,7 @@ const MyDonations = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
   } = useContext(Web3Context);
 
   const {
@@ -70,7 +70,7 @@ const MyDonations = () => {
   };
 
   const reject = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }
@@ -113,7 +113,13 @@ const MyDonations = () => {
               };
 
               // Reject the delegation of the donation
-              DonationBlockchainService.reject(donation, userAddress, afterCreate, afterMined);
+              DonationBlockchainService.reject(
+                donation,
+                userAddress,
+                afterCreate,
+                afterMined,
+                web3,
+              );
             }
           }),
         )
@@ -128,7 +134,7 @@ const MyDonations = () => {
   };
 
   const commit = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }
@@ -174,7 +180,7 @@ const MyDonations = () => {
                 userAddress,
                 afterCreate,
                 afterMined,
-                err => ErrorPopup('Something went wrong.', err),
+                web3,
               );
             }
           }),
@@ -190,7 +196,7 @@ const MyDonations = () => {
   };
 
   const refund = donation => {
-    authenticateUser(currentUser, false).then(authenticated => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) {
         return;
       }
@@ -222,7 +228,7 @@ const MyDonations = () => {
           };
 
           // Refund the donation
-          DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined);
+          DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined, web3);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);
       });

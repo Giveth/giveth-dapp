@@ -1,8 +1,6 @@
-import { LPPCampaign } from 'lpp-campaign';
+import { LPPCampaign, LPPCampaignFactory } from 'lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import Trace from '../models/Trace';
-import getNetwork from '../lib/blockchain/getNetwork';
-import getWeb3 from '../lib/blockchain/getWeb3';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Campaign from '../models/Campaign';
@@ -323,8 +321,10 @@ class CampaignService {
    * @param from        address of the user saving the Campaign
    * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param web3  Web3  instance
+   * @param tokenWhitelist  tokenWhitelist
    */
-  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}) {
+  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}, web3) {
     if (campaign.id && campaign.projectId === 0) {
       throw new Error(
         'You must wait for your Campaign to be creation to finish before you can update it',
@@ -340,8 +340,6 @@ class CampaignService {
         ErrorPopup('Failed to upload campaign to ipfs');
       }
 
-      const network = await getNetwork();
-
       // nothing to update or failed ipfs upload
       if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
@@ -356,7 +354,7 @@ class CampaignService {
       let promise;
       if (campaign.projectId) {
         // LPPCampaign function update(string newName, string newUrl, uint64 newCommitTime)
-        promise = new LPPCampaign(await getWeb3(), campaign.pluginAddress).update(
+        promise = new LPPCampaign(web3, campaign.pluginAddress).update(
           campaign.title,
           profileHash || '',
           0,
@@ -367,7 +365,7 @@ class CampaignService {
         );
       } else {
         // LPPCampaignFactory function newCampaign(string name, string url, uint64 parentProject, address reviewer)
-        const { lppCampaignFactory } = network;
+        const lppCampaignFactory = new LPPCampaignFactory(web3, config.lppCampaignFactoryAddress);
         promise = lppCampaignFactory.newCampaign(
           campaign.title,
           profileHash || '',
@@ -418,23 +416,17 @@ class CampaignService {
     afterCreate = () => {},
     afterMined = () => {},
   ) {
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([_]) => {
-        campaigns
-          .patch(campaign.id, {
-            ownerAddress: owner,
-            coownerAddress: coowner,
-          })
-          .then(() => {
-            afterCreate();
-            afterMined();
-          })
-          .catch(err => {
-            ErrorPopup('Something went wrong with updating campaign', err);
-          });
+    campaigns
+      .patch(campaign.id, {
+        ownerAddress: owner,
+        coownerAddress: coowner,
+      })
+      .then(() => {
+        afterCreate();
+        afterMined();
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with cancelling your campaign', err);
+        ErrorPopup('Something went wrong with updating campaign', err);
       });
   }
 
@@ -443,7 +435,7 @@ class CampaignService {
    *
    * //TODO: update contact for transaction on this
    *
-   * @param campaign    Campaign to be modified
+   * @param campaignId    Campaign ID to be modified
    * @param address        Address of the funds forwarder
    */
   static addFundsForwarderAddress(
@@ -452,22 +444,16 @@ class CampaignService {
     afterCreate = () => {},
     afterMined = () => {},
   ) {
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([_]) => {
-        campaigns
-          .patch(campaignId, {
-            fundsForwarder: address,
-          })
-          .then(() => {
-            afterCreate();
-            afterMined();
-          })
-          .catch(err => {
-            ErrorPopup('Something went wrong with updating campaign', err);
-          });
+    campaigns
+      .patch(campaignId, {
+        fundsForwarder: address,
+      })
+      .then(() => {
+        afterCreate();
+        afterMined();
       })
       .catch(err => {
-        ErrorPopup('Something went wrong with cancelling your campaign', err);
+        ErrorPopup('Something went wrong with updating campaign', err);
       });
   }
 
@@ -479,38 +465,30 @@ class CampaignService {
    * @param from        Address of the user cancelling the Campaign
    * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param web3
    */
-  static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}) {
+  static cancel(campaign, from, afterCreate = () => {}, afterMined = () => {}, web3) {
     let txHash;
-    getWeb3()
-      .then(web3 => {
-        const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
+    const lppCampaign = new LPPCampaign(web3, campaign.pluginAddress);
 
-        lppCampaign
-          .cancelCampaign({ from, $extraGas: extraGas() })
-          .once('transactionHash', hash => {
-            txHash = hash;
-            campaigns
-              .patch(campaign.id, {
-                status: Campaign.CANCELED,
-                mined: false,
-                // txHash, // TODO create a transaction entry
-              })
-              .then(afterCreate(`${etherScanUrl}tx/${txHash}`))
-              .catch(err => {
-                ErrorPopup('Something went wrong with updating campaign', err);
-              });
+    lppCampaign
+      .cancelCampaign({ from, $extraGas: extraGas() })
+      .once('transactionHash', hash => {
+        txHash = hash;
+        campaigns
+          .patch(campaign.id, {
+            status: Campaign.CANCELED,
+            mined: false,
+            // txHash, // TODO create a transaction entry
           })
-          .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
+          .then(() => afterCreate(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-            ErrorPopup(
-              'Something went wrong with cancelling your campaign',
-              `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,
-            );
+            ErrorPopup('Something went wrong with updating campaign', err);
           });
       })
+      .then(() => afterMined(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
         ErrorPopup(
           'Something went wrong with cancelling your campaign',
           `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`,

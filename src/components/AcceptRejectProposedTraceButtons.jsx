@@ -19,12 +19,12 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const rejectProposedTrace = async () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       conversationModal.current
         .openModal({
           title: 'Reject proposed Trace',
@@ -47,7 +47,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
   };
 
   const acceptProposedTrace = async () => {
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -106,6 +106,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             }),
         )

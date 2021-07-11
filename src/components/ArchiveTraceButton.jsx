@@ -20,7 +20,7 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
   } = useContext(UserContext);
 
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -33,7 +33,7 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
       ? Trace.COMPLETED
       : Trace.PAID;
 
-    authenticateUser(currentUser, false).then(() =>
+    authenticateUser(currentUser, false, web3).then(() =>
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
@@ -96,11 +96,12 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
               afterSave,
               afterMined,
               onError,
-            });
+              web3,
+            }).then();
           } else {
             const campaign = new Campaign(trace.campaign);
             campaign.archivedTraces.add(trace.projectId);
-            campaign.save(afterSave, afterMined);
+            campaign.save(afterSave, afterMined, web3).then();
           }
         })
         .catch(err => {

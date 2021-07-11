@@ -39,7 +39,7 @@ const RightMenu = () => {
   } = useContext(UserContext);
 
   const {
-    state: { isEnabled, validProvider, failedToLoad },
+    state: { isEnabled, validProvider },
     actions: { enableProvider },
   } = useContext(Web3Context);
 
@@ -241,7 +241,7 @@ const RightMenu = () => {
         </SubMenu>
       )}
 
-      {validProvider && !failedToLoad && !isEnabled && !currentUser.address && (
+      {validProvider && !isEnabled && !currentUser.address && (
         <Menu.Item key="EnableWeb3">
           <button
             type="button"
@@ -252,7 +252,7 @@ const RightMenu = () => {
           </button>
         </Menu.Item>
       )}
-      {validProvider && !failedToLoad && isEnabled && !currentUser.address && (
+      {validProvider && isEnabled && !currentUser.address && (
         <Menu.Item key="unlock">
           <small className="text-muted">Please unlock MetaMask</small>
         </Menu.Item>

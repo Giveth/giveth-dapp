@@ -20,7 +20,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
   } = useContext(Web3Provider);
 
   return (
@@ -34,6 +34,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
           donation.status === Donation.WAITING &&
           donation.amountRemaining > 0 && (
             <DelegateButton
+              web3={web3}
               types={campaigns.concat(traces)}
               donation={donation}
               balance={balance}
@@ -49,6 +50,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
           donation.status === Donation.COMMITTED &&
           donation.amountRemaining > 0 && (
             <DelegateButton
+              web3={web3}
               types={traces.filter(
                 m =>
                   m.campaignId === donation.ownerTypeId &&

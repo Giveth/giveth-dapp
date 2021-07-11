@@ -50,7 +50,7 @@ const EditCampaign = () => {
   } = useContext(WhiteListContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -209,7 +209,7 @@ const EditCampaign = () => {
   };
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (!isForeignNetwork) {
@@ -271,7 +271,7 @@ const EditCampaign = () => {
 
       setIsSaving(true);
       setIsBlocking(false);
-      campaignObject.current.save(afterCreate, afterMined).finally(() => {
+      campaignObject.current.save(afterCreate, afterMined, web3).finally(() => {
         setIsSaving(false);
       });
     }

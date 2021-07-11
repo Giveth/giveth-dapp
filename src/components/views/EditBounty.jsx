@@ -26,9 +26,10 @@ function EditBounty(props) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
   const { traceId } = props.match.params;
 
   const [campaign, setCampaign] = useState();
@@ -121,7 +122,7 @@ function EditBounty(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }
@@ -209,6 +210,7 @@ function EditBounty(props) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
+      web3,
     });
   };
 

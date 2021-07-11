@@ -40,7 +40,7 @@ function EditPayment(props) {
   } = useContext(ConversionRateContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -232,7 +232,7 @@ function EditPayment(props) {
   };
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -354,6 +354,7 @@ function EditPayment(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };
