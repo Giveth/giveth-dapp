@@ -29,6 +29,7 @@ import BridgedTrace from '../../models/BridgedTrace';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const WAIT_INTERVAL = 1000;
 
@@ -253,7 +254,7 @@ function CreatePayment(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the Campaign Owner';
-              window.analytics.track('Trace Create', {
+              sendAnalyticsTracking('Trace Create', {
                 action: 'proposed',
                 ...analyticsData,
               });
@@ -268,7 +269,7 @@ function CreatePayment(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Create', {
+            sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
             });

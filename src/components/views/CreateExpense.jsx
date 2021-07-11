@@ -24,6 +24,7 @@ import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateExpense(props) {
   const {
@@ -218,7 +219,7 @@ function CreateExpense(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Expense proposed to the Campaign Owner';
-              window.analytics.track('Trace Create', {
+              sendAnalyticsTracking('Trace Create', {
                 action: 'proposed',
                 ...analyticsData,
               });
@@ -233,7 +234,7 @@ function CreateExpense(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Create', {
+            sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
             });

@@ -31,6 +31,7 @@ import { IPFSService, CommunityService } from '../../services';
 import config from '../../configuration';
 import Community from '../../models/Community';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const { Title, Text } = Typography;
 
@@ -246,7 +247,7 @@ const EditCommunity = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          window.analytics.track('Community Created', {
+          sendAnalyticsTracking('Community Created', {
             category: 'Community',
             action: 'created',
             id,
@@ -394,7 +395,7 @@ const EditCommunity = ({ isNew, match }) => {
                         <DeleteTwoTone onClick={removePicture} />
                       </div>
                     ) : (
-                      <ImgCrop>
+                      <ImgCrop aspect={16 / 9}>
                         <Upload.Dragger {...uploadProps}>
                           <p className="ant-upload-text">
                             Drag and Drop JPEG, PNG here or <span>Attach a file.</span>

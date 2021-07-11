@@ -10,6 +10,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 function ReproposeRejectedTraceButton({ trace }) {
   const {
@@ -42,7 +43,7 @@ function ReproposeRejectedTraceButton({ trace }) {
           trace,
           reason,
           onSuccess: () => {
-            window.analytics.track('Rejected Trace Reproposed', {
+            sendAnalyticsTracking('Rejected Trace Reproposed', {
               category: 'Trace',
               action: 'reproposed rejected trace',
               id: trace._id,

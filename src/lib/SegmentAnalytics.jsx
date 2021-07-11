@@ -1,7 +1,61 @@
+import { v4 } from 'uuid';
 import config from '../configuration';
+import { feathersClient } from './feathersClient';
 
+const anonymousId = v4();
 window.analytics = window.analytics || [];
 const { analytics } = window;
+const isBrave = () => {
+  /**
+   * Maybe in newer updates of Brave this doesn't work, but at this time it's ok
+   * @see {@link https://stackoverflow.com/a/63330925/4650625}
+   */
+  if (window.navigator.brave !== undefined) {
+    if (window.navigator.brave.isBrave.name === 'isBrave') {
+      return true;
+    }
+    return false;
+  }
+  return false;
+};
+export const sendAnalyticsTracking = (event, properties) => {
+  try {
+    if (!isBrave()) {
+      window.analytics.track(event, properties);
+    } else if (event && properties) {
+      feathersClient.service('analytics').create({
+        reportType: 'track',
+        event,
+        userId: properties.userAddress,
+        anonymousId,
+        properties,
+      });
+    }
+  } catch (e) {
+    console.log('sendAnalyticsTracking error', e);
+  }
+};
+export const sendAnalyticsPage = page => {
+  try {
+    if (!isBrave()) {
+      window.analytics.page();
+    } else if (page) {
+      feathersClient.service('analytics').create({
+        reportType: 'page',
+        page,
+        anonymousId,
+        properties: {
+          url: window.location.href,
+          path: window.location.pathname,
+          referrer: document.referrer,
+          title: document.title,
+        },
+      });
+    }
+  } catch (e) {
+    console.log('sendAnalyticsPage() error ', e);
+  }
+};
 if (!analytics.initialize) {
   if (analytics.invoked) console.error('Segment snippet included twice.');
   else {
@@ -56,5 +110,4 @@ if (!analytics.initialize) {
   }
 
   window.analytics.load(config.analyticsKey);
-  window.analytics.page();
 }

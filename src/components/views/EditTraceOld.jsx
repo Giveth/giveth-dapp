@@ -53,6 +53,7 @@ import LPTrace from '../../models/LPTrace';
 import BridgedTrace from '../../models/BridgedTrace';
 import DescriptionRender from '../DescriptionRender';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
@@ -738,12 +739,12 @@ class EditTraceOld extends Component {
                   {url && <Link to={url}>View trace</Link>}
                 </Fragment>,
               );
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'proposed',
                 ...analyticsData,
               });
             } else {
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
               });
@@ -758,7 +759,7 @@ class EditTraceOld extends Component {
                 </a>
               </p>,
             );
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'created',
               ...analyticsData,
             });
@@ -769,7 +770,7 @@ class EditTraceOld extends Component {
                 <br />
               </p>,
             );
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated',
               ...analyticsData,
             });

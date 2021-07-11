@@ -20,6 +20,7 @@ import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateBounty(props) {
   const {
@@ -120,7 +121,7 @@ function CreateBounty(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Bounty proposed to the Campaign Owner';
-              window.analytics.track('Trace Create', {
+              sendAnalyticsTracking('Trace Create', {
                 action: 'proposed',
                 ...analyticsData,
               });
@@ -135,7 +136,7 @@ function CreateBounty(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Create', {
+            sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
             });

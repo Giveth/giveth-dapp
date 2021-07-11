@@ -23,6 +23,7 @@ import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditExpense(props) {
   const {
@@ -265,13 +266,13 @@ function EditExpense(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Expense proposed to the Campaign Owner';
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
               });
             } else {
               notificationDescription = 'The Expense has been updated!';
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
               });
@@ -286,13 +287,13 @@ function EditExpense(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'created',
               ...analyticsData,
             });
           } else {
             notificationDescription = 'Your Expense has been updated!';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });

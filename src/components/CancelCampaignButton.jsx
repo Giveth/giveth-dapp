@@ -6,6 +6,7 @@ import Campaign from '../models/Campaign';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import confirmationDialog from '../lib/confirmationDialog';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const CancelCampaignButton = ({ campaign, className }) => {
   const {
@@ -34,7 +35,7 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.info(msg);
-            window.analytics.track('Campaign Canceled', {
+            sendAnalyticsTracking('Campaign Canceled', {
               category: 'Campaign',
               action: 'cancel',
               id: campaign.id,

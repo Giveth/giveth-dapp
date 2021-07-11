@@ -7,6 +7,7 @@ import Resizer from 'react-image-file-resizer';
 
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
+import { sendAnalyticsPage } from './SegmentAnalytics';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser.address === address;
@@ -87,7 +88,7 @@ let prevPath;
 history.listen(location => {
   if (location.pathname !== prevPath) {
     prevPath = location.pathname;
-    window.analytics.page();
+    sendAnalyticsPage(location.pathname);
   }
 });
 

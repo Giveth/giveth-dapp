@@ -11,6 +11,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const CancelTraceButton = ({ trace, className }) => {
   const {
@@ -46,7 +47,7 @@ const CancelTraceButton = ({ trace, className }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  window.analytics.track('Trace Canceled', {
+                  sendAnalyticsTracking('Trace Canceled', {
                     category: 'Trace',
                     action: 'cancel',
                     id: trace._id,

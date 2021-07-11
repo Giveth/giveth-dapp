@@ -16,6 +16,7 @@ import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListP
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -132,7 +133,7 @@ class EditProfile extends Component {
       showToast(msg, url, true);
 
       if (created) {
-        window.analytics.track('User Created', {
+        sendAnalyticsTracking('User Created', {
           category: 'User',
           action: 'created',
           userAddress: this.state.user.address,
@@ -140,7 +141,7 @@ class EditProfile extends Component {
         });
       } else {
         if (this.mounted) this.setState({ isSaving: false });
-        window.analytics.track('User Updated', {
+        sendAnalyticsTracking('User Updated', {
           category: 'User',
           action: 'updated',
           label: this.state.user.address,

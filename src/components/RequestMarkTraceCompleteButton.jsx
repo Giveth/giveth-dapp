@@ -12,6 +12,7 @@ import { Context as NotificationContext } from '../contextProviders/Notification
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -68,7 +69,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                 from: userAddress,
                 proof,
                 onTxHash: txUrl => {
-                  window.analytics.track('Trace Marked Complete', {
+                  sendAnalyticsTracking('Trace Marked Complete', {
                     category: 'Trace',
                     action: 'marked complete',
                     label: trace._id,

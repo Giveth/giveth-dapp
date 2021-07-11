@@ -15,6 +15,7 @@ import LPTrace from '../models/LPTrace';
 import Editor from './Editor';
 import CommentAnimation from '../assets/pencil.json';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const TraceConversationComment = ({ trace }) => {
   const {
@@ -52,7 +53,7 @@ const TraceConversationComment = ({ trace }) => {
           })
           .then(() => {
             setCreating(false);
-            window.analytics.track('Comment Added', {
+            sendAnalyticsTracking('Comment Added', {
               traceId: trace.id,
               traceTitle: trace.title,
               userAddress: currentUser.address,
