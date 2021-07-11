@@ -108,9 +108,11 @@ class BasicModel extends Model {
   }
 
   set image(value) {
-    this.checkType(value, ['string'], 'image');
-    this.newImage = true;
-    this._image = value;
+    if (value !== this._image) {
+      this.checkType(value, ['string'], 'image');
+      this.newImage = true;
+      this._image = value;
+    }
   }
 
   get txHash() {

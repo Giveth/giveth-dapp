@@ -111,12 +111,13 @@ const EditCampaign = () => {
       CampaignService.get(campaignId)
         .then(camp => {
           if (isOwner(camp.ownerAddress, currentUser)) {
+            const imageIpfsPath = camp.image.match(/\/ipfs\/.*/);
             setCampaign({
               title: camp.title,
               description: camp.description,
               communityUrl: camp.communityUrl,
               reviewerAddress: camp.reviewerAddress,
-              picture: camp.image.match(/\/ipfs\/.*/)[0],
+              picture: imageIpfsPath ? imageIpfsPath[0] : camp.image,
             });
             campaignObject.current = camp;
             setIsLoading(false);
@@ -159,7 +160,8 @@ const EditCampaign = () => {
 
   useEffect(() => {
     if (campaign.image) {
-      const picture = campaign.image.match(/\/ipfs\/.*/)[0];
+      const imageIpfsPath = campaign.image.match(/\/ipfs\/.*/);
+      const picture = imageIpfsPath ? imageIpfsPath[0] : campaign.image;
       setPicture(picture);
     }
   }, [campaign]);
