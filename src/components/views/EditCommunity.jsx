@@ -394,7 +394,7 @@ const EditCommunity = ({ isNew, match }) => {
                         <DeleteTwoTone onClick={removePicture} />
                       </div>
                     ) : (
-                      <ImgCrop>
+                      <ImgCrop aspect={16 / 9}>
                         <Upload.Dragger {...uploadProps}>
                           <p className="ant-upload-text">
                             Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
