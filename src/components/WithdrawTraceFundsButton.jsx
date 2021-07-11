@@ -13,6 +13,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -77,7 +78,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                 trace,
                 from: userAddress,
                 onTxHash: txUrl => {
-                  window.analytics.track('Trace Withdraw', {
+                  sendAnalyticsTracking('Trace Withdraw', {
                     category: 'Trace',
                     action: 'initiated withdrawal',
                     id: trace._id,

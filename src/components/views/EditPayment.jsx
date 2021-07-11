@@ -26,6 +26,7 @@ import { authenticateUser } from '../../lib/middleware';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const WAIT_INTERVAL = 1000;
 
@@ -294,13 +295,13 @@ function EditPayment(props) {
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the campaign owner';
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
               });
             } else {
               notificationDescription = 'The Payment has been updated!';
-              window.analytics.track('Trace Edit', {
+              sendAnalyticsTracking('Trace Edit', {
                 action: 'updated proposed',
                 ...analyticsData,
               });
@@ -315,13 +316,13 @@ function EditPayment(props) {
                 </a>
               </p>
             );
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'created',
               ...analyticsData,
             });
           } else {
             notificationDescription = 'Your Payment has been updated!';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });

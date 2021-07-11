@@ -19,6 +19,7 @@ import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditBounty(props) {
   const {
@@ -152,13 +153,13 @@ function EditBounty(props) {
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Bounty proposed to the campaign owner';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });
           } else {
             notificationDescription = 'The Bounty has been updated!';
-            window.analytics.track('Trace Edit', {
+            sendAnalyticsTracking('Trace Edit', {
               action: 'updated proposed',
               ...analyticsData,
             });
@@ -173,13 +174,13 @@ function EditBounty(props) {
               </a>
             </p>
           );
-          window.analytics.track('Trace Edit', {
+          sendAnalyticsTracking('Trace Edit', {
             action: 'created',
             ...analyticsData,
           });
         } else {
           notificationDescription = 'Your Bounty has been updated!';
-          window.analytics.track('Trace Edit', {
+          sendAnalyticsTracking('Trace Edit', {
             action: 'updated proposed',
             ...analyticsData,
           });
