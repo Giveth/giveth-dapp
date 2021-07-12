@@ -79,7 +79,7 @@ const ViewTrace = props => {
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
   const donationsObserver = useRef();
-
+  const traceSubscription = useRef();
   const donationsPerBatch = 50;
 
   const getCommunityTitle = async communityId => {
@@ -106,10 +106,17 @@ const ViewTrace = props => {
     );
   }
 
+  const cleanTraceSubscription = () => {
+    if (traceSubscription.current) {
+      traceSubscription.current.unsubscribe();
+      traceSubscription.current = undefined;
+    }
+  };
+
   useEffect(() => {
     const { traceId, traceSlug } = props.match.params;
 
-    const subscription = TraceService.subscribeOne(
+    traceSubscription.current = TraceService.subscribeOne(
       traceId,
       _trace => {
         if (traceId) {
@@ -130,9 +137,7 @@ const ViewTrace = props => {
       traceSlug,
     );
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return cleanTraceSubscription;
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -41,8 +41,10 @@ const MyDonations = () => {
 
   const userAddress = currentUser.address;
 
+  const donationSubscription = useRef();
+
   const getUserDonations = () => {
-    DonationService.getUserDonations({
+    donationSubscription.current = DonationService.getUserDonations({
       currentUser,
       itemsPerPage,
       skipPages,
@@ -235,7 +237,12 @@ const MyDonations = () => {
     });
   };
 
-  const cleanup = () => DonationService.unsubscribe();
+  const cleanup = () => {
+    if (donationSubscription.current) {
+      donationSubscription.current.unsubscribe();
+      donationSubscription.current = undefined;
+    }
+  };
 
   useEffect(() => {
     if (userAddress) {
