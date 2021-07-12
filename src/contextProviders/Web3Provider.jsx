@@ -15,10 +15,9 @@ const getNetworkState = networkId => ({
   isForeignNetwork: networkId === config.foreignNetworkId,
 });
 
-const wallets = [
-  { walletName: 'metamask', preferred: true },
-  { walletName: 'torus', preferred: true },
-];
+const wallets = [{ walletName: 'metamask', preferred: true }];
+const torusWallet = { walletName: 'torus', preferred: true };
+if (['develop', 'Ganache'].includes(config.title)) wallets.push(torusWallet);
 
 class Web3Provider extends Component {
   constructor(props) {
