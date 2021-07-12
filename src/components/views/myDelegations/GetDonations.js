@@ -3,7 +3,7 @@ import { paramsForServer } from 'feathers-hooks-common';
 import Donation from '../../../models/Donation';
 import DonationService from '../../../services/DonationService';
 
-const GetDonations = async ({
+const GetDonations = ({
   userAddress,
   communities,
   campaigns,

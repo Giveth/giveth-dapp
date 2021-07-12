@@ -6,10 +6,6 @@ import Donation from '../models/Donation';
 const getDonations = feathersClient.service('donations');
 
 class DonationService {
-  constructor() {
-    this.donationSubscription = null;
-  }
-
   static getUserDonations({ currentUser, itemsPerPage, skipPages, subscribe, onResult, onError }) {
     const query = paramsForServer({
       schema: 'includeTypeDetails',
@@ -41,7 +37,7 @@ class DonationService {
   }
 
   static subscribe(query, onResult, onError) {
-    this.donationSubscription = getDonations
+    getDonations
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp => {
@@ -50,12 +46,6 @@ class DonationService {
           data: resp.data.map(d => new Donation(d)),
         });
       }, onError);
-
-    return this.donationSubscription;
-  }
-
-  static unsubscribe() {
-    if (this.donationSubscription) this.donationSubscription.unsubscribe();
   }
 }
 

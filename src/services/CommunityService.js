@@ -20,10 +20,6 @@ const communities = feathersClient.service('communities');
 const etherScanUrl = config.etherscan;
 
 class CommunityService {
-  constructor() {
-    this.communitySubscription = null;
-  }
-
   /**
    * Get a Community defined by ID
    *
@@ -172,6 +168,7 @@ class CommunityService {
    * @param itemsPerPage  Items to retrieve
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
+   * @param subscribe
    */
   static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
     const query = {
@@ -185,7 +182,16 @@ class CommunityService {
       },
     };
     if (subscribe) {
-      return this.subscribe(query, onSuccess, onError);
+      return communities
+        .watch({ listStrategy: 'always' })
+        .find(query)
+        .subscribe(resp => {
+          const newResp = {
+            ...resp,
+            data: resp.data.map(d => new Community(d)),
+          };
+          onSuccess(newResp);
+        }, onError);
     }
     return communities
       .find(query)
@@ -196,23 +202,6 @@ class CommunityService {
         });
       })
       .catch(onError);
-  }
-
-  // All subscriptions goes here
-  static subscribe(find, onSuccess, onError) {
-    this.communitySubscription = communities
-      .watch({ listStrategy: 'always' })
-      .find(find)
-      .subscribe(resp => {
-        const newResp = { ...resp, data: resp.data.map(d => new Community(d)) };
-        onSuccess(newResp);
-      }, onError);
-
-    return this.communitySubscription;
-  }
-
-  static unsubscribe() {
-    if (this.communitySubscription) this.communitySubscription.unsubscribe();
   }
 
   /**

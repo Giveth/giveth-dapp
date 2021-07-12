@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
@@ -13,7 +13,6 @@ import Trace from '../../../models/Trace';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
-import DonationService from '../../../services/DonationService';
 
 /**
  * The my delegations view
@@ -29,6 +28,8 @@ const MyDelegations = () => {
   const visiblePages = 10;
   const itemsPerPage = 20;
   const userAddress = currentUser.address;
+
+  const donationSubscription = useRef();
 
   const [isLoading, setLoading] = useState(true);
   const [delegations, setDelegations] = useState([]);
@@ -55,30 +56,33 @@ const MyDelegations = () => {
     [userAddress],
   );
 
-  const fetchDonations = useCallback(
-    () =>
-      GetDonations({
-        userAddress,
-        communities: projectsInfo.communities,
-        campaigns: projectsInfo.campaigns,
-        itemsPerPage,
-        skipPages,
-        onResult: resp => {
-          setDelegations(resp.data);
-          setTotalResults(resp.total);
-          setLoading(false);
-        },
-        onError: err => {
-          const message = `Error in fetching donations info. ${err}`;
-          ErrorHandler(err, message);
-          setLoading(false);
-        },
-        subscribe: true,
-      }),
-    [userAddress, projectsInfo, itemsPerPage, skipPages],
-  );
+  const fetchDonations = useCallback(() => {
+    donationSubscription.current = GetDonations({
+      userAddress,
+      communities: projectsInfo.communities,
+      campaigns: projectsInfo.campaigns,
+      itemsPerPage,
+      skipPages,
+      onResult: resp => {
+        setDelegations(resp.data);
+        setTotalResults(resp.total);
+        setLoading(false);
+      },
+      onError: err => {
+        const message = `Error in fetching donations info. ${err}`;
+        ErrorHandler(err, message);
+        setLoading(false);
+      },
+      subscribe: true,
+    });
+  }, [userAddress, projectsInfo, itemsPerPage, skipPages]);
 
-  const cleanup = () => DonationService.unsubscribe();
+  const cleanup = () => {
+    if (donationSubscription.current) {
+      donationSubscription.current.unsubscribe();
+      donationSubscription.current = undefined;
+    }
+  };
 
   useEffect(() => {
     if (userAddress) {
@@ -91,7 +95,7 @@ const MyDelegations = () => {
   useEffect(() => {
     if (projectsInfo) {
       setLoading(true);
-      fetchDonations().then();
+      fetchDonations();
     }
     return cleanup;
   }, [skipPages, projectsInfo]);

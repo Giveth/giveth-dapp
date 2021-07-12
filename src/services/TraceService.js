@@ -31,10 +31,6 @@ const traces = feathersClient.service('traces');
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
 class TraceService {
-  constructor() {
-    this.traceSubscription = null;
-  }
-
   /**
    * Get a Trace defined by ID
    *
@@ -86,7 +82,7 @@ class TraceService {
     } else if (slug) {
       query.slug = slug;
     }
-    this.traceSubscription = traces
+    traces
       .watch({ listStrategy: 'always' })
       .find({ query })
       .subscribe(resp => {
@@ -97,7 +93,6 @@ class TraceService {
         }
         onResult(TraceFactory.create(data[0]));
       }, onError);
-    return this.traceSubscription;
   }
 
   /**
