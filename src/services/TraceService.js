@@ -949,6 +949,9 @@ class TraceService {
         from,
         $extraGas: extraGas(),
       })
+      .once('transactionHash', async hash => {
+        txHash = hash;
+      })
       .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
