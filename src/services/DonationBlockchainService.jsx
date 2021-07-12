@@ -262,7 +262,6 @@ class DonationBlockchainService {
               ownerType: delegateTo.type,
             });
           }
-
           feathersClient
             .service('/donations')
             .create(newDonation)
@@ -271,6 +270,18 @@ class DonationBlockchainService {
               ErrorPopup('Unable to update the donation in feathers', err);
               onError(err);
             });
+          const txLink = `${etherScanUrl}tx/${txHash}`;
+          const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
+          sendAnalyticsTracking('Delegated', {
+            category: 'Donation',
+            action:
+              newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
+            id: donation._id,
+            txUrl: txLink,
+            userAddress: from,
+            receiverId,
+            delegateTo,
+          });
         });
       })
       .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
@@ -377,13 +388,12 @@ class DonationBlockchainService {
           .create(newDonation)
           .then(() => onCreated(txLink))
           .catch(err => {
-            ErrorPopup('Unable to update the donation in feathers', err);
+            ErrorPopup('Unable to create the donation in feathers', err);
             onError(err);
           });
-
         sendAnalyticsTracking('Delegated', {
           category: 'Donation',
-          action: 'delegated',
+          action: newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
           id: donation._id,
           txUrl: txLink,
           userAddress: from,
@@ -518,6 +528,17 @@ class DonationBlockchainService {
           .catch(err => {
             ErrorPopup('Something went wrong while committing your donation.', err);
           });
+
+        const txLink = `${etherScanUrl}tx/${txHash}`;
+
+        sendAnalyticsTracking('Delegated', {
+          category: 'Donation',
+          action: 'delegation approved',
+          id: donation._id,
+          txUrl: txLink,
+          userAddress: newDonation.giverAddress,
+          receiverId: newDonation.ownerTypeId,
+        });
       })
       .then(() => {
         onSuccess(`${etherScanUrl}tx/${txHash}`);
