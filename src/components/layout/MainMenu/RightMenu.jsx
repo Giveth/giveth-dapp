@@ -100,7 +100,7 @@ const RightMenu = () => {
             const message = `Error in fetching delegations info. ${err}`;
             ErrorHandler(err, message);
           },
-        }).then();
+        });
       })
       .catch(err => {
         const message = `Unable to load Communities, Campaigns or Traces. ${err}`;

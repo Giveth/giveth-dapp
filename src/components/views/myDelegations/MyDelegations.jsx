@@ -79,7 +79,7 @@ const MyDelegations = () => {
 
   const cleanup = () => {
     if (donationSubscription.current) {
-      donationSubscription.current.then(res => res.unsubscribe());
+      donationSubscription.current.unsubscribe();
       donationSubscription.current = undefined;
     }
   };
