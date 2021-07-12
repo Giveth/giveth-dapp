@@ -50,9 +50,18 @@ function ChangeTraceRecipientButton({ trace }) {
 
             if (!utils.isAddress(newRecipient)) {
               // TODO create a modal & provide input validation before closing the alert
-              React.swal({
+              await React.swal({
                 title: 'Invalid Address',
                 text: 'The provided address is invalid.',
+                type: 'error',
+                icon: 'error',
+              });
+              return;
+            }
+            if (newRecipient.toLowerCase() === trace.recipient.address.toLowerCase()) {
+              await React.swal({
+                title: 'Redundant Address',
+                text: 'The new recipient address should be different from old recipient address.',
                 type: 'error',
                 icon: 'error',
               });
