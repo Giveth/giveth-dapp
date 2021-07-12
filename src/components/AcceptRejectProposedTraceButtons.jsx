@@ -24,7 +24,8 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
   } = useContext(Web3Context);
 
   const rejectProposedTrace = async () => {
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       conversationModal.current
         .openModal({
           title: 'Reject proposed Trace',
@@ -42,12 +43,13 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
             onSuccess: () => React.toast.info(<p>The proposed Trace has been rejected.</p>),
             onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
           });
-        }),
-    );
+        });
+    });
   };
 
   const acceptProposedTrace = async () => {
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -116,8 +118,8 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

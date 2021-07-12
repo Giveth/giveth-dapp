@@ -22,7 +22,8 @@ function ChangeTraceRecipientButton({ trace }) {
   } = useContext(Web3Context);
 
   const changeRecipient = () => {
-    authenticateUser(currentUser, false, web3).then(() => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           try {

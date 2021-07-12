@@ -569,7 +569,8 @@ class EditTraceOld extends Component {
     }
 
     return authenticateUser(this.props.currentUser, true, this.props.web3)
-      .then(async () => {
+      .then(async authenticated => {
+        if (!authenticated) return;
         if (!this.props.isProposed && !this.props.currentUser) {
           historyBackWFallback();
           await sleep(2000);

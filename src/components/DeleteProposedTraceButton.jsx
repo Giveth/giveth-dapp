@@ -30,9 +30,10 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
   };
 
   const deleteProposedTrace = () => {
-    authenticateUser(currentUser, false, web3).then(() =>
-      confirmationDialog('trace', trace.title, _confirmDeleteTrace),
-    );
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      confirmationDialog('trace', trace.title, _confirmDeleteTrace);
+    });
   };
 
   return (

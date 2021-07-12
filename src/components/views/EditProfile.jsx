@@ -82,21 +82,23 @@ class EditProfile extends Component {
     } = this.props;
     checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() =>
-        authenticateUser(currentUser, true, web3)
-          .then(() => checkBalance(balance))
-          .then(() => this.setState({ isLoading: false }))
-          .catch(err => {
-            if (err === 'noBalance') {
-              ErrorPopup('Something went wrong.', err);
-              history.goBack();
-            } else {
-              this.setState({
-                isLoading: false,
-              });
-            }
-          }),
+        authenticateUser(currentUser, true, web3).then(authenticated => {
+          if (!authenticated) return;
+          checkBalance(balance)
+            .then(() => this.setState({ isLoading: false }))
+            .catch(err => {
+              if (err === 'noBalance') {
+                ErrorPopup('Something went wrong.', err);
+                history.goBack();
+              } else {
+                this.setState({
+                  isLoading: false,
+                });
+              }
+            });
+        }),
       )
-      .catch(() => {});
+      .catch(console.log);
   }
 
   submit() {

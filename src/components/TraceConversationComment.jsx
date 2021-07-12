@@ -32,7 +32,10 @@ const TraceConversationComment = ({ trace }) => {
   const [form] = Form.useForm();
 
   function checkUser() {
-    return authenticateUser(currentUser, false, web3).then(() => checkProfile(currentUser));
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      checkProfile(currentUser).then();
+    });
   }
 
   const closeModal = () => {
@@ -76,7 +79,8 @@ const TraceConversationComment = ({ trace }) => {
   const showModal = () => {
     checkUser().then(() => {
       if (currentUser.authenticated) {
-        authenticateUser(currentUser, false, web3).then(() => {
+        authenticateUser(currentUser, false, web3).then(authenticated => {
+          if (!authenticated) return;
           setVisible(true);
         });
       }

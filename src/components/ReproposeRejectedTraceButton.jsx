@@ -22,7 +22,8 @@ function ReproposeRejectedTraceButton({ trace }) {
   } = useContext(Web3Context);
 
   const repropose = () => {
-    authenticateUser(currentUser, false, web3).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       React.swal({
         title: 'Re-propose Trace?',
         text: 'Are you sure you want to re-propose this Trace?',
@@ -54,8 +55,8 @@ function ReproposeRejectedTraceButton({ trace }) {
           },
           onError: e => ErrorPopup('Something went wrong with re-proposing your Trace', e),
         });
-      }),
-    );
+      });
+    });
   };
 
   return (

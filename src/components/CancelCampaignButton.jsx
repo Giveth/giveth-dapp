@@ -21,7 +21,8 @@ const CancelCampaignButton = ({ campaign, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return authenticateUser(currentUser, false, web3).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance).then(() => {
         const confirmCancelCampaign = () => {
           const afterCreate = url => {
@@ -60,8 +61,8 @@ const CancelCampaignButton = ({ campaign, className }) => {
           campaign.cancel(currentUser.address, afterCreate, afterMined, web3);
         };
         confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
-      }),
-    );
+      });
+    });
   };
 
   const userAddress = currentUser.address;
