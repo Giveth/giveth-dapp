@@ -8,7 +8,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import confirmationDialog from '../lib/confirmationDialog';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
-const CancelCampaignButton = ({ campaign, className }) => {
+const CancelCampaignButton = ({ campaign, className, onCancel }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -36,6 +36,7 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.info(msg);
+            onCancel();
             sendAnalyticsTracking('Campaign Canceled', {
               category: 'Campaign',
               action: 'cancel',
@@ -57,6 +58,7 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.success(msg);
+            onCancel();
           };
           campaign.cancel(currentUser.address, afterCreate, afterMined, web3);
         };
@@ -91,10 +93,12 @@ const CancelCampaignButton = ({ campaign, className }) => {
 CancelCampaignButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   className: PropTypes.string,
+  onCancel: PropTypes.func,
 };
 
 CancelCampaignButton.defaultProps = {
   className: '',
+  onCancel: () => {},
 };
 
 export default React.memo(CancelCampaignButton);
