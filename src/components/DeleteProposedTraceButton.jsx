@@ -12,6 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const DeleteProposedTraceButton = ({ trace, className }) => {
   const {
@@ -24,7 +25,17 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
   const _confirmDeleteTrace = () => {
     TraceService.deleteProposedTrace({
       trace,
-      onSuccess: () => React.toast.info(<p>The Trace has been deleted.</p>),
+      onSuccess: () => {
+        sendAnalyticsTracking('Trace Delete', {
+          category: 'Trace',
+          action: 'deleted',
+          formType: trace.formType,
+          id: trace._id,
+          title: trace.title,
+          campaignTitle: trace.campaign.title,
+        });
+        React.toast.info(<p>The Trace has been deleted.</p>);
+      },
       onError: e => ErrorPopup('Something went wrong with deleting your Trace', e),
     });
   };
