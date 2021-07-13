@@ -21,13 +21,14 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateMilestone(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -80,7 +81,7 @@ function CreateMilestone(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -118,9 +119,19 @@ function CreateMilestone(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'milestone',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Milestone proposed to the Campaign Owner';
+              sendAnalyticsTracking('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -132,6 +143,10 @@ function CreateMilestone(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Milestone has been updated!, this should not be happened';
@@ -161,6 +176,7 @@ function CreateMilestone(props) {
           setLoading(false);
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

@@ -3,24 +3,24 @@ import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import GA from 'lib/GoogleAnalytics';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import LPTrace from '../models/LPTrace';
 import config from '../configuration';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -30,8 +30,12 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   async function withdraw() {
     const userAddress = currentUser.address;
     const isRecipient = trace.recipientAddress === userAddress;
-    actionWithLoggedIn(currentUser).then(() =>
-      Promise.all([checkBalance(balance), DonationService.getTraceDonationsCount(trace._id)])
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      Promise.all([
+        checkBalance(balance),
+        DonationBlockchainService.getTraceDonationsCount(trace._id),
+      ])
         .then(([, donationsCount]) => {
           if (!isAmountEnoughForWithdraw) {
             minPayoutWarningInWithdraw();
@@ -75,10 +79,13 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                 trace,
                 from: userAddress,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Trace Withdraw', {
                     category: 'Trace',
                     action: 'initiated withdrawal',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -130,6 +137,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                     icon: 'error',
                   });
                 },
+                web3,
               });
             }
           });
@@ -140,8 +148,8 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else if (err !== undefined) {
             ErrorHandler(err, 'Something went wrong.', true);
           }
-        }),
-    );
+        });
+    });
   }
 
   const userAddress = currentUser.address;

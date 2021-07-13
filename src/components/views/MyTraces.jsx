@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, Fragment, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
@@ -7,10 +7,10 @@ import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import { Context as WhiteListContext } from 'contextProviders/WhiteListProvider';
 import TraceActions from 'components/TraceActions';
+import { Helmet } from 'react-helmet';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 
 import AuthenticationWarning from '../AuthenticationWarning';
-import ErrorPopup from '../ErrorPopup';
 import Loader from '../Loader';
 
 import {
@@ -23,6 +23,7 @@ import config from '../../configuration';
 
 import TraceService from '../../services/TraceService';
 import Trace from '../../models/Trace';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 const reviewDue = updatedAt =>
   moment()
@@ -41,8 +42,7 @@ const MyTraces = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [traceStatus, setTraceStatus] = useState(traceTabs[0]);
 
-  const itemsPerPage = 10;
-  const visiblePages = 10;
+  const subscribeTraces = useRef(null);
 
   const {
     state: { currentUser },
@@ -55,27 +55,32 @@ const MyTraces = () => {
   } = useContext(WhiteListContext);
 
   function cleanUp() {
-    TraceService.unsubscribe();
+    if (subscribeTraces.current) {
+      subscribeTraces.current.then(res => res.unsubscribe());
+      subscribeTraces.current = null;
+    }
   }
 
+  const itemsPerPage = 10;
+  const visiblePages = 10;
+  const userAddress = currentUser.address;
+
   const loadTraces = useCallback(() => {
-    const myAddress = currentUser.address;
-    if (myAddress) {
-      TraceService.subscribeMyTraces({
+    if (userAddress) {
+      subscribeTraces.current = TraceService.getUserTraces({
         traceStatus,
-        ownerAddress: myAddress,
-        coownerAddress: myAddress,
-        recipientAddress: myAddress,
+        ownerAddress: userAddress,
+        recipientAddress: userAddress,
         skipPages,
         itemsPerPage,
+        subscribe: true,
         onResult: resp => {
           setTraces(resp.data);
           setTotalResults(resp.total);
           setLoading(false);
         },
         onError: err => {
-          ErrorPopup('Something went wrong.', err);
-          // TODO: handle error here in view
+          ErrorHandler(err, 'Something went wrong on fetching Traces.');
           setLoading(false);
         },
       });
@@ -84,7 +89,7 @@ const MyTraces = () => {
       setTotalResults(0);
       setLoading(false);
     }
-  }, [currentUser.address, traceStatus, skipPages]);
+  }, [userAddress, traceStatus, skipPages]);
 
   function getTokenSymbol(token) {
     if (token.foreignAddress === ANY_TOKEN.foreignAddress) {
@@ -111,18 +116,27 @@ const MyTraces = () => {
   }
 
   useEffect(() => {
-    // To skip initial render
     setLoading(true);
+    cleanUp();
     loadTraces();
     return cleanUp;
-  }, [currentUser.address, loadTraces, traceStatus, skipPages]);
+  }, [loadTraces, traceStatus, skipPages]);
+
+  useEffect(() => {
+    if (userAddress) {
+      setSkipPages(0);
+    }
+  }, [userAddress]);
 
   return (
-    <div id="traces-view">
-      <div className="container-fluid page-layout">
+    <Fragment>
+      <Helmet>
+        <title>My Traces</title>
+      </Helmet>
+      <div className="container-fluid page-layout dashboard-table-view">
         <div className="row">
           <div className="col-md-10 m-auto">
-            <h1>Your Traces</h1>
+            <h1>My Traces</h1>
             <ViewNetworkWarning
               incorrectNetwork={!isForeignNetwork}
               networkName={config.foreignNetworkName}
@@ -267,7 +281,7 @@ const MyTraces = () => {
           </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 };
 

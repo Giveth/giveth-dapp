@@ -21,13 +21,14 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditMilestone(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -63,20 +64,29 @@ function EditMilestone(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.MILESTONETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const isReviewer = res.reviewerAddress !== ZERO_ADDRESS;
@@ -88,12 +98,16 @@ function EditMilestone(props) {
               donateToCommunity: !!res.communityId,
             };
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setDonateToCommunity(!!res.communityId);
             setHasReviewer(isReviewer);
             setTrace(res);
             setImage(imageUrl);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -101,15 +115,7 @@ function EditMilestone(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id, isEditNotAllowed, trace, traceId]);
-
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
+  }, [currentUser.address]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -137,7 +143,7 @@ function EditMilestone(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }
@@ -164,9 +170,25 @@ function EditMilestone(props) {
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
+        const analyticsData = {
+          formType: 'milestone',
+          id: res._id,
+          title: ms.title,
+          campaignTitle: campaign.title,
+        };
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Milestone proposed to the Campaign Owner';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
+          } else {
+            notificationDescription = 'The Milestone has been updated!';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
         } else if (txUrl) {
           notificationDescription = (
@@ -178,8 +200,16 @@ function EditMilestone(props) {
               </a>
             </p>
           );
+          sendAnalyticsTracking('Trace Edit', {
+            action: 'created',
+            ...analyticsData,
+          });
         } else {
           notificationDescription = 'Your Milestone has been updated!';
+          sendAnalyticsTracking('Trace Edit', {
+            action: 'updated proposed',
+            ...analyticsData,
+          });
         }
 
         if (notificationDescription) {
@@ -205,6 +235,7 @@ function EditMilestone(props) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
+      web3,
     });
   };
 

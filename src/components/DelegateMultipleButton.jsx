@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import React, { useContext, useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import 'react-rangeslider/lib/index.css';
 import { Button, Modal } from 'antd';
 
 import { authenticateUser, checkBalance } from '../lib/middleware';
@@ -26,7 +25,7 @@ const modalStyles = {
  */
 const DelegateMultipleButton = props => {
   const {
-    state: { isForeignNetwork, validProvider, balance },
+    state: { isForeignNetwork, validProvider, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -37,7 +36,7 @@ const DelegateMultipleButton = props => {
   const [modalVisible, setModalVisible] = useState(false);
 
   async function openDialog() {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }

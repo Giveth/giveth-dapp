@@ -1,7 +1,7 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import Campaign from '../models/Campaign';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -12,7 +12,7 @@ const EditCampaignButton = ({ campaign, className }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -20,11 +20,12 @@ const EditCampaignButton = ({ campaign, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance).then(() => {
         history.push(`/campaigns/${campaign.id}/edit`);
-      }),
-    );
+      });
+    });
   };
 
   const userAddress = currentUser.address;

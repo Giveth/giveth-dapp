@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { Helmet } from 'react-helmet';
 
@@ -11,8 +11,6 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import Sweetalert from 'sweetalert';
 
-import GA from 'lib/GoogleAnalytics';
-
 import { history } from '../lib/helpers';
 
 import config from '../configuration';
@@ -20,7 +18,6 @@ import config from '../configuration';
 // components
 import Routes from './Routes';
 import Header from '../components/layout/MainMenu';
-import Loader from '../components/Loader';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 // context providers
@@ -62,17 +59,11 @@ const Application = () => {
     name: 'giveth',
   });
 
-  const [web3Loading, setWeb3Loading] = useState(true);
-
-  const web3Loaded = () => {
-    setWeb3Loading(false);
-  };
-
   return (
     <ErrorBoundary>
       {/* Header stuff goes here */}
-      {config.analytics.useHotjar && window.location.origin.includes('beta') && (
-        <Helmet>
+      <Helmet>
+        {config.analytics.useHotjar && window.location.origin.includes('trace') && (
           <script>{`
             (function(h,o,t,j,a,r){
               h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
@@ -83,61 +74,57 @@ const Application = () => {
               a.appendChild(r);
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
           `}</script>
-        </Helmet>
-      )}
+        )}
+        <title>Giveth Trace</title>
+      </Helmet>
 
       <Router history={history}>
         <WhiteListProvider>
           <WhiteListConsumer>
             {({ state: { fiatWhitelist } }) => (
               <div>
-                <Web3Provider onLoaded={web3Loaded}>
+                <Web3Provider>
                   <Web3Consumer>
-                    {({ state: { account } }) => (
+                    {({ state: { account, web3 } }) => (
                       <div>
-                        {web3Loading && <Loader className="fixed" />}
-                        {!web3Loading && (
-                          <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                            <UserProvider account={account}>
-                              <UserConsumer>
-                                {({ state: { hasError } }) => (
-                                  <div>
-                                    <NotificationModalProvider>
-                                      {GA.init() && <GA.RouteTracker />}
+                        <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                          <UserProvider account={account} web3={web3}>
+                            <UserConsumer>
+                              {({ state: { hasError } }) => (
+                                <div>
+                                  <NotificationModalProvider>
+                                    {!hasError && (
+                                      <div>
+                                        <Header />
+                                        <Routes />
+                                      </div>
+                                    )}
 
-                                      {!hasError && (
-                                        <div>
-                                          <Header />
-                                          <Routes />
-                                        </div>
-                                      )}
+                                    {hasError && (
+                                      <div className="text-center">
+                                        <h2>Oops, something went wrong...</h2>
+                                        <p>
+                                          The Giveth dapp could not load for some reason. Please try
+                                          again...
+                                        </p>
+                                      </div>
+                                    )}
 
-                                      {hasError && (
-                                        <div className="text-center">
-                                          <h2>Oops, something went wrong...</h2>
-                                          <p>
-                                            The Giveth dapp could not load for some reason. Please
-                                            try again...
-                                          </p>
-                                        </div>
-                                      )}
-
-                                      <ToastContainer
-                                        position="top-right"
-                                        type="default"
-                                        autoClose={5000}
-                                        hideProgressBar
-                                        newestOnTop={false}
-                                        closeOnClick
-                                        pauseOnHover
-                                      />
-                                    </NotificationModalProvider>
-                                  </div>
-                                )}
-                              </UserConsumer>
-                            </UserProvider>
-                          </ConversionRateProvider>
-                        )}
+                                    <ToastContainer
+                                      position="top-right"
+                                      type="default"
+                                      autoClose={5000}
+                                      hideProgressBar
+                                      newestOnTop={false}
+                                      closeOnClick
+                                      pauseOnHover
+                                    />
+                                  </NotificationModalProvider>
+                                </div>
+                              )}
+                            </UserConsumer>
+                          </UserProvider>
+                        </ConversionRateProvider>
                       </div>
                     )}
                   </Web3Consumer>

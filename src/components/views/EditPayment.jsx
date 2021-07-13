@@ -26,6 +26,7 @@ import { authenticateUser } from '../../lib/middleware';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const WAIT_INTERVAL = 1000;
 
@@ -39,7 +40,7 @@ function EditPayment(props) {
   } = useContext(ConversionRateContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -89,14 +90,6 @@ function EditPayment(props) {
   }, [loadingAmount, userIsCampaignOwner]);
 
   useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
-
-  useEffect(() => {
     return () => {
       isMounted.current = false;
       clearTimeout(timer.current);
@@ -104,26 +97,35 @@ function EditPayment(props) {
   }, []);
 
   const goBack = () => {
-    props.history.goBack();
+    history.goBack();
   };
 
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.PAYMENTTYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const imageUrl = res.image ? res.image.match(/\/ipfs\/.*/)[0] : '';
@@ -140,10 +142,14 @@ function EditPayment(props) {
               image: imageUrl,
               date: res.date,
             };
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setPayment(iValues);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -151,7 +157,7 @@ function EditPayment(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.address]);
 
   // Update item of this item in trace token
   const updateAmount = () => {
@@ -226,7 +232,7 @@ function EditPayment(props) {
   };
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -280,9 +286,25 @@ function EditPayment(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'payment',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the campaign owner';
+              sendAnalyticsTracking('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
+            } else {
+              notificationDescription = 'The Payment has been updated!';
+              sendAnalyticsTracking('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -294,8 +316,16 @@ function EditPayment(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             notificationDescription = 'Your Payment has been updated!';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
 
           if (notificationDescription) {
@@ -324,6 +354,7 @@ function EditPayment(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

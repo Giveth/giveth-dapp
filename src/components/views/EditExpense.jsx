@@ -23,13 +23,14 @@ import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditExpense(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -82,14 +83,6 @@ function EditExpense(props) {
   const [form] = Form.useForm();
 
   const itemAmountMap = useRef({});
-
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
 
   const updateTotalAmount = () => {
     setTotalAmount(BigNumber.sum(...Object.values(itemAmountMap.current)));
@@ -159,20 +152,29 @@ function EditExpense(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.EXPENSETYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const iValues = {
@@ -196,11 +198,15 @@ function EditExpense(props) {
               item.picture = imageUrl;
               items.push(item);
             });
+            const _campaign = res.campaign;
             setExpenseItems(items);
             setInitialValues(iValues);
             setExpenseForm(iValues);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -208,10 +214,10 @@ function EditExpense(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
+  }, [currentUser.address]);
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -250,9 +256,26 @@ function EditExpense(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'expense',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
+
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Expense proposed to the Campaign Owner';
+              sendAnalyticsTracking('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
+            } else {
+              notificationDescription = 'The Expense has been updated!';
+              sendAnalyticsTracking('Trace Edit', {
+                action: 'updated proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -264,8 +287,16 @@ function EditExpense(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             notificationDescription = 'Your Expense has been updated!';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
 
           if (notificationDescription) {
@@ -294,6 +325,7 @@ function EditExpense(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

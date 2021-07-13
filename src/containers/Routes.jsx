@@ -3,22 +3,21 @@ import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 
 // views
 import Profile from '../components/views/Profile';
-// import UserWallet from '../components/views/UserWallet';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewTrace from '../components/views/ViewTrace';
 import EditCommunity from '../components/views/EditCommunity';
 import ViewCommunity from '../components/views/ViewCommunity';
-import Donations from '../components/views/Donations';
-import Delegations from '../components/views/Delegations';
+import MyDonations from '../components/views/MyDonations';
+import MyDelegations from '../components/views/myDelegations/MyDelegations';
 import MyCommunities from '../components/views/MyCommunities';
 import MyCampaigns from '../components/views/MyCampaigns';
 import MyTraces from '../components/views/MyTraces';
 import NotFound from '../components/views/NotFound';
 import Explore from '../components/views/Explore';
-import Traces from '../components/views/Traces';
-import Campaigns from '../components/views/Campaigns';
-import Communities from '../components/views/Communities';
+import { TracesExplore } from '../components/views/Traces';
+import { CampaignsExplore } from '../components/views/Campaigns';
+import { CommunitiesExplore } from '../components/views/Communities';
 
 import ViewCampaign from '../components/views/ViewCampaign';
 import EditTraceOld from '../components/views/EditTraceOld';
@@ -32,14 +31,10 @@ import EditBounty from '../components/views/EditBounty';
 import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
 import EditMilestone from '../components/views/EditMilestone';
-import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
 
 const Routes = () => {
-  const {
-    state: { currentUser },
-  } = useContext(UserContext);
   const {
     state: { isForeignNetwork, balance },
     actions: { displayForeignNetRequiredWarning },
@@ -59,19 +54,8 @@ const Routes = () => {
       {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
                             */}
-      <Route
-        exact
-        path="/communities/new"
-        render={props => (
-          <EditCommunity
-            isNew
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/communities/new" render={props => <EditCommunity isNew {...props} />} />
+      <Route exact path="/communities/:id/edit" render={props => <EditCommunity {...props} />} />
       <Route
         exact
         path={getViewEntityPathsList('/communities/:id')}
@@ -92,58 +76,19 @@ const Routes = () => {
         path={getViewEntityPathsList('/dac/:slug')}
         render={({ match }) => <Redirect to={`/community/${match.params.slug}`} />}
       />
-      <Route
-        exact
-        path="/communities/:id/edit"
-        render={props => (
-          <EditCommunity
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/campaigns/new"
-        render={props => (
-          <EditCampaign
-            isNew
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/campaigns/new" render={() => <EditCampaign />} />
+      <Route exact path="/campaigns/:id/edit" render={() => <EditCampaign />} />
       <Route
         exact
         path={getViewEntityPathsList('/campaigns/:id')}
-        render={props => <ViewCampaign currentUser={currentUser} balance={balance} {...props} />}
+        render={props => <ViewCampaign {...props} />}
       />
       <Route
         exact
         path={getViewEntityPathsList('/campaign/:slug')}
-        render={props => <ViewCampaign currentUser={currentUser} balance={balance} {...props} />}
+        render={props => <ViewCampaign {...props} />}
       />
-      <Route
-        exact
-        path="/campaigns/:id/edit"
-        render={props => (
-          <EditCampaign
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/campaign/:slug/new"
-        render={props => <TraceCreateOptionsMenu {...props} />}
-      />
+      <Route exact path="/campaign/:slug/new" render={() => <TraceCreateOptionsMenu />} />
       <Route
         exact
         path="/campaign/:slug/new/milestone"
@@ -197,12 +142,12 @@ const Routes = () => {
           ...getViewEntityPathsList('/campaigns/:id/milestones/:traceId'),
           ...getViewEntityPathsList('/campaigns/:id/traces/:traceId'),
         ]}
-        render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
+        render={props => <ViewTrace {...props} />}
       />
       <Route
         exact
         path={getViewEntityPathsList('/trace/:traceSlug')}
-        render={props => <ViewTrace currentUser={currentUser} balance={balance} {...props} />}
+        render={props => <ViewTrace {...props} />}
       />
       <Route
         exact
@@ -243,87 +188,31 @@ const Routes = () => {
         path="/campaigns/:id/traces"
         render={({ match }) => <Redirect to={`/campaigns/${match.params.id}`} />}
       />
-      <Route
-        exact
-        path="/donations"
-        render={props => (
-          <Donations
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/delegations"
-        render={props => (
-          <Delegations
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/my-communities"
-        render={props => (
-          <MyCommunities
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/my-donations" render={() => <MyDonations />} />
+      <Route exact path="/my-delegations" render={() => <MyDelegations />} />
+      <Route exact path="/my-communities" render={() => <MyCommunities />} />
       <Route exact path="/my-dacs" render={() => <Redirect to="/my-communities/" />} />
-      <Route
-        exact
-        path="/my-campaigns"
-        render={props => (
-          <MyCampaigns
-            key={currentUser ? currentUser.id : 0}
-            currentUser={currentUser}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+      <Route exact path="/my-campaigns" render={() => <MyCampaigns />} />
       <Route exact path="/my-traces" render={() => <MyTraces />} />
-      {/* <Route
-                                        exact
-                                        path="/wallet"
-                                        render={props => (
-                                          <UserWallet
-                                            currentUser={currentUser}
-                                            // wallet={wallet}
-                                            {...props}
-                                          />
-                                        )}
-                                      /> */}
       <Route exact path="/my-milestones" render={() => <Redirect to="/my-traces/" />} />
 
       <Route
         exact
         path="/profile"
-        render={props => (
+        render={() => (
           <EditProfile
             balance={balance}
             isForeignNetwork={isForeignNetwork}
             displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
           />
         )}
       />
       <Route exact path="/profile/:userAddress" render={props => <Profile {...props} />} />
-      <Route exact path="/" render={props => <Explore {...props} />} />
-      <Route exact path="/traces" render={props => <Traces {...props} />} />
+      <Route exact path="/" render={() => <Explore />} />
+      <Route exact path="/traces" render={() => <TracesExplore />} />
       <Route exact path="/milestones" render={() => <Redirect to="/traces" />} />
-      <Route exact path="/campaigns" render={() => <Campaigns />} />
-      <Route exact path="/communities" render={() => <Communities />} />
+      <Route exact path="/campaigns" render={() => <CampaignsExplore />} />
+      <Route exact path="/communities" render={() => <CommunitiesExplore />} />
       <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
       <Route component={NotFound} />
     </Switch>

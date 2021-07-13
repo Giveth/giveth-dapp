@@ -12,33 +12,33 @@ import React, {
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
-import Toggle from 'react-toggle';
-import GA from 'lib/GoogleAnalytics';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Slider, Form, Select, Input, InputNumber } from 'antd';
+import { Slider, Form, Select, Input, InputNumber, Checkbox } from 'antd';
+import { GivethBridge } from 'giveth-bridge';
 
-import getNetwork from '../lib/blockchain/getNetwork';
+import getTokens from '../lib/blockchain/getTokens';
 import extraGas from '../lib/blockchain/extraGas';
 import LoaderButton from './LoaderButton';
 import ErrorPopup from './ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
 
 import config from '../configuration';
-import DonationService from '../services/DonationService';
+import DonationBlockchainService from '../services/DonationBlockchainService';
 import CommunityService from '../services/CommunityService';
 import { feathersClient } from '../lib/feathersClient';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { Context as WhiteListContext } from '../contextProviders/WhiteListProvider';
+import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import ActionNetworkWarning from './ActionNetworkWarning';
 import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
-import getWeb3 from '../lib/blockchain/getWeb3';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -73,12 +73,16 @@ const DonateButtonModal = props => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isHomeNetwork, validProvider, balance: NativeTokenBalance },
+    state: { isHomeNetwork, validProvider, balance: NativeTokenBalance, web3 },
   } = useContext(Web3Context);
   const {
     actions: { donationPending, donationSuccessful, donationFailed },
   } = useContext(NotificationContext);
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
 
+  const tokens = getTokens({ web3, tokenWhitelist });
   const isCorrectNetwork = isHomeNetwork;
 
   const tokenWhitelistOptions = useMemo(
@@ -102,7 +106,6 @@ const DonateButtonModal = props => {
       tokenWhitelist.find(t => t.symbol === config.defaultDonateToken) || tokenWhitelist[0] || {},
     [tokenWhitelist],
   );
-
   const [selectedToken, setSelectedToken] = useState({});
   const [isSaving, setSaving] = useState(false);
   const [amount, setAmount] = useState('0');
@@ -157,28 +160,29 @@ const DonateButtonModal = props => {
     return maxAmount;
   }, [selectedToken, model, props, NativeTokenBalance]);
 
-  const updateAllowance = useCallback(
-    (delay = 0) => {
-      const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
-      if (!isDonationInToken) {
-        setAllowance(new BigNumber(0));
-        setAllowanceStatus(AllowanceStatus.NotNeeded);
-      } else if (validProvider && currentUser.address) {
-        // Fetch from network after 1 sec inorder to new allowance value be returned in response
-        setTimeout(
-          () =>
-            DonationService.getERC20tokenAllowance(selectedToken.address, currentUser.address)
-              .then(_allowance => {
-                console.log('Allowance:', _allowance);
-                setAllowance(new BigNumber(utils.fromWei(_allowance)));
-              })
-              .catch(() => {}),
-          delay,
-        );
-      }
-    },
-    [selectedToken, setAllowance, currentUser.address, validProvider],
-  );
+  const updateAllowance = (delay = 0) => {
+    const isDonationInToken = selectedToken.symbol !== config.nativeTokenName;
+    if (!isDonationInToken) {
+      setAllowance(new BigNumber(0));
+      setAllowanceStatus(AllowanceStatus.NotNeeded);
+    } else if (validProvider && currentUser.address) {
+      // Fetch from network after 1 sec inorder to new allowance value be returned in response
+      setTimeout(
+        () =>
+          DonationBlockchainService.getERC20tokenAllowance(
+            selectedToken.address,
+            currentUser.address,
+            tokens[selectedToken.address],
+          )
+            .then(_allowance => {
+              console.log('Allowance:', _allowance);
+              setAllowance(new BigNumber(utils.fromWei(_allowance)));
+            })
+            .catch(() => {}),
+        delay,
+      );
+    }
+  };
 
   const setToken = useCallback(
     address => {
@@ -230,7 +234,6 @@ const DonateButtonModal = props => {
               return selectedToken.balance;
             }
 
-            const { tokens } = await getNetwork();
             const contract = tokens[selectedToken.address];
 
             // we are only interested in homeNetwork token balances
@@ -275,7 +278,7 @@ const DonateButtonModal = props => {
     } else {
       clearUp();
     }
-  }, [selectedToken, isHomeNetwork, currentUser, pollToken, updateAllowance]);
+  }, [selectedToken, isHomeNetwork, currentUser]);
 
   const canDonateToProject = useCallback(() => {
     const { acceptsSingleToken, token } = model;
@@ -289,9 +292,7 @@ const DonateButtonModal = props => {
   }, [model, tokenWhitelist]);
 
   useEffect(() => {
-    getNetwork().then(network => {
-      givethBridge.current = network.givethBridge;
-    });
+    givethBridge.current = new GivethBridge(web3, config.givethBridgeAddress);
 
     updateAllowance();
 
@@ -318,7 +319,7 @@ const DonateButtonModal = props => {
     }
 
     return clearUp;
-  }, [canDonateToProject, getMaxAmount, updateAllowance, model]);
+  }, [canDonateToProject, model]);
 
   /**
    *
@@ -418,11 +419,11 @@ const DonateButtonModal = props => {
         let txUrl;
         method
           .on('transactionHash', async transactionHash => {
-            const web3 = await getWeb3();
             const { nonce } = await web3.eth.getTransaction(transactionHash);
+
             txHash = transactionHash;
 
-            await DonationService.newFeathersDonation(
+            await DonationBlockchainService.newFeathersDonation(
               donationOwner,
               toAdmin,
               amountWei,
@@ -443,11 +444,17 @@ const DonateButtonModal = props => {
 
             txUrl = `${etherscanUrl}tx/${txHash}`;
 
-            GA.trackEvent({
+            sendAnalyticsTracking('Donated', {
               category: 'Donation',
               action: 'donated',
-              label: txUrl,
+              url: txUrl,
+              userAddress,
+              donationOwnerAddress,
+              to: toAdmin,
+              amount: _amount,
+              token: selectedToken,
             });
+
             donationPending(txUrl);
           })
           .then(() => {
@@ -459,6 +466,14 @@ const DonateButtonModal = props => {
 
             if (txHash === undefined) {
               if (err.code === 4001) {
+                sendAnalyticsTracking('Rejected Donation', {
+                  action: 'donated',
+                  userAddress,
+                  donationOwnerAddress,
+                  to: toAdmin,
+                  amount: _amount,
+                  token: selectedToken,
+                });
                 donationFailed(null, 'User denied transaction signature');
               } else {
                 donationFailed(
@@ -488,11 +503,13 @@ const DonateButtonModal = props => {
             ? utils.toWei(new BigNumber(allowanceAmount).toFixed(18))
             : amountWei;
         }
-        const allowed = await DonationService.approveERC20tokenTransfer(
+        const allowed = await DonationBlockchainService.approveERC20tokenTransfer(
           tokenAddress,
           currentUser.address,
           allowanceRequired.toString(),
           () => updateAllowance(UPDATE_ALLOWANCE_DELAY),
+          web3,
+          tokens[selectedToken.address],
         );
 
         // Maybe user has canceled the allowance approval transaction
@@ -592,13 +609,18 @@ const DonateButtonModal = props => {
     return result;
   };
 
-  const submit = () => {
+  const submit = async () => {
     const { adminId, communityId } = model;
 
     const donationOwnerAddress = customAddress || currentUser.address;
-
+    const { rates } = await getConversionRates(new Date(), selectedToken.symbol, 'USD');
+    const usdValue = rates.USD * amount;
     if (allowanceApprovalType.current === AllowanceApprovalType.Clear) {
-      DonationService.clearERC20TokenApproval(selectedToken.address, currentUser.address)
+      DonationBlockchainService.clearERC20TokenApproval(
+        selectedToken.address,
+        currentUser.address,
+        tokens[selectedToken.address],
+      )
         .then(() => {
           setSaving(false);
           setAllowance(new BigNumber(0));
@@ -610,7 +632,7 @@ const DonateButtonModal = props => {
           setSaving(false);
           setModalVisible(false);
         });
-    } else if (communityId) {
+    } else if (communityId && usdValue > config.minimumUsdValueForDonate3PercentToCommunity) {
       donateToCommunity(
         adminId,
         communityId,
@@ -734,9 +756,9 @@ const DonateButtonModal = props => {
               )}
               {model.type.toLowerCase() !== Community.type && (
                 <span>
-                  You&apos;re committing your funds to this {capitalizeAdminType(model.type)}, if
-                  you have filled out contact information in your <Link to="/profile">Profile</Link>{' '}
-                  notified about how your funds are spent
+                  You&apos;re committing your funds to this {capitalizeAdminType(model.type)}. If
+                  you have added your contact information to your <Link to="/profile">Profile</Link>{' '}
+                  you will be notified about how your funds are spent.
                 </span>
               )}
             </p>
@@ -816,19 +838,19 @@ const DonateButtonModal = props => {
                   )}
 
                   {showCustomAddress && (
-                    <div className="alert alert-success py-1">
+                    <div className="alert alert-success py-1 mb-1">
                       <i className="fa fa-exclamation-triangle" />
                       The donation will be donated on behalf of address:
                     </div>
                   )}
 
-                  <div className="react-toggle-container mb-1">
-                    <Toggle
-                      id="show-recipient-address"
-                      defaultChecked={showCustomAddress}
+                  <div className="mb-1">
+                    <Checkbox
+                      checked={showCustomAddress}
                       onChange={() => setShowCustomAddress(!showCustomAddress)}
-                    />
-                    <div className="label">I want to donate on behalf of another address</div>
+                    >
+                      <div className="label">I want to donate on behalf of another address</div>
+                    </Checkbox>
                   </div>
                   {showCustomAddress && (
                     <Form.Item

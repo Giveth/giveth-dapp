@@ -1,10 +1,11 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
+import { Helmet } from 'react-helmet';
 
 import Loader from '../Loader';
 import { convertEthHelper, getTruncatedText } from '../../lib/helpers';
@@ -14,6 +15,7 @@ import AuthenticationWarning from '../AuthenticationWarning';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * The my campaings view
@@ -28,60 +30,78 @@ function MyCampaigns() {
 
   const [isLoading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState({});
-  const [skipPages, setSkipPages] = useState(0);
+  const [skipPages, setSkipPages] = useState();
 
   const visiblePages = 10;
   const itemsPerPage = 10;
+  const userAddress = currentUser.address;
 
   const campaignsObserver = useRef();
 
-  const loadCampaigns = useCallback(() => {
-    if (currentUser.address) {
-      campaignsObserver.current = CampaignService.getUserCampaigns(
-        currentUser.address,
-        skipPages,
-        itemsPerPage,
-        cs => {
-          setCampaigns(cs);
-          setLoading(false);
-        },
-        () => setLoading(false),
-      );
+  const cleanup = () => {
+    if (campaignsObserver.current) {
+      campaignsObserver.current.unsubscribe();
+      campaignsObserver.current = undefined;
     }
-  }, [currentUser.address, skipPages]);
+  };
+
+  const loadCampaigns = useCallback(
+    skPages => {
+      if (userAddress) {
+        campaignsObserver.current = CampaignService.getUserCampaigns(
+          userAddress,
+          skPages || skipPages,
+          itemsPerPage,
+          cs => {
+            setCampaigns(cs);
+            setLoading(false);
+          },
+          err => {
+            setLoading(false);
+            ErrorHandler(err, 'Something went wrong on fetching Campaigns.');
+          },
+          true,
+        );
+      }
+    },
+    [userAddress, skipPages],
+  );
 
   useEffect(() => {
-    loadCampaigns();
+    if (userAddress) {
+      setSkipPages(0);
+      cleanup();
+      loadCampaigns(0);
+    }
 
-    return () => {
-      if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
-    };
-  }, [loadCampaigns]);
+    return cleanup;
+  }, [userAddress]);
 
   useEffect(() => {
     setLoading(true);
-    setSkipPages(0);
-    if (campaignsObserver.current) campaignsObserver.current.unsubscribe();
+    cleanup();
     loadCampaigns();
-  }, [loadCampaigns, currentUser.address]);
 
-  useEffect(() => loadCampaigns, [loadCampaigns, skipPages]);
+    return cleanup;
+  }, [skipPages]);
 
   function handlePageChanged(newPage) {
     setSkipPages(newPage - 1);
   }
 
-  const userAddress = currentUser.address;
   const isPendingCampaign =
     (campaigns.data && campaigns.data.some(d => d.confirmations !== d.requiredConfirmations)) ||
     false;
 
   return (
-    <div id="campaigns-view">
+    <Fragment>
+      <Helmet>
+        <title>My Campaigns</title>
+      </Helmet>
       <div className="container-fluid page-layout dashboard-table-view">
         <div className="row">
           <div className="col-md-10 m-auto">
-            {(isLoading || (campaigns && campaigns.data.length > 0)) && <h1>Your Campaigns</h1>}
+            {(isLoading || (campaigns && campaigns.data.length > 0)) && <h1>My Campaigns</h1>}
 
             <AuthenticationWarning />
 
@@ -124,7 +144,7 @@ function MyCampaigns() {
                               {c.reviewerAddress === userAddress && (
                                 <span className="badge badge-info">
                                   <i className="fa fa-eye" />
-                                  &nbsp;I&apos;m reviewer
+                                  &nbsp;You&apos;re the Reviewer
                                 </span>
                               )}
                             </td>
@@ -169,7 +189,7 @@ function MyCampaigns() {
                     {campaigns.total > itemsPerPage && (
                       <div className="text-center">
                         <Pagination
-                          activePage={campaigns.skip / campaigns.limit + 1}
+                          activePage={skipPages + 1}
                           itemsCountPerPage={campaigns.limit}
                           totalItemsCount={campaigns.total}
                           pageRangeDisplayed={visiblePages}
@@ -183,7 +203,7 @@ function MyCampaigns() {
                 {campaigns && campaigns.data.length === 0 && (
                   <div>
                     <div className="text-center">
-                      <h3>You didn&apos;t create any Campaigns yet!</h3>
+                      <h3>You haven&apos;t created any Campaigns yet!</h3>
                       <img
                         className="empty-state-img"
                         src={`${process.env.PUBLIC_URL}/img/campaign.svg`}
@@ -199,7 +219,7 @@ function MyCampaigns() {
           </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   );
 }
 

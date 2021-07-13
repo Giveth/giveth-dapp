@@ -4,7 +4,7 @@ import { utils } from 'web3';
 
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import Trace from '../models/Trace';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -17,12 +17,13 @@ function ChangeTraceRecipientButton({ trace }) {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const changeRecipient = () => {
-    actionWithLoggedIn(currentUser).then(() => {
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           try {
@@ -49,9 +50,18 @@ function ChangeTraceRecipientButton({ trace }) {
 
             if (!utils.isAddress(newRecipient)) {
               // TODO create a modal & provide input validation before closing the alert
-              React.swal({
+              await React.swal({
                 title: 'Invalid Address',
                 text: 'The provided address is invalid.',
+                type: 'error',
+                icon: 'error',
+              });
+              return;
+            }
+            if (newRecipient.toLowerCase() === trace.recipient.address.toLowerCase()) {
+              await React.swal({
+                title: 'Redundant Address',
+                text: 'The new recipient address should be different from old recipient address.',
                 type: 'error',
                 icon: 'error',
               });
@@ -84,22 +94,7 @@ function ChangeTraceRecipientButton({ trace }) {
                   </p>,
                 );
               },
-              onError: (err, txUrl) => {
-                if (err === 'patch-error') {
-                  if (!currentUser.authenticated) return;
-                  ErrorPopup(
-                    `Something went wrong ${
-                      trace.hasRecipient ? 'changing ' : 'setting '
-                    } the Trace recipient.`,
-                    err,
-                  );
-                } else {
-                  ErrorPopup(
-                    'Something went wrong with the transaction.',
-                    `${txUrl} => ${JSON.stringify(err, null, 2)}`,
-                  );
-                }
-              },
+              web3,
             });
           } catch (e) {
             console.error(e);

@@ -3,28 +3,28 @@ import { Link } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import Donation from '../models/Donation';
+import Donation from '../../../models/Donation';
 import DelegateButton from './DelegateButton';
-import config from '../configuration';
-import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
-import { Context as UserContext } from '../contextProviders/UserProvider';
-import { Context as Web3Provider } from '../contextProviders/Web3Provider';
-import { Trace } from '../models';
-import Campaign from '../models/Campaign';
-import BridgedTrace from '../models/BridgedTrace';
-import LPPCappedTrace from '../models/LPPCappedTrace';
-import LPTrace from '../models/LPTrace';
+import config from '../../../configuration';
+import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpers';
+import { Context as UserContext } from '../../../contextProviders/UserProvider';
+import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
+import { Trace } from '../../../models';
+import Campaign from '../../../models/Campaign';
+import BridgedTrace from '../../../models/BridgedTrace';
+import LPPCappedTrace from '../../../models/LPPCappedTrace';
+import LPTrace from '../../../models/LPTrace';
 
 function DelegationsItem({ campaigns, donation, traces }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
   } = useContext(Web3Provider);
 
   return (
-    <tr name={donation.id}>
+    <tr>
       <td className="td-actions">
         {/* When donated to a community, allow delegation
                                     to campaigns and traces */}
@@ -34,6 +34,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
           donation.status === Donation.WAITING &&
           donation.amountRemaining > 0 && (
             <DelegateButton
+              web3={web3}
               types={campaigns.concat(traces)}
               donation={donation}
               balance={balance}
@@ -49,6 +50,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
           donation.status === Donation.COMMITTED &&
           donation.amountRemaining > 0 && (
             <DelegateButton
+              web3={web3}
               types={traces.filter(
                 m =>
                   m.campaignId === donation.ownerTypeId &&
@@ -81,7 +83,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
       </td>
       <td className="td-user">
         <Link to={`profile/${donation.giverAddress}`}>
-          <Avatar size={30} src={getUserAvatar(donation.giver)} round />
+          <Avatar size={30} src={getUserAvatar(donation.giver)} round className="mr-2" />
           {getUserName(donation.giver)}
         </Link>
       </td>

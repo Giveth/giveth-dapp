@@ -3,10 +3,9 @@ import jwt_decode from 'jwt-decode';
 import React, { Component, createContext } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { utils } from 'web3';
+import Web3, { utils } from 'web3';
 import { authenticateUser } from 'lib/middleware';
 import { feathersClient } from '../lib/feathersClient';
-import GivethWallet from '../lib/blockchain/GivethWallet';
 import ErrorHandler from '../lib/ErrorHandler';
 
 // models
@@ -18,7 +17,7 @@ const { Provider, Consumer } = Context;
 export { Context, Consumer };
 
 // TO DO: This is the minimum transaction view required to:
-// create a Community / Campaign / Milestone / Profile
+// create a Community / Campaign / Trace / Profile
 React.minimumWalletBalance = 0.01;
 React.minimumWalletBalanceInWei = new BigNumber(utils.toWei('0.01'));
 
@@ -54,21 +53,21 @@ class UserProvider extends Component {
 
   componentDidUpdate(prevProps) {
     const { currentUser } = this.state;
-
     const { account } = this.props;
     if (
       (account && !currentUser.address) ||
       (currentUser.address && account !== prevProps.account)
     ) {
-      this.getUserData(account);
-      this.checkGivethWallet();
+      this.getUserData(account).then();
     }
   }
 
   async getUserData(address) {
     if (!address) {
-      this.setState({ currentUser: {}, userIsCommunityOwner: false, isLoading: false }, () => {
-        this.props.onLoaded();
+      this.setState({
+        currentUser: {},
+        userIsCommunityOwner: false,
+        isLoading: false,
       });
     } else {
       feathersClient
@@ -81,7 +80,7 @@ class UserProvider extends Component {
         .then(
           resp => {
             const currentUser = resp.total === 1 ? new User(resp.data[0]) : new User({ address });
-            if (currentUser.address === address) {
+            if (currentUser.address.toLowerCase() === address.toLowerCase()) {
               this.setState({ currentUser }, () => {
                 this.authenticateFeathers();
 
@@ -105,56 +104,17 @@ class UserProvider extends Component {
     }
   }
 
-  // TODO: this can be removed after a sufficient time has passed w/ new Web3 support
-  // eslint-disable-next-line class-methods-use-this
-  checkGivethWallet() {
-    GivethWallet.getCachedKeystore()
-      .then(keystore => {
-        React.swal({
-          title: 'Giveth Wallet Deprecation Notice',
-          text:
-            'We noticed you have a Giveth wallet. We have replaced the Giveth wallet with support for MetaMask. You can import your keystore file directly into MetaMask to continue to using your Giveth wallet.',
-          icon: 'warning',
-          buttons: ['Remind me later', 'Download Keystore'],
-        }).then(download => {
-          if (download) {
-            const downloadLink = document.createElement('a');
-            downloadLink.href = URL.createObjectURL(
-              new Blob([JSON.stringify(keystore[0])], {
-                type: 'application/json',
-              }),
-            );
-            downloadLink.download = `UTC--${new Date().toISOString()}-${keystore[0].address}.json`;
-
-            downloadLink.click();
-
-            React.swal({
-              title: 'Giveth Wallet Deprecation Notice',
-              text:
-                'Please confirm the wallet has been downloaded correctly and you can import it in MetaMask. We strongly advice to save this file in a secure location. Can we erase the original file?',
-              icon: 'warning',
-              buttons: ['Not Yet', 'Yes erase'],
-            }).then(isConfirmed => {
-              if (isConfirmed) GivethWallet.removeCachedKeystore();
-            });
-          }
-        });
-      })
-      .catch(() => {});
-  }
-
   signIn(redirectOnFail) {
     const { currentUser } = this.state;
 
     if (currentUser.address) {
-      authenticateUser(currentUser, redirectOnFail).then(isAuthenticated => {
+      authenticateUser(currentUser, redirectOnFail, this.props.web3).then(isAuthenticated => {
         if (isAuthenticated) {
           currentUser.authenticated = true;
           this.setState({
             currentUser: new User(currentUser),
             isLoading: false,
           });
-          this.props.onLoaded();
         }
       });
     }
@@ -185,7 +145,6 @@ class UserProvider extends Component {
     }
 
     this.setState({ isLoading: false });
-    this.props.onLoaded();
   }
 
   async updateUserData() {
@@ -198,7 +157,6 @@ class UserProvider extends Component {
 
   render() {
     const { currentUser, hasError, userIsCommunityOwner, isLoading } = this.state;
-
     return (
       <Provider
         value={{
@@ -223,12 +181,12 @@ class UserProvider extends Component {
 UserProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
   account: PropTypes.string,
-  onLoaded: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3),
 };
 
 UserProvider.defaultProps = {
-  onLoaded: () => {},
   account: undefined,
+  web3: undefined,
 };
 
 export default UserProvider;

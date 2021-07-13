@@ -1,19 +1,19 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import GA from 'lib/GoogleAnalytics';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import Campaign from '../models/Campaign';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import confirmationDialog from '../lib/confirmationDialog';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
-const CancelCampaignButton = ({ campaign, className }) => {
+const CancelCampaignButton = ({ campaign, className, onCancel }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -21,7 +21,8 @@ const CancelCampaignButton = ({ campaign, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance).then(() => {
         const confirmCancelCampaign = () => {
           const afterCreate = url => {
@@ -35,10 +36,14 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.info(msg);
-            GA.trackEvent({
+            onCancel();
+            sendAnalyticsTracking('Campaign Canceled', {
               category: 'Campaign',
-              action: 'canceled',
-              label: campaign.id,
+              action: 'cancel',
+              id: campaign.id,
+              title: campaign.title,
+              donationCounters: campaign.donationCounters,
+              txUrl: url,
             });
           };
 
@@ -53,12 +58,13 @@ const CancelCampaignButton = ({ campaign, className }) => {
               </p>
             );
             React.toast.success(msg);
+            onCancel();
           };
-          campaign.cancel(currentUser.address, afterCreate, afterMined);
+          campaign.cancel(currentUser.address, afterCreate, afterMined, web3);
         };
         confirmationDialog('campaign', campaign.title, confirmCancelCampaign);
-      }),
-    );
+      });
+    });
   };
 
   const userAddress = currentUser.address;
@@ -87,10 +93,12 @@ const CancelCampaignButton = ({ campaign, className }) => {
 CancelCampaignButton.propTypes = {
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   className: PropTypes.string,
+  onCancel: PropTypes.func,
 };
 
 CancelCampaignButton.defaultProps = {
   className: '',
+  onCancel: () => {},
 };
 
 export default React.memo(CancelCampaignButton);

@@ -1,7 +1,6 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import 'react-input-token/lib/style.css';
 
 import {
   Button,
@@ -32,7 +31,7 @@ import { IPFSService, CommunityService } from '../../services';
 import config from '../../configuration';
 import Community from '../../models/Community';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import GA from '../../lib/GoogleAnalytics';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const { Title, Text } = Typography;
 
@@ -53,7 +52,7 @@ const EditCommunity = ({ isNew, match }) => {
   } = useContext(WhiteListContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -69,6 +68,10 @@ const EditCommunity = ({ isNew, match }) => {
     }),
   );
   const mounted = useRef();
+
+  const goBack = () => {
+    history.goBack();
+  };
 
   useEffect(() => {
     mounted.current = true;
@@ -115,7 +118,10 @@ const EditCommunity = ({ isNew, match }) => {
             });
             communityObject.current = communityItem;
             setIsLoading(false);
-          } else history.goBack();
+          } else {
+            ErrorHandler({}, 'You are not allowed to edit this Community.');
+            goBack();
+          }
         })
         .catch(err => {
           if (err.status === 404) {
@@ -192,12 +198,8 @@ const EditCommunity = ({ isNew, match }) => {
     setPicture('');
   };
 
-  const goBack = () => {
-    history.goBack();
-  };
-
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (!isForeignNetwork) {
@@ -245,10 +247,12 @@ const EditCommunity = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          GA.trackEvent({
+          sendAnalyticsTracking('Community Created', {
             category: 'Community',
             action: 'created',
-            label: id,
+            id,
+            userAddress: currentUser.address,
+            txUrl: url,
           });
           history.push('/my-communities');
         }
@@ -256,7 +260,7 @@ const EditCommunity = ({ isNew, match }) => {
 
       setIsSaving(true);
       setIsBlocking(false);
-      communityObject.current.save(afterCreate, afterMined).finally(() => {
+      communityObject.current.save(afterCreate, afterMined, web3).finally(() => {
         setIsSaving(false);
       });
     }
@@ -391,7 +395,7 @@ const EditCommunity = ({ isNew, match }) => {
                         <DeleteTwoTone onClick={removePicture} />
                       </div>
                     ) : (
-                      <ImgCrop>
+                      <ImgCrop aspect={16 / 9}>
                         <Upload.Dragger {...uploadProps}>
                           <p className="ant-upload-text">
                             Drag and Drop JPEG, PNG here or <span>Attach a file.</span>

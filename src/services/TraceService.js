@@ -8,11 +8,11 @@ import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
 import TraceFactory from 'models/TraceFactory';
 import { feathersClient } from 'lib/feathersClient';
-import getNetwork from 'lib/blockchain/getNetwork';
-import getWeb3 from 'lib/blockchain/getWeb3';
 import extraGas from 'lib/blockchain/extraGas';
-import DonationService from 'services/DonationService';
+import DonationBlockchainService from 'services/DonationBlockchainService';
 import { toast } from 'react-toastify';
+import { MilestoneFactory } from 'lpp-milestones';
+import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
 import Trace from '../models/Trace';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
@@ -31,10 +31,6 @@ const traces = feathersClient.service('traces');
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
 class TraceService {
-  constructor() {
-    this.traceSubscription = null;
-  }
-
   /**
    * Get a Trace defined by ID
    *
@@ -86,7 +82,7 @@ class TraceService {
     } else if (slug) {
       query.slug = slug;
     }
-    this.traceSubscription = traces
+    traces
       .watch({ listStrategy: 'always' })
       .find({ query })
       .subscribe(resp => {
@@ -97,7 +93,6 @@ class TraceService {
         }
         onResult(TraceFactory.create(data[0]));
       }, onError);
-    return this.traceSubscription;
   }
 
   /**
@@ -120,15 +115,15 @@ class TraceService {
    *  reject:
    *    error message
    */
-  static async subscribeMyTraces({
+  static async getUserTraces({
     traceStatus,
     ownerAddress,
-    coownerAddress,
     recipientAddress,
     skipPages,
     itemsPerPage,
     onResult,
     onError,
+    subscribe,
   }) {
     const query = {
       $sort: {
@@ -174,7 +169,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             // { reviewerAddress: myAddress }, // Not really "My Traces"
             { recipientAddress },
           ],
@@ -184,7 +178,7 @@ class TraceService {
     } else {
       const resp = await feathersClient.service('campaigns').find({
         query: {
-          $or: [{ ownerAddress }, { coownerAddress }],
+          $or: [{ ownerAddress }, { coownerAddress: ownerAddress }],
           $select: ['_id'],
         },
       });
@@ -193,7 +187,6 @@ class TraceService {
         {
           $or: [
             { ownerAddress },
-            { coownerAddress },
             {
               $and: [
                 { reviewerAddress: ownerAddress },
@@ -233,52 +226,30 @@ class TraceService {
       ];
     }
 
-    this.subscribe(query, onResult, onError);
-  }
-
-  /**
-   * Lazy-load Traces by subscribing to Trace listener
-   *
-   * @param query     A feathers query
-   *
-   * returns a Promise
-   *  resolve:
-   *    Object
-   *      data                (Array) Trace models
-   *      limit               (Number) items per page
-   *      skipped             (Number) pages skipped
-   *      totalResults        (Number) total results
-   *
-   *  reject:
-   *    error message
-   */
-
-  static subscribe(query, onResult, onError) {
-    this.traceSubscription = traces
+    if (!subscribe) {
+      return traces
+        .find({ query })
+        .then(resp => {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        })
+        .catch(onError);
+    }
+    return traces
       .watch({ listStrategy: 'always' })
       .find({ query })
-      .subscribe(
-        resp => {
-          try {
-            onResult({
-              ...resp,
-              data: resp.data.map(m => TraceFactory.create(m)),
-            });
-          } catch (e) {
-            onError(e);
-          }
-        },
-
-        onError,
-      );
-  }
-
-  /**
-   * Unsubscribe from Trace listener
-   */
-
-  static unsubscribe() {
-    if (this.traceSubscription) this.traceSubscription.unsubscribe();
+      .subscribe(resp => {
+        try {
+          onResult({
+            ...resp,
+            data: resp.data.map(m => TraceFactory.create(m)),
+          });
+        } catch (e) {
+          onError(e);
+        }
+      }, onError);
   }
 
   /**
@@ -290,8 +261,7 @@ class TraceService {
    * @param onError   Callback function if error is encountered
    */
   static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
-    return feathersClient
-      .service('traces')
+    return traces
       .find({
         query: {
           status: Trace.IN_PROGRESS,
@@ -361,7 +331,7 @@ class TraceService {
    * @param onError   Callback function if error is encountered
    */
   static subscribeNewDonations(id, onSuccess, onError) {
-    let initalTotal;
+    let initialTotal;
     return feathersClient
       .service('donations')
       .watch({ listStrategy: 'always' })
@@ -374,11 +344,11 @@ class TraceService {
         },
       })
       .subscribe(resp => {
-        if (initalTotal === undefined) {
-          initalTotal = resp.total;
+        if (initialTotal === undefined) {
+          initialTotal = resp.total;
           onSuccess(0);
         } else {
-          onSuccess(resp.total - initalTotal);
+          onSuccess(resp.total - initialTotal);
         }
       }, onError);
   }
@@ -387,10 +357,12 @@ class TraceService {
    * Save new Trace to the blockchain or update existing one in feathers
    * TODO: Handle error states properly
    *
-   * @param trace   Trace object to be saved
+   * @param trace       Trace object to be saved
    * @param from        address of the user saving the Trace
    * @param afterSave   Callback to be triggered after the Trace is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param onError     Callback function if error is encountered
+   * @param web3
    */
   static async save({
     trace,
@@ -398,6 +370,7 @@ class TraceService {
     afterSave = () => {},
     afterMined = () => {},
     onError = () => {},
+    web3,
   }) {
     if (trace.id && trace.projectId === 0) {
       return onError('You must wait for your Trace creation to finish before you can update it');
@@ -469,17 +442,15 @@ class TraceService {
         return true;
       }
 
-      const network = await getNetwork();
-
       let tx;
       if (trace.projectId) {
         if (trace instanceof BridgedTrace) {
-          tx = trace.contract(await getWeb3()).update(trace.title, profileHash || '', 0, {
+          tx = trace.contract(web3).update(trace.title, profileHash || '', 0, {
             from,
             $extraGas: extraGas(),
           });
         } else if (trace instanceof LPTrace) {
-          tx = trace.contract(await getWeb3()).update(trace.title, profileHash || '', 0, {
+          tx = trace.contract(web3).update(trace.title, profileHash || '', 0, {
             from,
             $extraGas: extraGas(),
           });
@@ -493,6 +464,13 @@ class TraceService {
         if (trace instanceof LPPCappedTrace) {
           throw new Error('LPPCappedMilestones are deprecated');
         }
+
+        const traceFactory = new MilestoneFactory(web3, config.milestoneFactoryAddress);
+        const lppCappedTraceFactory = new LPPCappedMilestoneFactory(
+          web3,
+          config.lppCappedMilestoneFactoryAddress,
+        );
+        const network = { traceFactory, lppCappedTraceFactory };
 
         tx = this.deployTrace(trace, from, network, profileHash);
       }
@@ -667,39 +645,52 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
-  static acceptProposedTrace({ trace, from, proof, onTxHash, onConfirmation, onError }) {
+  static async acceptProposedTrace({
+    trace,
+    from,
+    proof,
+    onTxHash,
+    onConfirmation,
+    onError,
+    web3,
+  }) {
     let txHash;
 
-    getNetwork()
-      .then(async network => {
-        const parentProjectId = trace.campaign.projectId;
+    const parentProjectId = trace.campaign.projectId;
 
-        // TODO fix this hack
-        if (!parentProjectId || parentProjectId === '0') {
-          throw new Error('campaign-not-mined');
-        }
+    // TODO fix this hack
+    if (!parentProjectId || parentProjectId === '0') {
+      throw new Error('campaign-not-mined');
+    }
 
-        const profileHash = await this.uploadToIPFS(trace);
-        trace.parentProjectId = parentProjectId;
+    const profileHash = await this.uploadToIPFS(trace);
+    trace.parentProjectId = parentProjectId;
 
-        this.deployTrace(trace, from, network, profileHash)
-          .once('transactionHash', hash => {
-            txHash = hash;
+    const traceFactory = new MilestoneFactory(web3, config.milestoneFactoryAddress);
+    const lppCappedTraceFactory = new LPPCappedMilestoneFactory(
+      web3,
+      config.lppCappedMilestoneFactoryAddress,
+    );
+    const network = { traceFactory, lppCappedTraceFactory };
 
-            return traces
-              .patch(trace._id, {
-                status: Trace.PENDING,
-                mined: false,
-                message: proof.message,
-                proofItems: proof.items,
-                txHash,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
+    this.deployTrace(trace, from, network, profileHash)
+      .once('transactionHash', hash => {
+        txHash = hash;
+
+        return traces
+          .patch(trace._id, {
+            status: Trace.PENDING,
+            mined: false,
+            message: proof.message,
+            proofItems: proof.items,
+            txHash,
           })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+          .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+          .catch(e => onError('patch-error', e));
       })
+      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError(); // bug in web3 seems to constantly fail due to this error, but the tx is correct
         onError(err, `${etherScanUrl}tx/${txHash}`);
@@ -735,13 +726,20 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
-  static async requestMarkComplete({ trace, from, proof, onTxHash, onConfirmation, onError }) {
+  static async requestMarkComplete({
+    trace,
+    from,
+    proof,
+    onTxHash,
+    onConfirmation,
+    onError,
+    web3,
+  }) {
     let txHash;
 
     try {
-      const web3 = await getWeb3();
-
       const traceContract = trace.contract(web3);
 
       const fnName = trace instanceof LPPCappedTrace ? 'requestMarkAsComplete' : 'requestReview';
@@ -796,36 +794,34 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
 
-  static cancelTrace({ trace, from, proof, onTxHash, onConfirmation, onError }) {
+  static cancelTrace({ trace, from, proof, onTxHash, onConfirmation, onError, web3 }) {
     let txHash;
 
-    getWeb3()
-      .then(web3 => {
-        const traceContract = trace.contract(web3);
+    const traceContract = trace.contract(web3);
 
-        return traceContract
-          .cancelMilestone({
-            from,
-            $extraGas: extraGas(),
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
-
-            return traces
-              .patch(trace._id, {
-                status: Trace.CANCELED,
-                message: proof.message,
-                proofItems: proof.items,
-                mined: false,
-                txHash,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
-          })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+    return traceContract
+      .cancelMilestone({
+        from,
+        $extraGas: extraGas(),
       })
+      .once('transactionHash', hash => {
+        txHash = hash;
+
+        return traces
+          .patch(trace._id, {
+            status: Trace.CANCELED,
+            message: proof.message,
+            proofItems: proof.items,
+            mined: false,
+            txHash,
+          })
+          .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+          .catch(e => onError('patch-error', e));
+      })
+      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError();
         // bug in web3 seems to constantly fail due to this error, but the tx is correct
@@ -844,38 +840,35 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
 
-  static approveTraceCompletion({ trace, from, proof, onTxHash, onConfirmation, onError }) {
+  static approveTraceCompletion({ trace, from, proof, onTxHash, onConfirmation, onError, web3 }) {
     let txHash;
 
-    getWeb3()
-      .then(web3 => {
-        const traceContract = trace.contract(web3);
+    const traceContract = trace.contract(web3);
 
-        const fnName =
-          trace instanceof LPPCappedTrace ? 'approveTraceCompleted' : 'approveCompleted';
+    const fnName = trace instanceof LPPCappedTrace ? 'approveTraceCompleted' : 'approveCompleted';
 
-        return traceContract[fnName]({
-          from,
-          $extraGas: extraGas(),
-        })
-          .once('transactionHash', hash => {
-            txHash = hash;
+    return traceContract[fnName]({
+      from,
+      $extraGas: extraGas(),
+    })
+      .once('transactionHash', hash => {
+        txHash = hash;
 
-            return traces
-              .patch(trace._id, {
-                status: Trace.COMPLETED,
-                mined: false,
-                message: proof.message,
-                proofItems: proof.items,
-                txHash,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
+        return traces
+          .patch(trace._id, {
+            status: Trace.COMPLETED,
+            mined: false,
+            message: proof.message,
+            proofItems: proof.items,
+            txHash,
           })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+          .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+          .catch(e => onError('patch-error', e));
       })
+      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError();
         // bug in web3 seems to constantly fail due to this error, but the tx is correct
@@ -894,38 +887,35 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
 
-  static rejectTraceCompletion({ trace, from, proof, onTxHash, onConfirmation, onError }) {
+  static rejectTraceCompletion({ trace, from, proof, onTxHash, onConfirmation, onError, web3 }) {
     let txHash;
 
-    getWeb3()
-      .then(web3 => {
-        const traceContract = trace.contract(web3);
+    const traceContract = trace.contract(web3);
 
-        const fnName =
-          trace instanceof LPPCappedTrace ? 'rejectCompleteRequest' : 'rejectCompleted';
+    const fnName = trace instanceof LPPCappedTrace ? 'rejectCompleteRequest' : 'rejectCompleted';
 
-        return traceContract[fnName]({
-          from,
-          $extraGas: extraGas(),
-        })
-          .once('transactionHash', hash => {
-            txHash = hash;
+    return traceContract[fnName]({
+      from,
+      $extraGas: extraGas(),
+    })
+      .once('transactionHash', hash => {
+        txHash = hash;
 
-            return traces
-              .patch(trace._id, {
-                status: Trace.IN_PROGRESS,
-                mined: false,
-                message: proof.message,
-                proofItems: proof.items,
-                txHash,
-              })
-              .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
-              .catch(e => onError('patch-error', e));
+        return traces
+          .patch(trace._id, {
+            status: Trace.IN_PROGRESS,
+            mined: false,
+            message: proof.message,
+            proofItems: proof.items,
+            txHash,
           })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+          .then(() => onTxHash(`${etherScanUrl}tx/${txHash}`))
+          .catch(e => onError('patch-error', e));
       })
+      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) onError();
         // bug in web3 seems to constantly fail due to this error, but the tx is correct
@@ -941,23 +931,23 @@ class TraceService {
    * @param newRecipient    (string) Address of the new recipient
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
-   * @param onError         Callback function if error is encountered
+   * @param web3
    */
 
-  static changeRecipient({ trace, from, newRecipient, onConfirmation }) {
+  static changeRecipient({ trace, from, newRecipient, onConfirmation, web3 }) {
     let txHash;
 
-    getWeb3()
-      .then(web3 => {
-        const traceContract = trace.contract(web3);
+    const traceContract = trace.contract(web3);
 
-        return traceContract
-          .changeRecipient(newRecipient, {
-            from,
-            $extraGas: extraGas(),
-          })
-          .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`));
+    return traceContract
+      .changeRecipient(newRecipient, {
+        from,
+        $extraGas: extraGas(),
       })
+      .once('transactionHash', async hash => {
+        txHash = hash;
+      })
+      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
         ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
       });
@@ -972,13 +962,14 @@ class TraceService {
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param web3
    */
 
-  static withdraw({ trace, from, onTxHash, onConfirmation, onError }) {
+  static withdraw({ trace, from, onTxHash, onConfirmation, onError, web3 }) {
     let txHash;
 
-    Promise.all([getWeb3(), DonationService.getTraceDonations(trace._id)])
-      .then(([web3, data]) => {
+    DonationBlockchainService.getTraceDonations(trace._id)
+      .then(data => {
         const traceContract = trace.contract(web3);
 
         const execute = opts => {
@@ -995,7 +986,7 @@ class TraceService {
           .once('transactionHash', hash => {
             txHash = hash;
 
-            DonationService.updateSpentDonations(data.donations)
+            DonationBlockchainService.updateSpentDonations(data.donations)
               .then(() => {
                 if (!data.hasMoreDonations && trace.fullyFunded) {
                   traces

@@ -2,7 +2,7 @@ import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 import Trace from 'models/Trace';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
 import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -13,7 +13,7 @@ import LPTrace from '../models/LPTrace';
 
 const EditTraceButton = ({ trace, className }) => {
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -24,7 +24,8 @@ const EditTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           const { formType } = trace;
@@ -51,8 +52,8 @@ const EditTraceButton = ({ trace, className }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

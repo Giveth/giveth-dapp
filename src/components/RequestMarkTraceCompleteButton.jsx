@@ -5,21 +5,21 @@ import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -31,7 +31,8 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
   const requestMarkComplete = () => {
     const userAddress = currentUser.address;
 
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
@@ -69,10 +70,13 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                 from: userAddress,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Trace Marked Complete', {
                     category: 'Trace',
                     action: 'marked complete',
                     label: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -106,11 +110,12 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                     );
                   }
                 },
+                web3,
               });
             });
         })
-        .catch(console.error),
-    );
+        .catch(console.error);
+    });
   };
 
   return (

@@ -70,7 +70,7 @@ class Community extends BasicModel {
     return community;
   }
 
-  save(afterSave, afterMined, onError) {
+  save(afterSave, afterMined, web3) {
     if (this.newImage) {
       return IPFSService.upload(this.image)
         .then(hash => {
@@ -78,10 +78,10 @@ class Community extends BasicModel {
           this.image = hash;
           this.newImage = false;
         })
-        .then(() => CommunityService.save(this, this.owner.address, afterSave, afterMined, onError))
+        .then(() => CommunityService.save(this, this.owner.address, afterSave, afterMined, web3))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return CommunityService.save(this, this.owner.address, afterSave, afterMined, onError);
+    return CommunityService.save(this, this.owner.address, afterSave, afterMined, web3);
   }
 
   get communityUrl() {

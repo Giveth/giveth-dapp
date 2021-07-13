@@ -8,10 +8,12 @@ const tweetHashtags = 'blockchain4good';
 
 const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
   let entityText = '';
-  let url = 'https://beta.giveth.io';
+  let url = 'https://trace.giveth.io';
   let gasPaidInfo = `TOTAL GAS WE PAID FOR ${entity}`;
 
-  if (entity === entityTypes.user) {
+  const isUser = entity === entityTypes.user;
+
+  if (isUser) {
     entityText = 'me alone';
   } else {
     entityText = `this ${entity}`;
@@ -20,8 +22,19 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
   }
 
   const tweetMessage =
-    'Giveth pays gas fees to collect or disburse funds donated on Giveth TRACE so ' +
+    'Giveth pays gas fees to collect or disburse funds donated on Giveth TRACE so' +
     ` the users don't have to! To date, Giveth has covered ${gasPaidUsdValue} USD for ${entityText}. Check it out here:`;
+
+  const tweetTag = (
+    <a
+      target="_blank"
+      rel="noopener noreferrer"
+      href={`https://twitter.com/intent/tweet?text=${tweetMessage}&url=${url}&hashtags=${tweetHashtags}`}
+      style={{ color: '#1890ff' }}
+    >
+      Tweet this
+    </a>
+  );
 
   return (
     <Row className={className || ''} id="TotalGasPaidView">
@@ -33,22 +46,15 @@ const TotalGasPaid = ({ gasPaidUsdValue, entity, className, tweetUrl }) => {
           <Col>
             <div className="pr-2">{gasPaidInfo}</div>
           </Col>
-          <Col>
-            <div className="font-weight-bold">{`${gasPaidUsdValue &&
-              gasPaidUsdValue.toFixed(0)} USD`}</div>
+          <Col className="justify-content-between">
+            <div className="font-weight-bold">
+              {`${gasPaidUsdValue && gasPaidUsdValue.toFixed(0)} USD`}
+            </div>
+            {isUser && <div className="px-0 my-auto mr-2">{tweetTag}</div>}
           </Col>
         </Row>
       </Col>
-      <Col className="px-0 my-auto ml-4">
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href={`https://twitter.com/intent/tweet?text=${tweetMessage}&url=${url}&hashtags=${tweetHashtags}`}
-          style={{ color: '#1890ff' }}
-        >
-          Tweet this
-        </a>
-      </Col>
+      {!isUser && <Col className="px-0 my-auto ml-4">{tweetTag}</Col>}
     </Row>
   );
 };

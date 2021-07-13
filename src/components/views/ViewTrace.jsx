@@ -38,7 +38,6 @@ import ViewTraceAlerts from '../ViewTraceAlerts';
 import CancelTraceButton from '../CancelTraceButton';
 import DeleteProposedTraceButton from '../DeleteProposedTraceButton';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
-import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import ErrorHandler from '../../lib/ErrorHandler';
 import ProjectSubscription from '../ProjectSubscription';
@@ -58,9 +57,6 @@ const ViewTrace = props => {
   const {
     actions: { convertMultipleRates },
   } = useContext(ConversionRateContext);
-  const {
-    state: { balance },
-  } = useContext(Web3Context);
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -83,7 +79,7 @@ const ViewTrace = props => {
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
 
   const donationsObserver = useRef();
-
+  const traceSubscription = useRef();
   const donationsPerBatch = 50;
 
   const getCommunityTitle = async communityId => {
@@ -110,10 +106,17 @@ const ViewTrace = props => {
     );
   }
 
+  const cleanTraceSubscription = () => {
+    if (traceSubscription.current) {
+      traceSubscription.current.unsubscribe();
+      traceSubscription.current = undefined;
+    }
+  };
+
   useEffect(() => {
     const { traceId, traceSlug } = props.match.params;
 
-    const subscription = TraceService.subscribeOne(
+    traceSubscription.current = TraceService.subscribeOne(
       traceId,
       _trace => {
         if (traceId) {
@@ -134,9 +137,7 @@ const ViewTrace = props => {
       traceSlug,
     );
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return cleanTraceSubscription;
   }, []);
 
   useEffect(() => {
@@ -242,11 +243,11 @@ const ViewTrace = props => {
       case 0:
         return <p>No token is defined to contribute.</p>;
       case 1:
-        return <p>This trace accepts only ${symbols}</p>;
+        return <p>This Trace accepts only ${symbols}</p>;
 
       default: {
         const symbolsStr = `${symbols.slice(0, -1).join(', ')} or ${symbols[symbols.length - 1]}`;
-        return <p>This trace accepts {symbolsStr}</p>;
+        return <p>This Trace accepts {symbolsStr}</p>;
       }
     }
   };
@@ -500,7 +501,7 @@ const ViewTrace = props => {
                                 <DetailLabel
                                   id="community-delegation"
                                   title="Delegating 3% to Community"
-                                  explanation="The Community that this trace is contributing to on every donation"
+                                  explanation="The Community that this Trace is contributing to on every donation"
                                 />
                                 {communityTitle}
                               </div>
@@ -621,8 +622,6 @@ const ViewTrace = props => {
                         <h4>Status updates</h4>
                         <TraceConversations
                           trace={trace}
-                          currentUser={currentUser}
-                          balance={balance}
                           isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                           maxHeight={`${detailsCardHeight}px`}
                         />

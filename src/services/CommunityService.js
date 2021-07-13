@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
-import getNetwork from '../lib/blockchain/getNetwork';
+import { LiquidPledging } from 'giveth-liquidpledging';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Community from '../models/Community';
@@ -112,8 +112,7 @@ class CommunityService {
 
       query.updatedAt = { $gt: lastDate };
     }
-    return feathersClient
-      .service('communities')
+    return communities
       .find({
         query,
       })
@@ -162,64 +161,47 @@ class CommunityService {
   }
 
   /**
-   * Subscribe to count of new donations. Initial resp will always be 0. Any new donations
-   * that come in while subscribed, the onSuccess will be called with the # of newDonations
-   * since initial subscribe
-   *
-   * @param id        ID of the Campaign which donations should be retrieved
-   * @param onSuccess Callback function once response is obtained successfully
-   * @param onError   Callback function if error is encountered
-   */
-  static subscribeNewDonations(id, onSuccess, onError) {
-    let initalTotal;
-    return feathersClient
-      .service('donations')
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          status: { $ne: Donation.FAILED },
-          delegateTypeId: id,
-          isReturn: false,
-          intendedProjectId: { $exists: false },
-          $limit: 0,
-        },
-      })
-      .subscribe(resp => {
-        if (initalTotal === undefined) {
-          initalTotal = resp.total;
-          onSuccess(0);
-        } else {
-          onSuccess(resp.total - initalTotal);
-        }
-      }, onError);
-  }
-
-  /**
    * Get the user's Communities
    *
    * @param userAddress   Address of the user whose Community list should be retrieved
    * @param skipPages     Amount of pages to skip
-   * @param itemsPerPage  Items to retreive
+   * @param itemsPerPage  Items to retrieve
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
+   * @param subscribe
    */
-  static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError) {
-    return communities
-      .watch({ listStrategy: 'always' })
-      .find({
-        query: {
-          ownerAddress: userAddress,
-          $sort: {
-            createdAt: -1,
-          },
-          $limit: itemsPerPage,
-          $skip: skipPages * itemsPerPage,
+  static getUserCommunities(userAddress, skipPages, itemsPerPage, onSuccess, onError, subscribe) {
+    const query = {
+      query: {
+        ownerAddress: userAddress,
+        $sort: {
+          createdAt: -1,
         },
+        $limit: itemsPerPage,
+        $skip: skipPages * itemsPerPage,
+      },
+    };
+    if (subscribe) {
+      return communities
+        .watch({ listStrategy: 'always' })
+        .find(query)
+        .subscribe(resp => {
+          const newResp = {
+            ...resp,
+            data: resp.data.map(d => new Community(d)),
+          };
+          onSuccess(newResp);
+        }, onError);
+    }
+    return communities
+      .find(query)
+      .then(resp => {
+        onSuccess({
+          ...resp,
+          data: resp.data.map(c => new Community(c)),
+        });
       })
-      .subscribe(resp => {
-        const newResp = { ...resp, data: resp.data.map(d => new Community(d)) };
-        onSuccess(newResp);
-      }, onError);
+      .catch(onError);
   }
 
   /**
@@ -251,14 +233,9 @@ class CommunityService {
    * @param from        address of the user creating the Community
    * @param afterSave   Callback to be triggered after the Community is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
+   * @param web3
    */
-  static async save(
-    community,
-    from,
-    afterSave = () => {},
-    afterMined = () => {},
-    onError = () => {},
-  ) {
+  static async save(community, from, afterSave = () => {}, afterMined = () => {}, web3) {
     if (community.id && community.delegateId === 0) {
       throw new Error(
         'You must wait for your Community to be creation to finish before you can update it',
@@ -278,7 +255,6 @@ class CommunityService {
         }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       }
       ErrorHandler(err, message, showMessageInPopup);
-      onError();
     };
     try {
       // upload Community info to IPFS
@@ -289,8 +265,7 @@ class CommunityService {
         ErrorPopup('Failed to upload Community to IPFS');
       }
 
-      const network = await getNetwork();
-      const { liquidPledging } = network;
+      const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
       // nothing to update or failed ipfs upload
       if (community.delegateId && (community.url === ipfsHash || !ipfsHash)) {

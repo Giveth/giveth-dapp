@@ -29,6 +29,7 @@ import BridgedTrace from '../../models/BridgedTrace';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const WAIT_INTERVAL = 1000;
 
@@ -46,7 +47,7 @@ function CreatePayment(props) {
   } = useContext(ConversionRateContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -186,7 +187,7 @@ function CreatePayment(props) {
   };
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -244,9 +245,19 @@ function CreatePayment(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'payment',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Payment proposed to the Campaign Owner';
+              sendAnalyticsTracking('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -258,6 +269,10 @@ function CreatePayment(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Payment has been updated!, this should not be happened';
@@ -290,6 +305,7 @@ function CreatePayment(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

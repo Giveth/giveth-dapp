@@ -106,11 +106,7 @@ const Root = props => {
   const { model } = props;
   const { customThanksMessage } = model;
 
-  return (
-    <Fragment>
-      <DonateButtonWithRouter customThanksMessage={customThanksMessage} {...props} />
-    </Fragment>
-  );
+  return <DonateButtonWithRouter customThanksMessage={customThanksMessage} {...props} />;
 };
 
 Root.propTypes = {

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 import CampaignCard from '../CampaignCard';
 import Loader from '../Loader';
 import CampaignService from '../../services/CampaignService';
@@ -104,4 +105,17 @@ Campaigns.propTypes = {
 
 Campaigns.defaultProps = { step: 20, onlyRecent: false };
 
-export default Campaigns;
+export const CampaignsRecent = props => {
+  return <Campaigns onlyRecent {...props} />;
+};
+
+export const CampaignsExplore = props => {
+  return (
+    <div>
+      <Helmet>
+        <title>Campaigns</title>
+      </Helmet>
+      <Campaigns {...props} />
+    </div>
+  );
+};

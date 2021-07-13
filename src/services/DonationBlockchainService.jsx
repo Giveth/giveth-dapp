@@ -3,19 +3,19 @@ import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
+import { LiquidPledging } from 'giveth-liquidpledging';
 
 import Donation from '../models/Donation';
 import Community from '../models/Community';
 import Trace from '../models/Trace';
 import Campaign from '../models/Campaign';
-import getNetwork from '../lib/blockchain/getNetwork';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
-import getWeb3 from '../lib/blockchain/getWeb3';
 import config from '../configuration';
 
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const etherScanUrl = config.etherscan;
 
@@ -45,15 +45,20 @@ function updateExistingDonation(donation, amount, status) {
  * @param {string} tokenHolderAddress  Address of the holder to create allowance for
  * @param {string|number} amount Amount to create an allowance for
  * @param {string|number} nonce Override nonce value
+ * @param token ERC20 Token
  */
-const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amount, nonce) => {
-  const ERC20 = network.tokens[tokenContractAddress];
-
+const createAllowance = (
+  token,
+  tokenContractAddress,
+  tokenHolderAddress,
+  amount,
+  nonce = undefined,
+) => {
   const opts = { from: tokenHolderAddress };
   if (nonce) opts.nonce = nonce;
 
   let txHash;
-  return ERC20.methods
+  return token.methods
     .approve(config.givethBridgeAddress, amount)
     .send(opts)
     .on('transactionHash', transactionHash => {
@@ -97,7 +102,7 @@ const createAllowance = (network, tokenContractAddress, tokenHolderAddress, amou
     });
 };
 
-class DonationService {
+class DonationBlockchainService {
   /**
    * Delegate multiple donations to some entity (either Campaign or Trace)
    *
@@ -108,7 +113,7 @@ class DonationService {
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
-   * @param {function} onCancel    Callback function after user cancelled the TX
+   * @param web3                   web3 instance
    */
   static delegateMultiple(
     donations,
@@ -118,6 +123,7 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
+    web3,
   ) {
     const { ownerType, ownerEntity, delegateEntity, delegateId } = donations[0];
     let txHash;
@@ -187,93 +193,99 @@ class DonationService {
       );
     };
 
-    Promise.all([getNetwork(), getWeb3(), getPledges()])
-      .then(([network, web3, encodedPledges]) => {
-        const receiverId = delegateTo.projectId;
+    const encodedPledges = getPledges();
+    const receiverId = delegateTo.projectId;
 
-        const executeTransfer = () => {
-          let contract;
+    const executeTransfer = () => {
+      let contract;
 
-          if (ownerType.toLowerCase() === 'campaign') {
-            contract = new LPPCampaign(web3, ownerEntity.pluginAddress);
+      if (ownerType.toLowerCase() === 'campaign') {
+        contract = new LPPCampaign(web3, ownerEntity.pluginAddress);
 
-            return contract.mTransfer(encodedPledges, receiverId, {
-              from: ownerEntity.ownerAddress,
-              $extraGas: extraGas(),
+        return contract.mTransfer(encodedPledges, receiverId, {
+          from: ownerEntity.ownerAddress,
+          $extraGas: extraGas(),
+        });
+      }
+      const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
+      return liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
+        from: delegateEntity.ownerAddress,
+        $extraGas: extraGas(),
+      });
+    };
+
+    return executeTransfer()
+      .once('transactionHash', hash => {
+        txHash = hash;
+
+        // Update the delegated donations in feathers
+        pledgedDonations.forEach(({ donation, delegatedAmount }) => {
+          updateExistingDonation(donation, delegatedAmount);
+        });
+
+        // Create new donation objects for all the new pledges
+        pledges.forEach(donation => {
+          const _donationAmountInWei = utils.toWei(donation.amount.toFixed());
+
+          const newDonation = {
+            txHash,
+            amount: _donationAmountInWei,
+            amountRemaining: _donationAmountInWei,
+            giverAddress: donation.giverAddress,
+            pledgeId: 0,
+            parentDonations: donation.parents,
+            token: donation.token,
+            comment,
+            mined: false,
+          };
+          // delegate is making the transfer
+          if (donation.delegateEntity) {
+            Object.assign(newDonation, {
+              status: Donation.TO_APPROVE,
+              ownerId: donation.ownerId,
+              ownerTypeId: donation.ownerTypeId,
+              ownerType: donation.ownerType,
+              delegateId: donation.delegateId,
+              delegateTypeId: donation.delegateTypeId,
+              delegateType: donation.delegateType,
+              intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
+              intendedProjectType: delegateTo.type,
+              intendedProjectTypeId: delegateTo.id,
+            });
+          } else {
+            // owner of the donation is making the transfer
+            // only support delegating to campaigns/traces right now
+            Object.assign(newDonation, {
+              status: Donation.COMMITTED,
+              ownerId: delegateTo.projectId,
+              ownerTypeId: delegateTo.id,
+              ownerType: delegateTo.type,
             });
           }
-          return network.liquidPledging.mTransfer(delegateId, encodedPledges, receiverId, {
-            from: delegateEntity.ownerAddress,
-            $extraGas: extraGas(),
+          feathersClient
+            .service('/donations')
+            .create(newDonation)
+            .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
+            .catch(err => {
+              ErrorPopup('Unable to update the donation in feathers', err);
+              onError(err);
+            });
+          const txLink = `${etherScanUrl}tx/${txHash}`;
+          const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
+          sendAnalyticsTracking('Delegated', {
+            category: 'Donation',
+            action:
+              newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
+            id: donation._id,
+            txUrl: txLink,
+            userAddress: from,
+            receiverId,
+            delegateTo,
           });
-        };
-
-        return executeTransfer()
-          .once('transactionHash', hash => {
-            txHash = hash;
-
-            // Update the delegated donations in feathers
-            pledgedDonations.forEach(({ donation, delegatedAmount }) => {
-              updateExistingDonation(donation, delegatedAmount);
-            });
-
-            // Create new donation objects for all the new pledges
-            pledges.forEach(donation => {
-              const _donationAmountInWei = utils.toWei(donation.amount.toFixed());
-
-              const newDonation = {
-                txHash,
-                amount: _donationAmountInWei,
-                amountRemaining: _donationAmountInWei,
-                giverAddress: donation.giverAddress,
-                pledgeId: 0,
-                parentDonations: donation.parents,
-                token: donation.token,
-                comment,
-                mined: false,
-              };
-              // delegate is making the transfer
-              if (donation.delegateEntity) {
-                Object.assign(newDonation, {
-                  status: Donation.TO_APPROVE,
-                  ownerId: donation.ownerId,
-                  ownerTypeId: donation.ownerTypeId,
-                  ownerType: donation.ownerType,
-                  delegateId: donation.delegateId,
-                  delegateTypeId: donation.delegateTypeId,
-                  delegateType: donation.delegateType,
-                  intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
-                  intendedProjectType: delegateTo.type,
-                  intendedProjectTypeId: delegateTo.id,
-                });
-              } else {
-                // owner of the donation is making the transfer
-                // only support delegating to campaigns/traces right now
-                Object.assign(newDonation, {
-                  status: Donation.COMMITTED,
-                  ownerId: delegateTo.projectId,
-                  ownerTypeId: delegateTo.id,
-                  ownerType: delegateTo.type,
-                });
-              }
-
-              feathersClient
-                .service('/donations')
-                .create(newDonation)
-                .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
-                .catch(err => {
-                  ErrorPopup('Unable to update the donation in feathers', err);
-                  onError(err);
-                });
-            });
-          })
-          .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => onError(err, txHash));
+        });
       })
-      .catch(err => {
-        ErrorPopup('Unable to initiate the delegation transaction.', err);
-        onError(err);
-      });
+      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
+      .catch(err => onError(err, txHash));
   }
 
   /**
@@ -286,7 +298,7 @@ class DonationService {
    * @param {function} onCreated   Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess   Callback function after the transaction has been mined
    * @param {function} onError     Callback function after error happened
-   * @param {function} onCancel    Callback function after user cancelled the TX
+   * @param web3                   Web3 instance
    */
   static delegate(
     donation,
@@ -296,99 +308,103 @@ class DonationService {
     onCreated = () => {},
     onSuccess = () => {},
     onError = () => {},
-    onCancel = () => {},
+    web3,
   ) {
     let txHash;
-    Promise.all([getNetwork(), getWeb3()])
-      .then(([network, web3]) => {
-        const from =
-          donation.delegateId > 0
-            ? donation.delegateEntity.ownerAddress
-            : donation.ownerEntity.ownerAddress;
-        const senderId = donation.delegateId > 0 ? donation.delegateId : donation.ownerId;
-        const receiverId =
-          delegateTo.type === 'community' ? delegateTo.delegateId : delegateTo.projectId;
+    const from =
+      donation.delegateId > 0
+        ? donation.delegateEntity.ownerAddress
+        : donation.ownerEntity.ownerAddress;
+    const senderId = donation.delegateId > 0 ? donation.delegateId : donation.ownerId;
+    const receiverId =
+      delegateTo.type === 'community' ? delegateTo.delegateId : delegateTo.projectId;
 
-        const executeTransfer = () => {
-          if (donation.ownerType === 'campaign') {
-            const contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
+    const executeTransfer = () => {
+      if (donation.ownerType === 'campaign') {
+        const contract = new LPPCampaign(web3, donation.ownerEntity.pluginAddress);
 
-            return contract.transfer(
-              donation.canceledPledgeId || donation.pledgeId,
-              amount,
-              receiverId,
-              {
-                from,
-                $extraGas: extraGas(),
-              },
-            );
-          }
-
-          return network.liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
+        return contract.transfer(
+          donation.canceledPledgeId || donation.pledgeId,
+          amount,
+          receiverId,
+          {
             from,
             $extraGas: extraGas(),
-          });
+          },
+        );
+      }
+      const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
+      return liquidPledging.transfer(senderId, donation.pledgeId, amount, receiverId, {
+        from,
+        $extraGas: extraGas(),
+      });
+    };
+
+    return executeTransfer()
+      .once('transactionHash', hash => {
+        txHash = hash;
+        updateExistingDonation(donation, amount);
+
+        const newDonation = {
+          txHash,
+          amount,
+          comment,
+          amountRemaining: amount,
+          giverAddress: donation.giverAddress,
+          pledgeId: 0,
+          parentDonations: [donation.id],
+          mined: false,
+          token: donation.token,
         };
-
-        return executeTransfer()
-          .once('transactionHash', hash => {
-            txHash = hash;
-            updateExistingDonation(donation, amount);
-
-            const newDonation = {
-              txHash,
-              amount,
-              comment,
-              amountRemaining: amount,
-              giverAddress: donation.giverAddress,
-              pledgeId: 0,
-              parentDonations: [donation.id],
-              mined: false,
-              token: donation.token,
-            };
-            // delegate is making the transfer
-            if (donation.delegateEntity) {
-              Object.assign(newDonation, {
-                status: Donation.TO_APPROVE,
-                ownerId: donation.ownerId,
-                ownerTypeId: donation.ownerTypeId,
-                ownerType: donation.ownerType,
-                delegateId: donation.delegateId,
-                delegateTypeId: donation.delegateTypeId,
-                delegateType: donation.delegateType,
-                intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
-                intendedProjectType: delegateTo.type,
-                intendedProjectTypeId: delegateTo.id,
-              });
-            } else {
-              // owner of the donation is making the transfer
-              // only support delegating to campaigns/traces right now
-              Object.assign(newDonation, {
-                status: Donation.COMMITTED,
-                ownerId: delegateTo.projectId,
-                ownerTypeId: delegateTo.id,
-                ownerType: delegateTo.type,
-              });
-            }
-
-            feathersClient
-              .service('/donations')
-              .create(newDonation)
-              .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
-              .catch(err => {
-                ErrorPopup('Unable to update the donation in feathers', err);
-                onError(err);
-              });
-          })
-          .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
-          .catch(err => {
-            const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
-            ErrorHandler(err, message, false, onError, onCancel);
+        // delegate is making the transfer
+        if (donation.delegateEntity) {
+          Object.assign(newDonation, {
+            status: Donation.TO_APPROVE,
+            ownerId: donation.ownerId,
+            ownerTypeId: donation.ownerTypeId,
+            ownerType: donation.ownerType,
+            delegateId: donation.delegateId,
+            delegateTypeId: donation.delegateTypeId,
+            delegateType: donation.delegateType,
+            intendedProjectId: delegateTo.projectId, // only support delegating to campaigns/traces right now
+            intendedProjectType: delegateTo.type,
+            intendedProjectTypeId: delegateTo.id,
           });
+        } else {
+          // owner of the donation is making the transfer
+          // only support delegating to campaigns/traces right now
+          Object.assign(newDonation, {
+            status: Donation.COMMITTED,
+            ownerId: delegateTo.projectId,
+            ownerTypeId: delegateTo.id,
+            ownerType: delegateTo.type,
+          });
+        }
+
+        const txLink = `${etherScanUrl}tx/${txHash}`;
+
+        feathersClient
+          .service('/donations')
+          .create(newDonation)
+          .then(() => onCreated(txLink))
+          .catch(err => {
+            ErrorPopup('Unable to create the donation in feathers', err);
+            onError(err);
+          });
+        sendAnalyticsTracking('Delegated', {
+          category: 'Donation',
+          action: newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
+          id: donation._id,
+          txUrl: txLink,
+          userAddress: from,
+          receiverId,
+          delegateTo,
+        });
       })
+      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
       .catch(err => {
-        ErrorPopup('Unable to initiate the delegation transaction.', err);
-        onError(err);
+        const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
+        ErrorHandler(err, message, false, onError);
       });
   }
 
@@ -399,62 +415,52 @@ class DonationService {
    * @param {string}   address   Address of the user who calls reject
    * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param {function} onError   Callback function after error happened
+   * @param web3
    */
-  static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
+  static reject(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
     let txHash;
-    getNetwork()
-      .then(network => {
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
-        return network.liquidPledging
-          .transfer(
-            donation.ownerId,
-            donation.pledgeId,
-            _amountRemainingInWei,
-            donation.delegateId,
-            {
-              from: address,
-              $extraGas: extraGas(),
-            },
-          )
-          .once('transactionHash', hash => {
-            txHash = hash;
-            updateExistingDonation(donation, _amountRemainingInWei, Donation.REJECTED);
+    return liquidPledging
+      .transfer(donation.ownerId, donation.pledgeId, _amountRemainingInWei, donation.delegateId, {
+        from: address,
+        $extraGas: extraGas(),
+      })
+      .once('transactionHash', hash => {
+        txHash = hash;
+        updateExistingDonation(donation, _amountRemainingInWei, Donation.REJECTED);
 
-            const newDonation = {
-              txHash,
-              amount: _amountRemainingInWei,
-              amountRemaining: _amountRemainingInWei,
-              status: Donation.TO_APPROVE,
-              ownerId: donation.ownerId,
-              ownerTypeId: donation.ownerTypeId,
-              ownerType: donation.ownerType,
-              delegateId: donation.delegateId,
-              delegateTypeId: donation.delegateTypeId,
-              delegateType: donation.delegateType,
-              giverAddress: donation.giverAddress,
-              pledgeId: 0,
-              parentDonations: [donation.id],
-              mined: false,
-              isReturn: true,
-              token: donation.token,
-            };
+        const newDonation = {
+          txHash,
+          amount: _amountRemainingInWei,
+          amountRemaining: _amountRemainingInWei,
+          status: Donation.TO_APPROVE,
+          ownerId: donation.ownerId,
+          ownerTypeId: donation.ownerTypeId,
+          ownerType: donation.ownerType,
+          delegateId: donation.delegateId,
+          delegateTypeId: donation.delegateTypeId,
+          delegateType: donation.delegateType,
+          giverAddress: donation.giverAddress,
+          pledgeId: 0,
+          parentDonations: [donation.id],
+          mined: false,
+          isReturn: true,
+          token: donation.token,
+        };
 
-            feathersClient
-              .service('/donations')
-              .create(newDonation)
-              .then(() => {
-                onCreated(`${etherScanUrl}tx/${txHash}`);
-              })
-              .catch(err => {
-                const message =
-                  'Something went wrong while committing your donation.' +
-                  `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
-                ErrorHandler(err, message);
-
-                onError(err);
-              });
+        feathersClient
+          .service('/donations')
+          .create(newDonation)
+          .then(() => {
+            onCreated(`${etherScanUrl}tx/${txHash}`);
+          })
+          .catch(err => {
+            const message =
+              'Something went wrong while committing your donation.' +
+              `${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+            ErrorHandler(err, message);
           });
       })
       .then(() => {
@@ -466,7 +472,6 @@ class DonationService {
           'Something went wrong with the transaction. Is your wallet unlocked?',
           txHash ? `${etherScanUrl}tx/${txHash}` : err,
         );
-        onError(err);
       });
   }
 
@@ -477,54 +482,125 @@ class DonationService {
    * @param {string}   address   Address of the user who calls commit
    * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
    * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param {function} onError   Callback function after error happened
+   * @param web3
    */
-  static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
+  static commit(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
     let txHash;
 
-    getNetwork()
-      .then(network => {
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
 
-        return network.liquidPledging
-          .transfer(
-            donation.ownerId,
-            donation.pledgeId,
-            _amountRemainingInWei,
-            donation.intendedProjectId,
-            {
-              from: address,
-              $extraGas: extraGas(),
-            },
-          )
-          .once('transactionHash', hash => {
-            txHash = hash;
-            updateExistingDonation(donation, _amountRemainingInWei, Donation.COMMITTED);
+    return liquidPledging
+      .transfer(
+        donation.ownerId,
+        donation.pledgeId,
+        _amountRemainingInWei,
+        donation.intendedProjectId,
+        {
+          from: address,
+          $extraGas: extraGas(),
+        },
+      )
+      .once('transactionHash', hash => {
+        txHash = hash;
+        updateExistingDonation(donation, _amountRemainingInWei, Donation.COMMITTED);
 
-            const newDonation = {
-              txHash,
-              amount: _amountRemainingInWei,
-              amountRemaining: _amountRemainingInWei,
-              ownerId: donation.intendedProjectId,
-              ownerTypeId: donation.intendedProjectTypeId,
-              ownerType: donation.intendedProjectType,
-              giverAddress: donation.giverAddress,
-              pledgeId: 0,
-              parentDonations: [donation.id],
-              status: Donation.COMMITTED,
-              mined: false,
-              token: donation.token,
-            };
-            feathersClient
-              .service('/donations')
-              .create(newDonation)
-              .then(() => {
-                onCreated(`${etherScanUrl}tx/${txHash}`);
-              })
-              .catch(err => {
-                ErrorPopup('Something went wrong while committing your donation.', err);
-                onError(err);
-              });
+        const newDonation = {
+          txHash,
+          amount: _amountRemainingInWei,
+          amountRemaining: _amountRemainingInWei,
+          ownerId: donation.intendedProjectId,
+          ownerTypeId: donation.intendedProjectTypeId,
+          ownerType: donation.intendedProjectType,
+          giverAddress: donation.giverAddress,
+          pledgeId: 0,
+          parentDonations: [donation.id],
+          status: Donation.COMMITTED,
+          mined: false,
+          token: donation.token,
+        };
+        feathersClient
+          .service('/donations')
+          .create(newDonation)
+          .then(() => {
+            onCreated(`${etherScanUrl}tx/${txHash}`);
+          })
+          .catch(err => {
+            ErrorPopup('Something went wrong while committing your donation.', err);
+          });
+
+        const txLink = `${etherScanUrl}tx/${txHash}`;
+
+        sendAnalyticsTracking('Delegated', {
+          category: 'Donation',
+          action: 'delegation approved',
+          id: donation._id,
+          txUrl: txLink,
+          userAddress: newDonation.giverAddress,
+          receiverId: newDonation.ownerTypeId,
+        });
+      })
+      .then(() => {
+        onSuccess(`${etherScanUrl}tx/${txHash}`);
+      })
+      .catch(err => {
+        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
+        ErrorPopup(
+          'Something went wrong with the transaction. Is your wallet unlocked?',
+          `${etherScanUrl}tx/${txHash}`,
+        );
+      });
+  }
+
+  /**
+   * Refund a donation
+   *
+   * @param {Donation} donation  Donation to be refunded
+   * @param {string}   address   Address of the user who calls refund
+   * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
+   * @param {function} onSuccess Callback function after the transaction has been mined
+   * @param web3
+   */
+  static refund(donation, address, onCreated = () => {}, onSuccess = () => {}, web3) {
+    let txHash;
+
+    const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
+    const liquidPledging = new LiquidPledging(web3, config.liquidPledgingAddress);
+
+    // this isn't the most gas efficient, but should always work. If the canceledPledge
+    // has been partially transferred already, then it will have been normalized and the entire
+    // value will exist in pledgeId. It would avoid an on-chain loop to find the normalized pledge
+    // if we pass pledgeId when the canceledPledge has already been normalized
+    return liquidPledging
+      .withdraw(donation.canceledPledgeId || donation.pledgeId, _amountRemainingInWei, {
+        from: address,
+        $extraGas: extraGas(),
+      })
+      .once('transactionHash', hash => {
+        txHash = hash;
+        updateExistingDonation(donation, _amountRemainingInWei);
+
+        const newDonation = {
+          txHash,
+          amount: _amountRemainingInWei,
+          amountRemaining: _amountRemainingInWei,
+          ownerId: donation.ownerId,
+          ownerTypeId: donation.ownerTypeId,
+          ownerType: donation.ownerType,
+          giverAddress: donation.giverAddress,
+          pledgeId: 0,
+          parentDonations: [donation.id],
+          status: Donation.PAYING,
+          mined: false,
+          token: donation.token,
+        };
+
+        feathersClient
+          .service('/donations')
+          .create(newDonation)
+          .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
+          .catch(err => {
+            ErrorPopup('Something went wrong while revoking your donation.', err);
           });
       })
       .then(() => {
@@ -536,72 +612,6 @@ class DonationService {
           'Something went wrong with the transaction. Is your wallet unlocked?',
           `${etherScanUrl}tx/${txHash}`,
         );
-        onError(err);
-      });
-  }
-
-  /**
-   * Refund a donation
-   *
-   * @param {Donation} donation  Donation to be refunded
-   * @param {string}   address   Address of the user who calls refund
-   * @param {function} onCreated Callback function after the transaction has been broadcasted to chain and stored in feathers
-   * @param {function} onSuccess Callback function after the transaction has been mined
-   * @param {function} onError   Callback function after error happened
-   */
-  static refund(donation, address, onCreated = () => {}, onSuccess = () => {}, onError = () => {}) {
-    let txHash;
-
-    getNetwork()
-      .then(network => {
-        const _amountRemainingInWei = utils.toWei(donation.amountRemaining.toFixed());
-
-        // this isn't the most gas efficient, but should always work. If the canceledPledge
-        // has been partially transferred already, then it will have been normalized and the entire
-        // value will exist in pledgeId. It would avoid an on-chain loop to find the normalized pledge
-        // if we pass pledgeId when the canceledPledge has already been normalized
-        return network.liquidPledging
-          .withdraw(donation.canceledPledgeId || donation.pledgeId, _amountRemainingInWei, {
-            from: address,
-            $extraGas: extraGas(),
-          })
-          .once('transactionHash', hash => {
-            txHash = hash;
-            updateExistingDonation(donation, _amountRemainingInWei);
-
-            const newDonation = {
-              txHash,
-              amount: _amountRemainingInWei,
-              amountRemaining: _amountRemainingInWei,
-              ownerId: donation.ownerId,
-              ownerTypeId: donation.ownerTypeId,
-              ownerType: donation.ownerType,
-              giverAddress: donation.giverAddress,
-              pledgeId: 0,
-              parentDonations: [donation.id],
-              status: Donation.PAYING,
-              mined: false,
-              token: donation.token,
-            };
-
-            feathersClient
-              .service('/donations')
-              .create(newDonation)
-              .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
-              .catch(err => {
-                ErrorPopup('Something went wrong while revoking your donation.', err);
-                onError(err);
-              });
-          });
-      })
-      .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
-      .catch(err => {
-        if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
-        onError(err);
       });
   }
 
@@ -610,14 +620,12 @@ class DonationService {
    *
    * @param {string} tokenContractAddress Address of the ERC20 token
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   * @param token ERC20 Token
    */
-  static async getERC20tokenAllowance(tokenContractAddress, tokenHolderAddress) {
-    const network = await getNetwork();
-    const ERC20 = network.tokens[tokenContractAddress];
-
+  static async getERC20tokenAllowance(tokenContractAddress, tokenHolderAddress, token) {
     // if web3 is not loaded correctly ERC20 will be undefined
-    if (ERC20)
-      return ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+    if (token)
+      return token.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
 
     return '0';
   }
@@ -627,20 +635,18 @@ class DonationService {
    *
    * @param {string} tokenContractAddress Address of the ERC20 token
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
+   * @param token ERC20 Token
    */
-  static async clearERC20TokenApproval(tokenContractAddress, tokenHolderAddress) {
-    const network = await getNetwork();
-    const ERC20 = network.tokens[tokenContractAddress];
-
+  static async clearERC20TokenApproval(tokenContractAddress, tokenHolderAddress, token) {
     // read existing allowance for the givethBridge
-    const allowance = await ERC20.methods
+    const allowance = await token.methods
       .allowance(tokenHolderAddress, config.givethBridgeAddress)
       .call();
     const allowanceNumber = new BigNumber(allowance);
 
     if (!allowanceNumber.isZero()) {
       let txHash;
-      await ERC20.methods
+      await token.methods
         .approve(config.givethBridgeAddress, '0')
         .send({ from: tokenHolderAddress })
         .on('transactionHash', transactionHash => {
@@ -669,18 +675,19 @@ class DonationService {
    * @param {string} tokenHolderAddress Address of the token holder, by default the current logged in user
    * @param {string|number} amount Amount in wei for the allowance. If none given defaults to unlimited (-1)
    * @param {function} onAllowanceChange callback to update allowance amount
+   * @param web3        web3 instance
+   * @param token ERC20 Token
    */
   static async approveERC20tokenTransfer(
     tokenContractAddress,
     tokenHolderAddress,
     amount = -1,
     onAllowanceChange = () => {},
+    web3,
+    token,
   ) {
-    const network = await getNetwork();
-    const ERC20 = network.tokens[tokenContractAddress];
-
     const getAllowance = () =>
-      ERC20.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
+      token.methods.allowance(tokenHolderAddress, config.givethBridgeAddress).call();
 
     // read existing allowance for the givethBridge
     const allowance = await getAllowance();
@@ -696,36 +703,30 @@ class DonationService {
     // TODO: find a better way to know that transaction is successful than the status field on response
     /* eslint-disable eqeqeq */
     if (allowanceNumber.isZero()) {
-      result = (await createAllowance(network, tokenContractAddress, tokenHolderAddress, amount))
+      result = (await createAllowance(token, tokenContractAddress, tokenHolderAddress, amount))
         .status;
       onAllowanceChange();
     } else if (amountNumber.gt(allowanceNumber)) {
       // return _createAllowance(web3, etherScanUrl, ERC20, tokenHolderAddress, 0);
-      const firstTxPromievent = createAllowance(
-        network,
-        tokenContractAddress,
-        tokenHolderAddress,
-        0,
-      );
+      const firstTxEvent = createAllowance(token, tokenContractAddress, tokenHolderAddress, 0);
 
-      firstTxPromievent.on('receipt', onAllowanceChange);
+      firstTxEvent.on('receipt', onAllowanceChange);
 
       result = new Promise((resolve, reject) => {
-        firstTxPromievent.catch(reject);
+        firstTxEvent.catch(reject);
 
-        firstTxPromievent.on('transactionHash', async transactionHash => {
-          const web3 = await getWeb3();
+        firstTxEvent.on('transactionHash', async transactionHash => {
           const tx = await web3.eth.getTransaction(transactionHash);
           try {
-            const secondTxPromivent = await createAllowance(
-              network,
+            const secondTxEvent = await createAllowance(
+              token,
               tokenContractAddress,
               tokenHolderAddress,
               amount,
               String(Number(tx.nonce) + 1),
             );
             onAllowanceChange();
-            const { status } = secondTxPromivent;
+            const { status } = secondTxEvent;
             resolve(status);
           } catch (e) {
             reject(e);
@@ -795,9 +796,10 @@ class DonationService {
       .service('donations')
       .create(newDonation)
       .catch(err => {
-        const message =
-          'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
-        ErrorHandler(err, message);
+        // const message =
+        // 'Your donation has been initiated, however an error occurred when attempting to save. You should see your donation appear within ~30 mins.';
+        console.log('err :>> ', err);
+        ErrorHandler(err, err.name);
       });
   }
 
@@ -923,11 +925,11 @@ class DonationService {
       }
       const parents = res.data.map(d => d.parentDonations).flat();
       if (parents.length > 0) {
-        return DonationService.getDonationNextCommittedParents(parents, donation);
+        return DonationBlockchainService.getDonationNextCommittedParents(parents, donation);
       }
     }
     return Promise.resolve([]);
   }
 }
 
-export default DonationService;
+export default DonationBlockchainService;

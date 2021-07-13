@@ -15,7 +15,9 @@ const {
   REACT_APP_NATIVE_TOKEN_NAME,
   REACT_APP_DONATION_COLLECT_COUNT_LIMIT = 10,
   REACT_APP_DONATION_DELEGATE_COUNT_LIMIT = 10,
-  HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
+  REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH = 6,
+  REACT_APP_ANALYTICS_KEY = '',
+  REACT_APP_SENTRY_DSN = '',
 } = process.env;
 
 const configurations = {
@@ -51,6 +53,7 @@ const configurations = {
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
     defaultCommunityId: 0,
+    minimumUsdValueForDonate3PercentToCommunity: 1,
   },
   develop: {
     title: 'develop',
@@ -81,6 +84,7 @@ const configurations = {
     nativeTokenName: 'ETH',
     defaultDonateToken: 'XDAI',
     defaultCommunityId: 156,
+    minimumUsdValueForDonate3PercentToCommunity: 10,
   },
   release: {
     title: 'release',
@@ -110,9 +114,10 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'ANT',
+    minimumUsdValueForDonate3PercentToCommunity: 50,
   },
-  beta: {
-    title: 'beta',
+  trace: {
+    title: 'trace',
     liquidPledgingAddress: '0x8eB047585ABeD935a73ba4b9525213F126A0c979',
     lppCampaignFactoryAddress: '0x71408CE2125b1F07f614b93C8Bd0340e8Fc31CFA',
     lppCappedMilestoneFactoryAddress: '0x19e88e279844f0201079b39c736a94b87b32b6b6',
@@ -122,14 +127,14 @@ const configurations = {
     tokenAddresses: { GivETH: '0xe3ee055346a9EfaF4AA2900847dEb04de0195398' },
     etherscan: 'https://rinkeby.etherscan.io/',
     homeEtherscan: 'https://etherscan.io/',
-    feathersConnection: 'https://feathers.beta.giveth.io',
+    feathersConnection: 'https://feathers.giveth.io',
     foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
-    homeUrl: 'https://beta.giveth.io',
+    homeUrl: 'https://trace.giveth.io',
     analytics: {
       ga_UA: 'UA-103956937-2',
       useGoogleAnalytics: true,
@@ -137,6 +142,7 @@ const configurations = {
     },
     nativeTokenName: 'ETH',
     defaultDonateToken: 'DAI',
+    minimumUsdValueForDonate3PercentToCommunity: 50,
     defaultCommunityId: 5, // Giveth Community
   },
 };
@@ -168,13 +174,16 @@ config.feathersConnection = REACT_APP_FEATHERJS_CONNECTION_URL || config.feather
 config.foreignNodeConnection = REACT_APP_NODE_CONNECTION_URL || config.foreignNodeConnection;
 config.decimals = REACT_APP_DECIMALS;
 config.bugsEmail = REACT_APP_BUGS_EMAIL;
+config.analyticsKey = REACT_APP_ANALYTICS_KEY;
+config.sentryDsn = REACT_APP_SENTRY_DSN;
 config.githubUrl = REACT_APP_GITHUB_URL;
 config.defaultGasPrice = REACT_APP_DEFAULT_GASPRICE;
 config.networkName = REACT_APP_NETWORK_NAME || config.networkName;
 config.nativeTokenName = REACT_APP_NATIVE_TOKEN_NAME || config.nativeTokenName;
 config.donationCollectCountLimit = REACT_APP_DONATION_COLLECT_COUNT_LIMIT || 15;
 config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 15;
-config.projectsUpdatedAtLimitMonth = HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
-config.sendErrors = ['localhost', 'develop', 'release', 'beta'].includes(REACT_APP_ENVIRONMENT);
+config.projectsUpdatedAtLimitMonth = REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
+config.sendErrors = ['localhost', 'develop', 'release', 'trace'].includes(REACT_APP_ENVIRONMENT);
+config.onboardDappId = '4b28f36b-c725-4475-8cef-af4850473e50';
 
 export default config;

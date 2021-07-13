@@ -4,14 +4,14 @@ import PropTypes from 'prop-types';
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const AcceptRejectProposedTraceButtons = ({ trace }) => {
   const conversationModal = useRef();
@@ -19,12 +19,13 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { balance, isForeignNetwork },
+    state: { balance, isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const rejectProposedTrace = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       conversationModal.current
         .openModal({
           title: 'Reject proposed Trace',
@@ -42,12 +43,13 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
             onSuccess: () => React.toast.info(<p>The proposed Trace has been rejected.</p>),
             onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
           });
-        }),
-    );
+        });
+    });
   };
 
   const acceptProposedTrace = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -66,10 +68,13 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -103,6 +108,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             }),
         )
@@ -112,8 +118,8 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

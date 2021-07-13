@@ -20,15 +20,17 @@ import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateBounty(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
   const { id: campaignId, slug: campaignSlug } = props.match.params;
 
   const campaign = useCampaign(campaignId, campaignSlug);
@@ -72,7 +74,7 @@ function CreateBounty(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -110,9 +112,19 @@ function CreateBounty(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'bounty',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Bounty proposed to the Campaign Owner';
+              sendAnalyticsTracking('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -124,6 +136,10 @@ function CreateBounty(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Bounty has been updated!, this should not be happened';
@@ -153,6 +169,7 @@ function CreateBounty(props) {
           setLoading(false);
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

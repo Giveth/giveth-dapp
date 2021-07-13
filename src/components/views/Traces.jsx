@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 import TraceCard from '../TraceCard';
 import Loader from '../Loader';
 import LoadMore from '../LoadMore';
@@ -53,10 +54,7 @@ const Traces = ({ step }) => {
           <h4>Traces {total > 0 && <span className="badge badge-success">{total}</span>}</h4>
           {!hasError && traces.length > 0 && (
             <div>
-              <p>
-                Here are a few of the latest Traces. Help them realise their goals by giving Ether
-                or tokens!
-              </p>
+              <p>Requests for funding from a Campaign or its members.</p>
               <div className="cards-grid-container">
                 {traces.map(trace => (
                   <TraceCard key={trace.id} trace={trace} />
@@ -102,3 +100,14 @@ Traces.propTypes = {
 Traces.defaultProps = { step: 20 };
 
 export default Traces;
+
+export const TracesExplore = props => {
+  return (
+    <div>
+      <Helmet>
+        <title>Traces</title>
+      </Helmet>
+      <Traces {...props} />
+    </div>
+  );
+};

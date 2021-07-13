@@ -6,7 +6,7 @@ import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
@@ -20,7 +20,7 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
   } = useContext(UserContext);
 
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -33,7 +33,8 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
       ? Trace.COMPLETED
       : Trace.PAID;
 
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           if (!isAmountEnoughForWithdraw) {
@@ -96,11 +97,12 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
               afterSave,
               afterMined,
               onError,
-            });
+              web3,
+            }).then();
           } else {
             const campaign = new Campaign(trace.campaign);
             campaign.archivedTraces.add(trace.projectId);
-            campaign.save(afterSave, afterMined);
+            campaign.save(afterSave, afterMined, web3).then();
           }
         })
         .catch(err => {
@@ -109,8 +111,8 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

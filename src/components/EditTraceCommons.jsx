@@ -86,6 +86,7 @@ const TraceDescription = ({
       className="custom-form-item"
       extra={extra}
       required
+      initialValue={initialValue}
       rules={[
         {
           type: 'string',
@@ -186,7 +187,7 @@ const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
             {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
           </div>
         ) : (
-          <ImgCrop>
+          <ImgCrop aspect={16 / 9}>
             <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
               <p className="ant-upload-text">
                 Drag and Drop JPEG, PNG here or <span>Attach a file.</span>

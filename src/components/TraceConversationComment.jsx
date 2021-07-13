@@ -7,18 +7,24 @@ import { Button, Col, Form, Row } from 'antd';
 import Lottie from 'lottie-react';
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from './ErrorPopup';
-import { actionWithLoggedIn, authenticateUser, checkProfile } from '../lib/middleware';
+import { authenticateUser, checkProfile } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import Editor from './Editor';
 import CommentAnimation from '../assets/pencil.json';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const TraceConversationComment = ({ trace }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
+
   const [message, setMessage] = useState('');
   const [isVisble, setVisible] = useState(false);
   const [isCreating, setCreating] = useState(false);
@@ -26,7 +32,10 @@ const TraceConversationComment = ({ trace }) => {
   const [form] = Form.useForm();
 
   function checkUser() {
-    return authenticateUser(currentUser, false).then(() => checkProfile(currentUser));
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      checkProfile(currentUser).then();
+    });
   }
 
   const closeModal = () => {
@@ -47,6 +56,11 @@ const TraceConversationComment = ({ trace }) => {
           })
           .then(() => {
             setCreating(false);
+            sendAnalyticsTracking('Comment Added', {
+              traceId: trace.id,
+              traceTitle: trace.title,
+              userAddress: currentUser.address,
+            });
             closeModal();
           })
           .catch(err => {
@@ -65,7 +79,8 @@ const TraceConversationComment = ({ trace }) => {
   const showModal = () => {
     checkUser().then(() => {
       if (currentUser.authenticated) {
-        actionWithLoggedIn(currentUser).then(() => {
+        authenticateUser(currentUser, false, web3).then(authenticated => {
+          if (!authenticated) return;
           setVisible(true);
         });
       }

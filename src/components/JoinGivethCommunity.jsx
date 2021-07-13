@@ -27,11 +27,11 @@ const JoinGivethCommunity = () => {
   const createCommunity = () => {
     if (!userIsDelegator) {
       React.swal({
-        title: 'Sorry, Giveth is in beta...',
+        title: 'Sorry',
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Community! However, Giveth is still in
-            alpha and we only allow a select group of people to start Communities
+            It&#8217;s great to see that you want to start a Community! However, Giveth only allow a
+            select group of people to start Communities
             <br />
             Please <strong>contact us on our Slack</strong>, or keep browsing
           </p>,
@@ -65,11 +65,11 @@ const JoinGivethCommunity = () => {
   const createCampaign = () => {
     if (!userIsProjectOwner) {
       React.swal({
-        title: 'Sorry, Giveth is in beta...',
+        title: 'Sorry',
         content: React.swal.msg(
           <p>
-            It&#8217;s great to see that you want to start a Campaign, however, Giveth is still in
-            beta and we only allow a select group of people to start Campaigns
+            It&#8217;s great to see that you want to start a Campaign, however, Giveth only allow a
+            select group of people to start Campaigns
             <br />
             Please <strong>contact us on our Slack</strong>, or keep browsing
           </p>,

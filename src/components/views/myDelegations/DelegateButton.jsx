@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import { Modal } from 'antd';
+import Web3 from 'web3';
 
 import PropTypes from 'prop-types';
-import 'react-rangeslider/lib/index.css';
 
 import Donation from 'models/Donation';
-import ErrorPopup from './ErrorPopup';
-import { authenticateUser, checkBalance } from '../lib/middleware';
-import User from '../models/User';
+import ErrorPopup from '../../ErrorPopup';
+import { authenticateUser, checkBalance } from '../../../lib/middleware';
+import User from '../../../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
 
 const modalStyles = {
@@ -28,7 +28,7 @@ class DelegateButton extends Component {
   }
 
   async openDialog() {
-    const authenticated = await authenticateUser(this.props.currentUser, false);
+    const authenticated = await authenticateUser(this.props.currentUser, false, this.props.web3);
     if (!authenticated) {
       return;
     }
@@ -87,6 +87,7 @@ DelegateButton.propTypes = {
   traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
   currentUser: PropTypes.instanceOf(User).isRequired,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 DelegateButton.defaultProps = {

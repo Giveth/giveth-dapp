@@ -5,27 +5,28 @@ import Trace from 'models/Trace';
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
-import { checkBalance, actionWithLoggedIn } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
   const conversationModal = useRef();
 
   const approveTraceCompleted = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -44,10 +45,13 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Approved Trace', {
                     category: 'Trace',
-                    action: 'approved completion',
-                    label: trace._id,
+                    action: 'approved',
+                    userAddress: currentUser.address,
+                    id: trace._id,
+                    title: trace.title,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -81,6 +85,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             })
             .catch(_ => {});
@@ -91,12 +96,13 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   const rejectTraceCompleted = async () => {
-    actionWithLoggedIn(currentUser).then(() =>
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() => {
           conversationModal.current
@@ -115,10 +121,12 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Trace Rejected', {
                     category: 'Trace',
                     action: 'rejected completion',
-                    label: trace._id,
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
                   });
 
                   React.toast.info(
@@ -152,6 +160,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     );
                   }
                 },
+                web3,
               });
             })
             .catch(_ => {});
@@ -162,8 +171,8 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

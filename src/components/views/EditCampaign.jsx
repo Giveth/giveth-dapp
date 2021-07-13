@@ -1,7 +1,5 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Prompt } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import 'react-input-token/lib/style.css';
+import { Prompt, useParams } from 'react-router-dom';
 
 import {
   Button,
@@ -34,19 +32,15 @@ import { IPFSService } from '../../services';
 import config from '../../configuration';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
-import GA from '../../lib/GoogleAnalytics';
 import useReviewers from '../../hooks/useReviewers';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 const { Title, Text } = Typography;
 
 /**
  * View to create or edit a Campaign
- *
- * @param isNew    If set, component will load an empty model.
- *                 Otherwise component expects an id param and will load a campaign object
- * @param id       URL parameter which is an id of a campaign object
  */
-const EditCampaign = ({ isNew, match }) => {
+const EditCampaign = () => {
   const {
     state: { currentUser, isLoading: userIsLoading },
   } = useContext(UserContext);
@@ -56,7 +50,7 @@ const EditCampaign = ({ isNew, match }) => {
   } = useContext(WhiteListContext);
 
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -74,6 +68,13 @@ const EditCampaign = ({ isNew, match }) => {
     }),
   );
   const mounted = useRef();
+
+  const { id: campaignId } = useParams();
+  const isNew = !campaignId;
+
+  const goBack = () => {
+    history.goBack();
+  };
 
   useEffect(() => {
     mounted.current = true;
@@ -108,7 +109,7 @@ const EditCampaign = ({ isNew, match }) => {
         setIsLoading(false);
       });
     } else {
-      CampaignService.get(match.params.id)
+      CampaignService.get(campaignId)
         .then(camp => {
           if (isOwner(camp.ownerAddress, currentUser)) {
             const imageIpfsPath = camp.image.match(/\/ipfs\/.*/);
@@ -121,7 +122,10 @@ const EditCampaign = ({ isNew, match }) => {
             });
             campaignObject.current = camp;
             setIsLoading(false);
-          } else history.goBack();
+          } else {
+            ErrorHandler({}, 'You are not allowed to edit this Campaign.');
+            goBack();
+          }
         })
         .catch(err => {
           if (err.status === 404) {
@@ -204,12 +208,8 @@ const EditCampaign = ({ isNew, match }) => {
     setPicture('');
   };
 
-  const goBack = () => {
-    history.goBack();
-  };
-
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (!isForeignNetwork) {
@@ -257,10 +257,13 @@ const EditCampaign = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          GA.trackEvent({
+          sendAnalyticsTracking('Campaign Created', {
             category: 'Campaign',
             action: 'created',
-            label: id,
+            userAddress: currentUser.address,
+            id,
+            title: campaign.title,
+            txUrl: url,
           });
           history.push('/my-campaigns');
         }
@@ -268,7 +271,7 @@ const EditCampaign = ({ isNew, match }) => {
 
       setIsSaving(true);
       setIsBlocking(false);
-      campaignObject.current.save(afterCreate, afterMined).finally(() => {
+      campaignObject.current.save(afterCreate, afterMined, web3).finally(() => {
         setIsSaving(false);
       });
     }
@@ -403,7 +406,7 @@ const EditCampaign = ({ isNew, match }) => {
                         <DeleteTwoTone onClick={removePicture} />
                       </div>
                     ) : (
-                      <ImgCrop>
+                      <ImgCrop aspect={16 / 9}>
                         <Upload.Dragger {...uploadProps}>
                           <p className="ant-upload-text">
                             Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
@@ -470,19 +473,6 @@ const EditCampaign = ({ isNew, match }) => {
       )}
     </Fragment>
   );
-};
-
-EditCampaign.propTypes = {
-  isNew: PropTypes.bool,
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      id: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
-};
-
-EditCampaign.defaultProps = {
-  isNew: false,
 };
 
 export default EditCampaign;

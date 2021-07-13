@@ -5,20 +5,20 @@ import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import ConversationModal from 'components/ConversationModal';
-import GA from 'lib/GoogleAnalytics';
-import { actionWithLoggedIn, checkBalance } from 'lib/middleware';
+import { authenticateUser, checkBalance } from 'lib/middleware';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const CancelTraceButton = ({ trace, className }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork, balance },
+    state: { isForeignNetwork, balance, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -28,7 +28,8 @@ const CancelTraceButton = ({ trace, className }) => {
     if (!isForeignNetwork) {
       return displayForeignNetRequiredWarning();
     }
-    return actionWithLoggedIn(currentUser).then(() =>
+    return authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
       checkBalance(balance)
         .then(() =>
           conversationModal.current
@@ -47,10 +48,14 @@ const CancelTraceButton = ({ trace, className }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  GA.trackEvent({
+                  sendAnalyticsTracking('Trace Canceled', {
                     category: 'Trace',
-                    action: 'canceled',
-                    label: trace._id,
+                    action: 'cancel',
+                    id: trace._id,
+                    title: trace.title,
+                    userAddress: currentUser.address,
+                    donationCounters: trace.donationCounters,
+                    txUrl,
                   });
 
                   React.toast.info(
@@ -84,6 +89,7 @@ const CancelTraceButton = ({ trace, className }) => {
                     );
                   }
                 },
+                web3,
               }),
             ),
         )
@@ -93,8 +99,8 @@ const CancelTraceButton = ({ trace, className }) => {
           } else if (err !== undefined) {
             ErrorPopup('Something went wrong.', err);
           }
-        }),
-    );
+        });
+    });
   };
 
   return (

@@ -1,20 +1,22 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
+import Web3 from 'web3';
 
 import { Form, Input } from 'formsy-react-components';
-import GA from 'lib/GoogleAnalytics';
+import SelectFormsy from '../SelectFormsy';
 import Loader from '../Loader';
 import FormsyImageUploader from '../FormsyImageUploader';
-import { checkBalance, checkForeignNetwork, isLoggedIn } from '../../lib/middleware';
+import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
-import SelectFormsy from '../SelectFormsy';
 import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
+import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -52,9 +54,9 @@ class EditProfile extends Component {
   componentDidUpdate(prevProps) {
     const { currentUser, balance, isForeignNetwork } = this.props;
     if (
-      currentUser !== prevProps.currentUser ||
+      currentUser.address !== prevProps.currentUser.address ||
       isForeignNetwork !== prevProps.isForeignNetwork ||
-      balance !== prevProps.balance
+      balance.toNumber() !== prevProps.balance.toNumber()
     ) {
       this.checkNetwork();
     }
@@ -71,29 +73,37 @@ class EditProfile extends Component {
   }
 
   checkNetwork() {
-    const { currentUser, balance, isForeignNetwork, displayForeignNetRequiredWarning } = this.props;
+    const {
+      currentUser,
+      balance,
+      isForeignNetwork,
+      displayForeignNetRequiredWarning,
+      web3,
+    } = this.props;
     checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
       .then(() =>
-        isLoggedIn(currentUser, true)
-          .then(() => checkBalance(balance))
-          .then(() => this.setState({ isLoading: false }))
-          .catch(err => {
-            if (err === 'noBalance') {
-              ErrorPopup('Something went wrong.', err);
-              history.goBack();
-            } else {
-              this.setState({
-                isLoading: false,
-              });
-            }
-          }),
+        authenticateUser(currentUser, true, web3).then(authenticated => {
+          if (!authenticated) return;
+          checkBalance(balance)
+            .then(() => this.setState({ isLoading: false }))
+            .catch(err => {
+              if (err === 'noBalance') {
+                ErrorPopup('Something went wrong.', err);
+                history.goBack();
+              } else {
+                this.setState({
+                  isLoading: false,
+                });
+              }
+            });
+        }),
       )
-      .catch(() => {});
+      .catch(console.log);
   }
 
   submit() {
     const { user } = this.state;
-    const { currentUser } = this.props;
+    const { currentUser, web3 } = this.props;
 
     if (!this.state.user.name) return;
     const pushToNetwork =
@@ -125,17 +135,19 @@ class EditProfile extends Component {
       showToast(msg, url, true);
 
       if (created) {
-        GA.trackEvent({
+        sendAnalyticsTracking('User Created', {
           category: 'User',
           action: 'created',
-          label: this.state.user.address,
+          userAddress: this.state.user.address,
+          txUrl: url,
         });
       } else {
         if (this.mounted) this.setState({ isSaving: false });
-        GA.trackEvent({
+        sendAnalyticsTracking('User Updated', {
           category: 'User',
           action: 'updated',
           label: this.state.user.address,
+          txUrl: url,
         });
       }
     };
@@ -155,7 +167,7 @@ class EditProfile extends Component {
       },
       () => {
         // Save the User
-        this.state.user.save(afterSave, afterMined, reset, pushToNetwork).finally(() => {
+        this.state.user.save(afterSave, afterMined, reset, pushToNetwork, web3).finally(() => {
           this.setState({ isSaving: false });
         });
       },
@@ -330,6 +342,7 @@ EditProfile.propTypes = {
   isForeignNetwork: PropTypes.bool.isRequired,
   displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   updateUserData: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 EditProfile.defaultProps = {
@@ -339,13 +352,22 @@ EditProfile.defaultProps = {
 
 export default props => (
   <UserConsumer>
-    {({ state: { currentUser, isLoading: userIsLoading }, actions: { updateUserData } }) => (
-      <Fragment>
-        {userIsLoading && <Loader className="fixed" />}
-        {!userIsLoading && (
-          <EditProfile currentUser={currentUser} updateUserData={updateUserData} {...props} />
+    {({ state: { currentUser }, actions: { updateUserData } }) => (
+      <Web3Consumer>
+        {({ state: { web3, isEnabled } }) => (
+          <Fragment>
+            {(!currentUser.address || !isEnabled) && <Loader className="fixed" />}
+            {currentUser.address && isEnabled && (
+              <EditProfile
+                web3={web3}
+                currentUser={currentUser}
+                updateUserData={updateUserData}
+                {...props}
+              />
+            )}
+          </Fragment>
         )}
-      </Fragment>
+      </Web3Consumer>
     )}
   </UserConsumer>
 );

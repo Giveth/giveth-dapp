@@ -1,14 +1,13 @@
 import React from 'react';
 import 'whatwg-fetch';
-import { utils } from 'web3';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
 import Resizer from 'react-image-file-resizer';
 
-import { feathersClient } from './feathersClient';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
+import { sendAnalyticsPage } from './SegmentAnalytics';
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser.address === address;
@@ -72,26 +71,6 @@ export const getUserAvatar = owner => {
 
 export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
 
-export const getGasPrice = () =>
-  feathersClient
-    .service('/gasprice')
-    .find()
-    .then(resp => {
-      // let gasPrice = resp.safeLow * 1.1;
-      // hack: temp while network gas is so erratic
-      let gasPrice = resp.average;
-      gasPrice = gasPrice > resp.average ? resp.average : gasPrice;
-      // div by 10 b/c https://ethgasstation.info/json/ethgasAPI.json returns price in gwei * 10
-      // we're only interested in gwei.
-      // we round to prevent errors relating to too many decimals
-      gasPrice = Math.round(gasPrice) / 10;
-
-      // sometimes the API is down, we need to return a gasprice or the dapp breaks
-      if (!gasPrice) gasPrice = config.defaultGasPrice;
-
-      return utils.toWei(`${gasPrice}`, 'gwei');
-    });
-
 export const getReadableStatus = status => {
   switch (status) {
     case 'InProgress':
@@ -104,6 +83,14 @@ export const getReadableStatus = status => {
 };
 
 export const history = createBrowserHistory();
+let prevPath;
+// listen and notify Segment of client-side page updates
+history.listen(location => {
+  if (location.pathname !== prevPath) {
+    prevPath = location.pathname;
+    sendAnalyticsPage(location.pathname);
+  }
+});
 
 // Get start of the day in UTC for a given date or start of current day in UTC
 export const getStartOfDayUTC = date => moment.utc(date || moment()).startOf('day');

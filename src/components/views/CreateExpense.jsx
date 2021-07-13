@@ -24,13 +24,14 @@ import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function CreateExpense(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
   const {
@@ -161,7 +162,7 @@ function CreateExpense(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
 
     if (authenticated) {
       if (userIsCampaignOwner && !isForeignNetwork) {
@@ -209,9 +210,19 @@ function CreateExpense(props) {
         from: currentUser.address,
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
+          const analyticsData = {
+            formType: 'expense',
+            id: res._id,
+            title: ms.title,
+            campaignTitle: campaign.title,
+          };
           if (created) {
             if (!userIsCampaignOwner) {
               notificationDescription = 'Expense proposed to the Campaign Owner';
+              sendAnalyticsTracking('Trace Create', {
+                action: 'proposed',
+                ...analyticsData,
+              });
             }
           } else if (txUrl) {
             notificationDescription = (
@@ -223,6 +234,10 @@ function CreateExpense(props) {
                 </a>
               </p>
             );
+            sendAnalyticsTracking('Trace Create', {
+              action: 'created',
+              ...analyticsData,
+            });
           } else {
             const notificationError =
               'It seems your Expense has been updated!, this should not be happened';
@@ -255,6 +270,7 @@ function CreateExpense(props) {
           }
           return ErrorHandler(err, message);
         },
+        web3,
       });
     }
   };

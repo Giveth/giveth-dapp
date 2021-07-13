@@ -19,15 +19,17 @@ import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
+import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 
 function EditBounty(props) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
+
   const { traceId } = props.match.params;
 
   const [campaign, setCampaign] = useState();
@@ -39,6 +41,8 @@ function EditBounty(props) {
     donateToCommunity: true,
     reviewerAddress: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   const traceHasFunded = trace && trace.donationCounters && trace.donationCounters.length > 0;
 
@@ -52,20 +56,29 @@ function EditBounty(props) {
   const isEditNotAllowed = ms => {
     return (
       ms.formType !== Trace.BOUNTYTYPE ||
-      !(isOwner(ms.owner.address, currentUser) || isOwner(ms.campaign.ownerAddress, currentUser)) ||
+      !(
+        isOwner(ms.owner.address, currentUser) ||
+        isOwner(ms.campaign.ownerAddress, currentUser) ||
+        isOwner(ms.campaign.coownerAddress, currentUser)
+      ) ||
       ms.donationCounters.length > 0
     );
   };
 
   useEffect(() => {
     if (trace) {
+      setUserIsOwner(
+        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
+      );
       if (isEditNotAllowed(trace)) {
+        ErrorHandler({}, 'You are not allowed to edit.');
         goBack();
       }
-    } else if (currentUser.id) {
+    } else if (currentUser.address) {
       TraceService.get(traceId)
         .then(res => {
           if (isEditNotAllowed(res)) {
+            ErrorHandler({}, 'You are not allowed to edit.');
             goBack();
           } else {
             const iValues = {
@@ -74,10 +87,14 @@ function EditBounty(props) {
               reviewerAddress: res.reviewerAddress,
               donateToCommunity: !!res.communityId,
             };
+            const _campaign = res.campaign;
             setInitialValues(iValues);
             setDonateToCommunity(!!res.communityId);
             setTrace(res);
-            setCampaign(res.campaign);
+            setCampaign(_campaign);
+            setUserIsOwner(
+              [_campaign.ownerAddress, _campaign.coownerAddress].includes(currentUser.address),
+            );
           }
         })
         .catch(err => {
@@ -85,18 +102,7 @@ function EditBounty(props) {
           ErrorHandler(err, message);
         });
     }
-  }, [currentUser.id]);
-
-  const [loading, setLoading] = useState(false);
-  const [userIsCampaignOwner, setUserIsOwner] = useState(false);
-
-  useEffect(() => {
-    setUserIsOwner(
-      campaign &&
-        currentUser.address &&
-        [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
-    );
-  }, [campaign, currentUser]);
+  }, [currentUser.address]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -116,7 +122,7 @@ function EditBounty(props) {
   }
 
   const submit = async () => {
-    const authenticated = await authenticateUser(currentUser, false);
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }
@@ -138,9 +144,26 @@ function EditBounty(props) {
       from: currentUser.address,
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
+        const analyticsData = {
+          formType: 'bounty',
+          id: res._id,
+          title: ms.title,
+          campaignTitle: campaign.title,
+        };
+
         if (created) {
           if (!userIsCampaignOwner) {
             notificationDescription = 'Bounty proposed to the campaign owner';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
+          } else {
+            notificationDescription = 'The Bounty has been updated!';
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           }
         } else if (txUrl) {
           notificationDescription = (
@@ -152,8 +175,16 @@ function EditBounty(props) {
               </a>
             </p>
           );
+          sendAnalyticsTracking('Trace Edit', {
+            action: 'created',
+            ...analyticsData,
+          });
         } else {
           notificationDescription = 'Your Bounty has been updated!';
+          sendAnalyticsTracking('Trace Edit', {
+            action: 'updated proposed',
+            ...analyticsData,
+          });
         }
 
         if (notificationDescription) {
@@ -179,6 +210,7 @@ function EditBounty(props) {
         setLoading(false);
         return ErrorHandler(err, message);
       },
+      web3,
     });
   };
 

@@ -6,28 +6,45 @@ import Trace from 'models/Trace';
 import ErrorPopup from 'components/ErrorPopup';
 import confirmationDialog from 'lib/confirmationDialog';
 
-import { actionWithLoggedIn } from '../lib/middleware';
+import { authenticateUser } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const DeleteProposedTraceButton = ({ trace, className }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
+  const {
+    state: { web3 },
+  } = useContext(Web3Context);
+
   const _confirmDeleteTrace = () => {
     TraceService.deleteProposedTrace({
       trace,
-      onSuccess: () => React.toast.info(<p>The Trace has been deleted.</p>),
+      onSuccess: () => {
+        sendAnalyticsTracking('Trace Delete', {
+          category: 'Trace',
+          action: 'deleted',
+          formType: trace.formType,
+          id: trace._id,
+          title: trace.title,
+          campaignTitle: trace.campaign.title,
+        });
+        React.toast.info(<p>The Trace has been deleted.</p>);
+      },
       onError: e => ErrorPopup('Something went wrong with deleting your Trace', e),
     });
   };
 
   const deleteProposedTrace = () => {
-    actionWithLoggedIn(currentUser).then(() =>
-      confirmationDialog('trace', trace.title, _confirmDeleteTrace),
-    );
+    authenticateUser(currentUser, false, web3).then(authenticated => {
+      if (!authenticated) return;
+      confirmationDialog('trace', trace.title, _confirmDeleteTrace);
+    });
   };
 
   return (
