@@ -49,7 +49,8 @@
     "react/destructuring-assignment": "off", // Seems to be way too restrictive
     "import/no-cycle": 1, // Should be addressed eventually but does not break
     "import/prefer-default-export": "off",
-    "jsx-a11y/media-has-caption": "off" // Pretty hard to do for every video..
+    "jsx-a11y/media-has-caption": "off", // Pretty hard to do for every video..
+    "react-hooks/exhaustive-deps": "off" // Wrong warning (missing dependency) for most of useEffects
   },
   "env": {
     "jest": true,
