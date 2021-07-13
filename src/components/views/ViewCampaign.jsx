@@ -329,10 +329,12 @@ const ViewCampaign = ({ match }) => {
 
               <div className="container mt-4">
                 <div>
-                  <div>
-                    <h5 className="title">Subscribe to updates </h5>
-                    <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
-                  </div>
+                  {campaign.myStatus !== Campaign.CANCELED && (
+                    <div>
+                      <h5 className="title">Subscribe to updates </h5>
+                      <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                    </div>
+                  )}
 
                   {userIsCommunityOwner && campaign.canReceiveDonate && (
                     <ProjectViewActionAlert message="Delegate some donation to this project">
@@ -340,7 +342,7 @@ const ViewCampaign = ({ match }) => {
                     </ProjectViewActionAlert>
                   )}
 
-                  {userIsOwner && (
+                  {userIsOwner && campaign.myStatus !== Campaign.CANCELED && (
                     <ProjectViewActionAlert message="Change Co-Owner of Campaign">
                       <ChangeOwnershipButton campaign={campaign} />
                     </ProjectViewActionAlert>
@@ -359,7 +361,14 @@ const ViewCampaign = ({ match }) => {
                   </div>
 
                   <div className="card content-card ">
-                    <div className="card-body content">{renderDescription()}</div>
+                    <div className="card-body content">
+                      {renderDescription()}
+                      {campaign.myStatus === Campaign.CANCELED && (
+                        <div className="mt-3" style={{ color: 'red' }}>
+                          This Campaign has been cancelled.
+                        </div>
+                      )}
+                    </div>
 
                     {campaign.communityUrl && (
                       <div className="pl-3 pb-4">
