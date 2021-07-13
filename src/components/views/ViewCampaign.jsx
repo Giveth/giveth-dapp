@@ -147,24 +147,38 @@ const ViewCampaign = ({ match }) => {
     }
   };
 
-  useEffect(() => {
-    const { id, slug } = match.params;
-    const getFunction = slug
-      ? CampaignService.getBySlug.bind(CampaignService, slug)
-      : CampaignService.get.bind(CampaignService, id);
-
-    getFunction()
+  const getById = id => {
+    CampaignService.get(id)
       .then(_campaign => {
-        if (_campaign && id) {
-          history.push(`/campaign/${_campaign.slug}`);
-        }
+        history.replace(`/campaign/${_campaign.slug}`);
         setCampaign(_campaign);
         setLoading(false);
       })
-      .catch(() => {
+      .catch(err => {
         setNotFound(true);
+        ErrorHandler(err, 'Some error on fetching campaign by ID, please try later');
       });
-  }, [donationsTotal]);
+  };
+
+  const getBySlug = slug => {
+    CampaignService.getBySlug(slug)
+      .then(_campaign => {
+        setCampaign(_campaign);
+        setLoading(false);
+      })
+      .catch(err => {
+        setNotFound(true);
+        ErrorHandler(err, 'Some error on fetching campaign by slug, please try later');
+      });
+  };
+
+  const getCampaign = () => {
+    const { id, slug } = match.params;
+    if (slug) getBySlug(slug);
+    else getById(id);
+  };
+
+  useEffect(() => getCampaign(), [donationsTotal]);
 
   useEffect(() => {
     if (campaign.id && !debouncedSearch.current) {
@@ -282,7 +296,11 @@ const ViewCampaign = ({ match }) => {
                   campaign={campaign}
                   className="m-1 ghostButtonHeader btn-primary"
                 />
-                <CancelCampaignButton campaign={campaign} className="m-1 ghostButtonHeader" />
+                <CancelCampaignButton
+                  campaign={campaign}
+                  className="m-1 ghostButtonHeader"
+                  onCancel={getCampaign}
+                />
 
                 {campaign.canReceiveDonate && (
                   <div className="mt-4">
