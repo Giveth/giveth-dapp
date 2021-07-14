@@ -112,7 +112,7 @@ const CancelTraceButton = ({ trace, className }) => {
         </button>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };

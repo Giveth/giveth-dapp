@@ -1,12 +1,10 @@
 import Avatar from 'react-avatar';
 import moment from 'moment';
 import ReactHtmlParser from 'react-html-parser';
-import { Form } from 'formsy-react-components';
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
-import TraceProof from './TraceProof';
 import TraceConversationAction from './TraceConversationAction';
 import { convertEthHelper, getUserAvatar, getUserName } from '../lib/helpers';
 import Trace from '../models/Trace';
@@ -147,15 +145,7 @@ const getEtherScanUrl = ({ messageContext }) =>
 
 function TraceConversationItem({ conversation, trace, isAmountEnoughForWithdraw }) {
   if (!conversation) return null;
-  const {
-    txHash,
-    messageContext,
-    message,
-    performedByRole,
-    createdAt,
-    items,
-    owner,
-  } = conversation;
+  const { txHash, messageContext, message, performedByRole, createdAt, owner } = conversation;
 
   return (
     <div>
@@ -183,18 +173,6 @@ function TraceConversationItem({ conversation, trace, isAmountEnoughForWithdraw 
           {/* <span className={`badge ${c.messageContext.toLowerCase()}`}>{c.messageContext}</span> */}
         </p>
         <div className="c-message">{ReactHtmlParser(message)}</div>
-
-        {items && items.length > 0 && (
-          <Form className="items-form">
-            <strong>Attachments</strong>
-            <TraceProof
-              refreshList={items}
-              token={trace.token}
-              isEditMode={false}
-              traceStatus={trace.status}
-            />
-          </Form>
-        )}
 
         {/* ---- action buttons ---- */}
         <div className="c-action-footer">
