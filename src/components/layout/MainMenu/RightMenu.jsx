@@ -7,7 +7,6 @@ import { Menu, Grid } from 'antd';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../../../contextProviders/WhiteListProvider';
-import { signUpSwal } from '../../../lib/helpers';
 import MenuBarCreateButton from '../../MenuBarCreateButton';
 import TotalGasPaid from '../../views/TotalGasPaid';
 import TraceService from '../../../services/TraceService';
@@ -40,7 +39,7 @@ const RightMenu = () => {
 
   const {
     state: { isEnabled, validProvider },
-    actions: { enableProvider },
+    actions: { enableProvider, initOnBoard },
   } = useContext(Web3Context);
 
   const {
@@ -259,7 +258,7 @@ const RightMenu = () => {
       )}
       {!validProvider && (
         <Menu.Item key="SignUp">
-          <button type="button" className="btn btn-outline-info btn-sm" onClick={signUpSwal}>
+          <button type="button" className="btn btn-outline-info btn-sm" onClick={initOnBoard}>
             Sign Up!
           </button>
         </Menu.Item>
