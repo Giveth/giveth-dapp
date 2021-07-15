@@ -58,7 +58,12 @@ function ChangeTraceRecipientButton({ trace }) {
               });
               return;
             }
-            if (newRecipient.toLowerCase() === trace.recipient.address.toLowerCase()) {
+            if (
+              // the bounties doesnt have recipient when creating, so we should first
+              // check if trace has recipient check the address of it
+              trace.recipient &&
+              newRecipient.toLowerCase() === trace.recipient.address.toLowerCase()
+            ) {
               await React.swal({
                 title: 'Redundant Address',
                 text: 'The new recipient address should be different from old recipient address.',
