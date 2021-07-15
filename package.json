@@ -51,7 +51,6 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-share": "^2.4.0",
-    "react-toastify": "2.1.7",
     "react-toggle": "^4.0.2",
     "react-tooltip": "^3.11.1",
     "socket.io-client": "2.4.0",

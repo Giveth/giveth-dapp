@@ -1,10 +1,10 @@
 /* eslint-disable import/no-cycle */
 
-import { toast } from 'react-toastify';
 import BasicModel from './BasicModel';
 import CampaignService from '../services/CampaignService';
 import IPFSService from '../services/IPFSService';
 import { cleanIpfsPath, ZERO_ADDRESS, ZERO_SMALL_ADDRESS } from '../lib/helpers';
+import ErrorHandler from '../lib/ErrorHandler';
 
 /**
  * The DApp Campaign model
@@ -113,7 +113,7 @@ class Campaign extends BasicModel {
           this.newImage = false;
         })
         .then(_ => CampaignService.save(this, this.owner.address, afterSave, afterMined, web3))
-        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
+        .catch(err => ErrorHandler(err, 'Cannot connect to IPFS server. Please try again'));
     }
     return CampaignService.save(this, this.owner.address, afterSave, afterMined, web3);
   }

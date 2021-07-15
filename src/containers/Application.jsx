@@ -6,9 +6,6 @@ import { Router } from 'react-router-dom';
 
 import localforage from 'localforage';
 
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
-
 import Sweetalert from 'sweetalert';
 
 import { history } from '../lib/helpers';
@@ -43,9 +40,6 @@ React.swal.msg = reactNode => {
   ReactDOM.render(reactNode, wrapper);
   return wrapper.firstChild;
 };
-
-// make toast globally available
-React.toast = toast;
 
 /**
  * This container holds the application and its routes.
@@ -109,16 +103,6 @@ const Application = () => {
                                         </p>
                                       </div>
                                     )}
-
-                                    <ToastContainer
-                                      position="top-right"
-                                      type="default"
-                                      autoClose={5000}
-                                      hideProgressBar
-                                      newestOnTop={false}
-                                      closeOnClick
-                                      pauseOnHover
-                                    />
                                   </NotificationModalProvider>
                                 </div>
                               )}

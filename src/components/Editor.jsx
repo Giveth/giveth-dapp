@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import ReactQuill, { Quill } from 'react-quill';
-import { toast } from 'react-toastify';
 import ImageResize from 'quill-image-resize-module-react';
 import { resizeFile } from '../lib/helpers';
 import IPFSService from '../services/IPFSService';
@@ -9,6 +8,7 @@ import config from '../configuration';
 
 import VideoPopup from './VideoPopup';
 import Loader from './Loader';
+import ErrorHandler from '../lib/ErrorHandler';
 
 Quill.register('modules/imageResize', ImageResize);
 
@@ -52,8 +52,8 @@ function Editor(props) {
     setUploading(true);
     IPFSService.upload(image)
       .then(hash => insertToEditor({ url: config.ipfsGateway + hash.slice(6) }, range))
-      .catch(() => {
-        toast.error('Cannot connect to IPFS server. Please try again');
+      .catch(err => {
+        ErrorHandler(err, 'Cannot connect to IPFS server. Please try again.');
         const quill = reactQuillRef.current.getEditor();
         quill.deleteText(range.index, 1);
         setUploading(false);

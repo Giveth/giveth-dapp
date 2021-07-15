@@ -10,7 +10,6 @@ import TraceFactory from 'models/TraceFactory';
 import { feathersClient } from 'lib/feathersClient';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationBlockchainService from 'services/DonationBlockchainService';
-import { toast } from 'react-toastify';
 import { MilestoneFactory } from 'lpp-milestones';
 import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
 import Trace from '../models/Trace';
@@ -574,7 +573,7 @@ class TraceService {
           trace.image = await IPFSService.upload(trace.image);
           trace.newImage = false;
         } catch (err) {
-          toast.error('Failed to upload trace image to ipfs');
+          ErrorHandler(err, 'Failed to upload trace image to ipfs');
           return undefined;
         }
       }
@@ -587,7 +586,7 @@ class TraceService {
               traceItem.image = await IPFSService.upload(traceItem.image);
               traceItem.newImage = false;
             } catch (err) {
-              toast.error('Failed to upload trace item image to ipfs');
+              ErrorHandler(err, 'Failed to upload trace item image to ipfs');
               return undefined;
             }
           }

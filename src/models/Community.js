@@ -1,9 +1,9 @@
 /* eslint-disable import/no-cycle */
-import { toast } from 'react-toastify';
 import BasicModel from './BasicModel';
 import CommunityService from '../services/CommunityService';
 import IPFSService from '../services/IPFSService';
 import { cleanIpfsPath } from '../lib/helpers';
+import ErrorHandler from '../lib/ErrorHandler';
 
 /**
  * The DApp Community model
@@ -79,7 +79,7 @@ class Community extends BasicModel {
           this.newImage = false;
         })
         .then(() => CommunityService.save(this, this.owner.address, afterSave, afterMined, web3))
-        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
+        .catch(err => ErrorHandler(err, 'Cannot connect to IPFS server. Please try again.'));
     }
     return CommunityService.save(this, this.owner.address, afterSave, afterMined, web3);
   }

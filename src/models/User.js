@@ -1,8 +1,8 @@
-import { toast } from 'react-toastify';
 import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
 import { cleanIpfsPath } from '../lib/helpers';
+import ErrorHandler from '../lib/ErrorHandler';
 
 /**
  * The DApp User model
@@ -80,7 +80,7 @@ class User extends Model {
           delete this._newAvatar;
         })
         .then(_ => UserService.save(this, onSave, afterEmit, reset, true, web3))
-        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
+        .catch(err => ErrorHandler(err, 'Cannot connect to IPFS server, Please try again'));
     }
     return UserService.save(this, onSave, afterEmit, reset, pushToNetwork, web3);
   }
