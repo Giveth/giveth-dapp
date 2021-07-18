@@ -68,7 +68,6 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  // done
                   sendAnalyticsTracking('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
