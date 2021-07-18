@@ -335,16 +335,18 @@ const DonateButtonModal = props => {
    * @param allowanceAmount
    * @param comment
    * @param _allowanceApprovalType
+   * @param usdValue
    * @returns {Promise<unknown>}
    */
-  const donateWithBridge = async (
+  const donateWithBridge = async ({
     toAdmin,
     _amount,
     donationOwnerAddress,
-    allowanceAmount = 0,
-    comment = '',
+    allowanceAmount,
+    comment,
     _allowanceApprovalType = AllowanceApprovalType.Default,
-  ) => {
+    usdValue,
+  }) => {
     const { homeEtherscan: etherscanUrl } = config;
     const userAddress = currentUser.address;
 
@@ -423,7 +425,7 @@ const DonateButtonModal = props => {
 
             txHash = transactionHash;
 
-            await DonationBlockchainService.newFeathersDonation(
+            const newDonation = await DonationBlockchainService.newFeathersDonation(
               donationOwner,
               toAdmin,
               amountWei,
@@ -448,11 +450,21 @@ const DonateButtonModal = props => {
               category: 'Donation',
               action: 'donated',
               url: txUrl,
-              userAddress,
+              txHash,
+              donationId: newDonation._id,
+              donorAddress: userAddress,
+              donorName: currentUser.name,
+              usdValue,
               donationOwnerAddress,
-              to: toAdmin,
+              entityType: toAdmin.type,
+              entityId: toAdmin.id,
+              entityTitle: toAdmin.title,
+
+              // we dont have traceType here
+              // traceType: toAdmin.formType,
+              // to: toAdmin,
               amount: _amount,
-              token: selectedToken,
+              currency: selectedToken.symbol,
             });
 
             donationPending(txUrl);
@@ -469,10 +481,17 @@ const DonateButtonModal = props => {
                 sendAnalyticsTracking('Rejected Donation', {
                   action: 'donated',
                   userAddress,
-                  donationOwnerAddress,
-                  to: toAdmin,
+                  url: txUrl,
+                  txHash,
+                  donorAddress: userAddress,
+                  donorName: currentUser.name,
+                  usdValue,
+                  entityType: toAdmin.type,
+                  entityId: toAdmin.id,
+                  parentCampaignId: toAdmin.campaignId,
+                  entityTitle: toAdmin.title,
                   amount: _amount,
-                  token: selectedToken,
+                  currency: selectedToken.symbol,
                 });
                 donationFailed(null, 'User denied transaction signature');
               } else {
@@ -534,14 +553,14 @@ const DonateButtonModal = props => {
     }
   };
 
-  const donateToCommunity = async (
-    adminId,
+  const donateToCommunity = async ({
     communityId,
     _amount,
     donationOwnerAddress,
     _allowanceApprovalType,
     comment,
-  ) => {
+    usdValue,
+  }) => {
     const community = await CommunityService.getByDelegateId(communityId);
 
     if (!community) {
@@ -588,20 +607,27 @@ const DonateButtonModal = props => {
     if (isConfirmed) {
       try {
         if (
-          await donateWithBridge(
-            {
+          await donateWithBridge({
+            toAdmin: {
               adminId: communityId,
               type: Community.type,
               id: community._id,
             },
-            amountCommunity,
             donationOwnerAddress,
-            _amount,
+            _amount: amountCommunity,
             comment,
             _allowanceApprovalType,
-          )
+            usdValue,
+          })
         )
-          result = await donateWithBridge(model, amountTrace, donationOwnerAddress, 0, comment);
+          result = await donateWithBridge({
+            toAdmin: model,
+            _amount: amountTrace,
+            donationOwnerAddress,
+            allowanceAmount: 0,
+            comment,
+            usdValue,
+          });
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
@@ -610,7 +636,7 @@ const DonateButtonModal = props => {
   };
 
   const submit = async () => {
-    const { adminId, communityId } = model;
+    const { communityId } = model;
 
     const donationOwnerAddress = customAddress || currentUser.address;
     const { rates } = await getConversionRates(new Date(), selectedToken.symbol, 'USD');
@@ -633,25 +659,26 @@ const DonateButtonModal = props => {
           setModalVisible(false);
         });
     } else if (communityId && usdValue > config.minimumUsdValueForDonate3PercentToCommunity) {
-      donateToCommunity(
-        adminId,
+      donateToCommunity({
         communityId,
-        amount,
+        _amount: amount,
         donationOwnerAddress,
-        allowanceApprovalType.current,
-        donationComment,
-      )
+        _allowanceApprovalType: allowanceApprovalType.current,
+        comment: donationComment,
+        usdValue,
+      })
         .then()
         .catch(() => {});
     } else {
-      donateWithBridge(
-        model,
-        amount,
+      donateWithBridge({
+        toAdmin: model,
+        _amount: amount,
         donationOwnerAddress,
-        amount,
-        donationComment,
-        allowanceApprovalType.current,
-      )
+        allowanceAmount: amount,
+        comment: donationComment,
+        _allowanceApprovalType: allowanceApprovalType.current,
+        usdValue,
+      })
         .then()
         .catch(() => {});
     }

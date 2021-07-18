@@ -48,9 +48,15 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                   sendAnalyticsTracking('Approved Trace', {
                     category: 'Trace',
                     action: 'approved',
-                    userAddress: currentUser.address,
-                    id: trace._id,
+                    traceId: trace._id,
                     title: trace.title,
+                    ownerId: trace.ownerAddress,
+                    traceType: trace.formType,
+                    traceRecipientAddress: trace.recipientAddress,
+                    parentCampaignId: trace.campaign.id,
+                    parentCampaignTitle: trace.campaign.title,
+                    reviewerAddress: trace.reviewerAddress,
+                    userAddress: currentUser.address,
                     txUrl,
                   });
 
@@ -124,8 +130,14 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                   sendAnalyticsTracking('Trace Rejected', {
                     category: 'Trace',
                     action: 'rejected completion',
-                    id: trace._id,
+                    traceId: trace._id,
                     title: trace.title,
+                    ownerId: trace.ownerAddress,
+                    traceType: trace.formType,
+                    traceRecipientAddress: trace.recipientAddress,
+                    parentCampaignId: trace.campaign.id,
+                    reviewerAddress: trace.reviewerAddress,
+                    txUrl,
                     userAddress: currentUser.address,
                   });
 

@@ -244,7 +244,7 @@ const EditCampaign = () => {
         }
       };
 
-      const afterCreate = (err, url, id) => {
+      const afterCreate = (err, url, txUrl) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
@@ -257,14 +257,28 @@ const EditCampaign = () => {
             </p>
           );
           notification.info({ description: msg });
-          sendAnalyticsTracking('Campaign Created', {
-            category: 'Campaign',
-            action: 'created',
+          const analyticsData = {
             userAddress: currentUser.address,
-            id,
+            ownerAddress: campaign.ownerAddress,
+            reviewerAddress: campaign.reviewerAddress,
             title: campaign.title,
-            txUrl: url,
-          });
+            campaignId,
+            txUrl,
+          };
+          if (isNew) {
+            sendAnalyticsTracking('Campaign Created', {
+              category: 'Campaign',
+              action: 'created',
+              ...analyticsData,
+            });
+          } else {
+            sendAnalyticsTracking('Campaign Edited', {
+              category: 'Campaign',
+              action: 'edited',
+              slug: campaign.slug,
+              ...analyticsData,
+            });
+          }
           history.push('/my-campaigns');
         }
       };

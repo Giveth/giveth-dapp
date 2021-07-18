@@ -725,9 +725,13 @@ class EditTraceOld extends Component {
         afterSave: (created, txUrl, res) => {
           const analyticsData = {
             formType: 'old',
-            id: trace.id,
             title: trace.title,
-            campaignTitle: trace.campaign.title,
+            ownerId: trace.ownerAddress,
+            parentCampaignId: trace.campaignId,
+            parentCampaignTitle: trace.campaign.title,
+            reviewerAddress: trace.reviewerAddress,
+            recipientAddress: trace.recipientAddress,
+            userAddress: currentUser.address,
           };
 
           if (created) {

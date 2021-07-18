@@ -113,7 +113,10 @@ const EditCommunity = ({ isNew, match }) => {
               title: communityItem.title,
               description: communityItem.description,
               communityUrl: communityItem.communityUrl,
+              id: match.params.id,
+              slug: communityItem.slug,
               reviewerAddress: communityItem.reviewerAddress,
+              ownerAddress: communityItem.ownerAddress,
               picture: communityItem.image.match(/\/ipfs\/.*/)[0],
             });
             communityObject.current = communityItem;
@@ -247,13 +250,28 @@ const EditCommunity = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          sendAnalyticsTracking('Community Created', {
-            category: 'Community',
-            action: 'created',
-            id,
+          const analyticsData = {
+            slug: community.slug,
             userAddress: currentUser.address,
-            txUrl: url,
-          });
+            ownerAddress: community.ownerAddress,
+            title: currentUser.address,
+            communityId: community.id,
+            txUrl: id,
+          };
+          if (isNew) {
+            sendAnalyticsTracking('Community Edited', {
+              category: 'Community',
+              action: 'edited',
+              ...analyticsData,
+            });
+          } else {
+            sendAnalyticsTracking('Community Edited', {
+              category: 'Community',
+              action: 'edited',
+              ...analyticsData,
+            });
+          }
+
           history.push('/my-communities');
         }
       };

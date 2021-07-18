@@ -16,6 +16,7 @@ import config from '../configuration';
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { getConversionRateBetweenTwoSymbol } from './ConversionRateService';
 
 const etherScanUrl = config.etherscan;
 
@@ -270,17 +271,13 @@ class DonationBlockchainService {
               ErrorPopup('Unable to update the donation in feathers', err);
               onError(err);
             });
-          const txLink = `${etherScanUrl}tx/${txHash}`;
           const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
-          sendAnalyticsTracking('Delegated', {
-            category: 'Donation',
-            action:
-              newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
-            id: donation._id,
-            txUrl: txLink,
-            userAddress: from,
-            receiverId,
+          DonationBlockchainService.sendDelegateAnalyticsData({
+            donation,
+            newDonation,
             delegateTo,
+            txHash,
+            from,
           });
         });
       })
@@ -391,14 +388,12 @@ class DonationBlockchainService {
             ErrorPopup('Unable to create the donation in feathers', err);
             onError(err);
           });
-        sendAnalyticsTracking('Delegated', {
-          category: 'Donation',
-          action: newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
-          id: donation._id,
-          txUrl: txLink,
-          userAddress: from,
-          receiverId,
+        DonationBlockchainService.sendDelegateAnalyticsData({
+          donation,
+          newDonation,
           delegateTo,
+          txHash,
+          from: newDonation.giverAddress,
         });
       })
       .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
@@ -406,6 +401,64 @@ class DonationBlockchainService {
         const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
         ErrorHandler(err, message, false, onError);
       });
+  }
+
+  /**
+   *
+   * @param donation : it means the parent donation of new donation
+   * @param delegateTo
+   * @param newDonation
+   * @param from
+   * @param txHash
+   */
+  static async sendDelegateAnalyticsData({ donation, delegateTo, newDonation, from, txHash }) {
+    const txLink = `${etherScanUrl}tx/${txHash}`;
+    const currency = newDonation.token.symbol;
+
+    const result = await getConversionRateBetweenTwoSymbol({
+      date: new Date(),
+      symbol: currency,
+      to: 'USD',
+    });
+    const rate = result.rates.USD;
+    const amount = Number(newDonation.amount) / 10 ** 18;
+    const usdValue = amount * rate;
+    const analyticsData = {
+      category: 'Donation',
+      txUrl: txLink,
+      userAddress: from,
+      currency,
+      amount,
+      usdValue,
+      transactionId: newDonation.txHash,
+      entityTitle: delegateTo.title,
+      entityId: delegateTo.id,
+      entitySlug: delegateTo.slug,
+      entityType: newDonation.ownerType,
+      entityOwnerId: delegateTo.ownerAddress,
+      traceType: delegateTo.formType,
+    };
+
+    if (newDonation.status === Donation.TO_APPROVE) {
+      // it's delegated from community
+      sendAnalyticsTracking('Delegated', {
+        ...analyticsData,
+        action: 'delegation proposed',
+        parentEntityTitle: donation.delegateEntity.title,
+        parentEntityId: donation.delegateEntity.delegateTypeId,
+        parentEntitySlug: donation.delegateEntity.slug,
+        parentEntityType: 'community',
+      });
+    } else {
+      // delegate from campaign
+      sendAnalyticsTracking('Delegated', {
+        ...analyticsData,
+        action: 'delegated',
+        parentEntityTitle: delegateTo.title,
+        parentEntityId: donation.ownerTypeId,
+        parentEntityType: donation.ownerType,
+      });
+    }
   }
 
   /**

@@ -54,10 +54,11 @@ const TraceConversationComment = ({ trace }) => {
             message,
             messageContext: 'comment',
           })
-          .then(() => {
+          .then(comment => {
             setCreating(false);
             sendAnalyticsTracking('Comment Added', {
               traceId: trace.id,
+              commentId: comment._id,
               traceTitle: trace.title,
               userAddress: currentUser.address,
             });
