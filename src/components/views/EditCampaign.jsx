@@ -244,14 +244,14 @@ const EditCampaign = () => {
         }
       };
 
-      const afterCreate = (err, url, txUrl) => {
+      const afterCreate = (err, mined, txUrl) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
             <p>
               Your Campaign is pending....
               <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
               </a>
             </p>
