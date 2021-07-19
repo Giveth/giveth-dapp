@@ -3,6 +3,27 @@
   top: 0;
   z-index: 1000;
 
+  #manage_menu {
+    background: #2C0B3F;
+    z-index: 1020;
+    color: white;
+
+    .ant-menu-item, .ant-menu-submenu-title {
+      padding: 10px;
+      margin: 0 1px;
+    }
+
+    .ant-menu-dark .ant-menu-item-selected, .ant-menu-dark .ant-menu-item-active {
+      background: inherit;
+      font-weight: 500;
+    }
+
+    ul {
+      background: inherit;
+      color: white;
+    }
+  }
+
   #main_menu {
     overflow: hidden;
     background: white;
