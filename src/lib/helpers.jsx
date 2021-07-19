@@ -144,20 +144,6 @@ export const ANY_TOKEN = {
   decimals: 18,
 };
 
-export const signUpSwal = () => {
-  React.swal({
-    title: 'Sign Up!',
-    content: React.swal.msg(
-      <p>
-        To take this action, please enable Web3 in your browser. We recommend installing{' '}
-        <a href="https://metamask.io/">MetaMask</a>.
-      </p>,
-    ),
-    icon: 'info',
-    buttons: ['Ok'],
-  });
-};
-
 /** *
  * @param amount    BigNumber|Number|String
  * @param decimals  Number

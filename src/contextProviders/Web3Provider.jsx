@@ -156,6 +156,7 @@ class Web3Provider extends Component {
             },
             actions: {
               enableProvider: this.enableProvider,
+              initOnBoard: this.initOnBoard,
               displayForeignNetRequiredWarning: this.displayForeignNetRequiredWarning,
               displayHomeNetRequiredWarning: this.displayHomeNetRequiredWarning,
             },
