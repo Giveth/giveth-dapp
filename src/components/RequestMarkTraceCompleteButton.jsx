@@ -73,8 +73,14 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                   sendAnalyticsTracking('Trace Marked Complete', {
                     category: 'Trace',
                     action: 'marked complete',
-                    label: trace._id,
+                    traceId: trace._id,
                     title: trace.title,
+                    ownerId: trace.ownerAddress,
+                    traceType: trace.formType,
+                    traceRecipientAddress: trace.recipientAddress,
+                    parentCampaignId: trace.campaign.id,
+                    parentCampaignTitle: trace.campaign.title,
+                    reviewerAddress: trace.reviewerAddress,
                     userAddress: currentUser.address,
                     txUrl,
                   });

@@ -14,6 +14,7 @@ import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { getConversionRateBetweenTwoSymbol } from '../services/ConversionRateService';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -26,6 +27,39 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     actions: { minPayoutWarningInWithdraw },
   } = useContext(NotificationContext);
+
+  async function sendWithdrawAnalyticsEvent(txUrl) {
+    const donationsCounters = trace.donationCounters.filter(dc => dc.currentBalance.gt(0));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const donationCounter of donationsCounters) {
+      const currency = donationCounter.symbol;
+      // eslint-disable-next-line no-await-in-loop
+      const result = await getConversionRateBetweenTwoSymbol({
+        date: new Date(),
+        symbol: currency,
+        to: 'USD',
+      });
+      const rate = result.rates.USD;
+      const amount = Number(donationCounter.currentBalance);
+      sendAnalyticsTracking('Trace Withdraw', {
+        category: 'Trace',
+        action: 'initiated withdrawal',
+        amount,
+        currency,
+        usdValue: rate * amount,
+        traceId: trace._id,
+        title: trace.title,
+        ownerId: trace.ownerAddress,
+        traceType: trace.formType,
+        traceRecipientAddress: trace.recipientAddress,
+        parentCampaignId: trace.campaign.id,
+        parentCampaignTitle: trace.campaign.title,
+        reviewerAddress: trace.reviewerAddress,
+        userAddress: currentUser.address,
+        txUrl,
+      });
+    }
+  }
 
   async function withdraw() {
     const userAddress = currentUser.address;
@@ -79,15 +113,7 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                 trace,
                 from: userAddress,
                 onTxHash: txUrl => {
-                  sendAnalyticsTracking('Trace Withdraw', {
-                    category: 'Trace',
-                    action: 'initiated withdrawal',
-                    id: trace._id,
-                    title: trace.title,
-                    userAddress: currentUser.address,
-                    txUrl,
-                  });
-
+                  sendWithdrawAnalyticsEvent(txUrl);
                   React.toast.info(
                     <p>
                       Initiating withdrawal from Trace...

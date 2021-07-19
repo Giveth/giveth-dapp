@@ -246,10 +246,14 @@ function CreatePayment(props) {
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           const analyticsData = {
-            formType: 'payment',
-            id: res._id,
+            traceId: res._id,
             title: ms.title,
-            campaignTitle: campaign.title,
+            ownerId: ms.ownerAddress,
+            traceType: ms.formType,
+            parentCampaignId: campaign.id,
+            parentCampaignTitle: campaign.title,
+            reviewerAddress: ms.reviewerAddress,
+            userAddress: currentUser.address,
           };
           if (created) {
             if (!userIsCampaignOwner) {

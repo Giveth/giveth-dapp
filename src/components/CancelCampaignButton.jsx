@@ -37,12 +37,13 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
             );
             React.toast.info(msg);
             onCancel();
-            sendAnalyticsTracking('Campaign Canceled', {
+            sendAnalyticsTracking('Campaign Cancelled', {
               category: 'Campaign',
               action: 'cancel',
-              id: campaign.id,
+              campaignId: campaign.id,
               title: campaign.title,
-              donationCounters: campaign.donationCounters,
+              slug: campaign.slug,
+              ownerId: campaign.ownerAddress,
               txUrl: url,
             });
           };

@@ -146,7 +146,7 @@ class EditProfile extends Component {
         sendAnalyticsTracking('User Updated', {
           category: 'User',
           action: 'updated',
-          label: this.state.user.address,
+          userAddress: this.state.user.address,
           txUrl: url,
         });
       }

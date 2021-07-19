@@ -48,7 +48,14 @@ function ReproposeRejectedTraceButton({ trace }) {
               category: 'Trace',
               action: 'reproposed rejected trace',
               id: trace._id,
+              traceId: trace._id,
               title: trace.title,
+              ownerId: trace.ownerAddress,
+              traceType: trace.formType,
+              traceRecipientAddress: trace.recipientAddress,
+              parentCampaignId: trace.campaign.id,
+              parentCampaignTitle: trace.campaign.title,
+              reviewerAddress: trace.reviewerAddress,
               userAddress: currentUser.address,
             });
             React.toast.info(<p>The Trace has been re-proposed.</p>);

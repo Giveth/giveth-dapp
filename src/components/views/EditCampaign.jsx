@@ -244,27 +244,41 @@ const EditCampaign = () => {
         }
       };
 
-      const afterCreate = (err, url, id) => {
+      const afterCreate = (err, mined, txUrl) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
             <p>
               Your Campaign is pending....
               <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
               </a>
             </p>
           );
           notification.info({ description: msg });
-          sendAnalyticsTracking('Campaign Created', {
-            category: 'Campaign',
-            action: 'created',
+          const analyticsData = {
             userAddress: currentUser.address,
-            id,
+            ownerAddress: campaign.ownerAddress,
+            reviewerAddress: campaign.reviewerAddress,
             title: campaign.title,
-            txUrl: url,
-          });
+            campaignId,
+            txUrl,
+          };
+          if (isNew) {
+            sendAnalyticsTracking('Campaign Created', {
+              category: 'Campaign',
+              action: 'created',
+              ...analyticsData,
+            });
+          } else {
+            sendAnalyticsTracking('Campaign Edited', {
+              category: 'Campaign',
+              action: 'edited',
+              slug: campaign.slug,
+              ...analyticsData,
+            });
+          }
           history.push('/my-campaigns');
         }
       };

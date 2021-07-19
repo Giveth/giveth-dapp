@@ -17,5 +17,5 @@ jobs:
         run: yarn build-css
       - name: run linter
         run: yarn eslint
-      - name: test
-        run: yarn test
+#      - name: test
+#        run: yarn test
