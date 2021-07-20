@@ -54,7 +54,7 @@ const LoaderButton = ({
               </span>
             )}
 
-            {!isLoading && <span>{children}</span>}
+            <span>{children}</span>
           </button>
           {incorrectNetwork && (
             <small

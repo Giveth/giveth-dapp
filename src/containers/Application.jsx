@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { Helmet } from 'react-helmet';
 
@@ -82,54 +82,50 @@ const Application = () => {
         <WhiteListProvider>
           <WhiteListConsumer>
             {({ state: { fiatWhitelist } }) => (
-              <div>
-                <Web3Provider>
-                  <Web3Consumer>
-                    {({ state: { account, web3 } }) => (
-                      <div>
-                        <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                          <UserProvider account={account} web3={web3}>
-                            <UserConsumer>
-                              {({ state: { hasError } }) => (
-                                <div>
-                                  <NotificationModalProvider>
-                                    {!hasError && (
-                                      <div>
-                                        <Header />
-                                        <Routes />
-                                      </div>
-                                    )}
+              <Web3Provider>
+                <Web3Consumer>
+                  {({ state: { account, web3 } }) => (
+                    <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                      <UserProvider account={account} web3={web3}>
+                        <UserConsumer>
+                          {({ state: { hasError } }) => (
+                            <Fragment>
+                              <NotificationModalProvider>
+                                {!hasError && (
+                                  <Fragment>
+                                    <Header />
+                                    <Routes />
+                                  </Fragment>
+                                )}
 
-                                    {hasError && (
-                                      <div className="text-center">
-                                        <h2>Oops, something went wrong...</h2>
-                                        <p>
-                                          The Giveth dapp could not load for some reason. Please try
-                                          again...
-                                        </p>
-                                      </div>
-                                    )}
+                                {hasError && (
+                                  <div className="text-center">
+                                    <h2>Oops, something went wrong...</h2>
+                                    <p>
+                                      The Giveth dapp could not load for some reason. Please try
+                                      again...
+                                    </p>
+                                  </div>
+                                )}
 
-                                    <ToastContainer
-                                      position="top-right"
-                                      type="default"
-                                      autoClose={5000}
-                                      hideProgressBar
-                                      newestOnTop={false}
-                                      closeOnClick
-                                      pauseOnHover
-                                    />
-                                  </NotificationModalProvider>
-                                </div>
-                              )}
-                            </UserConsumer>
-                          </UserProvider>
-                        </ConversionRateProvider>
-                      </div>
-                    )}
-                  </Web3Consumer>
-                </Web3Provider>
-              </div>
+                                <ToastContainer
+                                  position="top-right"
+                                  type="default"
+                                  autoClose={5000}
+                                  hideProgressBar
+                                  newestOnTop={false}
+                                  closeOnClick
+                                  pauseOnHover
+                                />
+                              </NotificationModalProvider>
+                            </Fragment>
+                          )}
+                        </UserConsumer>
+                      </UserProvider>
+                    </ConversionRateProvider>
+                  )}
+                </Web3Consumer>
+              </Web3Provider>
             )}
           </WhiteListConsumer>
         </WhiteListProvider>

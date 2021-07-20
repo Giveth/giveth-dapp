@@ -9,7 +9,6 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DonateButtonModal from './DonateButtonModal';
 
 const modalStyles = {
-  minWidth: '60%',
   maxWidth: '800px',
 };
 
@@ -56,7 +55,7 @@ const DonateButton = props => {
         footer={null}
         centered
         destroyOnClose
-        className="pb-0"
+        className="pb-0 donateModal"
         style={modalStyles}
       >
         <DonateButtonModal {...props} setModalVisible={setModalVisible} />

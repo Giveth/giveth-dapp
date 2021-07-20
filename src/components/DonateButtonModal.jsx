@@ -14,7 +14,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Slider, Form, Select, Input, InputNumber, Checkbox } from 'antd';
+import { Form, Select, Input, InputNumber, Checkbox, Button } from 'antd';
 import { GivethBridge } from 'giveth-bridge';
 
 import getTokens from '../lib/blockchain/getTokens';
@@ -37,11 +37,25 @@ import Community from '../models/Community';
 import { convertEthHelper, ZERO_ADDRESS } from '../lib/helpers';
 import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
-import AmountSliderMarks from './AmountSliderMarks';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
+
+const deepPurple = '#2C0B3F';
+const dark = '#6B7087';
+const latoFont = "'Lato', sans-serif";
+const modalNoteStyle = { fontFamily: latoFont, fontSize: '18px', color: dark };
+const modalLabelStyle = {
+  color: deepPurple,
+  fontSize: '16px',
+  marginBottom: '10px',
+};
+const modalExtraNoteStyle = {
+  fontFamily: latoFont,
+  color: dark,
+  marginTop: '6px',
+};
 
 const INFINITE_ALLOWANCE = new BigNumber(2)
   .pow(256)
@@ -121,10 +135,6 @@ const DonateButtonModal = props => {
   const givethBridge = useRef();
   const stopPolling = useRef();
   const allowanceApprovalType = useRef();
-
-  useEffect(() => {
-    setSelectedToken(model.acceptsSingleToken ? modelToken : defaultToken);
-  }, [model, defaultToken]);
 
   const clearUp = () => {
     if (stopPolling.current) stopPolling.current();
@@ -258,14 +268,7 @@ const DonateButtonModal = props => {
       }),
       POLL_DELAY_TOKENS,
     )();
-  }, [
-    NativeTokenBalance,
-    amount,
-    currentUser.address,
-    getMaxAmount,
-    isCorrectNetwork,
-    selectedToken,
-  ]);
+  }, [NativeTokenBalance, amount, currentUser.address, isCorrectNetwork, selectedToken]);
 
   useEffect(() => {
     updateAllowanceStatus();
@@ -278,23 +281,24 @@ const DonateButtonModal = props => {
     } else {
       clearUp();
     }
-  }, [selectedToken, isHomeNetwork, currentUser]);
+  }, [selectedToken, isHomeNetwork, currentUser.address]);
 
-  const canDonateToProject = useCallback(() => {
+  const canDonateToProject = () => {
     const { acceptsSingleToken, token } = model;
     return (
       !acceptsSingleToken ||
       tokenWhitelist.find(
-        // eslint-disable-next-line react/prop-types
         t => t.foreignAddress.toLocaleLowerCase() === token.foreignAddress.toLocaleLowerCase(),
       )
     );
-  }, [model, tokenWhitelist]);
+  };
 
   useEffect(() => {
     givethBridge.current = new GivethBridge(web3, config.givethBridgeAddress);
 
     updateAllowance();
+
+    setSelectedToken(model.acceptsSingleToken ? modelToken : defaultToken);
 
     if (!canDonateToProject()) {
       React.swal({
@@ -319,7 +323,7 @@ const DonateButtonModal = props => {
     }
 
     return clearUp;
-  }, [canDonateToProject, model]);
+  }, []);
 
   /**
    *
@@ -690,10 +694,6 @@ const DonateButtonModal = props => {
   const balance = symbol === config.nativeTokenName ? NativeTokenBalance : selectedToken.balance;
   const maxAmount = getMaxAmount();
   const zeroBalance = balance && balance.eq(0);
-  let sliderMarks = {};
-  if (maxAmount && decimals) {
-    sliderMarks = AmountSliderMarks(maxAmount, decimals);
-  }
 
   const submitDefault = () => {
     allowanceApprovalType.current = AllowanceApprovalType.Default;
@@ -709,20 +709,6 @@ const DonateButtonModal = props => {
     }).then(result => {
       if (result) {
         allowanceApprovalType.current = AllowanceApprovalType.Infinite;
-        form.current.submit();
-      }
-    });
-  };
-
-  const submitClearAllowance = () => {
-    React.swal({
-      title: `Take away ${symbol} Allowance`,
-      text: `Do you want to set DApp allowance of ${symbol} token to zero?`,
-      icon: 'info',
-      buttons: ['Cancel', 'Yes'],
-    }).then(result => {
-      if (result) {
-        allowanceApprovalType.current = AllowanceApprovalType.Clear;
         form.current.submit();
       }
     });
@@ -748,8 +734,9 @@ const DonateButtonModal = props => {
             behavior: 'smooth',
           }}
         >
-          <h3>
-            Donate to support <em>{model.title}</em>
+          <h3 style={{ color: deepPurple }}>
+            <span className="font-weight-bold">Donate to support </span>
+            <span>{model.title}</span>
           </h3>
 
           {!validProvider && (
@@ -774,7 +761,7 @@ const DonateButtonModal = props => {
           )}
 
           {isCorrectNetwork && currentUser.address && (
-            <p>
+            <div className="my-3">
               {model.type.toLowerCase() === Community.type && (
                 <span>
                   You&apos;re pledging: as long as the Community owner does not lock your money you
@@ -782,27 +769,27 @@ const DonateButtonModal = props => {
                 </span>
               )}
               {model.type.toLowerCase() !== Community.type && (
-                <span>
+                <span style={modalNoteStyle}>
                   You&apos;re committing your funds to this {capitalizeAdminType(model.type)}. If
-                  you have added your contact information to your <Link to="/profile">Profile</Link>{' '}
+                  you have added your contact information in your <Link to="/profile">Profile</Link>{' '}
                   you will be notified about how your funds are spent.
                 </span>
               )}
-            </p>
+            </div>
           )}
 
-          {validProvider && isCorrectNetwork && currentUser.address && (
-            <div>
-              {!model.acceptsSingleToken && (
-                <Fragment>
-                  <div className="label mb-3">Make your donation in:</div>
+          <div style={{ maxWidth: '540px' }}>
+            {validProvider && isCorrectNetwork && currentUser.address && !model.acceptsSingleToken && (
+              <div className="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                <div className="mt-3">
+                  <div style={modalLabelStyle}>Make your donation in</div>
                   <Select
                     name="token"
                     id="token-select"
                     value={selectedToken.address}
                     onChange={setToken}
+                    disabled={isSaving}
                     style={{ minWidth: '200px' }}
-                    className="mr-3 mb-3"
                   >
                     {tokenWhitelistOptions.map(item => (
                       <Select.Option value={item.value} key={item.value}>
@@ -810,145 +797,129 @@ const DonateButtonModal = props => {
                       </Select.Option>
                     ))}
                   </Select>
-                </Fragment>
-              )}
+                  <div style={modalExtraNoteStyle}>Select the token you want to donate</div>
+                </div>
 
-              {/* TODO: remove this b/c the wallet provider will contain this info */}
-              {zeroBalance ? (
-                <div className="mb-4 mt-2 label">You don&apos;t have any {symbol} token!</div>
-              ) : (
-                <span>
-                  {config.homeNetworkName} {symbol} balance:&nbsp;
-                  <em>
-                    {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
-                  </em>
-                </span>
-              )}
-            </div>
-          )}
-
-          {isCorrectNetwork && validProvider && currentUser.address && (
-            <Fragment>
-              {!zeroBalance ? (
-                <Fragment>
-                  <span className="label">How much {symbol} do you want to donate?</span>
-
-                  {validProvider && maxAmount.toNumber() !== 0 && balance.gt(0) && (
-                    <Fragment>
-                      <div className="form-group" id="amount_slider">
-                        <Slider
-                          min={0}
-                          max={maxAmount.toNumber()}
-                          onChange={num => setAmount(num.toString())}
-                          value={amount}
-                          step={decimals ? 1 / 10 ** decimals : 1}
-                          marks={sliderMarks}
-                        />
-                      </div>
-                      <div className="pt-2 pb-4">
-                        <InputNumber
-                          min={0}
-                          max={maxAmount
-                            .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
-                            .toNumber()}
-                          id="amount-input"
-                          value={amount}
-                          onChange={setAmount}
-                          autoFocus
-                          style={{ minWidth: '200px' }}
-                          className="rounded"
-                          size="large"
-                          precision={decimals}
-                        />
-                      </div>
-                    </Fragment>
-                  )}
-
-                  {showCustomAddress && (
-                    <div className="alert alert-success py-1 mb-1">
-                      <i className="fa fa-exclamation-triangle" />
-                      The donation will be donated on behalf of address:
-                    </div>
-                  )}
-
-                  <div className="mb-1">
-                    <Checkbox
-                      checked={showCustomAddress}
-                      onChange={() => setShowCustomAddress(!showCustomAddress)}
-                    >
-                      <div className="label">I want to donate on behalf of another address</div>
-                    </Checkbox>
-                  </div>
-                  {showCustomAddress && (
-                    <Form.Item
-                      className="mb-0"
-                      name="customAddress"
-                      initialValue={currentUser.address}
-                      rules={[
-                        {
-                          required: true,
-                          type: 'string',
-                        },
-                        {
-                          validator: async (_, val) => {
-                            try {
-                              utils.toChecksumAddress(val);
-                              setFormIsValid(true);
-                              return Promise.resolve();
-                            } catch (err) {
-                              setFormIsValid(false);
-                              // eslint-disable-next-line prefer-promise-reject-errors
-                              return Promise.reject('Invalid address!');
-                            }
-                          },
-                        },
-                      ]}
-                    >
-                      <Input
-                        className="rounded"
-                        name="customAddress"
-                        id="title-input"
-                        value={customAddress}
-                        onChange={input => setCustomAddress(input.target.value)}
-                      />
-                    </Form.Item>
-                  )}
-
-                  <div className="form-group">
-                    <br />
-                    <Input.TextArea
-                      name="comment"
-                      id="comment-input"
+                {validProvider && maxAmount.toNumber() !== 0 && !zeroBalance && (
+                  <div className="mt-3">
+                    <div style={modalLabelStyle}>Amount to donate</div>
+                    <InputNumber
+                      min={0}
+                      max={maxAmount
+                        .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
+                        .toNumber()}
+                      id="amount-input"
+                      value={amount}
+                      onChange={setAmount}
+                      autoFocus
+                      style={{ minWidth: '200px' }}
                       className="rounded"
-                      placeholder="Comment"
-                      onChange={e => setDonationComment(e.target.value)}
+                      size="large"
+                      precision={decimals}
+                      disabled={isSaving}
                     />
+                    {!isSaving && (
+                      <Button
+                        style={{ marginLeft: '-60px' }}
+                        type="link"
+                        onClick={() => setAmount(maxAmount.toNumber())}
+                      >
+                        MAX
+                      </Button>
+                    )}
+                    {/* TODO: remove this b/c the wallet provider will contain this info */}
+                    <div style={modalExtraNoteStyle}>
+                      Wallet balance:&nbsp;
+                      {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
+                      {` ${symbol}`}
+                    </div>
                   </div>
-                </Fragment>
-              ) : null}
+                )}
+                {zeroBalance && (
+                  <div className="font-weight-bold">You don&apos;t have any {symbol} token!</div>
+                )}
+              </div>
+            )}
 
-              <div style={{ marginLeft: '-4px' }}>
-                {maxAmount.toNumber() !== 0 && (
+            {isCorrectNetwork && validProvider && currentUser.address && (
+              <Fragment>
+                {!zeroBalance && (
                   <Fragment>
-                    <LoaderButton
-                      className="btn btn-success m-1"
-                      formNoValidate
-                      disabled={
-                        isSaving ||
-                        (showCustomAddress && !formIsValid) ||
-                        isZeroAmount ||
-                        !isCorrectNetwork
-                      }
-                      isLoading={false}
-                      onClick={submitDefault}
-                    >
-                      {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
-                    </LoaderButton>
+                    {showCustomAddress && (
+                      <div className="alert alert-success py-1 mb-1">
+                        <i className="fa fa-exclamation-triangle" />
+                        The donation will be donated on behalf of address:
+                      </div>
+                    )}
 
-                    {allowanceStatus === AllowanceStatus.Needed && (
+                    <div className="mb-1">
+                      <Checkbox
+                        checked={showCustomAddress}
+                        onChange={() => setShowCustomAddress(!showCustomAddress)}
+                        disabled={isSaving}
+                      >
+                        <div style={modalLabelStyle}>
+                          I want to donate on behalf of another address
+                        </div>
+                      </Checkbox>
+                    </div>
+                    {showCustomAddress && (
+                      <Form.Item
+                        className="mb-0"
+                        name="customAddress"
+                        initialValue={currentUser.address}
+                        rules={[
+                          {
+                            required: true,
+                            type: 'string',
+                          },
+                          {
+                            validator: async (_, val) => {
+                              try {
+                                utils.toChecksumAddress(val);
+                                setFormIsValid(true);
+                                return Promise.resolve();
+                              } catch (err) {
+                                setFormIsValid(false);
+                                // eslint-disable-next-line prefer-promise-reject-errors
+                                return Promise.reject('Invalid address!');
+                              }
+                            },
+                          },
+                        ]}
+                      >
+                        <Input
+                          className="rounded"
+                          name="customAddress"
+                          id="title-input"
+                          value={customAddress}
+                          onChange={input => setCustomAddress(input.target.value)}
+                          disabled={isSaving}
+                        />
+                      </Form.Item>
+                    )}
+
+                    <div className="form-group">
+                      <br />
+                      <Input.TextArea
+                        name="comment"
+                        id="comment-input"
+                        className="rounded"
+                        placeholder="Comment"
+                        style={{ maxWidth: '550px' }}
+                        rows={4}
+                        onChange={e => setDonationComment(e.target.value)}
+                        disabled={isSaving}
+                      />
+                    </div>
+                  </Fragment>
+                )}
+
+                <div className="d-flex">
+                  {maxAmount.toNumber() !== 0 && (
+                    <div className="w-100 mr-3">
                       <LoaderButton
-                        type="button"
-                        className="btn btn-primary m-1"
+                        className="ant-btn-donate ant-btn ant-btn-lg rounded ant-btn-block"
                         formNoValidate
                         disabled={
                           isSaving ||
@@ -956,42 +927,34 @@ const DonateButtonModal = props => {
                           isZeroAmount ||
                           !isCorrectNetwork
                         }
-                        isLoading={false}
-                        onClick={submitInfiniteAllowance}
+                        isLoading={isSaving}
+                        onClick={
+                          allowanceStatus !== AllowanceStatus.Needed
+                            ? submitDefault
+                            : submitInfiniteAllowance
+                        }
                         data-tip="React-tooltip"
                       >
-                        <i className="fa fa-unlock-alt" /> Infinite Unlock & Donate
+                        {allowanceStatus !== AllowanceStatus.Needed ? 'Donate' : 'Unlock & Donate'}
                       </LoaderButton>
-                    )}
 
-                    <ReactTooltip type="dark" effect="solid">
-                      <p style={{ maxWidth: 250 }}>
-                        Infinite unlock will allow the Giveth Bridge smart contract to interact
-                        freely with the {selectedToken.name} in your wallet, this can be changed
-                        later by clicking Donate and choosing to Revoke unlike your bank irl..
-                        hehehehe
-                      </p>
-                    </ReactTooltip>
-
-                    {allowanceStatus === AllowanceStatus.Enough && (
-                      <LoaderButton
-                        className="btn btn-danger m-1"
-                        formNoValidate
-                        disabled={isSaving || !isCorrectNetwork}
-                        isLoading={false}
-                        onClick={submitClearAllowance}
-                      >
-                        <i className="fa fa-lock" /> Remove Approval
-                      </LoaderButton>
-                    )}
-                  </Fragment>
-                )}
-                <span className="m-1">
-                  <ExchangeButton />
-                </span>
-              </div>
-            </Fragment>
-          )}
+                      {allowanceStatus === AllowanceStatus.Needed && (
+                        <ReactTooltip type="dark" effect="solid">
+                          <p style={{ maxWidth: 250 }}>
+                            This will allow the Giveth Bridge smart contract to interact freely with
+                            the {selectedToken.name} in your wallet.
+                          </p>
+                        </ReactTooltip>
+                      )}
+                    </div>
+                  )}
+                  <span className="w-100">
+                    <ExchangeButton />
+                  </span>
+                </div>
+              </Fragment>
+            )}
+          </div>
         </Form>
       )}
     </Fragment>
