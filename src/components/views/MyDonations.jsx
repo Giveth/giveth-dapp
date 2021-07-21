@@ -17,6 +17,7 @@ import ErrorPopup from '../ErrorPopup';
 import { authenticateUser, checkBalance } from '../../lib/middleware';
 import DonationBlockchainService from '../../services/DonationBlockchainService';
 import confirmationDialog from '../../lib/confirmationDialog';
+import Web3ConnectWarning from '../Web3ConnectWarning';
 
 const etherScanUrl = config.etherscan;
 const itemsPerPage = 20;
@@ -261,6 +262,7 @@ const MyDonations = () => {
 
   return (
     <Fragment>
+      <Web3ConnectWarning />
       <Helmet>
         <title>My Donations</title>
       </Helmet>

@@ -14,6 +14,7 @@ import AuthenticationWarning from '../AuthenticationWarning';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import ErrorHandler from '../../lib/ErrorHandler';
+import Web3ConnectWarning from '../Web3ConnectWarning';
 
 /**
  * The my communities view
@@ -99,6 +100,7 @@ const MyCommunities = () => {
 
   return (
     <Fragment>
+      <Web3ConnectWarning />
       <Helmet>
         <title>My Communities</title>
       </Helmet>
