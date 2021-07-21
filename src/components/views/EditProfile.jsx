@@ -310,9 +310,8 @@ class EditProfile extends Component {
                     </div>
 
                     <LoaderButton
-                      className="btn btn-success"
-                      formNoValidate
-                      type="submit"
+                      className="ant-btn-donate ant-btn-lg"
+                      onClick={this.submit}
                       network="Foreign"
                       disabled={
                         !isValid ||

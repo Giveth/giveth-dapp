@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Button } from 'antd';
 
-import Loader from './Loader';
 import { Consumer as Web3Consumer } from '../contextProviders/Web3Provider';
 import config from '../configuration';
 
@@ -11,51 +11,41 @@ import config from '../configuration';
  * Renders a button with an optional loader
  *
  *  @param className      ClassNames
- *  @param formNoValidate Wether to validate formsy
- *  @param disable        Disables button
+ *  @param formNoValidate Whether to validate formsy
+ *  @param disabled       Disables button
  *  @param isLoading      State of button. If true, disables and renders spinner
  *  @param loadingText    Text to show when state is loading
  *  @param children       Elements / text showing when state is not loading
  *  @param network        The network this button acts on. Can be one of ['Home', 'Foreign', undefined].
  *                        If network !=== undefined, the button will be disabled if the incorrect web3 network
- *                        is choosen
+ *                        is chosen
  */
 const LoaderButton = ({
   className,
-  formNoValidate,
-  type,
   onClick,
   disabled,
   isLoading,
   loadingText,
   children,
   network,
-  ...props
 }) => (
   <Web3Consumer>
     {({ state: { isHomeNetwork, isForeignNetwork } }) => {
       const incorrectNetwork =
         network &&
         ((network === 'Home' && isForeignNetwork) || (network === 'Foreign' && isHomeNetwork));
+
+      const buttonText = isLoading && loadingText ? loadingText : children;
       return (
         <span>
-          <button
+          <Button
             className={className}
-            formNoValidate={formNoValidate}
-            type={type}
             onClick={onClick}
             disabled={disabled || incorrectNetwork}
-            {...props}
+            loading={isLoading}
           >
-            {isLoading && (
-              <span>
-                <Loader className="small btn-loader" />
-                {loadingText}
-              </span>
-            )}
-
-            <span>{children}</span>
-          </button>
+            <span>{buttonText}</span>
+          </Button>
           {incorrectNetwork && (
             <small
               className="form-text loader-button-network-help pull-right"
@@ -76,24 +66,20 @@ const LoaderButton = ({
 
 LoaderButton.propTypes = {
   className: PropTypes.string,
-  formNoValidate: PropTypes.bool,
   disabled: PropTypes.bool,
   isLoading: PropTypes.bool,
   loadingText: PropTypes.string,
   children: PropTypes.node,
-  type: PropTypes.string,
   onClick: PropTypes.func,
   network: PropTypes.oneOf(['Home', 'Foreign', undefined]),
 };
 
 LoaderButton.defaultProps = {
   className: '',
-  formNoValidate: false,
   disabled: false,
   isLoading: true,
   loadingText: '',
   children: null,
-  type: 'button',
   onClick: undefined,
   network: undefined,
 };
