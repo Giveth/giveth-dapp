@@ -138,6 +138,7 @@ TraceDescription.defaultProps = {
 };
 
 const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
+  const _picture = picture.startsWith('https://ipfs.giveth.io') ? picture.slice(22) : picture;
   const uploadProps = {
     multiple: false,
     accept: 'image/png, image/jpeg',
@@ -181,9 +182,9 @@ const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
                     aspect ratio."
     >
       <Fragment>
-        {picture ? (
+        {_picture ? (
           <div className="picture-upload-preview">
-            <img src={`${config.ipfsGateway}${picture.slice(6)}`} alt={traceTitle} />
+            <img src={`${config.ipfsGateway}${_picture.slice(6)}`} alt={traceTitle} />
             {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
           </div>
         ) : (

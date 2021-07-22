@@ -2,11 +2,9 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
+import { Form, Input, Select, Row, Col } from 'antd';
 
-import { Form, Input } from 'formsy-react-components';
-import SelectFormsy from '../SelectFormsy';
 import Loader from '../Loader';
-import FormsyImageUploader from '../FormsyImageUploader';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
@@ -17,6 +15,7 @@ import { Consumer as UserConsumer } from '../../contextProviders/UserProvider';
 import { Consumer as Web3Consumer } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import { TracePicture } from '../EditTraceCommons';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -30,20 +29,15 @@ class EditProfile extends Component {
     this.state = {
       isLoading: true,
       isSaving: false,
-
-      // user model
       user: props.currentUser ? new User(props.currentUser) : new User(),
+      oldUserData: props.currentUser ? { ...props.currentUser } : {},
       isPristine: true,
-
       isValid: true,
     };
 
     this.submit = this.submit.bind(this);
-    this.setImage = this.setImage.bind(this);
-    this.togglePristine = this.togglePristine.bind(this);
-    this.enableFormSubmit = this.enableFormSubmit.bind(this);
-    this.disableFormSubmit = this.disableFormSubmit.bind(this);
     this.checkNetwork = this.checkNetwork.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
@@ -66,9 +60,13 @@ class EditProfile extends Component {
     this.mounted = false;
   }
 
-  setImage(image) {
+  handleChange(event) {
+    const { name, value } = event.target;
     const { user } = this.state;
-    user.newAvatar = image;
+    user[name] = value;
+    if (name === 'avatar') {
+      user.newAvatar = value;
+    }
     this.setState({ user, isPristine: false });
   }
 
@@ -85,7 +83,13 @@ class EditProfile extends Component {
         authenticateUser(currentUser, true, web3).then(authenticated => {
           if (!authenticated) return;
           checkBalance(balance)
-            .then(() => this.setState({ isLoading: false }))
+            .then(() => {
+              this.setState({
+                isLoading: false,
+                user: currentUser,
+                oldUserData: { ...currentUser },
+              });
+            })
             .catch(err => {
               if (err === 'noBalance') {
                 ErrorPopup('Something went wrong.', err);
@@ -102,17 +106,17 @@ class EditProfile extends Component {
   }
 
   submit() {
-    const { user } = this.state;
-    const { currentUser, web3 } = this.props;
+    const { web3 } = this.props;
+    const { user, oldUserData } = this.state;
 
     if (!this.state.user.name) return;
-    const pushToNetwork =
-      user.name !== currentUser.name ||
-      !!user.newAvatar ||
-      user.linkedin !== currentUser.linkedin ||
-      user.email !== currentUser.email;
 
-    // Save user profile
+    const pushToNetwork =
+      user.name !== oldUserData._name ||
+      user.avatar !== oldUserData._avatar ||
+      user.linkedin !== oldUserData._linkedin ||
+      user.email !== oldUserData._email;
+
     const showToast = (msg, url, isSuccess = false) => {
       const toast = url ? (
         <p>
@@ -174,24 +178,6 @@ class EditProfile extends Component {
     );
   }
 
-  togglePristine(currentValues, isChanged) {
-    this.setState({
-      isPristine: !isChanged,
-    });
-  }
-
-  enableFormSubmit() {
-    this.setState({
-      isValid: true,
-    });
-  }
-
-  disableFormSubmit() {
-    this.setState({
-      isValid: false,
-    });
-  }
-
   render() {
     const { isLoading, isSaving, user, isPristine, isValid } = this.state;
     const { currentUser } = this.props;
@@ -223,95 +209,135 @@ class EditProfile extends Component {
                   </div>
 
                   <Form
-                    onSubmit={this.submit}
-                    mapping={inputs => {
-                      user.name = inputs.name;
-                      user.email = inputs.email;
-                      user.linkedin = inputs.linkedin;
-                      user.currency = inputs.currency;
+                    requiredMark
+                    onFinish={this.submit}
+                    scrollToFirstError={{
+                      block: 'center',
+                      behavior: 'smooth',
                     }}
-                    onValid={this.enableFormSubmit}
-                    onInvalid={this.disableFormSubmit}
-                    onChange={this.togglePristine}
-                    layout="vertical"
+                    initialValues={{
+                      name: user.name,
+                      email: user.email,
+                      currency: user.currency,
+                      linkedin: user.linkedin,
+                      avatar: user.avatar,
+                    }}
                   >
-                    <div className="form-group">
-                      <Input
-                        name="name"
-                        autoComplete="name"
-                        id="name-input"
-                        label="Your name"
-                        type="text"
-                        value={user.name}
-                        placeholder="John Doe."
-                        validations="minLength:3"
-                        validationErrors={{
-                          minLength: 'Please enter your name',
-                        }}
-                        required
-                        autoFocus
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <Input
-                        name="email"
-                        autoComplete="email"
-                        label="Email"
-                        value={user.email}
-                        placeholder="email@example.com"
-                        validations="isEmail"
-                        help="Please enter your email address."
-                        validationErrors={{
-                          isEmail: "Oops, that's not a valid email address.",
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <WhiteListConsumer>
-                        {({ state: { nativeCurrencyWhitelist } }) => (
-                          <SelectFormsy
-                            name="currency"
-                            id="currency-select"
-                            label="Native Currency"
-                            helpText="Please enter your native currency."
-                            value={user.currency}
-                            options={nativeCurrencyWhitelist.map(f => {
-                              return {
-                                title: f.symbol,
-                                value: f.symbol,
-                              };
-                            })}
+                    <Row>
+                      <Col className="pr-sm-2" xs={24} sm={12}>
+                        <Form.Item
+                          name="name"
+                          id="name-input"
+                          label="Your name"
+                          className="custom-form-item"
+                          rules={[
+                            {
+                              required: true,
+                              type: 'string',
+                              min: 3,
+                              message: 'Please enter your name',
+                            },
+                          ]}
+                        >
+                          <Input
+                            value={user.name}
+                            name="name"
+                            placeholder="e.g. John Doe."
+                            onChange={this.handleChange}
+                            autoFocus
                           />
-                        )}
-                      </WhiteListConsumer>
-                    </div>
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="email"
+                          label="Email"
+                          className="custom-form-item"
+                          extra="Please enter your email address."
+                          id="email-input"
+                          rules={[
+                            {
+                              type: 'email',
+                              message: "Oops, that's not a valid email address.",
+                            },
+                          ]}
+                        >
+                          <Input
+                            value={user.email}
+                            name="email"
+                            placeholder="e.g. email@example.com"
+                            onChange={this.handleChange}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col className="pr-sm-2" xs={24} sm={12}>
+                        <WhiteListConsumer>
+                          {({ state: { nativeCurrencyWhitelist } }) => (
+                            <Form.Item
+                              name="currency"
+                              label="Native Currency"
+                              className="custom-form-item"
+                              extra="Please enter your native currency."
+                            >
+                              <Select
+                                name="currency"
+                                value={user.currency}
+                                onSelect={e =>
+                                  this.handleChange({
+                                    target: { value: e, name: 'currency' },
+                                  })
+                                }
+                                style={{ minWidth: '200px' }}
+                              >
+                                {nativeCurrencyWhitelist.map(item => (
+                                  <Select.Option value={item.symbol} key={item.symbol}>
+                                    {item.symbol}
+                                  </Select.Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          )}
+                        </WhiteListConsumer>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Form.Item
+                          name="linkedin"
+                          extra="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
+                          label="Your Profile"
+                          className="custom-form-item"
+                          id="linkedin-input"
+                          rules={[
+                            {
+                              type: 'url',
+                              message: 'Please enter a valid url',
+                            },
+                          ]}
+                        >
+                          <Input
+                            value={user.linkedin}
+                            name="linkedin"
+                            placeholder="Your profile url"
+                            onChange={this.handleChange}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
 
-                    <FormsyImageUploader
-                      setImage={this.setImage}
-                      avatar={user.avatar}
-                      aspectRatio={1}
+                    <TracePicture
+                      setPicture={address =>
+                        this.handleChange({
+                          target: {
+                            name: 'avatar',
+                            value: address,
+                          },
+                        })
+                      }
+                      traceTitle={user.name}
+                      picture={user.avatar}
                     />
-
-                    <div className="form-group">
-                      <Input
-                        name="linkedin"
-                        label="Your Profile"
-                        type="text"
-                        value={user.linkedin}
-                        placeholder="Your profile url"
-                        help="Provide a link to some more info about you, this will help to build trust. You could add your linkedin profile, Twitter account or a relevant website."
-                        validations="isUrl"
-                        validationErrors={{
-                          isUrl: 'Please enter a valid url',
-                        }}
-                      />
-                    </div>
 
                     <LoaderButton
                       className="btn btn-success"
-                      formNoValidate
                       type="submit"
                       network="Foreign"
                       disabled={
