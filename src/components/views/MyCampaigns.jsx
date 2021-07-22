@@ -16,6 +16,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
 import ErrorHandler from '../../lib/ErrorHandler';
+import Web3ConnectWarning from '../Web3ConnectWarning';
 
 /**
  * The my campaings view
@@ -95,6 +96,7 @@ function MyCampaigns() {
 
   return (
     <Fragment>
+      <Web3ConnectWarning />
       <Helmet>
         <title>My Campaigns</title>
       </Helmet>
