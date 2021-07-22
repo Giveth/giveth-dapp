@@ -31,8 +31,8 @@ import EditBounty from '../components/views/EditBounty';
 import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
 import EditMilestone from '../components/views/EditMilestone';
-import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import EditCampaign from '../components/views/EditCampaign';
+import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 const Routes = () => {
   const {
@@ -109,33 +109,7 @@ const Routes = () => {
         path="/campaign/:slug/new/expense"
         render={props => <CreateExpense {...props} />}
       />
-      <Route
-        exact
-        path="/campaigns/:id/traces/new"
-        render={props => (
-          <EditTraceOld
-            isNew
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/campaigns/:id/traces/propose"
-        render={props => (
-          <EditTraceOld
-            isNew
-            isProposed
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            balance={balance}
-            {...props}
-          />
-        )}
-      />
+
       <Route
         exact
         path={[
@@ -196,17 +170,7 @@ const Routes = () => {
       <Route exact path="/my-traces" render={() => <MyTraces />} />
       <Route exact path="/my-milestones" render={() => <Redirect to="/my-traces/" />} />
 
-      <Route
-        exact
-        path="/profile"
-        render={() => (
-          <EditProfile
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-          />
-        )}
-      />
+      <Route exact path="/profile" render={() => <EditProfile />} />
       <Route exact path="/profile/:userAddress" render={props => <Profile {...props} />} />
       <Route exact path="/" render={() => <Explore />} />
       <Route exact path="/traces" render={() => <TracesExplore />} />
