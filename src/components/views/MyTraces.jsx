@@ -24,6 +24,7 @@ import config from '../../configuration';
 import TraceService from '../../services/TraceService';
 import Trace from '../../models/Trace';
 import ErrorHandler from '../../lib/ErrorHandler';
+import Web3ConnectWarning from '../Web3ConnectWarning';
 
 const reviewDue = updatedAt =>
   moment()
@@ -130,6 +131,7 @@ const MyTraces = () => {
 
   return (
     <Fragment>
+      <Web3ConnectWarning />
       <Helmet>
         <title>My Traces</title>
       </Helmet>
