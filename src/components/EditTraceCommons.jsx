@@ -137,7 +137,7 @@ TraceDescription.defaultProps = {
   initialValue: '',
 };
 
-const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
+const TracePicture = ({ picture, setPicture, traceTitle, disabled, aspectRatio }) => {
   const _picture = picture.startsWith('https://ipfs.giveth.io') ? picture.slice(22) : picture;
   const uploadProps = {
     multiple: false,
@@ -178,8 +178,7 @@ const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
       name="picture"
       label="Add a picture (optional)"
       className="custom-form-item"
-      extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                    aspect ratio."
+      extra="A picture says more than a thousand words. Please select a png or jpg file."
     >
       <Fragment>
         {_picture ? (
@@ -188,7 +187,7 @@ const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
             {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
           </div>
         ) : (
-          <ImgCrop aspect={16 / 9}>
+          <ImgCrop aspect={aspectRatio}>
             <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
               <p className="ant-upload-text">
                 Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
@@ -206,10 +205,12 @@ TracePicture.propTypes = {
   traceTitle: PropTypes.string.isRequired,
   setPicture: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
+  aspectRatio: PropTypes.number,
 };
 
 TracePicture.defaultProps = {
   disabled: false,
+  aspectRatio: 16 / 9,
 };
 
 const TraceDonateToCommunity = ({ onChange, value, disabled }) => (

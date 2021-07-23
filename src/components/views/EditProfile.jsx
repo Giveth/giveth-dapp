@@ -302,6 +302,7 @@ const EditProfile = () => {
                     }
                     traceTitle={user.name || ''}
                     picture={user.avatar || ''}
+                    aspectRatio={1}
                   />
 
                   <LoaderButton
