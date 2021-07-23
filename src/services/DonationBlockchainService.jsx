@@ -16,7 +16,10 @@ import config from '../configuration';
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
-import { getConversionRateBetweenTwoSymbol } from './ConversionRateService';
+import {
+  convertUsdValueToEthValue,
+  getConversionRateBetweenTwoSymbol,
+} from './ConversionRateService';
 
 const etherScanUrl = config.etherscan;
 
@@ -423,6 +426,7 @@ class DonationBlockchainService {
     const rate = result.rates.USD;
     const amount = Number(newDonation.amount) / 10 ** 18;
     const usdValue = amount * rate;
+    const valueEth = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
     const analyticsData = {
       category: 'Donation',
       txUrl: txLink,
@@ -430,31 +434,39 @@ class DonationBlockchainService {
       currency,
       amount,
       usdValue,
+      valueEth,
       transactionId: newDonation.txHash,
       entityTitle: delegateTo.title,
       entityId: delegateTo.id,
       entitySlug: delegateTo.slug,
-      entityType: newDonation.ownerType,
-      entityOwnerId: delegateTo.ownerAddress,
+
+      // it;s the only way we can sure the entityType what is it
+      entityType: delegateTo.formType ? 'trace' : 'campaign',
+      entityOwnerAddress: delegateTo.ownerAddress,
       traceType: delegateTo.formType,
     };
 
     if (newDonation.status === Donation.TO_APPROVE) {
+      console.log('delegate from community to campaign', donation);
       // it's delegated from community
       sendAnalyticsTracking('Delegated', {
         ...analyticsData,
         action: 'delegation proposed',
         parentEntityTitle: donation.delegateEntity.title,
-        parentEntityId: donation.delegateEntity.delegateTypeId,
+        parentEntityId: donation.delegateEntity._id,
+        parentEntityOwnerId: donation.delegateEntity.ownerAddress,
         parentEntitySlug: donation.delegateEntity.slug,
         parentEntityType: 'community',
       });
     } else {
+      const campaign = await feathersClient.service('campaigns').get(donation.ownerTypeId);
       // delegate from campaign
       sendAnalyticsTracking('Delegated', {
         ...analyticsData,
         action: 'delegated',
-        parentEntityTitle: delegateTo.title,
+        parentEntityOwnerId: campaign.ownerAddress,
+        parentEntitySlug: campaign.slug,
+        parentEntityTitle: campaign.title,
         parentEntityId: donation.ownerTypeId,
         parentEntityType: donation.ownerType,
       });

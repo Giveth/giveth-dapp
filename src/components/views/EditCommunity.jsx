@@ -237,7 +237,7 @@ const EditCommunity = ({ isNew, match }) => {
         }
       };
 
-      const afterCreate = (err, url, id) => {
+      const afterCreate = ({ err, url, txUrl, response }) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
@@ -251,15 +251,15 @@ const EditCommunity = ({ isNew, match }) => {
           );
           notification.info({ description: msg });
           const analyticsData = {
-            slug: community.slug,
+            slug: response.slug,
+            title: community.title,
             userAddress: currentUser.address,
             ownerAddress: community.ownerAddress,
-            title: currentUser.address,
-            communityId: community.id,
-            txUrl: id,
+            communityId: response._id,
+            txUrl,
           };
           if (isNew) {
-            sendAnalyticsTracking('Community Edited', {
+            sendAnalyticsTracking('Community Created', {
               category: 'Community',
               action: 'edited',
               ...analyticsData,

@@ -147,7 +147,7 @@ function EditBounty(props) {
         const analyticsData = {
           traceId: res._id,
           title: ms.title,
-          ownerId: ms.ownerAddress,
+          ownerAddress: ms.ownerAddress,
           traceType: ms.formType,
           parentCampaignId: campaign.id,
           parentCampaignTitle: campaign.title,

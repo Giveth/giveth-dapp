@@ -258,7 +258,10 @@ function EditExpense(props) {
           let notificationDescription;
           const analyticsData = {
             title: ms.title,
-            ownerId: ms.ownerAddress,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
+            ownerAddress: ms.ownerAddress,
             traceType: ms.formType,
             parentCampaignId: campaign.id,
             parentCampaignTitle: campaign.title,

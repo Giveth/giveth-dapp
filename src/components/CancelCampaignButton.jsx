@@ -43,7 +43,7 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
               campaignId: campaign.id,
               title: campaign.title,
               slug: campaign.slug,
-              ownerId: campaign.ownerAddress,
+              ownerAddress: campaign.ownerAddress,
               txUrl: url,
             });
           };
