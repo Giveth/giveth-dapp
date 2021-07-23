@@ -35,6 +35,8 @@ const EditProfile = () => {
   const [mounted, setMounted] = useState(true);
 
   const balanceNum = balance && balance.toNumber();
+  const isBalance = !!balanceNum;
+  const [form] = Form.useForm();
 
   const handleChange = event => {
     const { name, value } = event.target;
@@ -57,6 +59,13 @@ const EditProfile = () => {
               setUser(currentUser);
               setOldUserData({ ...currentUser });
               setIsLoading(false);
+              form.setFieldsValue({
+                name: currentUser.name,
+                email: currentUser.email,
+                currency: currentUser.currency,
+                linkedin: currentUser.linkedin,
+                avatar: currentUser.avatar,
+              });
             })
             .catch(err => {
               if (err === 'noBalance') {
@@ -76,7 +85,7 @@ const EditProfile = () => {
       checkNetwork();
     }
     return setMounted(false);
-  }, [currentUser.address, isForeignNetwork, balanceNum]);
+  }, [currentUser.address, isForeignNetwork, isBalance]);
 
   const submit = () => {
     if (!user.name) return;
@@ -176,16 +185,10 @@ const EditProfile = () => {
                 <Form
                   requiredMark
                   onFinish={submit}
+                  form={form}
                   scrollToFirstError={{
                     block: 'center',
                     behavior: 'smooth',
-                  }}
-                  initialValues={{
-                    name: user.name,
-                    email: user.email,
-                    currency: user.currency,
-                    linkedin: user.linkedin,
-                    avatar: user.avatar,
                   }}
                 >
                   <Row>

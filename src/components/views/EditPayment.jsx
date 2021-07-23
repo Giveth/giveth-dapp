@@ -48,8 +48,6 @@ function EditPayment(props) {
     actions: { minPayoutWarningInCreatEdit },
   } = useContext(NotificationContext);
 
-  const [form] = Form.useForm();
-
   const { traceId } = props.match.params;
 
   const [payment, setPayment] = useState({
@@ -385,7 +383,6 @@ function EditPayment(props) {
                 requiredMark
                 initialValues={initialValues}
                 onFinish={submit}
-                form={form}
                 scrollToFirstError={{
                   block: 'center',
                   behavior: 'smooth',

@@ -47,8 +47,6 @@ function EditMilestone(props) {
     image: '',
   });
 
-  const [form] = Form.useForm();
-
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
@@ -265,7 +263,6 @@ function EditMilestone(props) {
                 className="card-form"
                 requiredMark
                 onFinish={submit}
-                form={form}
                 scrollToFirstError={{
                   block: 'center',
                   behavior: 'smooth',

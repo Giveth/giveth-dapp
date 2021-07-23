@@ -80,8 +80,6 @@ function EditExpense(props) {
     }
   }, [loadingAmount, userIsCampaignOwner]);
 
-  const [form] = Form.useForm();
-
   const itemAmountMap = useRef({});
 
   const updateTotalAmount = () => {
@@ -353,7 +351,6 @@ function EditExpense(props) {
             {campaign && (
               <Form
                 className="card-form"
-                form={form}
                 requiredMark
                 onFinish={submit}
                 initialValues={initialValues}
