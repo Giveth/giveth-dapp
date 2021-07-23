@@ -343,10 +343,18 @@ class CampaignService {
       // nothing to update or failed ipfs upload
       if (campaign.projectId && (campaign.url === profileHash || !profileHash)) {
         // ipfs upload may have failed, but we still want to update feathers
+        let response;
         if (!profileHash) {
-          await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+          response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
         afterSave(null, false);
+        afterSave({
+          err: null,
+          mined: false,
+          txUrl: '',
+          response: response || campaign,
+        });
+
         afterMined(false, undefined, campaign.id);
         return;
       }
@@ -381,9 +389,19 @@ class CampaignService {
       let { id } = campaign;
       await promise.once('transactionHash', async hash => {
         txHash = hash;
-        if (campaign.id) await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
-        else id = (await campaigns.create(campaign.toFeathers(txHash)))._id;
-        afterSave(null, !campaign.projectId, `${etherScanUrl}tx/${txHash}`);
+        let response;
+        if (campaign.id) {
+          response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+        } else {
+          response = await campaigns.create(campaign.toFeathers(txHash));
+          id = response._id;
+        }
+        afterSave({
+          err: null,
+          mined: !campaign.projectId,
+          txUrl: `${etherScanUrl}tx/${txHash}`,
+          response,
+        });
       });
 
       afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);

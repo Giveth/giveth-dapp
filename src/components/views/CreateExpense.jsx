@@ -212,8 +212,11 @@ function CreateExpense(props) {
           let notificationDescription;
           const analyticsData = {
             traceId: res._id,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
             title: ms.title,
-            ownerId: ms.ownerAddress,
+            ownerAddress: ms.ownerAddress,
             traceType: ms.formType,
             parentCampaignId: campaign.id,
             parentCampaignTitle: campaign.title,

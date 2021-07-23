@@ -261,6 +261,8 @@ const ViewCommunity = ({ match }) => {
                       model={{
                         type: Community.type,
                         title: community.title,
+                        slug: community.slug,
+                        ownerAddress: community.ownerAddress,
                         id: community.id,
                         token: { symbol: config.nativeTokenName },
                         adminId: community.delegateId,
@@ -337,6 +339,8 @@ const ViewCommunity = ({ match }) => {
                                   model={{
                                     type: Community.type,
                                     title: community.title,
+                                    slug: community.slug,
+                                    ownerAddress: community.ownerAddress,
                                     id: community.id,
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
@@ -369,6 +373,8 @@ const ViewCommunity = ({ match }) => {
                                   model={{
                                     type: Community.type,
                                     title: community.title,
+                                    slug: community.slug,
+                                    ownerAddress: community.ownerAddress,
                                     id: community.id,
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,
@@ -395,6 +401,8 @@ const ViewCommunity = ({ match }) => {
                                   model={{
                                     type: Community.type,
                                     title: community.title,
+                                    slug: community.slug,
+                                    ownerAddress: community.ownerAddress,
                                     id: community.id,
                                     token: { symbol: config.nativeTokenName },
                                     adminId: community.delegateId,

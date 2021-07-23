@@ -48,16 +48,17 @@ const CancelTraceButton = ({ trace, className }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  sendAnalyticsTracking('Trace Canceled', {
+                  sendAnalyticsTracking('Trace Cancelled', {
                     category: 'Trace',
                     action: 'cancel',
-                    donationCounters: trace.donationCounters,
                     traceId: trace.id,
                     title: trace.title,
-                    ownerId: trace.ownerAddress,
+                    traceOwnerAddress: trace.ownerAddress,
                     traceType: trace.formType,
+                    slug: trace.slug,
                     traceRecipientAddress: trace.recipientAddress,
-                    parentCampaignId: trace.campaign.id,
+                    parentCampaignId: trace.campaign._id,
+                    parentCampaignAddress: trace.campaign.ownerAddress,
                     parentCampaignTitle: trace.campaign.title,
                     reviewerAddress: trace.reviewerAddress,
                     userAddress: currentUser.address,

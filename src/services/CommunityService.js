@@ -253,6 +253,7 @@ class CommunityService {
         message = `Something went wrong with the Community ${
           community.delegateId > 0 ? 'update' : 'creation'
         }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+        console.log('Something went wrong with the Community create/update', err);
       }
       ErrorHandler(err, message, showMessageInPopup);
     };
@@ -269,11 +270,12 @@ class CommunityService {
 
       // nothing to update or failed ipfs upload
       if (community.delegateId && (community.url === ipfsHash || !ipfsHash)) {
+        let response;
         // ipfs upload may have failed, but we still want to update feathers
         if (!ipfsHash) {
-          await communities.patch(community.id, community.toFeathers(txHash));
+          response = await communities.patch(community.id, community.toFeathers(txHash));
         }
-        afterSave(null, false);
+        afterSave({ err: null, url: false, response: response || community });
         afterMined(false, undefined, community.id);
         return;
       }
@@ -299,9 +301,19 @@ class CommunityService {
         promise.once('transactionHash', async hash => {
           txHash = hash;
           try {
-            if (community.id) await communities.patch(community.id, community.toFeathers(txHash));
-            else id = (await communities.create(community.toFeathers(txHash)))._id;
-            afterSave(null, !community.delegateId, `${etherScanUrl}tx/${txHash}`);
+            let response;
+            if (community.id) {
+              response = await communities.patch(community.id, community.toFeathers(txHash));
+            } else {
+              response = await communities.create(community.toFeathers(txHash));
+              id = response._id;
+            }
+            afterSave({
+              err: null,
+              url: !community.delegateId,
+              txUrl: `${etherScanUrl}tx/${txHash}`,
+              response,
+            });
             afterMined(!community.delegateId, `${etherScanUrl}tx/${txHash}`, id);
             resolve();
           } catch (err) {

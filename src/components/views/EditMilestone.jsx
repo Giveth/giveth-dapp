@@ -170,7 +170,7 @@ function EditMilestone(props) {
         let notificationDescription;
         const analyticsData = {
           title: ms.title,
-          ownerId: ms.ownerAddress,
+          ownerAddress: ms.ownerAddress,
           traceType: ms.formType,
           parentCampaignId: campaign.id,
           parentCampaignTitle: campaign.title,
