@@ -447,7 +447,6 @@ class DonationBlockchainService {
     };
 
     if (newDonation.status === Donation.TO_APPROVE) {
-      console.log('delegate from community to campaign', donation);
       // it's delegated from community
       sendAnalyticsTracking('Delegated', {
         ...analyticsData,
