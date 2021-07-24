@@ -19,7 +19,6 @@ const isBrave = () => {
   return false;
 };
 export const sendAnalyticsTracking = (event, properties) => {
-  console.log('sendAnalyticsTracking called', { event, properties });
   try {
     if (!isBrave()) {
       window.analytics.track(event, properties);
