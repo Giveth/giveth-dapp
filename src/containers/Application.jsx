@@ -116,6 +116,7 @@ const Application = () => {
                                   newestOnTop={false}
                                   closeOnClick
                                   pauseOnHover
+                                  style={{ zIndex: '1030' }}
                                 />
                               </NotificationModalProvider>
                             </Fragment>

@@ -70,6 +70,9 @@ const modelTypes = PropTypes.shape({
   id: PropTypes.string.isRequired,
   communityId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   title: PropTypes.string.isRequired,
+  slug: PropTypes.string.isRequired,
+  // it will fill for traces
+  traceType: PropTypes.string,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,

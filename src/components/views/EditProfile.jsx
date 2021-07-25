@@ -337,7 +337,7 @@ class EditProfile extends Component {
 
 EditProfile.propTypes = {
   currentUser: PropTypes.instanceOf(User),
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
+  balance: PropTypes.instanceOf(BigNumber),
   isForeignNetwork: PropTypes.bool.isRequired,
   displayForeignNetRequiredWarning: PropTypes.func.isRequired,
   updateUserData: PropTypes.func,
@@ -345,25 +345,23 @@ EditProfile.propTypes = {
 };
 
 EditProfile.defaultProps = {
-  currentUser: undefined,
+  currentUser: {},
   updateUserData: () => {},
+  balance: new BigNumber(0),
 };
 
 export default props => (
   <UserConsumer>
     {({ state: { currentUser }, actions: { updateUserData } }) => (
       <Web3Consumer>
-        {({ state: { web3, isEnabled } }) => (
+        {({ state: { web3 } }) => (
           <Fragment>
-            {(!currentUser.address || !isEnabled) && <Loader className="fixed" />}
-            {currentUser.address && isEnabled && (
-              <EditProfile
-                web3={web3}
-                currentUser={currentUser}
-                updateUserData={updateUserData}
-                {...props}
-              />
-            )}
+            <EditProfile
+              web3={web3}
+              currentUser={currentUser}
+              updateUserData={updateUserData}
+              {...props}
+            />
           </Fragment>
         )}
       </Web3Consumer>
