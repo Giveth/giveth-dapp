@@ -17,11 +17,11 @@ import {
   TraceCampaignInfo,
   TraceDescription,
   TraceDonateToCommunity,
-  TracePicture,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 function EditMilestone(props) {
   const {
@@ -295,7 +295,7 @@ function EditMilestone(props) {
                     disabled={traceHasFunded}
                   />
 
-                  <TracePicture setPicture={setPicture} picture={image} traceTitle={trace.title} />
+                  <UploadPicture setPicture={setPicture} picture={image} imgAlt={trace.title} />
 
                   <TraceDonateToCommunity
                     value={donateToCommunity}

@@ -3,15 +3,11 @@ import React, { memo, useContext, useEffect, useRef, useState } from 'react';
 import { Button } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import BigNumber from 'bignumber.js';
-import {
-  TraceDatePicker,
-  TraceDescription,
-  TraceFiatAmountCurrency,
-  TracePicture,
-} from './EditTraceCommons';
+import { TraceDatePicker, TraceDescription, TraceFiatAmountCurrency } from './EditTraceCommons';
 import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import { getStartOfDayUTC } from '../lib/helpers';
+import UploadPicture from './UploadPicture';
 
 const WAIT_INTERVAL = 1000;
 
@@ -156,10 +152,10 @@ function CreateExpenseItem({
         disabled={disabled}
       />
 
-      <TracePicture
+      <UploadPicture
         setPicture={setPicture}
-        traceTitle={item.key}
         picture={item.picture}
+        imgAlt={item.key}
         label="Receipt"
         disabled={disabled}
       />

@@ -13,7 +13,6 @@ import {
   TraceDescription,
   TraceDonateToCommunity,
   TraceFiatAmountCurrency,
-  TracePicture,
   TraceRecipientAddress,
   TraceTitle,
   TraceToken,
@@ -30,6 +29,7 @@ import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 const WAIT_INTERVAL = 1000;
 
@@ -396,10 +396,10 @@ function CreatePayment(props) {
                   id="description"
                 />
 
-                <TracePicture
+                <UploadPicture
                   setPicture={setPicture}
-                  traceTitle={payment.title}
                   picture={payment.picture}
+                  imgAlt={payment.title}
                 />
 
                 <TraceDonateToCommunity

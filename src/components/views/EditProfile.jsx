@@ -12,7 +12,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
-import { TracePicture } from '../EditTraceCommons';
+import UploadPicture from '../UploadPicture';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -47,6 +47,15 @@ const EditProfile = () => {
     }
     setUser(_user);
     if (isPristine) setIsPristine(false);
+  };
+
+  const setPicture = address => {
+    handleChange({
+      target: {
+        name: 'avatar',
+        value: address,
+      },
+    });
   };
 
   const checkNetwork = () => {
@@ -128,6 +137,8 @@ const EditProfile = () => {
           txUrl: url,
         });
       } else {
+        setOldUserData({ ...user });
+        setIsPristine(true);
         if (mounted) setIsSaving(false);
         sendAnalyticsTracking('User Updated', {
           category: 'User',
@@ -291,18 +302,11 @@ const EditProfile = () => {
                     </Col>
                   </Row>
 
-                  <TracePicture
-                    setPicture={address =>
-                      handleChange({
-                        target: {
-                          name: 'avatar',
-                          value: address,
-                        },
-                      })
-                    }
-                    traceTitle={user.name || ''}
+                  <UploadPicture
+                    setPicture={setPicture}
                     picture={user.avatar || ''}
                     aspectRatio={1}
+                    imgAlt={user.name || ''}
                   />
 
                   <LoaderButton

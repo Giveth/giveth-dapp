@@ -17,11 +17,11 @@ import {
   TraceCampaignInfo,
   TraceDescription,
   TraceDonateToCommunity,
-  TracePicture,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 function CreateMilestone(props) {
   const {
@@ -234,10 +234,10 @@ function CreateMilestone(props) {
                   id="description"
                 />
 
-                <TracePicture
+                <UploadPicture
                   setPicture={setPicture}
                   picture={milestone.picture}
-                  traceTitle={milestone.title}
+                  imgAlt={milestone.title}
                 />
 
                 <TraceDonateToCommunity
