@@ -205,7 +205,7 @@ const EditCampaign = () => {
         }
       };
 
-      const afterCreate = (err, mined, txUrl) => {
+      const afterCreate = ({ err, txUrl, response }) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
@@ -221,9 +221,11 @@ const EditCampaign = () => {
           const analyticsData = {
             userAddress: currentUser.address,
             ownerAddress: campaign.ownerAddress,
+            slug: response.slug,
             reviewerAddress: campaign.reviewerAddress,
+            campaignAddress: campaign.ownerAddress,
             title: campaign.title,
-            campaignId,
+            campaignId: response._id,
             txUrl,
           };
           if (isNew) {
@@ -236,7 +238,6 @@ const EditCampaign = () => {
             sendAnalyticsTracking('Campaign Edited', {
               category: 'Campaign',
               action: 'edited',
-              slug: campaign.slug,
               ...analyticsData,
             });
           }

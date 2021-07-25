@@ -14,7 +14,10 @@ import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
-import { getConversionRateBetweenTwoSymbol } from '../services/ConversionRateService';
+import {
+  convertUsdValueToEthValue,
+  getConversionRateBetweenTwoSymbol,
+} from '../services/ConversionRateService';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -41,15 +44,20 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
       });
       const rate = result.rates.USD;
       const amount = Number(donationCounter.currentBalance);
+      const usdValue = rate * amount;
+      // eslint-disable-next-line no-await-in-loop
+      const valueEth = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
       sendAnalyticsTracking('Trace Withdraw', {
         category: 'Trace',
         action: 'initiated withdrawal',
         amount,
+        valueEth,
         currency,
-        usdValue: rate * amount,
+        usdValue,
         traceId: trace._id,
         title: trace.title,
-        ownerId: trace.ownerAddress,
+        slug: trace.slug,
+        ownerAddress: trace.ownerAddress,
         traceType: trace.formType,
         traceRecipientAddress: trace.recipientAddress,
         parentCampaignId: trace.campaign.id,

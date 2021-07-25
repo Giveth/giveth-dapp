@@ -297,6 +297,8 @@ const ViewTrace = props => {
     model: {
       type: Trace.type,
       acceptsSingleToken: trace.acceptsSingleToken,
+      slug: trace.slug,
+      formType: trace.formType,
       title: trace.title,
       id: trace.id,
       adminId: trace.projectId,

@@ -308,6 +308,8 @@ const ViewCampaign = ({ match }) => {
                       model={{
                         type: Campaign.type,
                         title: campaign.title,
+                        slug: campaign.slug,
+                        ownerAddress: campaign.ownerAddress,
                         id: campaign.id,
                         adminId: campaign.projectId,
                         customThanksMessage: campaign.customThanksMessage,
@@ -401,6 +403,8 @@ const ViewCampaign = ({ match }) => {
                               model={{
                                 type: Campaign.type,
                                 title: campaign.title,
+                                slug: campaign.slug,
+                                ownerAddress: campaign.ownerAddress,
                                 id: campaign.id,
                                 adminId: campaign.projectId,
                                 customThanksMessage: campaign.customThanksMessage,
@@ -451,6 +455,7 @@ const ViewCampaign = ({ match }) => {
                                 model={{
                                   type: Campaign.type,
                                   title: campaign.title,
+                                  slug: campaign.slug,
                                   id: campaign.id,
                                   adminId: campaign.projectId,
                                   customThanksMessage: campaign.customThanksMessage,
@@ -532,6 +537,7 @@ const ViewCampaign = ({ match }) => {
                               model={{
                                 type: Campaign.type,
                                 title: campaign.title,
+                                slug: campaign.slug,
                                 id: campaign.id,
                                 adminId: campaign.projectId,
                                 customThanksMessage: campaign.customThanksMessage,
