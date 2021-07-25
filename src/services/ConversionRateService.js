@@ -19,6 +19,20 @@ export const getConversionRateBetweenTwoSymbol = ({ date, symbol, to }) => {
 
 /**
  *
+ * @param usdValue : Number (example: 500)
+ * @returns {Promise<number>} : example :0.25
+ */
+export const convertUsdValueToEthValue = async usdValue => {
+  const result = await getConversionRateBetweenTwoSymbol({
+    date: new Date(),
+    symbol: 'USD',
+    to: 'ETH',
+  });
+  return result.rates.ETH * usdValue;
+};
+
+/**
+ *
  * @param date : js Date
  * @param symbol : ETH or USD, ..
  * @param currencyArray: ['ETH', 'DAI']

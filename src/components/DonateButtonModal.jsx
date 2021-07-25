@@ -39,6 +39,7 @@ import ExchangeButton from './ExchangeButton';
 import pollEvery from '../lib/pollEvery';
 import AmountSliderMarks from './AmountSliderMarks';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { convertUsdValueToEthValue } from '../services/ConversionRateService';
 
 const UPDATE_ALLOWANCE_DELAY = 1000; // Delay allowance update inorder to network respond new value
 const POLL_DELAY_TOKENS = 2000;
@@ -416,9 +417,31 @@ const DonateButtonModal = props => {
         donationOwner = currentUser;
       }
 
-      return new Promise((resolve, reject) => {
+      // eslint-disable-next-line no-async-promise-executor
+      return new Promise(async (resolve, reject) => {
         let txHash;
         let txUrl;
+        const currency = selectedToken.symbol;
+        const valueEth = currency === 'ETH' ? _amount : await convertUsdValueToEthValue(usdValue);
+        const entityOwner = await feathersClient.service('users').get(toAdmin.ownerAddress);
+        const analyticsData = {
+          donorAddress: userAddress,
+          donorName: currentUser.name,
+          usdValue,
+          valueEth,
+          donationOwnerAddress,
+          entityType: toAdmin.type,
+          traceType: toAdmin.formType,
+          entityId: toAdmin.id,
+          entityTitle: toAdmin.title,
+          entitySlug: toAdmin.slug,
+          entityOwnerAddress: toAdmin.ownerAddress,
+          entityOwnerName: entityOwner.name,
+          entityOwnerEmail: entityOwner.email,
+          amount: _amount,
+          currency,
+        };
+
         method
           .on('transactionHash', async transactionHash => {
             const { nonce } = await web3.eth.getTransaction(transactionHash);
@@ -445,26 +468,13 @@ const DonateButtonModal = props => {
             }
 
             txUrl = `${etherscanUrl}tx/${txHash}`;
-
             sendAnalyticsTracking('Donated', {
               category: 'Donation',
               action: 'donated',
               url: txUrl,
               txHash,
               donationId: newDonation._id,
-              donorAddress: userAddress,
-              donorName: currentUser.name,
-              usdValue,
-              donationOwnerAddress,
-              entityType: toAdmin.type,
-              entityId: toAdmin.id,
-              entityTitle: toAdmin.title,
-
-              // we dont have traceType here
-              // traceType: toAdmin.formType,
-              // to: toAdmin,
-              amount: _amount,
-              currency: selectedToken.symbol,
+              ...analyticsData,
             });
 
             donationPending(txUrl);
@@ -483,15 +493,7 @@ const DonateButtonModal = props => {
                   userAddress,
                   url: txUrl,
                   txHash,
-                  donorAddress: userAddress,
-                  donorName: currentUser.name,
-                  usdValue,
-                  entityType: toAdmin.type,
-                  entityId: toAdmin.id,
-                  parentCampaignId: toAdmin.campaignId,
-                  entityTitle: toAdmin.title,
-                  amount: _amount,
-                  currency: selectedToken.symbol,
+                  ...analyticsData,
                 });
                 donationFailed(null, 'User denied transaction signature');
               } else {
@@ -611,6 +613,8 @@ const DonateButtonModal = props => {
             toAdmin: {
               adminId: communityId,
               type: Community.type,
+              slug: community.slug,
+              ownerAddress: community.ownerAddress,
               id: community._id,
             },
             donationOwnerAddress,
