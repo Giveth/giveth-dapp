@@ -1,5 +1,4 @@
 import React from 'react';
-import 'whatwg-fetch';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
