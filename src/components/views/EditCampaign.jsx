@@ -358,6 +358,7 @@ const EditCampaign = () => {
                   picture={campaign.picture}
                   imgAlt={campaign.title}
                   label="Add a picture"
+                  required
                 />
 
                 <Form.Item

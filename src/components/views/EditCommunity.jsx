@@ -341,6 +341,7 @@ const EditCommunity = ({ isNew, match }) => {
                   picture={community.picture}
                   imgAlt={community.title}
                   label="Add a picture"
+                  required
                 />
 
                 <Form.Item
