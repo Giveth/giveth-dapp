@@ -12,10 +12,7 @@ import {
   Row,
   Select,
   Typography,
-  Upload,
 } from 'antd';
-import { DeleteTwoTone } from '@ant-design/icons';
-import ImgCrop from 'antd-img-crop';
 import Loader from '../Loader';
 import { getHtmlText, history, isOwner } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
@@ -28,12 +25,11 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import Editor from '../Editor';
 
-import { IPFSService } from '../../services';
-import config from '../../configuration';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import useReviewers from '../../hooks/useReviewers';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 const { Title, Text } = Typography;
 
@@ -171,41 +167,6 @@ const EditCampaign = () => {
     handleInputChange({
       target: { name: 'reviewerAddress', value: option.value },
     });
-  };
-
-  const uploadProps = {
-    multiple: false,
-    maxCount: 1,
-    accept: 'image/png, image/jpeg',
-    customRequest: options => {
-      const { onSuccess, onError, file } = options;
-      IPFSService.upload(file)
-        .then(onSuccess)
-        .catch(err => {
-          onError('Failed!', err);
-        });
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        console.log('file uploaded successfully.', info.file.response);
-        setPicture(info.file.response);
-      } else if (status === 'error') {
-        console.log(`${info.file.name} file upload failed.`);
-        const args = {
-          message: 'Error',
-          description: 'Cannot upload picture to IPFS',
-        };
-        notification.error(args);
-      }
-    },
-  };
-
-  const removePicture = () => {
-    setPicture('');
   };
 
   const submit = async () => {
@@ -391,46 +352,15 @@ const EditCampaign = () => {
                     placeholder="Describe how you're going to execute your Campaign successfully..."
                   />
                 </Form.Item>
-                <Form.Item
-                  name="Picture"
+
+                <UploadPicture
+                  setPicture={setPicture}
+                  picture={campaign.picture}
+                  imgAlt={campaign.title}
                   label="Add a picture"
-                  className="custom-form-item"
-                  rules={[
-                    {
-                      validator: async () => {
-                        if (!campaign.picture) {
-                          throw new Error('Picture is required');
-                        }
-                      },
-                    },
-                  ]}
-                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                    aspect ratio."
-                >
-                  <Fragment>
-                    {campaign.picture ? (
-                      <div className="picture-upload-preview">
-                        <img
-                          src={
-                            campaign.picture.startsWith('/ipfs/')
-                              ? `${config.ipfsGateway}${campaign.picture.slice(6)}`
-                              : campaign.picture
-                          }
-                          alt={campaign.title}
-                        />
-                        <DeleteTwoTone onClick={removePicture} />
-                      </div>
-                    ) : (
-                      <ImgCrop aspect={16 / 9}>
-                        <Upload.Dragger {...uploadProps}>
-                          <p className="ant-upload-text">
-                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-                          </p>
-                        </Upload.Dragger>
-                      </ImgCrop>
-                    )}
-                  </Fragment>
-                </Form.Item>
+                  required
+                />
+
                 <Form.Item
                   name="communityUrl"
                   label="Url to join your Community"

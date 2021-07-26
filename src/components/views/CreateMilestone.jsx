@@ -17,11 +17,11 @@ import {
   TraceCampaignInfo,
   TraceDescription,
   TraceDonateToCommunity,
-  TracePicture,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 function CreateMilestone(props) {
   const {
@@ -35,7 +35,6 @@ function CreateMilestone(props) {
   const { id: campaignId, slug: campaignSlug } = props.match.params;
 
   const campaign = useCampaign(campaignId, campaignSlug);
-  const [form] = Form.useForm();
 
   const [milestone, setMilestone] = useState({
     title: '',
@@ -209,7 +208,6 @@ function CreateMilestone(props) {
               className="card-form"
               requiredMark
               onFinish={submit}
-              form={form}
               scrollToFirstError={{
                 block: 'center',
                 behavior: 'smooth',
@@ -239,10 +237,10 @@ function CreateMilestone(props) {
                   id="description"
                 />
 
-                <TracePicture
+                <UploadPicture
                   setPicture={setPicture}
                   picture={milestone.picture}
-                  traceTitle={milestone.title}
+                  imgAlt={milestone.title}
                 />
 
                 <TraceDonateToCommunity

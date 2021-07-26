@@ -581,7 +581,7 @@ const ViewCampaign = ({ match }) => {
                           </Fragment>
                         ) : (
                           <Fragment>
-                            <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
+                            <h3 style={{ color: '#2C0B3F' }}>No traces in here!</h3>
                           </Fragment>
                         ))}
                     </div>

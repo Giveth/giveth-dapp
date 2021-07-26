@@ -1,24 +1,9 @@
 import React, { Fragment, useCallback, useContext } from 'react';
-import {
-  Checkbox,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  notification,
-  Row,
-  Select,
-  Typography,
-  Upload,
-} from 'antd';
+import { Checkbox, Col, DatePicker, Form, Input, Row, Select, Typography } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-import { DeleteTwoTone } from '@ant-design/icons';
-import ImgCrop from 'antd-img-crop';
 import moment from 'moment';
 import Web3 from 'web3';
-import config from '../configuration';
-import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
 import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
@@ -135,80 +120,6 @@ TraceDescription.defaultProps = {
   id: '',
   disabled: false,
   initialValue: '',
-};
-
-const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
-  const uploadProps = {
-    multiple: false,
-    accept: 'image/png, image/jpeg',
-    customRequest: options => {
-      const { onSuccess, onError, file } = options;
-      IPFSService.upload(file)
-        .then(onSuccess)
-        .catch(err => {
-          onError('Failed!', err);
-        });
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        console.log('file uploaded successfully.', info.file.response);
-        setPicture(info.file.response);
-      } else if (status === 'error') {
-        console.log(`${info.file.name} file upload failed.`);
-        const args = {
-          message: 'Error',
-          description: 'Cannot upload picture to IPFS',
-        };
-        notification.error(args);
-      }
-    },
-  };
-
-  function removePicture() {
-    setPicture('');
-  }
-
-  return (
-    <Form.Item
-      name="picture"
-      label="Add a picture (optional)"
-      className="custom-form-item"
-      extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                    aspect ratio."
-    >
-      <Fragment>
-        {picture ? (
-          <div className="picture-upload-preview">
-            <img src={`${config.ipfsGateway}${picture.slice(6)}`} alt={traceTitle} />
-            {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
-          </div>
-        ) : (
-          <ImgCrop aspect={16 / 9}>
-            <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
-              <p className="ant-upload-text">
-                Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-              </p>
-            </Upload.Dragger>
-          </ImgCrop>
-        )}
-      </Fragment>
-    </Form.Item>
-  );
-};
-
-TracePicture.propTypes = {
-  picture: PropTypes.string.isRequired,
-  traceTitle: PropTypes.string.isRequired,
-  setPicture: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-TracePicture.defaultProps = {
-  disabled: false,
 };
 
 const TraceDonateToCommunity = ({ onChange, value, disabled }) => (
@@ -611,7 +522,6 @@ TraceFiatAmountCurrency.defaultProps = {
 export {
   TraceTitle,
   TraceDescription,
-  TracePicture,
   TraceDonateToCommunity,
   TraceReviewer,
   TraceDatePicker,

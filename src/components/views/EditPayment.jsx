@@ -11,7 +11,6 @@ import {
   TraceDescription,
   TraceDonateToCommunity,
   TraceFiatAmountCurrency,
-  TracePicture,
   TraceRecipientAddress,
   TraceTitle,
   TraceToken,
@@ -27,6 +26,7 @@ import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 const WAIT_INTERVAL = 1000;
 
@@ -47,8 +47,6 @@ function EditPayment(props) {
   const {
     actions: { minPayoutWarningInCreatEdit },
   } = useContext(NotificationContext);
-
-  const [form] = Form.useForm();
 
   const { traceId } = props.match.params;
 
@@ -388,7 +386,6 @@ function EditPayment(props) {
                 requiredMark
                 initialValues={initialValues}
                 onFinish={submit}
-                form={form}
                 scrollToFirstError={{
                   block: 'center',
                   behavior: 'smooth',
@@ -451,10 +448,10 @@ function EditPayment(props) {
                     disabled={traceHasFunded}
                   />
 
-                  <TracePicture
+                  <UploadPicture
                     setPicture={setPicture}
-                    traceTitle={payment.title}
                     picture={payment.image}
+                    imgAlt={payment.title}
                   />
 
                   <TraceDonateToCommunity
