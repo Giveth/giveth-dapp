@@ -310,8 +310,8 @@ const EditProfile = () => {
                   />
 
                   <LoaderButton
-                    className="btn btn-success"
-                    type="submit"
+                    className="ant-btn-donate ant-btn-lg"
+                    onClick={submit}
                     network="Foreign"
                     disabled={
                       isSaving || isPristine || (currentUser.address && currentUser.giverId === 0)
