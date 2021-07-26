@@ -96,7 +96,7 @@ const ChangeOwnershipButton = props => {
   return (
     <Fragment>
       <Button type="primary" block danger onClick={() => openDialog()}>
-        Change co-owner
+        {coownerAddress ? 'Change co-owner' : 'Set co-owner'}
       </Button>
       <Modal
         visible={modalVisible}
