@@ -1371,9 +1371,8 @@ class EditTraceOld extends Component {
                       <div className="col-4" />
                       <div className="col-4">
                         <LoaderButton
-                          className="btn btn-success pull-right"
-                          formNoValidate
-                          type="submit"
+                          className="ant-btn-donate ant-btn-lg pull-right"
+                          onClick={this.submit}
                           disabled={conversionRateLoading || isSaving || !formIsValid}
                           isLoading={isSaving}
                           network="Foreign"
