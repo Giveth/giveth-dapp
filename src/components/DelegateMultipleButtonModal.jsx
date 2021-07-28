@@ -79,7 +79,7 @@ const ModalContent = props => {
 
   const loadDonations = useCallback(async () => {
     const ids = objectToDelegateFrom;
-    console.log('Load donations for ids: ', ids);
+
     if (ids.length !== 1) {
       setLoadingDonations(false);
       return;
@@ -224,22 +224,24 @@ const ModalContent = props => {
           type: 'community',
         }));
 
-        const _delegationOptions =
-          trace && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase()
-            ? communities.concat([
-                {
-                  id: campaign._id,
-                  name: campaign.title,
-                  projectId: campaign.projectId,
-                  ownerEntity: trace.ownerEntity,
-                  type: 'campaign',
-                },
-              ])
-            : communities;
+        const userIsTraceCampOwner =
+          trace && campaign.ownerAddress.toLowerCase() === userAddress.toLowerCase();
 
         if (isMounted.current) {
           setIsCommunitiesFetched(true);
-          setDelegationOptions(_delegationOptions);
+          if (userIsTraceCampOwner) {
+            const campDelegateObj = {
+              id: campaign._id,
+              name: campaign.title,
+              projectId: campaign.projectId,
+              ownerEntity: trace.ownerEntity,
+              type: 'campaign',
+            };
+            setDelegationOptions([...communities, campDelegateObj]);
+            setObjectToDelegateFrom([campDelegateObj.id]);
+          } else {
+            setDelegationOptions(communities);
+          }
         }
       });
   }, [currentUser, campaign, trace]);
