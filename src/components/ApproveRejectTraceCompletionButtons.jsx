@@ -217,7 +217,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
         </span>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };
