@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import PropTypes from 'prop-types';
@@ -77,7 +77,7 @@ const ModalContent = props => {
     };
   }, []);
 
-  const loadDonations = useCallback(async () => {
+  const loadDonations = async () => {
     const ids = objectToDelegateFrom;
 
     if (ids.length !== 1) {
@@ -178,7 +178,7 @@ const ModalContent = props => {
     setMaxAmount(max);
     setAmount(convertEthHelper(delegationSum, selectedToken.decimals));
     setLoadingDonations(false);
-  }, [objectToDelegateFrom, props.trace, selectedToken, delegationOptions]);
+  };
 
   const isLimitedDelegateCount = () => {
     if (props.trace && props.trace.isCapped) {
@@ -194,16 +194,19 @@ const ModalContent = props => {
   };
 
   useEffect(() => {
-    setLoadingDonations(true);
-    loadDonations().then();
-  }, [objectToDelegateFrom, loadDonations, selectedToken]);
+    if (objectToDelegateFrom.length) {
+      setLoadingDonations(true);
+      loadDonations().then();
+    }
+  }, [objectToDelegateFrom, selectedToken]);
 
   function selectedObject(value) {
     setObjectToDelegateFrom([value]);
   }
 
-  const getCommunities = useCallback(() => {
+  const getCommunities = () => {
     const userAddress = currentUser ? currentUser.address : '';
+
     feathersClient
       .service('communities')
       .find({
@@ -244,7 +247,7 @@ const ModalContent = props => {
           }
         }
       });
-  }, [currentUser, campaign, trace]);
+  };
 
   function submit() {
     setSaving(true);
@@ -297,7 +300,7 @@ const ModalContent = props => {
     }
     prevUser.current = currentUser;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser]);
+  }, [currentUser.address]);
 
   useEffect(() => {
     if (delegationOptions.length === 1) {
