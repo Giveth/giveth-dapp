@@ -166,36 +166,31 @@ const ViewTrace = props => {
   }, [trace]);
 
   const calculateTraceCurrentBalanceValue = async () => {
-    if (
-      currentUser.address &&
-      !currency &&
-      trace.donationCounters &&
-      trace.donationCounters.length
-    ) {
-      setCurrency(currentUser.currency);
-      try {
-        const rateArray = trace.donationCounters.map(dc => {
-          return {
-            value: dc.currentBalance,
-            currency: dc.symbol,
-          };
-        });
-        const userCurrencyValueResult = await convertMultipleRates(
-          null,
-          currentUser.currency,
-          rateArray,
-        );
-        setCurrentBalanceValue(userCurrencyValueResult.total);
-        setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
-      } catch (e) {
-        console.log('convertMultipleRates error', e);
-      }
+    setCurrency(currentUser.currency);
+    try {
+      const rateArray = trace.donationCounters.map(dc => {
+        return {
+          value: dc.currentBalance,
+          currency: dc.symbol,
+        };
+      });
+      const userCurrencyValueResult = await convertMultipleRates(
+        null,
+        currentUser.currency,
+        rateArray,
+      );
+      setCurrentBalanceValue(userCurrencyValueResult.total);
+      setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
+    } catch (e) {
+      console.log('convertMultipleRates error', e);
     }
   };
 
   useEffect(() => {
-    calculateTraceCurrentBalanceValue();
-  });
+    if (currentUser.address && trace.donationCounters && trace.donationCounters.length) {
+      calculateTraceCurrentBalanceValue().then();
+    }
+  }, [currentUser.address, trace]);
 
   useEffect(() => {
     if (!currentBalanceUsdValue) {
