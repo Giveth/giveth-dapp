@@ -160,7 +160,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
         </span>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };

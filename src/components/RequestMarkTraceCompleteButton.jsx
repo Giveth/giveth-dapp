@@ -141,7 +141,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
         </button>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };

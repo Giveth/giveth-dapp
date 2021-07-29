@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import Modal from 'react-modal';
+import { Modal } from 'antd';
 import BigNumber from 'bignumber.js';
 
 import { Input, Form } from 'formsy-react-components';
@@ -13,21 +13,6 @@ import getConversionRatesContext from 'containers/getConversionRatesContext';
 import TraceItem from 'models/TraceItem';
 import FormsyImageUploader from './FormsyImageUploader';
 import RateConverter from './RateConverter';
-
-const modalStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-20%',
-    transform: 'translate(-50%, -50%)',
-    boxShadow: '0 0 40px #ccc',
-    overflowY: 'scroll',
-  },
-};
-
-Modal.setAppElement('#root');
 
 class AddTraceItemModal extends Component {
   constructor(props) {
@@ -76,14 +61,6 @@ class AddTraceItemModal extends Component {
 
   closeModal() {
     this.props.onClose();
-    this.reset();
-  }
-
-  reset() {
-    this.setState({
-      item: new TraceItem({}),
-      formIsValid: false,
-    });
   }
 
   submit() {
@@ -95,7 +72,6 @@ class AddTraceItemModal extends Component {
 
     // Get TraceItem
     this.props.onAddItem(this.state.item);
-    this.reset();
   }
 
   render() {
@@ -104,10 +80,12 @@ class AddTraceItemModal extends Component {
 
     return (
       <Modal
-        isOpen={openModal}
-        onRequestClose={this.closeModal}
-        contentLabel="Add an item to this Trace"
-        style={modalStyles}
+        visible={openModal}
+        onCancel={this.closeModal}
+        footer={null}
+        destroyOnClose
+        centered
+        className="pb-0"
       >
         <Form
           id="trace-form"
