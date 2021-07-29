@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
-import { Input, Select, Slider, Form, InputNumber } from 'antd';
+import { Input, Select, Slider, Form, InputNumber, Modal } from 'antd';
 import Web3, { utils } from 'web3';
 import PropTypes from 'prop-types';
 
@@ -146,10 +146,10 @@ class DelegateButtonModal extends Component {
           <p>The Giver has been notified.</p>
         );
 
-      React.swal({
+      Modal.success({
         title: 'Delegated!',
-        content: React.swal.msg(
-          <div>
+        content: (
+          <Fragment>
             <p>
               The donation has been delegated,{' '}
               <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
@@ -157,9 +157,9 @@ class DelegateButtonModal extends Component {
               </a>
             </p>
             {msg}
-          </div>,
+          </Fragment>
         ),
-        icon: 'success',
+        centered: true,
       });
     };
 

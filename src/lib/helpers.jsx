@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -26,7 +27,7 @@ export const getTruncatedText = (text = '', maxLength = 45) => {
   return txt;
 };
 
-// displays a sweet alert with an error when the transaction goes wrong
+// displays alert with an error when the transaction goes wrong
 export const displayTransactionError = txHash => {
   let msg;
   const { etherScanUrl } = config;
@@ -42,13 +43,13 @@ export const displayTransactionError = txHash => {
     // TODO: update or remove from feathers? maybe don't remove, so we can inform the user that the
     // tx failed and retry
   } else {
-    msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+    msg = <p>Something went wrong with the transaction ...</p>;
   }
 
-  React.swal({
+  Modal.error({
     title: 'Oh no!',
-    content: React.swal.msg(msg),
-    icon: 'error',
+    content: msg,
+    centered: true,
   });
 };
 

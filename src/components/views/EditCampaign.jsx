@@ -355,8 +355,8 @@ const EditCampaign = () => {
 
                 <UploadPicture
                   setPicture={setPicture}
-                  picture={campaign.picture}
-                  imgAlt={campaign.title}
+                  picture={campaign.picture || ''}
+                  imgAlt={campaign.title || ''}
                   label="Add a picture"
                   required
                 />

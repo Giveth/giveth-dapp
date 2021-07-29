@@ -10,7 +10,7 @@ import queryString from 'query-string';
 import Trace from 'models/Trace';
 import TraceFactory from 'models/TraceFactory';
 import Web3, { utils } from 'web3';
-import { notification } from 'antd';
+import { Modal, notification } from 'antd';
 
 import Loader from '../Loader';
 import QuillFormsy from '../QuillFormsy';
@@ -832,16 +832,15 @@ class EditTraceOld extends Component {
       },
       () => {
         if (isProposed && isNew) {
-          React.swal({
+          Modal.confirm({
             title: 'Propose Trace?',
-            text:
+            content:
               'The Trace will be proposed to the Campaign owner and he or she might approve or reject your trace.',
-            icon: 'warning',
-            dangerMode: true,
-            buttons: ['Cancel', 'Yes, propose'],
-          }).then(isConfirmed => {
-            if (isConfirmed) _saveTrace();
-            else this.setState({ isSaving: false });
+            cancelText: 'Cancel',
+            okText: 'Yes, propose',
+            centered: true,
+            onOk: () => _saveTrace(),
+            onCancel: () => this.setState({ isSaving: false }),
           });
         } else {
           _saveTrace();

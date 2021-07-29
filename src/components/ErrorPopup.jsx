@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button, Modal } from 'antd';
 import config from '../configuration';
 // /* global window */
 
@@ -8,7 +9,10 @@ export default (shortDescription, error) => {
     return;
   }
 
+  let modal;
+
   const errorHandler = value => {
+    if (value === 'destroy') modal.destroy();
     let body;
     if (error instanceof Error) {
       if (value !== 'github') {
@@ -67,41 +71,33 @@ export default (shortDescription, error) => {
   };
 
   if (error) {
-    React.swal({
+    modal = Modal.error({
       title: 'Oh no!',
-      content: React.swal.msg(
+      content: (
         <div>
           <p>{shortDescription}</p>
           <p>Is this a recurring problem? Click Report.</p>
-        </div>,
+          <br />
+          <div>
+            <Button className="ant-btn-donate ant-btn-lg" onClick={() => errorHandler('destroy')}>
+              Close
+            </Button>
+            <Button
+              type="primary"
+              className="mx-2 ant-btn-lg"
+              onClick={() => errorHandler('email')}
+            >
+              Report
+            </Button>
+            <Button type="primary" className="ant-btn-lg" onClick={() => errorHandler('github')}>
+              Report Issue
+            </Button>
+          </div>
+        </div>
       ),
-      icon: 'error',
-      buttons: {
-        ok: {
-          text: 'Close',
-          value: null,
-          visible: true,
-          className: 'bg-success',
-          closeModal: true,
-        },
-        email: {
-          text: 'Report',
-          value: 'email',
-          visible: true,
-          closeModal: true,
-        },
-        github: {
-          text: 'Report Issue',
-          value: 'github',
-          visible: true,
-          closeModal: true,
-        },
-      },
-      className: 'swal-wide',
-    }).then(value => {
-      if (value) {
-        errorHandler(value);
-      }
+      centered: true,
+      width: 500,
+      className: 'antModalNoBtn',
     });
   }
 };

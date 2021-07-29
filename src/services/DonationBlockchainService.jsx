@@ -532,10 +532,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          txHash ? `${etherScanUrl}tx/${txHash}` : err,
-        );
+        ErrorHandler(err, 'Something went wrong with the transaction!');
       });
   }
 
@@ -609,10 +606,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
+        ErrorHandler(err, 'Something went wrong with your transaction!');
       });
   }
 
@@ -672,10 +666,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
+        ErrorHandler(err, 'Something went wrong with the transaction.');
       });
   }
 

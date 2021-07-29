@@ -55,7 +55,6 @@
     "react-toggle": "^4.0.2",
     "react-tooltip": "^3.11.1",
     "socket.io-client": "2.4.0",
-    "sweetalert": "^2.1.2",
     "uuid": "^8.3.2",
     "web3": "^1.2.2"
   },
