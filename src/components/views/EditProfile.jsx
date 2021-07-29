@@ -78,7 +78,7 @@ const EditProfile = () => {
             })
             .catch(err => {
               if (err === 'noBalance') {
-                ErrorPopup('Something went wrong.', err);
+                ErrorPopup('Something went wrong!', err);
                 history.goBack();
               } else {
                 setIsLoading(false);

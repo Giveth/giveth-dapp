@@ -50,7 +50,7 @@ const EditTraceButton = ({ trace, className }) => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorPopup('Something went wrong ...', err);
           }
         });
     });

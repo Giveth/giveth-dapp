@@ -91,7 +91,7 @@ const CancelTraceButton = ({ trace, className }) => {
                     ErrorPopup('Something went wrong with canceling your Trace', err);
                   } else {
                     ErrorPopup(
-                      'Something went wrong with the transaction.',
+                      'Something went wrong with your transaction !',
                       `${txUrl} => ${JSON.stringify(err, null, 2)}`,
                     );
                   }
@@ -104,7 +104,7 @@ const CancelTraceButton = ({ trace, className }) => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorPopup('Something went wrong while cancelling your trace', err);
           }
         });
     });
