@@ -88,7 +88,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     ErrorPopup("Something went wrong with approving this Trace's completion", err);
                   } else {
                     ErrorPopup(
-                      'Something went wrong with your transaction.',
+                      'Something went wrong with the transaction.',
                       `${txUrl} => ${JSON.stringify(err, null, 2)}`,
                     );
                   }
@@ -102,7 +102,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong while approving.', err);
+            ErrorPopup('Something went wrong.', err);
           }
         });
     });
@@ -169,7 +169,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     ErrorPopup("Something went wrong with rejecting this Trace's completion", err);
                   } else {
                     ErrorPopup(
-                      'Something went wrong with your transaction...',
+                      'Something went wrong with the transaction.',
                       `${txUrl} => ${JSON.stringify(err, null, 2)}`,
                     );
                   }
@@ -183,7 +183,7 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong on trace completion rejection.', err);
+            ErrorPopup('Something went wrong.', err);
           }
         });
     });

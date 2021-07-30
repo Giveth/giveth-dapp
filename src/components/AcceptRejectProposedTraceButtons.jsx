@@ -114,7 +114,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     ErrorPopup('Something went wrong with accepting this proposed Trace', err);
                   } else {
                     ErrorPopup(
-                      'Something went wrong with your transaction!',
+                      'Something went wrong with the transaction.',
                       `${txUrl} => ${JSON.stringify(err, null, 2)}`,
                     );
                   }
@@ -127,7 +127,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong while accepting proposed trace.', err);
+            ErrorPopup('Something went wrong.', err);
           }
         });
     });
