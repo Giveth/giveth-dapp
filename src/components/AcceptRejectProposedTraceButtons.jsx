@@ -71,7 +71,6 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                   sendAnalyticsTracking('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
-                    trace,
                     traceId: trace._id,
                     title: trace.title,
                     slug: trace.slug,
