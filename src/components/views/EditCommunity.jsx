@@ -338,8 +338,8 @@ const EditCommunity = ({ isNew, match }) => {
 
                 <UploadPicture
                   setPicture={setPicture}
-                  picture={community.picture}
-                  imgAlt={community.title}
+                  picture={community.picture || ''}
+                  imgAlt={community.title || ''}
                   label="Add a picture"
                   required
                 />

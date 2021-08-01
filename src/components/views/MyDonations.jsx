@@ -8,12 +8,13 @@ import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import { Helmet } from 'react-helmet';
+import { Modal } from 'antd';
 import Loader from '../Loader';
 import { convertEthHelper } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
 import DonationService from '../../services/DonationService';
-import ErrorPopup from '../ErrorPopup';
+import ErrorHandler from '../../lib/ErrorHandler';
 import { authenticateUser, checkBalance } from '../../lib/middleware';
 import DonationBlockchainService from '../../services/DonationBlockchainService';
 import confirmationDialog from '../../lib/confirmationDialog';
@@ -56,7 +57,7 @@ const MyDonations = () => {
         setDonations(resp.data);
       },
       onError: err => {
-        ErrorPopup('Something went wrong on getting user donations!', err);
+        ErrorHandler(err, 'Something went wrong on getting user donations!');
       },
     });
   };
@@ -78,59 +79,54 @@ const MyDonations = () => {
         return;
       }
       checkBalance(balance)
-        .then(() =>
-          React.swal({
+        .then(() => {
+          const afterCreate = txLink => {
+            React.toast.success(
+              <p>
+                The refusal of the delegation is pending...
+                <br />
+                <a href={txLink} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          };
+
+          const afterMined = txLink => {
+            React.toast.success(
+              <p>
+                Your donation delegation has been rejected.
+                <br />
+                <a href={txLink} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          };
+
+          Modal.confirm({
             title: 'Reject your donation?',
-            text: `Your donation will not go to this ${capitalizeFirstLetter(
+            content: `Your donation will not go to this ${capitalizeFirstLetter(
               donation.intendedProjectType,
             )}. You will still be in control of you funds and the Community can still delegate you donation.`,
-            icon: 'warning',
-            dangerMode: true,
-            buttons: ['Cancel', 'Yes, reject'],
-          }).then(isConfirmed => {
-            if (isConfirmed) {
-              // Inform user after the transaction is created
-              const afterCreate = txLink => {
-                React.toast.success(
-                  <p>
-                    The refusal of the delegation is pending...
-                    <br />
-                    <a href={txLink} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              };
-
-              // Inform user after the refusal transaction is mined
-              const afterMined = txLink => {
-                React.toast.success(
-                  <p>
-                    Your donation delegation has been rejected.
-                    <br />
-                    <a href={txLink} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              };
-
-              // Reject the delegation of the donation
+            cancelText: 'Cancel',
+            okText: 'Yes, reject',
+            centered: true,
+            onOk: () =>
               DonationBlockchainService.reject(
                 donation,
                 userAddress,
                 afterCreate,
                 afterMined,
                 web3,
-              );
-            }
-          }),
-        )
+              ),
+          });
+        })
         .catch(err => {
           if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
+            ErrorHandler(err, 'There is no balance left on the account.');
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorHandler(err, 'Something went wrong.');
           }
         });
     });
@@ -142,57 +138,53 @@ const MyDonations = () => {
         return;
       }
       checkBalance(balance)
-        .then(() =>
-          React.swal({
+        .then(() => {
+          const afterCreate = txLink => {
+            React.toast.success(
+              <p>
+                The commitment of the donation is pending...
+                <br />
+                <a href={txLink} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          };
+
+          const afterMined = txLink => {
+            React.toast.success(
+              <p>
+                Your donation has been committed!
+                <br />
+                <a href={txLink} target="_blank" rel="noopener noreferrer">
+                  View transaction
+                </a>
+              </p>,
+            );
+          };
+
+          Modal.confirm({
             title: 'Commit your donation?',
-            text:
+            content:
               'Your donation will go to this Trace. After committing you can no longer take back your money.',
-            icon: 'warning',
-            buttons: ['Cancel', 'Yes, commit'],
-          }).then(isConfirmed => {
-            if (isConfirmed) {
-              // Inform user after the transaction is created
-              const afterCreate = txLink => {
-                React.toast.success(
-                  <p>
-                    The commitment of the donation is pending...
-                    <br />
-                    <a href={txLink} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              };
-
-              // Inform user after the commit transaction is mined
-              const afterMined = txLink => {
-                React.toast.success(
-                  <p>
-                    Your donation has been committed!
-                    <br />
-                    <a href={txLink} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              };
-
-              // Commit the donation's delegation
+            cancelText: 'Cancel',
+            okText: 'Yes, commit',
+            centered: true,
+            onOk: () =>
               DonationBlockchainService.commit(
                 donation,
                 userAddress,
                 afterCreate,
                 afterMined,
                 web3,
-              );
-            }
-          }),
-        )
+              ),
+          });
+        })
         .catch(err => {
           if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
+            ErrorHandler(err, 'There is no balance left on the account.');
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorHandler(err, 'Something went wrong...');
           }
         });
     });
@@ -230,7 +222,6 @@ const MyDonations = () => {
             );
           };
 
-          // Refund the donation
           DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined, web3);
         };
         confirmationDialog('refund', donation.donatedTo.name, confirmRefund);

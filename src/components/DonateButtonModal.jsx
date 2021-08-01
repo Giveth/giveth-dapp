@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Form, Select, Input, InputNumber, Checkbox, Button } from 'antd';
+import { Form, Select, Input, InputNumber, Checkbox, Button, Modal } from 'antd';
 import { GivethBridge } from 'giveth-bridge';
 
 import getTokens from '../lib/blockchain/getTokens';
@@ -273,9 +273,9 @@ const DonateButtonModal = props => {
     setSelectedToken(model.acceptsSingleToken ? modelToken : defaultToken);
 
     if (!canDonateToProject()) {
-      React.swal({
+      Modal.error({
         title: 'Token is not Active to Donate',
-        content: React.swal.msg(
+        content: (
           <div>
             <p>
               Token <strong>{model.token.symbol}</strong> cannot be directly donated anymore.
@@ -283,8 +283,9 @@ const DonateButtonModal = props => {
               <strong>Delegate</strong> and <strong>Withdraw</strong> actions are still available
               for this token.
             </p>
-          </div>,
+          </div>
         ),
+        centered: true,
       });
     } else {
       const { isCapped } = model;
@@ -512,32 +513,37 @@ const DonateButtonModal = props => {
       .toFixed(6)
       .toString();
 
-    const isConfirmed = await React.swal({
-      title: 'Twice as good!',
-      content: React.swal.msg(
-        <div>
-          <p>For your donation you need to make 2 transactions:</p>
-          <ol style={{ textAlign: 'left' }}>
-            <li>
-              The trace owner decided to support the <b>{communityTitle}</b>! Woo-hoo! <br />{' '}
-              <b>
-                {amountCommunity} {tokenSymbol}
-              </b>{' '}
-              will be delegated.
-            </li>
-            <li>
-              The rest (
-              <b>
-                {amountTrace} {tokenSymbol}
-              </b>
-              ) will go to the trace owner.
-            </li>
-          </ol>
-        </div>,
-      ),
-      icon: 'info',
-      buttons: ['Cancel', 'Lets do it!'],
-    });
+    const isConfirmed = await new Promise(resolve =>
+      Modal.confirm({
+        title: 'Twice as good!',
+        content: (
+          <div>
+            <p>For your donation you need to make 2 transactions:</p>
+            <ol style={{ textAlign: 'left', marginLeft: '-29px' }}>
+              <li>
+                The trace owner decided to support the <b>{communityTitle}</b>! Woo-hoo! <br />{' '}
+                <b>
+                  {amountCommunity} {tokenSymbol}
+                </b>{' '}
+                will be delegated.
+              </li>
+              <li>
+                The rest (
+                <b>
+                  {amountTrace} {tokenSymbol}
+                </b>
+                ) will go to the trace owner.
+              </li>
+            </ol>
+          </div>
+        ),
+        cancelText: 'Cancel',
+        okText: 'Lets do it!',
+        centered: true,
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      }),
+    );
 
     let result = false;
     if (isConfirmed) {

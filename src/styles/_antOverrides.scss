@@ -1,5 +1,12 @@
 //Custom styles for Ant Design
 
+// Hide Ant close btn
+.antModalNoBtn {
+  .ant-modal-confirm-btns {
+    display: none;
+  }
+}
+
 .ant-menu {
   font-family: 'Red Hat Text', sans-serif;
 }
