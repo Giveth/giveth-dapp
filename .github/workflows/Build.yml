@@ -18,4 +18,4 @@ jobs:
       - name: run linter
         run: yarn eslint
       - name: push Sentry source map
-        run: SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}}  NODE_OPTIONS="--max-old-space-size=10000" SENTRY_PROJECT=react SENTRY_ORG=${{ secrets.SENTRY_ORG}} yarn release
+        run: NODE_OPTIONS="--max-old-space-size=10000" SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}} SENTRY_PROJECT=react SENTRY_ORG=${{ secrets.SENTRY_ORG}} CI=false yarn release
