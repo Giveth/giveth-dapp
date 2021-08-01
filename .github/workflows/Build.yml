@@ -17,7 +17,6 @@ jobs:
         run: yarn build-css
       - name: run linter
         run: yarn eslint
-      - name: Push Sentry sourcemap
 #      - name: test
 #        run: yarn test
   build:
