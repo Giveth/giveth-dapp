@@ -116,7 +116,7 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                     ErrorPopup('Something went wrong with marking your Trace as complete', err);
                   } else {
                     ErrorPopup(
-                      'Something went wrong with your transaction completion.',
+                      'Something went wrong with the transaction.',
                       `${txUrl} => ${JSON.stringify(err, null, 2)}`,
                     );
                   }
