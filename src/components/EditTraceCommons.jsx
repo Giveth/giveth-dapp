@@ -164,7 +164,7 @@ const TraceReviewer = ({
   const reviewers = useReviewers();
   return (
     <Fragment>
-      <Form.Item className="custom-form-item trace-reviewer" valuePropName="checked">
+      <Form.Item className="custom-form-item trace-donate-community" valuePropName="checked">
         {toggleHasReviewer && (
           <Checkbox
             className="trace-reviewer-checkbox"
@@ -172,9 +172,10 @@ const TraceReviewer = ({
             checked={hasReviewer}
             onChange={toggleHasReviewer}
             disabled={disabled}
-          />
+          >
+            {traceType} reviewer
+          </Checkbox>
         )}
-        <span>{`${traceType} reviewer`}</span>
       </Form.Item>
       {hasReviewer && (
         <Fragment>
@@ -234,16 +235,15 @@ const TraceDatePicker = ({ onChange, value, disabled }) => {
   return (
     <Row gutter={16}>
       <Col className="gutter-row" span={10}>
-        <Form.Item label="Date" className="custom-form-item">
+        <Form.Item
+          label="Date"
+          className="custom-form-item"
+          rules={[{ required: true, message: 'Date is required' }]}
+        >
           <DatePicker
             disabledDate={current => {
               return current && current > moment().startOf('day');
             }}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
             defaultValue={value || maxValue}
             onChange={(_, dateString) => onChange(getStartOfDayUTC(dateString))}
             disabled={disabled}
@@ -302,7 +302,7 @@ const TraceToken = ({
 
   return (
     <Row gutter={16} align="middle">
-      <Col className="gutter-row" span={12}>
+      <Col className="gutter-row" span={16}>
         <Form.Item
           name="Token"
           label={label}
@@ -338,7 +338,7 @@ const TraceToken = ({
         </Form.Item>
       </Col>
       {!hideTotalAmount && (
-        <Col className="gutter-row" span={12}>
+        <Col className="gutter-row" span={8}>
           <Typography.Text className="ant-form-text" type="secondary">
             ≈ {totalAmount}
           </Typography.Text>
