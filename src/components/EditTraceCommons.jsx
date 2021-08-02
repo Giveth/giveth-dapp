@@ -241,6 +241,7 @@ const TraceDatePicker = ({ onChange, value, disabled }) => {
           rules={[{ required: true, message: 'Date is required' }]}
         >
           <DatePicker
+            value={value}
             disabledDate={current => {
               return current && current > moment().startOf('day');
             }}
