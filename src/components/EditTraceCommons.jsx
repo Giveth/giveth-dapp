@@ -302,11 +302,11 @@ const TraceToken = ({
 
   return (
     <Row gutter={16} align="middle">
-      <Col className="gutter-row" span={16}>
+      <Col className="gutter-row" span={14}>
         <Form.Item
           name="Token"
           label={label}
-          className="custom-form-item"
+          className="custom-form-item mb-2"
           extra="Select the token you want to be reimbursed in."
           rules={[{ required: true, message: 'Payment currency is required' }]}
           initialValue={initialValue.symbol}
@@ -338,7 +338,7 @@ const TraceToken = ({
         </Form.Item>
       </Col>
       {!hideTotalAmount && (
-        <Col className="gutter-row" span={8}>
+        <Col className="gutter-row" span={10}>
           <Typography.Text className="ant-form-text" type="secondary">
             ≈ {totalAmount}
           </Typography.Text>
