@@ -615,7 +615,7 @@ const ViewTrace = props => {
                         </div>
                       </div>
 
-                      <div id="status-updates" className="col-md-6">
+                      <div id="status-updates" className="col-md-6 mt-5 mt-md-0">
                         <h4>Status updates</h4>
                         <TraceConversations
                           trace={trace}
@@ -664,44 +664,46 @@ const ViewTrace = props => {
                         </Form>
                       </div>
                     )}
+                  </div>
 
-                    <div id="donations" className="spacer-top-50">
-                      {trace.status !== Trace.PROPOSED && (
-                        <React.Fragment>
-                          <Row justify="space-between">
-                            <Col span={12} className="align-items-center d-flex">
-                              <h5 className="mb-0">{donationsTitle}</h5>
-                              {newDonations > 0 && (
-                                <span
-                                  className="badge badge-primary ml-4"
-                                  style={{ fontSize: '12px', padding: '6px' }}
-                                >
-                                  {newDonations} NEW
-                                </span>
-                              )}
-                            </Col>
-                            <Col span={12}>
-                              {isActiveTrace() && (
-                                <Row gutter={[16, 16]} justify="end">
-                                  <Col xs={24} sm={12} lg={8}>
-                                    <DonateButton {...donateButtonProps} />
-                                  </Col>
-                                </Row>
-                              )}
-                            </Col>
-                          </Row>
-                          <DonationList
-                            donations={donations}
-                            isLoading={isLoadingDonations}
-                            total={donations.length}
-                            loadMore={loadMoreDonations}
-                            newDonations={newDonations}
-                            useAmountRemaining
-                            status={trace.status}
-                          />
-                        </React.Fragment>
-                      )}
-                    </div>
+                  <div id="donations" className="spacer-top-50 pt-5 col-md-8 mx-auto mb-3">
+                    {trace.status !== Trace.PROPOSED && (
+                      <React.Fragment>
+                        <Row justify="space-between">
+                          <Col span={12} className="align-items-center d-flex">
+                            <h5 className="mb-0">{donationsTitle}</h5>
+                            {newDonations > 0 && (
+                              <span
+                                className="badge badge-primary ml-4"
+                                style={{ fontSize: '12px', padding: '6px' }}
+                              >
+                                {newDonations} NEW
+                              </span>
+                            )}
+                          </Col>
+                          <Col span={12}>
+                            {isActiveTrace() && (
+                              <Row gutter={[16, 16]} justify="end">
+                                <Col xs={24} sm={12} lg={8}>
+                                  <DonateButton {...donateButtonProps} />
+                                </Col>
+                              </Row>
+                            )}
+                          </Col>
+                        </Row>
+                      </React.Fragment>
+                    )}
+                  </div>
+                  <div className="col-md-10 mx-auto">
+                    <DonationList
+                      donations={donations}
+                      isLoading={isLoadingDonations}
+                      total={donations.length}
+                      loadMore={loadMoreDonations}
+                      newDonations={newDonations}
+                      useAmountRemaining
+                      status={trace.status}
+                    />
                   </div>
                 </div>
               </div>

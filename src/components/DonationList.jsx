@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import config from 'configuration';
 import Trace from 'models/Trace';
 import Loader from './Loader';
-import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, shortenAddress } from '../lib/helpers';
 import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
@@ -147,13 +147,15 @@ class DonationListItem extends Component {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {d.giverAddress}
+                {shortenAddress(d.giverAddress)}
               </a>
             </td>
           ) : (
             <td className="td-tx-address">{d.giverAddress}</td>
           )}
-          <td className="td-user">{d.comment}</td>
+          <td className="td-user" style={{ whiteSpace: 'normal' }}>
+            {d.comment}
+          </td>
           {this.props.hasProposedDelegation && (
             <td className="td-commit">
               {d.commitTime ? moment(d.commitTime).format('lll') : 'Committed'}
@@ -198,7 +200,10 @@ const DonationList = props => {
         {isLoading && total === 0 && <Loader className="relative" />}
         {donations.length > 0 && (
           <div className="table-container" style={{ marginTop: 0, marginBottom: '50px' }}>
-            <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
+            <table
+              className="table table-responsive table-hover mx-auto"
+              style={{ width: 'fit-content' }}
+            >
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
