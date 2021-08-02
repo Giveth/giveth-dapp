@@ -82,7 +82,7 @@ function EditTraceOld(props) {
     if (loadingAmount) {
       setSubmitButtonText('Loading Amount');
     } else {
-      setSubmitButtonText('Update Payment');
+      setSubmitButtonText('Update Trace');
     }
   }, [loadingAmount, userIsCampaignOwner]);
 
