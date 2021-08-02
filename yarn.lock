@@ -17353,13 +17353,6 @@ react-toastify@2.1.7:
     prop-types "^15.6.0"
     react-transition-group "^2.2.1"
 
-react-toggle@^4.0.2:
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/react-toggle/-/react-toggle-4.1.2.tgz#b00500832f925ad524356d909821821ae39f6c52"
-  integrity sha512-4Ohw31TuYQdhWfA6qlKafeXx3IOH7t4ZHhmRdwsm1fQREwOBGxJT+I22sgHqR/w8JRdk+AeMCJXPImEFSrNXow==
-  dependencies:
-    classnames "^2.2.5"
-
 react-tooltip@^3.11.1:
   version "3.11.6"
   resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-3.11.6.tgz#4f9735a2a4aa50580af351ce23e74a56f41afc0c"
