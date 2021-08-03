@@ -1,7 +1,6 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
@@ -634,34 +633,31 @@ const ViewTrace = props => {
                           <p>These receipts show how the money of this Trace was spent.</p>
                         </div>
 
-                        {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
-                        <Form>
-                          <div className="table-container">
-                            <table className="table table-striped table-hover">
-                              <thead>
-                                <tr>
-                                  <th className="td-item-date">Date</th>
-                                  <th className="td-item-description">Description</th>
-                                  <th className="td-item-amount-fiat">Amount Fiat</th>
-                                  <th className="td-item-amount-ether">
-                                    Amount {trace.token.symbol}
-                                  </th>
-                                  <th className="td-item-file-upload">Attached proof</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {trace.items.map((item, i) => (
-                                  <TraceItem
-                                    key={item._id}
-                                    name={`traceItem-${i}`}
-                                    item={item}
-                                    token={trace.token}
-                                  />
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </Form>
+                        <div className="table-container">
+                          <table className="table table-striped table-hover">
+                            <thead>
+                              <tr>
+                                <th className="td-item-date">Date</th>
+                                <th className="td-item-description">Description</th>
+                                <th className="td-item-amount-fiat">Amount Fiat</th>
+                                <th className="td-item-amount-ether">
+                                  Amount {trace.token.symbol}
+                                </th>
+                                <th className="td-item-file-upload">Attached proof</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {trace.items.map((item, i) => (
+                                <TraceItem
+                                  key={item._id}
+                                  name={`traceItem-${i}`}
+                                  item={item}
+                                  token={trace.token}
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
 
