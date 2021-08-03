@@ -7,7 +7,13 @@ import { Link } from 'react-router-dom';
 import config from 'configuration';
 import Trace from 'models/Trace';
 import Loader from './Loader';
-import { getUserName, getUserAvatar, convertEthHelper, shortenAddress } from '../lib/helpers';
+import {
+  getUserName,
+  getUserAvatar,
+  convertEthHelper,
+  shortenAddress,
+  shortenDescription,
+} from '../lib/helpers';
 import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
@@ -21,13 +27,15 @@ class DonationListItem extends Component {
 
     this.state = {
       showDetails: false,
-      itemType: null, // Delegated ro Directly donated
+      fullComment: false,
+      itemType: null, // Delegated or Directly donated
       hasHistory: this.props.d.status === Donation.PAID, // PAID donations always has history
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
     this.setItemType = this.setItemType.bind(this);
     this.setItemHasHistory = this.setItemHasHistory.bind(this);
+    this.showFullComment = this.showFullComment.bind(this);
   }
 
   setItemType(type) {
@@ -40,6 +48,10 @@ class DonationListItem extends Component {
     this.setState({
       hasHistory,
     });
+  }
+
+  showFullComment() {
+    this.setState({ fullComment: true });
   }
 
   toggleDetail() {
@@ -154,7 +166,7 @@ class DonationListItem extends Component {
             <td className="td-tx-address">{d.giverAddress}</td>
           )}
           <td className="td-user" style={{ whiteSpace: 'normal' }}>
-            {d.comment}
+            {shortenDescription(d.comment, this.state.fullComment, this.showFullComment)}
           </td>
           {this.props.hasProposedDelegation && (
             <td className="td-commit">

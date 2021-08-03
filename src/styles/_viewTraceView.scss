@@ -24,14 +24,14 @@
 
     td {
       height: 40px;
-      vertical-align: middle;
+      vertical-align: top;
 
       &.td-user {
         min-width: 80px;
 
         .sb-avatar {
           display: inline-block !important;
-          margin-right: 24px;
+          margin-right: 5px;
         }
 
         p {

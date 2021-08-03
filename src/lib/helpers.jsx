@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal } from 'antd';
+import React, { Fragment } from 'react';
+import { Modal, Button } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -8,6 +8,24 @@ import Resizer from 'react-image-file-resizer';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
+
+export const shortenDescription = (description, showAll = false, onClick, charsLength = 100) => {
+  if (!description) {
+    return '';
+  }
+  if (description.length < charsLength || showAll) {
+    return description;
+  }
+
+  return (
+    <Fragment>
+      {description.slice(0, charsLength)}
+      <Button onClick={onClick} type="link" className="px-2">
+        …
+      </Button>
+    </Fragment>
+  );
+};
 
 export const shortenAddress = (address, charsLength = 4) => {
   const prefixLength = 2; // "0x"
