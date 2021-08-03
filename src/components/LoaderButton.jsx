@@ -11,7 +11,7 @@ import config from '../configuration';
  * Renders a button with an optional loader
  *
  *  @param className      ClassNames
- *  @param formNoValidate Whether to validate formsy
+ *  @param onClick        onClick
  *  @param disabled       Disables button
  *  @param isLoading      State of button. If true, disables and renders spinner
  *  @param loadingText    Text to show when state is loading

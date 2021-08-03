@@ -1,4 +1,3 @@
-import { withFormsy } from 'formsy-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -6,17 +5,6 @@ import { convertEthHelper } from 'lib/helpers';
 import TraceItemModel from 'models/TraceItem';
 import { utils } from 'web3';
 import DescriptionRender from './DescriptionRender';
-
-/** *
- * NOTE: This component is created as a Formsy form component
- * That way we can perform validation on editing traces
- * based on trace items being added
- *
- * This also means that this component needs to be wrapped in a
- * Formsy Form component or it won't mount
- *
- * See EditTrace component
- ** */
 
 class TraceItem extends React.Component {
   componentDidMount() {
@@ -94,4 +82,4 @@ TraceItem.defaultProps = {
   removeItem: () => {},
 };
 
-export default withFormsy(TraceItem);
+export default TraceItem;

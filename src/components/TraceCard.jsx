@@ -53,14 +53,8 @@ const TraceCard = ({ trace }) => {
           ) {
             const newTraceEditUrl = `/${formType}/${trace._id}/edit`;
             history.push(newTraceEditUrl);
-          } else if ([Trace.PROPOSED, Trace.REJECTED].includes(trace.status)) {
-            history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit/proposed`);
-            // TODO:
-            // history.push(`/traces/${trace._id}/edit/proposed`);
           } else {
             history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
-            // TODO:
-            // history.push(`/traces/${trace._id}/edit`);
           }
         })
         .catch(err => {

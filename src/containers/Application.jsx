@@ -26,8 +26,6 @@ import WhiteListProvider, {
 } from '../contextProviders/WhiteListProvider';
 import NotificationModalProvider from '../contextProviders/NotificationModalProvider';
 
-import '../lib/validators';
-
 /**
  * Here we hack to make stuff globally available
  */
