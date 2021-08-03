@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
-import { Form, Select, Input, InputNumber, Checkbox, Button, Modal } from 'antd';
+import { Form, Select, Input, InputNumber, Checkbox, Button, Modal, Typography } from 'antd';
 import { GivethBridge } from 'giveth-bridge';
 
 import getTokens from '../lib/blockchain/getTokens';
@@ -99,6 +99,7 @@ const DonateButtonModal = props => {
   const [customAddress, setCustomAddress] = useState();
   const [formIsValid, setFormIsValid] = useState(true);
   const [donationComment, setDonationComment] = useState('');
+  const [usdRate, setUsdRate] = useState(0);
 
   const { nativeTokenName } = config;
   const { decimals, symbol: tokenSymbol, balance: selectedTokenBalance } = selectedToken;
@@ -109,6 +110,7 @@ const DonateButtonModal = props => {
   const tokens = getTokens({ web3, tokenWhitelist });
   const isCorrectNetwork = isHomeNetwork;
   const userAddress = currentUser.address;
+  const usdValue = usdRate * amount;
 
   const form = useRef();
   const givethBridge = useRef();
@@ -243,6 +245,24 @@ const DonateButtonModal = props => {
     updateAllowanceStatus();
   }, [amount, allowance]);
 
+  const updateRates = async () => {
+    try {
+      const { rates } = await getConversionRates(new Date(), tokenSymbol, 'USD');
+      const rate = rates.USD;
+      if (rate) setUsdRate(rate);
+      else {
+        ErrorHandler({}, 'Rate not found!');
+        setUsdRate(0);
+      }
+    } catch (e) {
+      setUsdRate(0);
+    }
+  };
+
+  useEffect(() => {
+    if (tokenSymbol) updateRates().then();
+  }, [tokenSymbol]);
+
   useEffect(() => {
     if (isCorrectNetwork) {
       pollToken();
@@ -312,7 +332,6 @@ const DonateButtonModal = props => {
    * @param allowanceAmount
    * @param comment
    * @param _allowanceApprovalType
-   * @param usdValue
    * @returns {Promise<unknown>}
    */
   const donateWithBridge = async ({
@@ -321,7 +340,6 @@ const DonateButtonModal = props => {
     donationOwnerAddress,
     comment,
     _allowanceApprovalType = AllowanceApprovalType.Default,
-    usdValue,
   }) => {
     const { homeEtherscan: etherscanUrl } = config;
 
@@ -496,7 +514,6 @@ const DonateButtonModal = props => {
     donationOwnerAddress,
     _allowanceApprovalType,
     comment,
-    usdValue,
   }) => {
     const community = await CommunityService.getByDelegateId(communityId);
 
@@ -561,7 +578,6 @@ const DonateButtonModal = props => {
             _amount: amountCommunity,
             comment,
             _allowanceApprovalType,
-            usdValue,
           })
         )
           result = await donateWithBridge({
@@ -570,7 +586,6 @@ const DonateButtonModal = props => {
             donationOwnerAddress,
             allowanceAmount: 0,
             comment,
-            usdValue,
           });
         // eslint-disable-next-line no-empty
       } catch (e) {}
@@ -583,8 +598,6 @@ const DonateButtonModal = props => {
     const { communityId } = model;
 
     const donationOwnerAddress = customAddress || userAddress;
-    const { rates } = await getConversionRates(new Date(), tokenSymbol, 'USD');
-    const usdValue = rates.USD * amount;
     if (communityId && usdValue > config.minimumUsdValueForDonate3PercentToCommunity) {
       donateToCommunity({
         communityId,
@@ -592,7 +605,6 @@ const DonateButtonModal = props => {
         donationOwnerAddress,
         _allowanceApprovalType: allowanceApprovalType.current,
         comment: donationComment,
-        usdValue,
       })
         .then()
         .catch(() => {});
@@ -604,7 +616,6 @@ const DonateButtonModal = props => {
         allowanceAmount: amount,
         comment: donationComment,
         _allowanceApprovalType: allowanceApprovalType.current,
-        usdValue,
       })
         .then()
         .catch(() => {});
@@ -658,7 +669,7 @@ const DonateButtonModal = props => {
   }
 
   return (
-    <Fragment>
+    <div id="donate-modal">
       {contentVisible && (
         <Form
           className="card-form"
@@ -716,71 +727,75 @@ const DonateButtonModal = props => {
 
           <div style={{ maxWidth: '540px' }}>
             {validProvider && isCorrectNetwork && userAddress && (
-              <div className="d-flex justify-content-between align-items-center flex-wrap mb-4">
-                <div className="mt-3">
-                  <div style={modalLabelStyle}>Make your donation in</div>
-                  <Select
-                    name="token"
-                    id="token-select"
-                    value={selectedToken.address}
-                    onChange={setToken}
-                    disabled={isSaving || model.acceptsSingleToken}
-                    style={{ minWidth: '200px' }}
-                  >
-                    {tokenWhitelist.map(item => (
-                      <Select.Option value={item.address} key={item.address}>
-                        {item.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  <div style={modalExtraNoteStyle}>Select the token you want to donate</div>
+              <Fragment>
+                <div className="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                  <div className="mt-3">
+                    <div style={modalLabelStyle}>Make your donation in</div>
+                    <Select
+                      name="token"
+                      id="token-select"
+                      value={selectedToken.address}
+                      onChange={setToken}
+                      disabled={isSaving || model.acceptsSingleToken}
+                      style={{ minWidth: '200px' }}
+                    >
+                      {tokenWhitelist.map(item => (
+                        <Select.Option value={item.address} key={item.address}>
+                          {item.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    <div style={modalExtraNoteStyle}>Select the token you want to donate</div>
+                  </div>
+
+                  {maxAmount.toNumber() !== 0 && !zeroBalance && (
+                    <div className="mt-3">
+                      <div style={modalLabelStyle}>Amount to donate</div>
+                      <InputNumber
+                        min={0}
+                        max={maxAmount
+                          .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
+                          .toNumber()}
+                        id="amount-input"
+                        value={amount}
+                        onChange={setAmount}
+                        autoFocus
+                        style={{ minWidth: '200px' }}
+                        className="rounded"
+                        size="large"
+                        precision={decimals}
+                        disabled={isSaving}
+                      />
+                      {!isSaving && (
+                        <Button
+                          style={{ marginLeft: '-60px' }}
+                          type="link"
+                          onClick={() => setAmount(maxAmount.toNumber())}
+                        >
+                          MAX
+                        </Button>
+                      )}
+                      <Typography.Text className="ant-form-text pl-2 eq-usd-value" type="secondary">
+                        ≈ {Math.round(usdValue)} USD
+                      </Typography.Text>
+                      {/* TODO: remove this b/c the wallet provider will contain this info */}
+                      <div style={modalExtraNoteStyle}>
+                        Wallet balance:&nbsp;
+                        {convertEthHelper(
+                          utils.fromWei(balance ? balance.toFixed() : ''),
+                          decimals,
+                        )}
+                        {` ${tokenSymbol}`}
+                      </div>
+                    </div>
+                  )}
+                  {zeroBalance && (
+                    <div className="font-weight-bold">
+                      You don&apos;t have any {tokenSymbol} token!
+                    </div>
+                  )}
                 </div>
 
-                {validProvider && maxAmount.toNumber() !== 0 && !zeroBalance && (
-                  <div className="mt-3">
-                    <div style={modalLabelStyle}>Amount to donate</div>
-                    <InputNumber
-                      min={0}
-                      max={maxAmount
-                        .decimalPlaces(Number(decimals), BigNumber.ROUND_DOWN)
-                        .toNumber()}
-                      id="amount-input"
-                      value={amount}
-                      onChange={setAmount}
-                      autoFocus
-                      style={{ minWidth: '200px' }}
-                      className="rounded"
-                      size="large"
-                      precision={decimals}
-                      disabled={isSaving}
-                    />
-                    {!isSaving && (
-                      <Button
-                        style={{ marginLeft: '-60px' }}
-                        type="link"
-                        onClick={() => setAmount(maxAmount.toNumber())}
-                      >
-                        MAX
-                      </Button>
-                    )}
-                    {/* TODO: remove this b/c the wallet provider will contain this info */}
-                    <div style={modalExtraNoteStyle}>
-                      Wallet balance:&nbsp;
-                      {convertEthHelper(utils.fromWei(balance ? balance.toFixed() : ''), decimals)}
-                      {` ${tokenSymbol}`}
-                    </div>
-                  </div>
-                )}
-                {zeroBalance && (
-                  <div className="font-weight-bold">
-                    You don&apos;t have any {tokenSymbol} token!
-                  </div>
-                )}
-              </div>
-            )}
-
-            {isCorrectNetwork && validProvider && userAddress && (
-              <Fragment>
                 {!zeroBalance && (
                   <Fragment>
                     {showCustomAddress && (
@@ -895,7 +910,7 @@ const DonateButtonModal = props => {
           </div>
         </Form>
       )}
-    </Fragment>
+    </div>
   );
 };
 
