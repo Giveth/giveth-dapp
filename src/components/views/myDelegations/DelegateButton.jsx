@@ -71,7 +71,7 @@ class DelegateButton extends Component {
           footer={null}
           centered
           destroyOnClose
-          className="pb-0"
+          className="pb-0 custom-ant-modal"
           style={modalStyles}
         >
           <DelegateButtonModal {...this.props} closeDialog={this.closeDialog} />
