@@ -609,6 +609,21 @@ const DonateButtonModal = props => {
     try {
       let allowanceRequired;
       if (allowanceType === AllowanceApprovalType.Infinite) {
+        const proceed = await new Promise(resolve =>
+          Modal.confirm({
+            title: 'Infinite Allowance',
+            content: `This will give the Giveth DApp permission to withdraw ${tokenSymbol} from your account and automate transactions for you.`,
+            cancelText: 'Cancel',
+            okText: 'OK',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          }),
+        );
+
+        if (!proceed) {
+          setSaving(false);
+          return;
+        }
         allowanceRequired = INFINITE_ALLOWANCE;
       } else {
         allowanceRequired = utils.toWei(new BigNumber(amount).toFixed(18));
@@ -627,7 +642,6 @@ const DonateButtonModal = props => {
         setAllowanceStatus(AllowanceStatus.Enough);
       }
       setSaving(false);
-      return false;
     } catch (err) {
       setSaving(false);
       // error code 4001 means user has canceled the transaction
@@ -637,7 +651,6 @@ const DonateButtonModal = props => {
       }
 
       ErrorHandler(err, message);
-      return false;
     }
   };
 
