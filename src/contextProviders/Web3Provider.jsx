@@ -36,6 +36,7 @@ class Web3Provider extends Component {
     this.displayForeignNetRequiredWarning = this.displayForeignNetRequiredWarning.bind(this);
     this.displayHomeNetRequiredWarning = this.displayHomeNetRequiredWarning.bind(this);
     this.initOnBoard = this.initOnBoard.bind(this);
+    this.switchWallet = this.switchWallet.bind(this);
   }
 
   componentDidMount() {
@@ -56,6 +57,7 @@ class Web3Provider extends Component {
         wallet: wallet => {
           window.localStorage.setItem('selectedWallet', wallet.name);
           const web3 = new Web3(wallet.provider);
+          web3[wallet.name] = true;
           this.setState({ validProvider: !!wallet.provider, web3 });
         },
         network: network => this.setState({ ...getNetworkState(network), networkId: network }),
@@ -74,6 +76,10 @@ class Web3Provider extends Component {
       onboard.walletSelect().then();
     }
     this.setState({ onboard });
+  }
+
+  switchWallet() {
+    this.state.onboard.walletSelect().then();
   }
 
   enableProvider() {
@@ -108,6 +114,14 @@ class Web3Provider extends Component {
       web3,
       networkId,
     } = this.state;
+
+    const {
+      switchWallet,
+      enableProvider,
+      initOnBoard,
+      displayForeignNetRequiredWarning,
+      displayHomeNetRequiredWarning,
+    } = this;
 
     const isEnabled = !!web3 && !!account && !!balance && !!networkId;
 
@@ -155,10 +169,11 @@ class Web3Provider extends Component {
               web3,
             },
             actions: {
-              enableProvider: this.enableProvider,
-              initOnBoard: this.initOnBoard,
-              displayForeignNetRequiredWarning: this.displayForeignNetRequiredWarning,
-              displayHomeNetRequiredWarning: this.displayHomeNetRequiredWarning,
+              switchWallet,
+              enableProvider,
+              initOnBoard,
+              displayForeignNetRequiredWarning,
+              displayHomeNetRequiredWarning,
             },
           }}
         >
