@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Modal, Button } from 'antd';
+import { Modal, Button, Typography } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -9,7 +9,7 @@ import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
 
-export const shortenDescription = (description, showAll = false, onClick, charsLength = 100) => {
+export const shortenDescription = (description, showAll = false, onClick, charsLength = 110) => {
   if (!description) {
     return '';
   }
@@ -19,9 +19,9 @@ export const shortenDescription = (description, showAll = false, onClick, charsL
 
   return (
     <Fragment>
-      {description.slice(0, charsLength)}
-      <Button onClick={onClick} type="link" className="px-2">
-        …
+      {`${description.slice(0, charsLength)} ...`}
+      <Button onClick={onClick} type="link" className="px-2 py-0">
+        <Typography.Text underline>See more</Typography.Text>
       </Button>
     </Fragment>
   );
