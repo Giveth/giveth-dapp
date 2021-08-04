@@ -25,7 +25,6 @@ import { Context as ConversionRateContext } from '../contextProviders/Conversion
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
-import ErrorHandler from '../lib/ErrorHandler';
 
 BigNumber.config({ DECIMAL_PLACES: 18 });
 
@@ -78,22 +77,14 @@ const ModalContent = props => {
   const delegateFromType = useRef();
   const isMounted = useRef(false);
 
-  const updateRates = async () => {
-    try {
-      const { rates } = await getConversionRates(new Date(), tokenSymbol, 'USD');
-      const rate = rates.USD;
-      if (rate) setUsdRate(rate);
-      else {
-        ErrorHandler({}, 'Rate not found!');
-        setUsdRate(0);
-      }
-    } catch (e) {
-      setUsdRate(0);
-    }
+  const updateRates = () => {
+    getConversionRates(new Date(), tokenSymbol, 'USD')
+      .then(res => setUsdRate(res.rates.USD))
+      .catch(() => setUsdRate(0));
   };
 
   useEffect(() => {
-    if (tokenSymbol) updateRates().then();
+    if (tokenSymbol) updateRates();
   }, [tokenSymbol]);
 
   useEffect(() => {

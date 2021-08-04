@@ -245,22 +245,14 @@ const DonateButtonModal = props => {
     updateAllowanceStatus();
   }, [amount, allowance]);
 
-  const updateRates = async () => {
-    try {
-      const { rates } = await getConversionRates(new Date(), tokenSymbol, 'USD');
-      const rate = rates.USD;
-      if (rate) setUsdRate(rate);
-      else {
-        ErrorHandler({}, 'Rate not found!');
-        setUsdRate(0);
-      }
-    } catch (e) {
-      setUsdRate(0);
-    }
+  const updateRates = () => {
+    getConversionRates(new Date(), tokenSymbol, 'USD')
+      .then(res => setUsdRate(res.rates.USD))
+      .catch(() => setUsdRate(0));
   };
 
   useEffect(() => {
-    if (tokenSymbol) updateRates().then();
+    if (tokenSymbol) updateRates();
   }, [tokenSymbol]);
 
   useEffect(() => {

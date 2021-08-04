@@ -11,7 +11,6 @@ import ReactTooltip from 'react-tooltip';
 import DonationBlockchainService from '../../../services/DonationBlockchainService';
 import { convertEthHelper, roundBigNumber } from '../../../lib/helpers';
 import AmountSliderMarks from '../../AmountSliderMarks';
-import ErrorHandler from '../../../lib/ErrorHandler';
 
 function getFilterType(types, donation) {
   return types.filter(
@@ -64,22 +63,14 @@ class DelegateButtonModal extends Component {
   }
 
   componentDidMount() {
-    this.updateRates().then();
+    this.updateRates();
   }
 
-  async updateRates() {
+  updateRates() {
     const { donation, getConversionRates } = this.props;
-    try {
-      const { rates } = await getConversionRates(new Date(), donation.token.symbol, 'USD');
-      const rate = rates.USD;
-      if (rate) this.setState({ usdRate: rate });
-      else {
-        ErrorHandler({}, 'Rate not found!');
-        this.setState({ usdRate: 0 });
-      }
-    } catch (e) {
-      this.setState({ usdRate: 0 });
-    }
+    getConversionRates(new Date(), donation.token.symbol, 'USD')
+      .then(res => this.setState({ usdRate: res.rates.USD }))
+      .catch(() => this.setState({ usdRate: 0 }));
   }
 
   selectedObject(type, { target }) {
