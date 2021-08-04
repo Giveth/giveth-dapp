@@ -3,3 +3,10 @@
         display: block;
     }
 }
+
+@media (min-width: 666px) {
+  #donate-modal .eq-usd-value {
+    position: absolute;
+    margin-top: 14px;
+  }
+}

@@ -9,6 +9,7 @@ import config from '../../../configuration';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpers';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
+import { Context as ConversionRateContext } from '../../../contextProviders/ConversionRateProvider';
 import { Trace } from '../../../models';
 import Campaign from '../../../models/Campaign';
 import BridgedTrace from '../../../models/BridgedTrace';
@@ -22,6 +23,9 @@ function DelegationsItem({ campaigns, donation, traces }) {
   const {
     state: { balance, isForeignNetwork, web3 },
   } = useContext(Web3Provider);
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
 
   return (
     <tr>
@@ -40,6 +44,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
               balance={balance}
               currentUser={currentUser}
               symbol={(donation.token && donation.token.symbol) || config.nativeTokenName}
+              getConversionRates={getConversionRates}
             />
           )}
 
@@ -57,6 +62,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
                   (!m.acceptsSingleToken || m.token.symbol === donation.token.symbol),
               )}
               donation={donation}
+              getConversionRates={getConversionRates}
               balance={balance}
               currentUser={currentUser}
               traceOnly

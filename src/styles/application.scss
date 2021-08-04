@@ -5,8 +5,6 @@
 @import 'layout.scss';
 @import 'typography.scss';
 // views
-@import 'causesView.scss';
-@import 'editCausesView.scss';
 @import 'viewCauseView.scss';
 @import 'viewAlertView.scss';
 @import 'viewCampaignView.scss';
@@ -35,9 +33,7 @@
 @import 'totalGasPaid.scss';
 // misc
 @import 'toastify-overrides.scss';
-@import 'react-token-input-overrides.scss';
 @import 'pagination.scss';
-@import 'cropper.scss';
 @import 'searchBox';
 // overrides
 @import 'card.scss';

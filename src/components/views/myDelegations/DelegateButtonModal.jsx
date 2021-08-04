@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
-import { Input, Select, Slider, Form, InputNumber, Modal } from 'antd';
+import { Input, Select, Slider, Form, InputNumber, Modal, Typography } from 'antd';
 import Web3, { utils } from 'web3';
 import PropTypes from 'prop-types';
 
@@ -47,6 +47,7 @@ class DelegateButtonModal extends Component {
 
     this.state = {
       isSaving: false,
+      usdRate: 0,
       objectsToDelegateToCampaign: [],
       objectsToDelegateToTrace: [],
       amount: convertEthHelper(amountRemaining, token.decimals),
@@ -59,6 +60,17 @@ class DelegateButtonModal extends Component {
 
     this.submit = this.submit.bind(this);
     this.selectedObject = this.selectedObject.bind(this);
+  }
+
+  componentDidMount() {
+    this.updateRates();
+  }
+
+  updateRates() {
+    const { donation, getConversionRates } = this.props;
+    getConversionRates(new Date(), donation.token.symbol, 'USD')
+      .then(res => this.setState({ usdRate: res.rates.USD }))
+      .catch(() => this.setState({ usdRate: 0 }));
   }
 
   selectedObject(type, { target }) {
@@ -211,6 +223,7 @@ class DelegateButtonModal extends Component {
       curProjectId,
       amount,
       sliderMarks,
+      usdRate,
     } = this.state;
 
     const pStyle = { whiteSpace: 'normal' };
@@ -246,9 +259,10 @@ class DelegateButtonModal extends Component {
     }
     const totalSelected = objectsToDelegateToTrace.length + objectsToDelegateToCampaign.length;
     const formIsValid = totalSelected !== 0 && !isZeroAmount;
+    const usdValue = usdRate * amount;
 
     return (
-      <React.Fragment>
+      <div id="delegate-modal">
         {traceOnly && <p>Select a Trace to delegate this donation to:</p>}
         {!traceOnly && <p>Select a Campaign or Trace to delegate this donation to:</p>}
 
@@ -340,6 +354,9 @@ class DelegateButtonModal extends Component {
                   size="large"
                   precision={decimals}
                 />
+                <Typography.Text className="ant-form-text pl-2" type="secondary">
+                  ≈ {Math.round(usdValue)} USD
+                </Typography.Text>
               </div>
 
               <div className="form-group">
@@ -363,7 +380,7 @@ class DelegateButtonModal extends Component {
             {isSaving ? 'Delegating...' : 'Delegate here'}
           </button>
         </Form>
-      </React.Fragment>
+      </div>
     );
   }
 }
@@ -374,6 +391,7 @@ DelegateButtonModal.propTypes = {
   donation: PropTypes.instanceOf(Donation).isRequired,
   closeDialog: PropTypes.func.isRequired,
   web3: PropTypes.instanceOf(Web3).isRequired,
+  getConversionRates: PropTypes.func.isRequired,
 };
 
 DelegateButtonModal.defaultProps = {
