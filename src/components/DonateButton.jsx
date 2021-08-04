@@ -55,7 +55,7 @@ const DonateButton = props => {
         footer={null}
         centered
         destroyOnClose
-        className="pb-0 donateModal"
+        className="pb-0 custom-ant-modal"
         style={modalStyles}
       >
         <DonateButtonModal {...props} setModalVisible={setModalVisible} />
