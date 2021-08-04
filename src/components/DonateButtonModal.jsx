@@ -99,6 +99,7 @@ const DonateButtonModal = props => {
   const [customAddress, setCustomAddress] = useState();
   const [formIsValid, setFormIsValid] = useState(true);
   const [donationComment, setDonationComment] = useState('');
+  const [infiniteAllowance, setInfiniteAllowance] = useState(false);
 
   const { nativeTokenName } = config;
   const { decimals, symbol: tokenSymbol, balance: selectedTokenBalance } = selectedToken;
@@ -113,7 +114,6 @@ const DonateButtonModal = props => {
   const form = useRef();
   const givethBridge = useRef();
   const stopPolling = useRef();
-  const allowanceApprovalType = useRef();
 
   const clearUp = () => {
     if (stopPolling.current) stopPolling.current();
@@ -309,9 +309,7 @@ const DonateButtonModal = props => {
    * }
    * @param _amount
    * @param donationOwnerAddress
-   * @param allowanceAmount
    * @param comment
-   * @param _allowanceApprovalType
    * @param usdValue
    * @returns {Promise<unknown>}
    */
@@ -320,7 +318,6 @@ const DonateButtonModal = props => {
     _amount,
     donationOwnerAddress,
     comment,
-    _allowanceApprovalType = AllowanceApprovalType.Default,
     usdValue,
   }) => {
     const { homeEtherscan: etherscanUrl } = config;
@@ -494,7 +491,6 @@ const DonateButtonModal = props => {
     communityId,
     _amount,
     donationOwnerAddress,
-    _allowanceApprovalType,
     comment,
     usdValue,
   }) => {
@@ -560,7 +556,6 @@ const DonateButtonModal = props => {
             donationOwnerAddress,
             _amount: amountCommunity,
             comment,
-            _allowanceApprovalType,
             usdValue,
           })
         )
@@ -568,7 +563,6 @@ const DonateButtonModal = props => {
             toAdmin: model,
             _amount: amountTrace,
             donationOwnerAddress,
-            allowanceAmount: 0,
             comment,
             usdValue,
           });
@@ -590,7 +584,6 @@ const DonateButtonModal = props => {
         communityId,
         _amount: amount,
         donationOwnerAddress,
-        _allowanceApprovalType: allowanceApprovalType.current,
         comment: donationComment,
         usdValue,
       })
@@ -601,9 +594,7 @@ const DonateButtonModal = props => {
         toAdmin: model,
         _amount: amount,
         donationOwnerAddress,
-        allowanceAmount: amount,
         comment: donationComment,
-        _allowanceApprovalType: allowanceApprovalType.current,
         usdValue,
       })
         .then()
@@ -613,19 +604,19 @@ const DonateButtonModal = props => {
     setSaving(true);
   };
 
-  const submitDefault = () => {
-    allowanceApprovalType.current = AllowanceApprovalType.Default;
-    form.current.submit();
-  };
-
-  const submitInfiniteAllowance = async () => {
-    allowanceApprovalType.current = AllowanceApprovalType.Infinite;
+  const submitAllowance = async allowanceType => {
     setSaving(true);
     try {
+      let allowanceRequired;
+      if (allowanceType === AllowanceApprovalType.Infinite) {
+        allowanceRequired = INFINITE_ALLOWANCE;
+      } else {
+        allowanceRequired = utils.toWei(new BigNumber(amount).toFixed(18));
+      }
       const allowed = await DonationBlockchainService.approveERC20tokenTransfer(
         selectedToken.address,
         userAddress,
-        INFINITE_ALLOWANCE.toString(),
+        allowanceRequired.toString(),
         () => updateAllowance(UPDATE_ALLOWANCE_DELAY),
         web3,
         tokens[selectedToken.address],
@@ -853,6 +844,16 @@ const DonateButtonModal = props => {
                   </Fragment>
                 )}
 
+                {maxAmount.toNumber() !== 0 && allowanceStatus === AllowanceStatus.Needed && (
+                  <Checkbox
+                    checked={infiniteAllowance}
+                    onChange={e => setInfiniteAllowance(e.target.checked)}
+                    disabled={isSaving}
+                  >
+                    <div style={modalLabelStyle}>Allow infinity access</div>
+                  </Checkbox>
+                )}
+
                 <div className="d-flex">
                   {maxAmount.toNumber() !== 0 && (
                     <div className="w-100 mr-3">
@@ -867,8 +868,13 @@ const DonateButtonModal = props => {
                         isLoading={isSaving}
                         onClick={
                           allowanceStatus !== AllowanceStatus.Needed
-                            ? submitDefault
-                            : submitInfiniteAllowance
+                            ? submit
+                            : () =>
+                                submitAllowance(
+                                  infiniteAllowance
+                                    ? AllowanceApprovalType.Infinite
+                                    : AllowanceApprovalType.Default,
+                                )
                         }
                         data-tip="React-tooltip"
                         loadingText="Pending"
