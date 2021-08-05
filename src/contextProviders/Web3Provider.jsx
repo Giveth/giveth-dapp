@@ -1,4 +1,4 @@
-import React, { Component, createContext, Fragment } from 'react';
+import React, { createContext, Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import Onboard from 'bnc-onboard';
@@ -7,62 +7,50 @@ import Web3 from 'web3';
 import config from '../configuration';
 import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
 
-const Context = createContext();
+const Context = createContext({});
 const { Provider, Consumer } = Context;
-
-const getNetworkState = networkId => ({
-  isHomeNetwork: networkId === config.homeNetworkId,
-  isForeignNetwork: networkId === config.foreignNetworkId,
-});
 
 const wallets = [{ walletName: 'metamask', preferred: true }];
 const torusWallet = { walletName: 'torus', preferred: true };
 if (['develop', 'Ganache'].includes(config.title)) wallets.push(torusWallet);
 
-class Web3Provider extends Component {
-  constructor(props) {
-    super(props);
+const Web3Provider = props => {
+  const [validProvider, setValidProvider] = useState(false);
+  const [network, setNetwork] = useState({});
+  const [web3, setWeb3] = useState();
+  const [account, setAccount] = useState();
+  const [balance, setBalance] = useState();
+  const [onboard, setOnboard] = useState({});
+  const [homeNetRequiredWarning, setHomeNetRequiredWarning] = useState({
+    showHomeNetRequiredWarning: false,
+    homeNetWarningButtonLabel: 'Close',
+  });
+  const [foreignNetRequiredWarning, setForeignNetRequiredWarning] = useState({
+    showForeignNetRequiredWarning: false,
+    foreignNetWarningButtonLabel: 'Close',
+  });
 
-    this.state = {
-      validProvider: false,
-      isHomeNetwork: false,
-      isForeignNetwork: false,
-      showForeignNetRequiredWarning: false,
-      showHomeNetRequiredWarning: false,
-      foreignNetWarningButtonLabel: 'Close',
-      homeNetWarningButtonLabel: 'Close',
-    };
-    this.enableProvider = this.enableProvider.bind(this);
-    this.displayForeignNetRequiredWarning = this.displayForeignNetRequiredWarning.bind(this);
-    this.displayHomeNetRequiredWarning = this.displayHomeNetRequiredWarning.bind(this);
-    this.initOnBoard = this.initOnBoard.bind(this);
-    this.switchWallet = this.switchWallet.bind(this);
-  }
+  const setNetworkState = networkId => {
+    const isHomeNetwork = networkId === config.homeNetworkId;
+    const isForeignNetwork = networkId === config.foreignNetworkId;
+    setNetwork({ networkId, isHomeNetwork, isForeignNetwork });
+  };
 
-  componentDidMount() {
-    this.initOnBoard();
-  }
-
-  componentDidUpdate(prevProps, prevState, _) {
-    if (prevState.networkId !== this.state.networkId) {
-      this.state.onboard.config({ networkId: this.state.networkId });
-    }
-  }
-
-  initOnBoard() {
-    const onboard = Onboard({
+  const initOnBoard = () => {
+    const _onboard = Onboard({
       dappId: config.onboardDappId,
       networkId: config.foreignNetworkId,
       subscriptions: {
         wallet: wallet => {
           window.localStorage.setItem('selectedWallet', wallet.name);
-          const web3 = new Web3(wallet.provider);
-          web3[wallet.name] = true;
-          this.setState({ validProvider: !!wallet.provider, web3 });
+          const _web3 = new Web3(wallet.provider);
+          _web3[wallet.name] = true;
+          setValidProvider(!!wallet.provider);
+          setWeb3(_web3);
         },
-        network: network => this.setState({ ...getNetworkState(network), networkId: network }),
-        address: address => this.setState({ account: address }),
-        balance: balance => this.setState({ balance: new BigNumber(balance) }),
+        network: _network => setNetworkState(_network),
+        address: _address => setAccount(_address),
+        balance: _balance => setBalance(new BigNumber(_balance)),
       },
       walletSelect: {
         wallets,
@@ -70,119 +58,115 @@ class Web3Provider extends Component {
     });
 
     const previouslySelectedWallet = window.localStorage.getItem('selectedWallet');
-    if (previouslySelectedWallet && onboard) {
-      onboard.walletSelect(previouslySelectedWallet).then();
+    if (previouslySelectedWallet) {
+      _onboard
+        .walletSelect(previouslySelectedWallet)
+        .then(selected => selected && _onboard.walletCheck().then());
     } else {
-      onboard.walletSelect().then();
+      _onboard.walletSelect().then(selected => selected && _onboard.walletCheck().then());
     }
-    this.setState({ onboard });
-  }
+    setOnboard(_onboard);
+  };
 
-  switchWallet() {
-    this.state.onboard.walletSelect().then();
-  }
+  const switchWallet = () => {
+    onboard.walletSelect().then(selected => selected && onboard.walletCheck().then());
+  };
 
-  enableProvider() {
-    this.state.onboard.walletCheck().then();
-  }
+  const enableProvider = () => {
+    onboard.walletCheck().then();
+  };
 
-  displayForeignNetRequiredWarning(onClose, buttonLabel = 'Close') {
-    this.setState({
+  const displayForeignNetRequiredWarning = (onClose, buttonLabel = 'Close') => {
+    setForeignNetRequiredWarning({
       showForeignNetRequiredWarning: true,
       onForeignNetWarningClose: onClose,
       foreignNetWarningButtonLabel: buttonLabel,
     });
-  }
+  };
 
-  displayHomeNetRequiredWarning(onClose, buttonLabel = 'Close') {
-    this.setState({
+  const displayHomeNetRequiredWarning = (onClose, buttonLabel = 'Close') => {
+    setHomeNetRequiredWarning({
       showHomeNetRequiredWarning: true,
       onHomeNetWarningClose: onClose,
       homeNetWarningButtonLabel: buttonLabel,
     });
-  }
+  };
 
-  render() {
-    const {
-      account,
-      balance,
-      validProvider,
-      isHomeNetwork,
-      isForeignNetwork,
-      showForeignNetRequiredWarning,
-      showHomeNetRequiredWarning,
-      web3,
-      networkId,
-    } = this.state;
+  const { networkId, isForeignNetwork, isHomeNetwork } = network;
+  const {
+    showHomeNetRequiredWarning,
+    onHomeNetWarningClose,
+    homeNetWarningButtonLabel,
+  } = homeNetRequiredWarning;
+  const {
+    showForeignNetRequiredWarning,
+    onForeignNetWarningClose,
+    foreignNetWarningButtonLabel,
+  } = foreignNetRequiredWarning;
 
-    const {
-      switchWallet,
-      enableProvider,
-      initOnBoard,
-      displayForeignNetRequiredWarning,
-      displayHomeNetRequiredWarning,
-    } = this;
+  useEffect(() => {
+    initOnBoard();
+  }, []);
 
-    const isEnabled = !!web3 && !!account && !!balance && !!networkId;
+  useEffect(() => {
+    if (networkId) onboard.config({ networkId });
+  }, [networkId]);
 
-    return (
-      <Fragment>
-        <ForeignRequiredModal
-          show={showForeignNetRequiredWarning && !isForeignNetwork}
-          closeModal={() => {
-            const onClose = this.state.onForeignNetWarningClose || (() => {});
-            this.setState(
-              {
-                showForeignNetRequiredWarning: false,
-                onForeignNetWarningClose: undefined,
-                foreignNetWarningButtonLabel: 'Close',
-              },
-              onClose,
-            );
-          }}
-          buttonLabel={this.state.foreignNetWarningButtonLabel}
-        />
-        <HomeRequiredModal
-          show={showHomeNetRequiredWarning && !isHomeNetwork}
-          closeModal={() => {
-            const onClose = this.state.onHomeNetWarningClose || (() => {});
-            this.setState(
-              {
-                showHomeNetRequiredWarning: false,
-                onHomeNetWarningClose: undefined,
-                homeNetWarningButtonLabel: undefined,
-              },
-              onClose,
-            );
-          }}
-          buttonLabel={this.state.homeNetWarningButtonLabel}
-        />
-        <Provider
-          value={{
-            state: {
-              account,
-              balance,
-              validProvider,
-              isHomeNetwork,
-              isForeignNetwork,
-              isEnabled,
-              web3,
-            },
-            actions: {
-              switchWallet,
-              enableProvider,
-              initOnBoard,
-              displayForeignNetRequiredWarning,
-              displayHomeNetRequiredWarning,
-            },
-          }}
-        >
-          {this.props.children}
-        </Provider>
-      </Fragment>
-    );
-  }
-}
+  const isEnabled = !!web3 && !!account && !!balance && !!networkId;
+
+  return (
+    <Fragment>
+      <ForeignRequiredModal
+        show={showForeignNetRequiredWarning && !isForeignNetwork}
+        closeModal={() => {
+          const onClose = onForeignNetWarningClose || (() => {});
+          setForeignNetRequiredWarning({
+            showForeignNetRequiredWarning: false,
+            onForeignNetWarningClose: undefined,
+            foreignNetWarningButtonLabel: 'Close',
+          });
+          onClose();
+        }}
+        buttonLabel={foreignNetWarningButtonLabel}
+      />
+      <HomeRequiredModal
+        show={showHomeNetRequiredWarning && !isHomeNetwork}
+        closeModal={() => {
+          const onClose = onHomeNetWarningClose || (() => {});
+          setHomeNetRequiredWarning({
+            showHomeNetRequiredWarning: false,
+            onHomeNetWarningClose: undefined,
+            homeNetWarningButtonLabel: undefined,
+          });
+          onClose();
+        }}
+        buttonLabel={homeNetWarningButtonLabel}
+      />
+      <Provider
+        value={{
+          state: {
+            account,
+            balance,
+            validProvider,
+            isHomeNetwork,
+            isForeignNetwork,
+            isEnabled,
+            web3,
+          },
+          actions: {
+            switchWallet,
+            enableProvider,
+            initOnBoard,
+            displayForeignNetRequiredWarning,
+            displayHomeNetRequiredWarning,
+          },
+        }}
+      >
+        {props.children}
+      </Provider>
+    </Fragment>
+  );
+};
 
 Web3Provider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,

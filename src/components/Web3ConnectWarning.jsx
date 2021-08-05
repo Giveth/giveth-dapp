@@ -35,7 +35,7 @@ const Web3ConnectWarning = () => {
             style={{ marginLeft: '-22px' }}
             onClick={enableProvider}
           >
-            Enable Web3
+            Connect Wallet
           </Button>
         </div>
       );
