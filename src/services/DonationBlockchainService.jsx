@@ -91,8 +91,6 @@ const createAllowance = (
           <p>
             Please wait until your transaction is mined...
             <br />
-            <strong>You will be asked to make another transaction for your donation!</strong>
-            <br />
             <a
               href={`${config.homeEtherscan}tx/${txHash}`}
               target="_blank"

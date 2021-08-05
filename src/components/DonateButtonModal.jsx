@@ -100,6 +100,7 @@ const DonateButtonModal = props => {
   const [formIsValid, setFormIsValid] = useState(true);
   const [donationComment, setDonationComment] = useState('');
   const [usdRate, setUsdRate] = useState(0);
+  const [infiniteAllowance, setInfiniteAllowance] = useState(false);
 
   const { nativeTokenName } = config;
   const { decimals, symbol: tokenSymbol, balance: selectedTokenBalance } = selectedToken;
@@ -115,7 +116,6 @@ const DonateButtonModal = props => {
   const form = useRef();
   const givethBridge = useRef();
   const stopPolling = useRef();
-  const allowanceApprovalType = useRef();
 
   const clearUp = () => {
     if (stopPolling.current) stopPolling.current();
@@ -321,18 +321,10 @@ const DonateButtonModal = props => {
    * }
    * @param _amount
    * @param donationOwnerAddress
-   * @param allowanceAmount
    * @param comment
-   * @param _allowanceApprovalType
    * @returns {Promise<unknown>}
    */
-  const donateWithBridge = async ({
-    toAdmin,
-    _amount,
-    donationOwnerAddress,
-    comment,
-    _allowanceApprovalType = AllowanceApprovalType.Default,
-  }) => {
+  const donateWithBridge = async ({ toAdmin, _amount, donationOwnerAddress, comment }) => {
     const { homeEtherscan: etherscanUrl } = config;
 
     const amountWei = utils.toWei(new BigNumber(_amount).toFixed(18));
@@ -500,13 +492,7 @@ const DonateButtonModal = props => {
     return _makeDonationTx();
   };
 
-  const donateToCommunity = async ({
-    communityId,
-    _amount,
-    donationOwnerAddress,
-    _allowanceApprovalType,
-    comment,
-  }) => {
+  const donateToCommunity = async ({ communityId, _amount, donationOwnerAddress, comment }) => {
     const community = await CommunityService.getByDelegateId(communityId);
 
     if (!community) {
@@ -569,14 +555,12 @@ const DonateButtonModal = props => {
             donationOwnerAddress,
             _amount: amountCommunity,
             comment,
-            _allowanceApprovalType,
           })
         )
           result = await donateWithBridge({
             toAdmin: model,
             _amount: amountTrace,
             donationOwnerAddress,
-            allowanceAmount: 0,
             comment,
           });
         // eslint-disable-next-line no-empty
@@ -595,7 +579,6 @@ const DonateButtonModal = props => {
         communityId,
         _amount: amount,
         donationOwnerAddress,
-        _allowanceApprovalType: allowanceApprovalType.current,
         comment: donationComment,
       })
         .then()
@@ -605,9 +588,7 @@ const DonateButtonModal = props => {
         toAdmin: model,
         _amount: amount,
         donationOwnerAddress,
-        allowanceAmount: amount,
         comment: donationComment,
-        _allowanceApprovalType: allowanceApprovalType.current,
       })
         .then()
         .catch(() => {});
@@ -616,19 +597,34 @@ const DonateButtonModal = props => {
     setSaving(true);
   };
 
-  const submitDefault = () => {
-    allowanceApprovalType.current = AllowanceApprovalType.Default;
-    form.current.submit();
-  };
-
-  const submitInfiniteAllowance = async () => {
-    allowanceApprovalType.current = AllowanceApprovalType.Infinite;
+  const submitAllowance = async allowanceType => {
     setSaving(true);
     try {
+      let allowanceRequired;
+      if (allowanceType === AllowanceApprovalType.Infinite) {
+        const proceed = await new Promise(resolve =>
+          Modal.confirm({
+            title: 'Infinite Allowance',
+            content: `This will give the Giveth DApp permission to withdraw ${tokenSymbol} from your account and automate transactions for you.`,
+            cancelText: 'Cancel',
+            okText: 'OK',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          }),
+        );
+
+        if (!proceed) {
+          setSaving(false);
+          return;
+        }
+        allowanceRequired = INFINITE_ALLOWANCE;
+      } else {
+        allowanceRequired = utils.toWei(new BigNumber(amount).toFixed(18));
+      }
       const allowed = await DonationBlockchainService.approveERC20tokenTransfer(
         selectedToken.address,
         userAddress,
-        INFINITE_ALLOWANCE.toString(),
+        allowanceRequired.toString(),
         () => updateAllowance(UPDATE_ALLOWANCE_DELAY),
         web3,
         tokens[selectedToken.address],
@@ -639,7 +635,6 @@ const DonateButtonModal = props => {
         setAllowanceStatus(AllowanceStatus.Enough);
       }
       setSaving(false);
-      return false;
     } catch (err) {
       setSaving(false);
       // error code 4001 means user has canceled the transaction
@@ -649,7 +644,6 @@ const DonateButtonModal = props => {
       }
 
       ErrorHandler(err, message);
-      return false;
     }
   };
 
@@ -860,6 +854,16 @@ const DonateButtonModal = props => {
                   </Fragment>
                 )}
 
+                {maxAmount.toNumber() !== 0 && allowanceStatus === AllowanceStatus.Needed && (
+                  <Checkbox
+                    checked={infiniteAllowance}
+                    onChange={e => setInfiniteAllowance(e.target.checked)}
+                    disabled={isSaving}
+                  >
+                    <div style={modalLabelStyle}>Allow infinity access</div>
+                  </Checkbox>
+                )}
+
                 <div className="d-flex">
                   {maxAmount.toNumber() !== 0 && (
                     <div className="w-100 mr-3">
@@ -874,8 +878,13 @@ const DonateButtonModal = props => {
                         isLoading={isSaving}
                         onClick={
                           allowanceStatus !== AllowanceStatus.Needed
-                            ? submitDefault
-                            : submitInfiniteAllowance
+                            ? submit
+                            : () =>
+                                submitAllowance(
+                                  infiniteAllowance
+                                    ? AllowanceApprovalType.Infinite
+                                    : AllowanceApprovalType.Default,
+                                )
                         }
                         data-tip="React-tooltip"
                         loadingText="Pending"
