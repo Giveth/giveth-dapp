@@ -1,17 +1,21 @@
 import React from 'react';
 import localForage from 'localforage';
 import { hydrate, render } from 'react-dom';
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/react';
+import { Integrations } from '@sentry/tracing';
 import { unregister } from './lib/registerServiceWorker';
 import Application from './containers/Application';
 import './styles/application.css';
 import './lib/SegmentAnalytics';
 
-// Setup setnry
-if (process.env.NODE_ENV === 'production' && process.env.REACT_APP_SENTRY_RELEASE) {
+if (process.env.REACT_APP_SENTRY_DSN && process.env.REACT_APP_SENTRY_RELEASE) {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     release: process.env.REACT_APP_SENTRY_RELEASE,
+    integrations: [new Integrations.BrowserTracing()],
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
   });
 }
 
