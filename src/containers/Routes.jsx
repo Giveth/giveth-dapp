@@ -6,6 +6,7 @@ import Profile from '../components/views/Profile';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewTrace from '../components/views/ViewTrace';
+import SentryTest from '../components/views/SentryTest';
 import EditCommunity from '../components/views/EditCommunity';
 import ViewCommunity from '../components/views/ViewCommunity';
 import MyDonations from '../components/views/MyDonations';
@@ -214,6 +215,7 @@ const Routes = () => {
       <Route exact path="/campaigns" render={() => <CampaignsExplore />} />
       <Route exact path="/communities" render={() => <CommunitiesExplore />} />
       <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
+      <Route exact path="/sentry-test" render={() => <SentryTest />} />
       <Route component={NotFound} />
     </Switch>
   );
