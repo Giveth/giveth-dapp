@@ -1,9 +1,9 @@
-name:  TEST
+name:  Build
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -17,5 +17,5 @@ jobs:
         run: yarn build-css
       - name: run linter
         run: yarn eslint
-#      - name: test
-#        run: yarn test
+      - name: push Sentry source map
+        run: NODE_OPTIONS="--max-old-space-size=10000" SENTRY_AUTH_TOKEN=${{secrets.SENTRY_AUTH_TOKEN}} SENTRY_PROJECT=react SENTRY_ORG=${{ secrets.SENTRY_ORG}} CI=false yarn release

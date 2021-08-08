@@ -7,13 +7,17 @@ import { unregister } from './lib/registerServiceWorker';
 import Application from './containers/Application';
 import './styles/application.css';
 import './lib/SegmentAnalytics';
-import config from './configuration';
 
-Sentry.init({
-  dsn: config.sentryDsn,
-  integrations: [new Integrations.BrowserTracing()],
-  tracesSampleRate: 0.1,
-});
+if (process.env.REACT_APP_SENTRY_DSN && process.env.REACT_APP_SENTRY_RELEASE) {
+  Sentry.init({
+    dsn: process.env.REACT_APP_SENTRY_DSN,
+    release: process.env.REACT_APP_SENTRY_RELEASE,
+    integrations: [new Integrations.BrowserTracing()],
+    // We recommend adjusting this value in production, or using tracesSampler
+    // for finer control
+    tracesSampleRate: 1.0,
+  });
+}
 
 unregister();
 

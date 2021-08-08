@@ -1,6 +1,6 @@
 {
   "name": "giveth-dapp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
@@ -53,6 +53,7 @@
     "web3": "^1.2.2"
   },
   "devDependencies": {
+    "@sentry/cli": "^1.67.2",
     "eslint": "^7.25.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-prettier": "^6.7.0",
@@ -81,7 +82,8 @@
     "prettify": "prettier --write 'src/**/*.js*'",
     "doc": "jsdoc src -r -d docs",
     "preci": "rm -fr node_modules",
-    "ci": "yarn install --frozen-lockfile"
+    "ci": "yarn install --frozen-lockfile",
+    "release": "(export REACT_APP_SENTRY_RELEASE=$(git rev-parse --short HEAD); react-scripts build && node scripts/sentry.js)"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json}": [
