@@ -83,7 +83,7 @@
     "doc": "jsdoc src -r -d docs",
     "preci": "rm -fr node_modules",
     "ci": "yarn install --frozen-lockfile",
-    "release": "(export REACT_APP_SENTRY_RELEASE=$(git rev-parse --short HEAD); react-scripts build && node scripts/sentry.js)"
+    "release": "(export REACT_APP_SENTRY_RELEASE=$(git rev-parse --short HEAD); yarn build && node scripts/sentry.js)"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json}": [
