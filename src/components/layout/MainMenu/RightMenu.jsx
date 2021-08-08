@@ -188,16 +188,20 @@ const RightMenu = () => {
         <MenuBarCreateButtonWithRouter />
       </Menu.Item>
 
-      {currentUser.address && (
+      {validProvider && (
         <Menu.Item key="userAddress">
           <button type="button" className="btn btn-outline-success btn-sm" onClick={switchWallet}>
-            {walletIcon && <Avatar className="mr-2" size={25} src={walletIcon} />}
-            <span>{shortenAddress(currentUser.address)}</span>
+            {walletIcon && currentUser.address && (
+              <Avatar className="mr-2" size={25} src={walletIcon} />
+            )}
+            <span>
+              {currentUser.address ? shortenAddress(currentUser.address) : 'Switch Wallet'}
+            </span>
           </button>
         </Menu.Item>
       )}
 
-      {validProvider && currentUser.address && (
+      {validProvider && isEnabled && currentUser.address && (
         <SubMenu
           key="profile"
           title={
@@ -255,21 +259,13 @@ const RightMenu = () => {
         </SubMenu>
       )}
 
-      {validProvider && !isEnabled && !currentUser.address && (
+      {!isEnabled && !currentUser.address && (
         <Menu.Item key="EnableWeb3">
-          <button type="button" className="btn btn-outline-success btn-sm" onClick={enableProvider}>
-            Connect Wallet
-          </button>
-        </Menu.Item>
-      )}
-      {validProvider && isEnabled && !currentUser.address && (
-        <Menu.Item key="unlock">
-          <small className="text-muted">Please unlock MetaMask</small>
-        </Menu.Item>
-      )}
-      {!validProvider && (
-        <Menu.Item key="SignUp">
-          <button type="button" className="btn btn-outline-success btn-sm" onClick={initOnBoard}>
+          <button
+            type="button"
+            className="btn btn-outline-success btn-sm"
+            onClick={validProvider ? enableProvider : initOnBoard}
+          >
             Connect Wallet
           </button>
         </Menu.Item>
