@@ -2,10 +2,16 @@
 const SentryCli = require('@sentry/cli');
 
 async function createReleaseAndUpload() {
+  const isProduction = process.env.CONTEXT === 'production'; // Netlify variable
   const release = process.env.REACT_APP_SENTRY_RELEASE;
+
+  if (!isProduction) {
+    console.warn('CONTEXT is not Production');
+    return;
+  }
+
   if (!release) {
     console.warn('REACT_APP_SENTRY_RELEASE is not set');
-
     return;
   }
 
