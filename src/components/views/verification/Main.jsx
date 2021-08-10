@@ -5,6 +5,7 @@ import ConnectWallet from './ConnectWallet';
 import ConfirmProfile from './ConfirmProfile';
 import ConfirmProject from './ConfirmProject';
 import Congratulations from './Congratulations';
+import GIVIcon from '../../../assets/GIV-icon-Text.svg';
 
 const Verification = () => {
   const [step, setStep] = useState(1);
@@ -26,7 +27,7 @@ const Verification = () => {
             <div className={step > 2 ? 'verification-steps-active' : ''}>Confirm your project</div>
           </div>
         )}
-        <div className="verification-body">
+        <div className="verification-body" style={{ backgroundImage: `url(${GIVIcon})` }}>
           {step === 1 && <ConnectWallet handleNextStep={handleNextStep} />}
           {step === 2 && <ConfirmProfile handleNextStep={handleNextStep} />}
           {step === 3 && <ConfirmProject handleNextStep={handleNextStep} />}
