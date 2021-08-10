@@ -647,13 +647,8 @@ const ViewTrace = props => {
                               </tr>
                             </thead>
                             <tbody>
-                              {trace.items.map((item, i) => (
-                                <TraceItem
-                                  key={item._id}
-                                  name={`traceItem-${i}`}
-                                  item={item}
-                                  token={trace.token}
-                                />
+                              {trace.items.map(item => (
+                                <TraceItem key={item._id} item={item} token={trace.token} />
                               ))}
                             </tbody>
                           </table>

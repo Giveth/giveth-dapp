@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Modal, Button, Typography } from 'antd';
+import { Modal, Button } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -21,7 +21,7 @@ export const shortenDescription = (description, showAll = false, onClick, charsL
     <Fragment>
       {`${description.slice(0, charsLength)} ...`}
       <Button onClick={onClick} type="link" className="px-2 py-0">
-        <Typography.Text underline>See more</Typography.Text>
+        See more
       </Button>
     </Fragment>
   );
