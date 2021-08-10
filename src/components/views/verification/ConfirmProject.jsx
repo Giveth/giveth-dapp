@@ -23,7 +23,7 @@ const ConfirmProject = ({ handleNextStep }) => {
       />
       <div className="row p-4">
         <div className="col-md-4">
-          <div className="custom-title">Confirm your Project to get traceable</div>
+          <div className="custom-title">Confirm your Project to make it traceable</div>
         </div>
         <div className="text-left col-md-8">
           <div>{project.title}</div>
