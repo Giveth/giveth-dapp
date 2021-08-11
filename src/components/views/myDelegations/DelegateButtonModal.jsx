@@ -192,12 +192,6 @@ class DelegateButtonModal extends Component {
       this.props.closeDialog();
     };
 
-    this.setState({
-      amount: '0',
-      objectsToDelegateToCampaign: [],
-      objectsToDelegateToTrace: [],
-    });
-
     DonationBlockchainService.delegate(
       donation,
       utils.toWei(this.state.amount),
