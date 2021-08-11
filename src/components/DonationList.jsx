@@ -7,13 +7,7 @@ import { Link } from 'react-router-dom';
 import config from 'configuration';
 import Trace from 'models/Trace';
 import Loader from './Loader';
-import {
-  getUserName,
-  getUserAvatar,
-  convertEthHelper,
-  shortenAddress,
-  shortenDescription,
-} from '../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, shortenDescription } from '../lib/helpers';
 import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
@@ -105,7 +99,9 @@ class DonationListItem extends Component {
           style={isNew ? { background: '#DAEBFC', borderBottom: '2px solid #5191F6' } : {}}
         >
           {hasNew && (
-            <td>{isNew && <div style={{ borderRadius: '50%', border: '4px solid #5191F6' }} />}</td>
+            <td className="align-middle">
+              {isNew && <div style={{ borderRadius: '50%', border: '4px solid #5191F6' }} />}
+            </td>
           )}
           <td>
             {this.state.hasHistory ? (
@@ -152,19 +148,6 @@ class DonationListItem extends Component {
               </Link>
             )}
           </td>
-          {config.homeEtherscan ? (
-            <td className="td-tx-address">
-              <a
-                href={`${config.homeEtherscan}address/${d.giverAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {shortenAddress(d.giverAddress)}
-              </a>
-            </td>
-          ) : (
-            <td className="td-tx-address">{d.giverAddress}</td>
-          )}
           <td className="td-user" style={{ whiteSpace: 'normal' }}>
             {shortenDescription(d.comment, this.state.fullComment, this.showFullComment)}
           </td>
@@ -226,7 +209,6 @@ const DonationList = props => {
                   <th>Status</th>
                   <th className="td-donations-amount">Amount</th>
                   <th className="td-user">Name</th>
-                  <th className="td-tx-address">Address</th>
                   <th className="">Comment</th>
                   {hasProposedDelegation && <th className="td-commit">Commit Time</th>}
                 </tr>
