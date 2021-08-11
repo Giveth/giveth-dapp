@@ -15,7 +15,7 @@ const Congratulations = ({ handleNextStep }) => {
   return (
     <div>
       <img
-        className="mr-3 mt-1 w-100 object-fit-cover"
+        className="w-100"
         height={150}
         src={project.image}
         alt={project.title}

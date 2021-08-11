@@ -21,7 +21,7 @@ const Header = () => {
   };
 
   return (
-    <div className="verification-header d-flex justify-content-between align-items-center">
+    <div className="verification-header d-flex justify-content-between align-items-center mx-sm-5 mx-2">
       <img height={35} src={Logo} alt="Logo" />
       <Button ghost onClick={handleOnClick}>
         {currentUser.address ? shortenAddress(currentUser.address) : 'CONNECT WALLET'}
