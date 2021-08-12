@@ -67,10 +67,6 @@
     line-height: 35px;
   }
 
-  .verification-card {
-    max-width: 1000px;
-  }
-
   .verification-steps {
     > div {
       font-size: 14px;
@@ -114,27 +110,28 @@
 
   .verification-arcs {
     div:nth-child(1) {
-      border-top-right-radius: 400px;
-      border-right-width: 34px;
-      border-right-style: solid;
-      border-right-color: #5cc8e0;
+      border-radius: 50%;
+      border-width: 40px;
+      border-style: solid;
+      border-color: #5cc8e0 #5cc8e0 transparent transparent;
       position: fixed;
-      bottom: -565px;
+      bottom: -500px;
       right: 150px;
       width: 800px;
       height: 800px;
       z-index: -2;
+      transform: rotate(41deg);
     }
     div:nth-child(2) {
       border-radius: 50%;
       border-width: 64px;
       border-style: solid;
       position: fixed;
-      bottom: -250px;
       border-color: #5326ec;
-      left: -250px;
-      width: 500px;
-      height: 500px;
+      bottom: -350px;
+      left: -350px;
+      width: 700px;
+      height: 700px;
       z-index: -1;
     }
   }

@@ -1,17 +1,18 @@
 import React from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
-import Pic from '../../../assets/project.jpeg';
+import DescriptionRender from '../../DescriptionRender';
+import { history } from '../../../lib/helpers';
 
-const project = {
-  owner: 'Juntanza Espontánea Chapinero',
-  title: 'SUPPORT PROTESTS IN COLOMBIA #SOSCOLOMBIA',
-  description:
-    'The current social and health crisis in Colombia is forcing people to raise their voices. This year, the protests began on April 28th and people have taken the streets with no rest since then to claim to the government. Although...',
-  image: Pic,
-};
+const Congratulations = ({ campaignSlug, project }) => {
+  const backToGiveth = () => {
+    window.location.href = 'https://giveth.io';
+  };
 
-const Congratulations = ({ handleNextStep }) => {
+  const goToProject = () => {
+    history.replace(`/campaign/${campaignSlug}`);
+  };
+
   return (
     <div>
       <img
@@ -22,20 +23,32 @@ const Congratulations = ({ handleNextStep }) => {
         style={{ objectFit: 'cover' }}
       />
       <div className="text-left p-5">
-        <div>{project.title}</div>
-        <div className="my-4">{project.owner}</div>
-        <div className="mb-5">{project.description}</div>
-        <Button ghost onClick={handleNextStep}>
+        <div>
+          <strong>Title: </strong>
+          {project.title}
+        </div>
+        <div className="my-4">
+          <strong>Owner: </strong>
+          {project.owner.name}
+        </div>
+        <div className="mb-5">
+          <strong>Description: </strong>
+          {DescriptionRender(project.description)}
+        </div>
+        <Button ghost onClick={goToProject}>
           GO TO YOUR PROJECT
         </Button>
-        <Button type="text">Back to Giveth.io</Button>
+        <Button onClick={backToGiveth} type="text">
+          Back to Giveth.io
+        </Button>
       </div>
     </div>
   );
 };
 
 Congratulations.propTypes = {
-  handleNextStep: PropTypes.func.isRequired,
+  campaignSlug: PropTypes.string.isRequired,
+  project: PropTypes.shape().isRequired,
 };
 
 export default Congratulations;

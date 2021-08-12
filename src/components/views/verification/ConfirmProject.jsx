@@ -1,17 +1,9 @@
 import React from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
-import Pic from '../../../assets/project.jpeg';
+import DescriptionRender from '../../DescriptionRender';
 
-const project = {
-  owner: 'Juntanza Espontánea Chapinero',
-  title: 'SUPPORT PROTESTS IN COLOMBIA #SOSCOLOMBIA',
-  description:
-    'The current social and health crisis in Colombia is forcing people to raise their voices. This year, the protests began on April 28th and people have taken the streets with no rest since then to claim to the government. Although...',
-  image: Pic,
-};
-
-const ConfirmProject = ({ handleNextStep }) => {
+const ConfirmProject = ({ handleNextStep, project, reportIssue, formIsValid }) => {
   return (
     <div>
       <img
@@ -26,13 +18,24 @@ const ConfirmProject = ({ handleNextStep }) => {
           <div className="custom-title">Confirm your Project to make it traceable</div>
         </div>
         <div className="text-left col-md-8">
-          <div>{project.title}</div>
-          <div className="my-4">{project.owner}</div>
-          <div className="mb-5">{project.description}</div>
-          <Button ghost onClick={handleNextStep}>
-            CONFIRM YOUR PROJECT
+          <div>
+            <strong>Title: </strong>
+            {project.title}
+          </div>
+          <div className="my-4">
+            <strong>Owner: </strong>
+            {project.owner.name}
+          </div>
+          <div className="mb-5">
+            <strong>Description: </strong>
+            {DescriptionRender(project.description)}
+          </div>
+          <Button disabled={!formIsValid} ghost onClick={handleNextStep}>
+            CONFIRM & SIGN
           </Button>
-          <Button type="text">Report an Issue</Button>
+          <Button onClick={reportIssue} type="text">
+            Report an Issue
+          </Button>
         </div>
       </div>
     </div>
@@ -41,6 +44,9 @@ const ConfirmProject = ({ handleNextStep }) => {
 
 ConfirmProject.propTypes = {
   handleNextStep: PropTypes.func.isRequired,
+  project: PropTypes.shape().isRequired,
+  reportIssue: PropTypes.func.isRequired,
+  formIsValid: PropTypes.bool.isRequired,
 };
 
 export default ConfirmProject;
