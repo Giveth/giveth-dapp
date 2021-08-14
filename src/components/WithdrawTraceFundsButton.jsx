@@ -46,12 +46,12 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
       const amount = Number(donationCounter.currentBalance);
       const usdValue = rate * amount;
       // eslint-disable-next-line no-await-in-loop
-      const valueEth = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
+      const ethValue = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
       sendAnalyticsTracking('Trace Withdraw', {
         category: 'Trace',
         action: 'initiated withdrawal',
         amount,
-        valueEth,
+        ethValue,
         currency,
         usdValue,
         traceId: trace._id,
