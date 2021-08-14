@@ -71,7 +71,7 @@ const Verification = props => {
       title: project.title,
       image: project.image,
       description: project.description,
-      reviewerAddress: '0x10a84b835C5df26f2A380B3E00bCC84A66cD2d34',
+      reviewerAddress: project.reviewerAddress,
     });
 
     const afterCreate = ({ err, txUrl, profileHash }) => {
