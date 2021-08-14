@@ -1,20 +1,26 @@
 import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { Grid } from 'antd';
 import { paramsForServer } from 'feathers-hooks-common';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
 import moment from 'moment';
-import { convertEthHelper } from '../lib/helpers';
+import { convertEthHelper, shortenAddress } from '../lib/helpers';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import { Donation } from '../models';
 import config from '../configuration';
 
-const ProfileCommunitiesTable = ({ userAddress }) => {
+const { useBreakpoint } = Grid;
+
+const ProfileDonationsTable = ({ userAddress }) => {
   const [isLoading, setLoading] = useState(true);
   const [donations, setDonations] = useState([]);
   const [total, setTotal] = useState(0);
   const [skipPages, setSkipPages] = useState(0);
+
+  const { xs } = useBreakpoint();
+  const visiblePages = xs ? 6 : 10;
   const itemsPerPage = 25;
   const isMounted = useRef(false);
 
@@ -126,11 +132,11 @@ const ProfileCommunitiesTable = ({ userAddress }) => {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              {d.giverAddress}
+                              {shortenAddress(d.giverAddress)}
                             </a>
                           </td>
                         ) : (
-                          <td className="td-tx-address">{d.giverAddress}</td>
+                          <td className="td-tx-address">{shortenAddress(d.giverAddress)}</td>
                         )}
                       </tr>
                     ))}
@@ -143,7 +149,7 @@ const ProfileCommunitiesTable = ({ userAddress }) => {
                       activePage={skipPages + 1}
                       itemsCountPerPage={itemsPerPage}
                       totalItemsCount={total}
-                      pageRangeDisplayed={10}
+                      pageRangeDisplayed={visiblePages}
                       onChange={handlePageChanged}
                     />
                   </div>
@@ -157,8 +163,8 @@ const ProfileCommunitiesTable = ({ userAddress }) => {
   );
 };
 
-ProfileCommunitiesTable.propTypes = {
+ProfileDonationsTable.propTypes = {
   userAddress: PropTypes.string.isRequired,
 };
 
-export default ProfileCommunitiesTable;
+export default ProfileDonationsTable;

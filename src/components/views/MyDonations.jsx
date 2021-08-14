@@ -8,9 +8,9 @@ import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import { Helmet } from 'react-helmet';
-import { Modal } from 'antd';
+import { Grid, Modal } from 'antd';
 import Loader from '../Loader';
-import { convertEthHelper } from '../../lib/helpers';
+import { convertEthHelper, shortenAddress } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
 import DonationService from '../../services/DonationService';
@@ -20,9 +20,9 @@ import DonationBlockchainService from '../../services/DonationBlockchainService'
 import confirmationDialog from '../../lib/confirmationDialog';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 
+const { useBreakpoint } = Grid;
 const etherScanUrl = config.etherscan;
 const itemsPerPage = 20;
-const visiblePages = 10;
 
 /**
  * The my donations view
@@ -41,6 +41,8 @@ const MyDonations = () => {
     state: { currentUser },
   } = useContext(UserContext);
 
+  const { xs } = useBreakpoint();
+  const visiblePages = xs ? 6 : 10;
   const userAddress = currentUser.address;
 
   const donationSubscription = useRef();
@@ -359,7 +361,7 @@ const MyDonations = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                {d.giverAddress}
+                                {shortenAddress(d.giverAddress)}
                               </a>
                             </td>
                           )}

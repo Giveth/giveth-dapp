@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Donation from '../../../models/Donation';
 import DelegateButton from './DelegateButton';
 import config from '../../../configuration';
-import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpers';
+import { convertEthHelper, getUserAvatar, getUserName, shortenAddress } from '../../../lib/helpers';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
 import { Context as ConversionRateContext } from '../../../contextProviders/ConversionRateProvider';
@@ -93,7 +93,7 @@ function DelegationsItem({ campaigns, donation, traces }) {
           {getUserName(donation.giver)}
         </Link>
       </td>
-      <td className="td-tx-address">{donation.giverAddress}</td>
+      <td className="td-tx-address">{shortenAddress(donation.giverAddress)}</td>
       <td className="td-status">{donation.statusDescription}</td>
     </tr>
   );

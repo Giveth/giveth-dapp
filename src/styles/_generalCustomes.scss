@@ -4,6 +4,16 @@
     }
 }
 
+.table-container {
+  max-width: 100%;
+  width: fit-content;
+
+  table {
+    max-width: 100%;
+    width: fit-content;
+  }
+}
+
 @media (min-width: 666px) {
   #donate-modal .eq-usd-value {
     position: absolute;

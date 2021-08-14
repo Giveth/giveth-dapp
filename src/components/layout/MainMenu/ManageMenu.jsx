@@ -10,7 +10,7 @@ const ManageMenu = () => {
     <nav id="manage_menu">
       <div className="px-3 d-flex align-items-center">
         <div style={{ flex: '0 0 10%', fontWeight: '500', fontSize: '24px' }}>Manage</div>
-        <div className="d-flex justify-content-center" style={{ flex: '0 0 80%' }}>
+        <div className="d-flex justify-content-center" style={{ flex: '0 0 73%' }}>
           <Menu theme="dark" mode="horizontal" selectedKeys={[pathname]}>
             <Menu.Item key="/my-traces">
               <Link to="/my-traces">Traces</Link>

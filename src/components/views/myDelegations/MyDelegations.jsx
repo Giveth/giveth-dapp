@@ -1,4 +1,5 @@
 import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Grid } from 'antd';
 
 import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
@@ -15,6 +16,8 @@ import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
 import Web3ConnectWarning from '../../Web3ConnectWarning';
 
+const { useBreakpoint } = Grid;
+
 /**
  * The my delegations view
  */
@@ -26,7 +29,8 @@ const MyDelegations = () => {
     state: { currentUser },
   } = useContext(UserContext);
 
-  const visiblePages = 10;
+  const { xs } = useBreakpoint();
+  const visiblePages = xs ? 6 : 10;
   const itemsPerPage = 20;
   const userAddress = currentUser.address;
 
