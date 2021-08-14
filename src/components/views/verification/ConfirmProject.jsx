@@ -3,7 +3,7 @@ import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import DescriptionRender from '../../DescriptionRender';
 
-const ConfirmProject = ({ handleNextStep, project, reportIssue, formIsValid }) => {
+const ConfirmProject = ({ handleNextStep, project, reportIssue, formIsValid, isSaving }) => {
   return (
     <div>
       <img
@@ -30,7 +30,7 @@ const ConfirmProject = ({ handleNextStep, project, reportIssue, formIsValid }) =
             <strong>Description: </strong>
             {DescriptionRender(project.description)}
           </div>
-          <Button disabled={!formIsValid} ghost onClick={handleNextStep}>
+          <Button loading={isSaving} disabled={!formIsValid} ghost onClick={handleNextStep}>
             CONFIRM & SIGN
           </Button>
           <Button onClick={reportIssue} type="text">
@@ -47,6 +47,7 @@ ConfirmProject.propTypes = {
   project: PropTypes.shape().isRequired,
   reportIssue: PropTypes.func.isRequired,
   formIsValid: PropTypes.bool.isRequired,
+  isSaving: PropTypes.bool.isRequired,
 };
 
 export default ConfirmProject;

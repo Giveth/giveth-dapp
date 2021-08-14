@@ -15,25 +15,28 @@ const ConnectWallet = ({ handleNextStep }) => {
 
   return (
     <div className="p-5">
-      <h2>Please connect your wallet with the same address you had provided before.</h2>
-      {!currentUser.address && (
-        <Button
-          className="connect-wallet-btn"
-          onClick={validProvider ? enableProvider : initOnBoard}
-        >
-          CONNECT WALLET
+      <h2 className="py-5">
+        Please connect your wallet with the same address you had provided before.
+      </h2>
+
+      <div className="mt-5">
+        <Button className="connect-wallet-btn m-1" onClick={switchWallet}>
+          SWITCH WALLET
         </Button>
-      )}
-      {currentUser.address && (
-        <div className="mt-5">
-          <Button className="connect-wallet-btn m-1" onClick={switchWallet}>
-            SWITCH WALLET
+        {!currentUser.address && (
+          <Button
+            className="connect-wallet-btn"
+            onClick={validProvider ? enableProvider : initOnBoard}
+          >
+            CONNECT WALLET
           </Button>
+        )}
+        {currentUser.address && (
           <Button className="connect-wallet-btn m-1" onClick={handleNextStep}>
             NEXT
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

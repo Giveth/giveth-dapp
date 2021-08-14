@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 
 import Header from './Header';
 import ConnectWallet from './ConnectWallet';
@@ -15,6 +16,7 @@ import config from '../../../configuration';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../../lib/middleware';
 import ErrorPopup from '../../ErrorPopup';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
+import Campaign from '../../../models/Campaign';
 
 const Verification = props => {
   const {
@@ -35,52 +37,84 @@ const Verification = props => {
   const [project, setProject] = useState({});
   const [campaignSlug, setCampaignSlug] = useState({});
   const [formIsValid, setFormIsValid] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const reportIssue = () => {
     const body = `Issue type: User and Project Verification \nMy address: ${userAddress} \nGiveth.io Slug: ${projectSlug} \n`;
     window.open(`${config.githubUrl}/issues/new?body=${encodeURIComponent(body)}`);
   };
 
-  const confirmProject = () => {
+  const confirmProject = (txUrl, profileHash) => {
     feathersClient
       .service('verifiedCampaigns')
       .create({
         slug: projectSlug,
-        txHash: 'string',
-        url: 'string',
+        txHash: txUrl,
+        url: profileHash,
       })
-      .then(_slug => {
-        console.log(_slug);
-        setCampaignSlug(_slug);
+      .then(_campaign => {
+        setCampaignSlug(_campaign.slug);
         setStep(step + 1);
       })
       .catch(err => {
-        console.log(err);
         if (err.message) ErrorHandler(err, err.message);
         else ErrorHandler(err, 'Something went wrong!');
+      })
+      .finally(() => setIsSaving(false));
+  };
+
+  const createCampaignOnNetwork = () => {
+    setIsSaving(true);
+    const campaign = new Campaign({
+      owner: currentUser,
+      ownerAddress: userAddress,
+      title: project.title,
+      image: project.image,
+      description: project.description,
+      reviewerAddress: '0x10a84b835C5df26f2A380B3E00bCC84A66cD2d34',
+    });
+
+    const afterCreate = ({ err, txUrl, profileHash }) => {
+      if (!err) {
+        const msg = (
+          <p>
+            Your Campaign is pending....
+            <br />
+            <a href={txUrl} target="_blank" rel="noopener noreferrer">
+              View transaction
+            </a>
+          </p>
+        );
+        notification.info({ message: '', description: msg });
+        confirmProject(txUrl, profileHash);
+      }
+    };
+
+    campaign.save(afterCreate, () => {}, web3, true);
+  };
+
+  const fetchProject = () => {
+    feathersClient
+      .service('verifiedCampaigns')
+      .find({
+        query: {
+          slug: projectSlug,
+          userAddress: userAddress.toLowerCase(),
+        },
+      })
+      .then(_project => {
+        setProject(_project);
+        setStep(step + 1);
+      })
+      .catch(err => {
+        if (err.message) ErrorHandler(err, err.message);
+        else ErrorHandler(err, 'Something went wrong on getting project info!');
       });
   };
 
   const handleNextStep = () => {
-    if (!project.id) {
-      feathersClient
-        .service('verifiedCampaigns')
-        .find({
-          query: {
-            slug: projectSlug,
-            userAddress: userAddress.toLowerCase(),
-          },
-        })
-        .then(_project => {
-          console.log(_project);
-          setProject(_project);
-          setStep(step + 1);
-        })
-        .catch(err => {
-          if (err.message) ErrorHandler(err, err.message);
-          else ErrorHandler(err, 'Something went wrong on getting project info!');
-        });
-    } else if (step === 3) confirmProject();
+    if (!project.id) fetchProject();
+    else if (step === 3) createCampaignOnNetwork();
     else setStep(step + 1);
   };
 
@@ -150,6 +184,7 @@ const Verification = props => {
                 project={project}
                 handleNextStep={handleNextStep}
                 formIsValid={formIsValid}
+                isSaving={isSaving}
               />
             )}
             {step === 4 && <Congratulations project={project} campaignSlug={campaignSlug} />}
@@ -158,11 +193,7 @@ const Verification = props => {
       </div>
       <div className="verification-arcs">
         <div />
-        <div />
-      </div>
-      <div className="inner-spin">
-        <div className="inner-arc inner-arc_start-a" />
-        <div className="inner-arc inner-arc_end-a" />
+        <div className="d-none d-sm-block" />
       </div>
     </div>
   );
