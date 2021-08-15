@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import PropTypes from 'prop-types';
 import { paramsForServer } from 'feathers-hooks-common';
-import { Input, InputNumber, Select, Slider, Form } from 'antd';
+import { Input, InputNumber, Select, Slider, Form, Typography } from 'antd';
 
 import Donation from 'models/Donation';
 import Campaign from 'models/Campaign';
@@ -21,6 +21,7 @@ import { Context as WhiteListContext } from '../contextProviders/WhiteListProvid
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import { convertEthHelper, roundBigNumber } from '../lib/helpers';
+import { Context as ConversionRateContext } from '../contextProviders/ConversionRateProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
@@ -42,6 +43,9 @@ const ModalContent = props => {
   const {
     actions: { delegationPending, delegationSuccessful, delegationFailed },
   } = useContext(NotificationContext);
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
 
   const tokenWhitelistOptions = tokenWhitelist.map(t => ({
     value: t.address,
@@ -50,6 +54,7 @@ const ModalContent = props => {
 
   const { campaign, trace, setModalVisible } = props;
 
+  const [usdRate, setUsdRate] = useState(0);
   const [sliderMarks, setSliderMarks] = useState();
   const [isDelegationLimited, setIsDelegationLimited] = useState();
   const [isCommunitiesFetched, setIsCommunitiesFetched] = useState(false);
@@ -66,8 +71,21 @@ const ModalContent = props => {
     props.trace && props.trace.acceptsSingleToken ? props.trace.token : tokenWhitelist[0],
   );
 
+  const usdValue = usdRate * amount;
+  const tokenSymbol = selectedToken.symbol;
+
   const delegateFromType = useRef();
   const isMounted = useRef(false);
+
+  const updateRates = () => {
+    getConversionRates(new Date(), tokenSymbol, 'USD')
+      .then(res => setUsdRate(res.rates.USD))
+      .catch(() => setUsdRate(0));
+  };
+
+  useEffect(() => {
+    if (tokenSymbol) updateRates();
+  }, [tokenSymbol]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -321,7 +339,7 @@ const ModalContent = props => {
   }
 
   const modalContent = (
-    <Fragment>
+    <div id="delegate-multiple-modal">
       <p>
         You are delegating donations to
         {!trace && <strong> {campaign.title}</strong>}
@@ -392,7 +410,7 @@ const ModalContent = props => {
 
               {delegations.length === 0 || maxAmount.isZero() ? (
                 <p>
-                  The amount available to delegate is 0 {selectedToken.symbol}
+                  The amount available to delegate is 0 {tokenSymbol}
                   <br />
                   Please select{' '}
                   {!props.trace || !props.trace.acceptsSingleToken
@@ -402,7 +420,7 @@ const ModalContent = props => {
                 </p>
               ) : (
                 <div>
-                  <span className="label">Amount {selectedToken.symbol} to delegate:</span>
+                  <span className="label">Amount {tokenSymbol} to delegate:</span>
 
                   <div className="form-group" id="amount_slider">
                     <Slider
@@ -430,6 +448,9 @@ const ModalContent = props => {
                       size="large"
                       precision={decimals}
                     />
+                    <Typography.Text className="ant-form-text pl-2" type="secondary">
+                      ≈ {Math.round(usdValue)} USD
+                    </Typography.Text>
                   </div>
                   <div className="form-group">
                     <Input.TextArea
@@ -454,7 +475,7 @@ const ModalContent = props => {
           )}
         </Form>
       </Fragment>
-    </Fragment>
+    </div>
   );
 
   const modalLoading = (

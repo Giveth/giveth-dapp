@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import { authenticateUser, checkBalance } from 'lib/middleware';
+import { Modal } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import DonationBlockchainService from '../services/DonationBlockchainService';
@@ -83,11 +84,10 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
             minPayoutWarningInWithdraw();
             return;
           }
-
-          React.swal({
+          Modal.confirm({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
-            content: React.swal.msg(
-              <div>
+            content: (
+              <Fragment>
                 <p>
                   We will initiate the transfer of the funds to{' '}
                   {trace instanceof LPTrace && 'the Campaign.'}
@@ -110,13 +110,13 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                     {isRecipient ? 'your' : "the recipient's"} wallet.
                   </div>
                 )}
-              </div>,
+              </Fragment>
             ),
-            icon: 'warning',
-            dangerMode: true,
-            buttons: ['Cancel', 'Yes, withdrawal'],
-          }).then(isConfirmed => {
-            if (isConfirmed) {
+            cancelText: 'Cancel',
+            okText: 'Yes, withdrawal',
+            centered: true,
+            width: 500,
+            onOk: () =>
               TraceService.withdraw({
                 trace,
                 from: userAddress,
@@ -164,16 +164,14 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                   } else {
                     msg = <p>Something went wrong with the transaction.</p>;
                   }
-
-                  React.swal({
+                  Modal.error({
                     title: 'Oh no!',
-                    content: React.swal.msg(msg),
-                    icon: 'error',
+                    content: msg,
+                    centered: true,
                   });
                 },
                 web3,
-              });
-            }
+              }),
           });
         })
         .catch(err => {

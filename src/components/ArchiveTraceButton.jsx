@@ -1,12 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { Modal } from 'antd';
 
 import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import TraceService from 'services/TraceService';
-import ErrorPopup from 'components/ErrorPopup';
 import { authenticateUser, checkBalance } from 'lib/middleware';
+import ErrorHandler from '../lib/ErrorHandler';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
@@ -41,16 +42,20 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
             minPayoutWarningInArchive();
             return;
           }
-          const proceed = await React.swal({
-            title: 'Archive Trace?',
-            text: `Are you sure you want to archive this Trace? The trace status will be set to ${status} and will no longer be able to accept donations.`,
-            icon: 'warning',
-            dangerMode: true,
-            buttons: ['Cancel', 'Archive'],
-          });
 
-          // if null, then "Cancel" was pressed
-          if (proceed === null) return;
+          const proceed = await new Promise(resolve =>
+            Modal.confirm({
+              title: 'Archive Trace?',
+              content: `Are you sure you want to archive this Trace? The trace status will be set to ${status} and will no longer be able to accept donations.`,
+              cancelText: 'Cancel',
+              okText: 'Archive',
+              centered: true,
+              onOk: () => resolve(true),
+              onCancel: () => resolve(false),
+            }),
+          );
+
+          if (!proceed) return;
 
           const afterSave = txUrl => {
             React.toast.info(
@@ -76,14 +81,11 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
             );
           };
 
-          const onError = (err, txUrl) => {
+          const onError = (_, err) => {
             if (err === 'patch-error') {
-              ErrorPopup('Something went wrong archiving this Trace', err);
+              ErrorHandler(err, 'Something went wrong with archiving this Trace');
             } else {
-              ErrorPopup(
-                'Something went wrong with the transaction.',
-                `${txUrl} => ${JSON.stringify(err, null, 2)}`,
-              );
+              ErrorHandler(err, 'Something went wrong with your transaction ...');
             }
           };
 
@@ -107,9 +109,9 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
         })
         .catch(err => {
           if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
+            ErrorHandler(err, 'There is no balance left on the account.');
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorHandler(err, 'Something went wrong while archiving.');
           }
         });
     });

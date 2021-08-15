@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -7,6 +8,17 @@ import Resizer from 'react-image-file-resizer';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
+
+export const shortenAddress = (address, charsLength = 4) => {
+  const prefixLength = 2; // "0x"
+  if (!address) {
+    return '';
+  }
+  if (address.length < charsLength * 2 + prefixLength) {
+    return address;
+  }
+  return `${address.slice(0, charsLength + prefixLength)}…${address.slice(-charsLength)}`;
+};
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser.address === address;
@@ -26,7 +38,7 @@ export const getTruncatedText = (text = '', maxLength = 45) => {
   return txt;
 };
 
-// displays a sweet alert with an error when the transaction goes wrong
+// displays alert with an error when the transaction goes wrong
 export const displayTransactionError = txHash => {
   let msg;
   const { etherScanUrl } = config;
@@ -42,13 +54,13 @@ export const displayTransactionError = txHash => {
     // TODO: update or remove from feathers? maybe don't remove, so we can inform the user that the
     // tx failed and retry
   } else {
-    msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+    msg = <p>Something went wrong with the transaction ...</p>;
   }
 
-  React.swal({
+  Modal.error({
     title: 'Oh no!',
-    content: React.swal.msg(msg),
-    icon: 'error',
+    content: msg,
+    centered: true,
   });
 };
 

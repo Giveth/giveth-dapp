@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, Fragment } from 'react';
 import Avatar from 'react-avatar';
 import { Link, useLocation } from 'react-router-dom';
 import { withRouter } from 'react-router';
@@ -18,6 +18,7 @@ import Campaign from '../../../models/Campaign';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import CampaignService from '../../../services/CampaignService';
 import CommunityService from '../../../services/CommunityService';
+import { shortenAddress } from '../../../lib/helpers';
 
 const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
@@ -38,8 +39,8 @@ const RightMenu = () => {
   } = useContext(UserContext);
 
   const {
-    state: { isEnabled, validProvider },
-    actions: { enableProvider, initOnBoard },
+    state: { isEnabled, validProvider, web3 },
+    actions: { enableProvider, initOnBoard, switchWallet },
   } = useContext(Web3Context);
 
   const {
@@ -176,22 +177,40 @@ const RightMenu = () => {
     }
   }, [userAddress]);
 
+  let walletIcon;
+  if (web3 && web3.MetaMask) {
+    walletIcon = `${process.env.PUBLIC_URL}/img/MetaMask.png`;
+  } else if (web3 && web3.Torus) walletIcon = `${process.env.PUBLIC_URL}/img/Torus.svg`;
+
   return (
     <Menu selectedKeys={[selectedKeys]} mode={lg ? 'horizontal' : 'inline'}>
       <Menu.Item key="CreateButton">
         <MenuBarCreateButtonWithRouter />
       </Menu.Item>
 
-      {validProvider && currentUser.address && (
+      {validProvider && (
+        <Menu.Item key="userAddress">
+          <button type="button" className="btn btn-outline-success btn-sm" onClick={switchWallet}>
+            {walletIcon && currentUser.address && (
+              <Avatar className="mr-2" size={25} src={walletIcon} />
+            )}
+            <span>
+              {currentUser.address ? shortenAddress(currentUser.address) : 'Switch Wallet'}
+            </span>
+          </button>
+        </Menu.Item>
+      )}
+
+      {validProvider && isEnabled && currentUser.address && (
         <SubMenu
           key="profile"
           title={
-            <React.Fragment>
+            <Fragment>
               {currentUser.avatar && (
                 <Avatar className="mr-2" size={30} src={currentUser.avatar} round />
               )}
               <span>{currentUser.name ? currentUser.name : 'Hi, you!'}</span>
-            </React.Fragment>
+            </Fragment>
           }
         >
           <Menu.Item
@@ -203,7 +222,7 @@ const RightMenu = () => {
               paddingTop: '6px',
             }}
           >
-            <Link to="/profile">Profile</Link>
+            <Link to="/profile">{currentUser.name ? 'Profile' : 'Register Here!'}</Link>
           </Menu.Item>
           <Menu.Item key="profile:2">
             <Link className="d-flex justify-content-between" to="/my-traces">
@@ -240,26 +259,14 @@ const RightMenu = () => {
         </SubMenu>
       )}
 
-      {validProvider && !isEnabled && !currentUser.address && (
+      {!isEnabled && !currentUser.address && (
         <Menu.Item key="EnableWeb3">
           <button
             type="button"
             className="btn btn-outline-success btn-sm"
-            onClick={() => enableProvider()}
+            onClick={validProvider ? enableProvider : initOnBoard}
           >
-            Enable Web3
-          </button>
-        </Menu.Item>
-      )}
-      {validProvider && isEnabled && !currentUser.address && (
-        <Menu.Item key="unlock">
-          <small className="text-muted">Please unlock MetaMask</small>
-        </Menu.Item>
-      )}
-      {!validProvider && (
-        <Menu.Item key="SignUp">
-          <button type="button" className="btn btn-outline-info btn-sm" onClick={initOnBoard}>
-            Sign Up!
+            Connect Wallet
           </button>
         </Menu.Item>
       )}

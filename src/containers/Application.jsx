@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import ReactDOM from 'react-dom';
 import { Helmet } from 'react-helmet';
 
 import { Router } from 'react-router-dom';
@@ -8,8 +7,6 @@ import localforage from 'localforage';
 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
-
-import Sweetalert from 'sweetalert';
 
 import { history } from '../lib/helpers';
 
@@ -29,22 +26,9 @@ import WhiteListProvider, {
 } from '../contextProviders/WhiteListProvider';
 import NotificationModalProvider from '../contextProviders/NotificationModalProvider';
 
-import '../lib/validators';
-
 /**
  * Here we hack to make stuff globally available
  */
-// Make sweet alert global
-React.swal = Sweetalert;
-
-// Construct a dom node to be used as content for sweet alert
-React.swal.msg = reactNode => {
-  const wrapper = document.createElement('span');
-  ReactDOM.render(reactNode, wrapper);
-  return wrapper.firstChild;
-};
-
-// make toast globally available
 React.toast = toast;
 
 /**

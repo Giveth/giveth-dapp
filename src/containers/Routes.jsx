@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 
 // views
@@ -6,6 +6,7 @@ import Profile from '../components/views/Profile';
 import EditProfile from '../components/views/EditProfile';
 
 import ViewTrace from '../components/views/ViewTrace';
+import SentryTest from '../components/views/SentryTest';
 import EditCommunity from '../components/views/EditCommunity';
 import ViewCommunity from '../components/views/ViewCommunity';
 import MyDonations from '../components/views/MyDonations';
@@ -32,14 +33,8 @@ import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
 import EditMilestone from '../components/views/EditMilestone';
 import EditCampaign from '../components/views/EditCampaign';
-import { Context as Web3Context } from '../contextProviders/Web3Provider';
 
 const Routes = () => {
-  const {
-    state: { isForeignNetwork, balance },
-    actions: { displayForeignNetRequiredWarning },
-  } = useContext(Web3Context);
-
   const { pathname } = useLocation();
 
   // Path and it's donate sub path
@@ -131,27 +126,7 @@ const Routes = () => {
       <Route
         exact
         path="/campaigns/:id/traces/:traceId/edit"
-        render={props => (
-          <EditTraceOld
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            {...props}
-          />
-        )}
-      />
-      <Route
-        exact
-        path="/campaigns/:id/traces/:traceId/edit/proposed"
-        render={props => (
-          <EditTraceOld
-            balance={balance}
-            isForeignNetwork={isForeignNetwork}
-            displayForeignNetRequiredWarning={displayForeignNetRequiredWarning}
-            isProposed
-            {...props}
-          />
-        )}
+        render={props => <EditTraceOld {...props} />}
       />
       <Route exact path="/bounty/:traceId/edit" render={props => <EditBounty {...props} />} />
       <Route exact path="/expense/:traceId/edit" render={props => <EditExpense {...props} />} />
@@ -178,6 +153,7 @@ const Routes = () => {
       <Route exact path="/campaigns" render={() => <CampaignsExplore />} />
       <Route exact path="/communities" render={() => <CommunitiesExplore />} />
       <Route exact path="/dacs" render={() => <Redirect to="/communities" />} />
+      <Route exact path="/sentry-test" render={() => <SentryTest />} />
       <Route component={NotFound} />
     </Switch>
   );

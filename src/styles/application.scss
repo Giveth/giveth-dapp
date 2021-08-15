@@ -5,8 +5,6 @@
 @import 'layout.scss';
 @import 'typography.scss';
 // views
-@import 'causesView.scss';
-@import 'editCausesView.scss';
 @import 'viewCauseView.scss';
 @import 'viewAlertView.scss';
 @import 'viewCampaignView.scss';
@@ -35,16 +33,10 @@
 @import 'totalGasPaid.scss';
 // misc
 @import 'toastify-overrides.scss';
-@import 'react-token-input-overrides.scss';
-@import 'sweet-alert-overrides.scss';
-@import 'react-toggle.scss';
-@import 'react-datepicker.scss';
 @import 'pagination.scss';
-@import 'cropper.scss';
 @import 'searchBox';
 // overrides
 @import 'card.scss';
-@import 'formsyOverrides.scss';
 @import 'antOverrides.scss';
 @import 'projectsubscription.scss';
 @import 'generalCustomes';
@@ -253,14 +245,6 @@ i {
 
 .image-preview.small {
   max-width: 100px;
-}
-
-.react-toggle-container {
-  display: flex;
-
-  .label {
-    margin-left: 10px;
-  }
 }
 
 .inline {

@@ -1,13 +1,22 @@
 //Custom styles for Ant Design
 
+// Hide Ant close btn
+.antModalNoBtn {
+  .ant-modal-confirm-btns {
+    display: none;
+  }
+}
+
 .ant-menu {
   font-family: 'Red Hat Text', sans-serif;
 }
 
-.donateModal {
+.custom-ant-modal {
   width: unset !important;
+}
 
-  .ant-input-number.ant-input-number-lg {
+#donate-modal {
+  textarea, .ant-input-number.ant-input-number-lg {
     padding: 5px 9px;
     border: 2px solid #dfdae8 !important;
     border-radius: 8px !important;
@@ -15,6 +24,14 @@
   // Hide ant arrows in input to show MAX button instead
   .ant-input-number-handler-wrap {
     display: none;
+  }
+}
+
+#delegate-multiple-modal, #delegate-modal {
+  textarea, .ant-input-number.ant-input-number-lg {
+    padding: 5px 9px;
+    border: 2px solid #dfdae8 !important;
+    border-radius: 8px !important;
   }
 }
 

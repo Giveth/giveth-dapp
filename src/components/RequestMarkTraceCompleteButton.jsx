@@ -1,5 +1,6 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { Modal } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
@@ -41,17 +42,19 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
           }
 
           if (trace.donationCounters.length === 0) {
-            const proceed = await React.swal({
-              title: 'Mark Trace Complete?',
-              text:
-                'Are you sure you want to mark this Trace as complete? You have yet to receive any donations.',
-              icon: 'warning',
-              dangerMode: true,
-              buttons: ['Cancel', 'Yes'],
-            });
-
-            // if null, then "Cancel" was pressed
-            if (proceed === null) return;
+            const proceed = await new Promise(resolve =>
+              Modal.confirm({
+                title: 'Mark Trace Complete?',
+                content:
+                  'Are you sure you want to mark this Trace as complete? You have yet to receive any donations.',
+                cancelText: 'Cancel',
+                okText: 'Yes',
+                centered: true,
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              }),
+            );
+            if (!proceed) return;
           }
 
           conversationModal.current
