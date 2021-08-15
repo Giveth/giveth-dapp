@@ -195,10 +195,7 @@ const DonationList = props => {
         {isLoading && total === 0 && <Loader className="relative" />}
         {donations.length > 0 && (
           <div className="table-container" style={{ marginTop: 0, marginBottom: '50px' }}>
-            <table
-              className="table table-responsive table-hover mx-auto"
-              style={{ width: 'fit-content' }}
-            >
+            <table className="table table-responsive table-hover">
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
