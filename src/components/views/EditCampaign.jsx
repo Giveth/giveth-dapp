@@ -220,10 +220,9 @@ const EditCampaign = () => {
           notification.info({ description: msg });
           const analyticsData = {
             userAddress: currentUser.address,
-            ownerAddress: campaign.ownerAddress,
             slug: response.slug,
             reviewerAddress: campaign.reviewerAddress,
-            campaignAddress: campaign.ownerAddress,
+            campaignOwnerAddress: campaign.ownerAddress,
             title: campaign.title,
             campaignId: response._id,
             txUrl,

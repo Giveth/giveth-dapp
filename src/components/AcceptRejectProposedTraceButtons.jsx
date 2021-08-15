@@ -40,7 +40,21 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
           TraceService.rejectProposedTrace({
             trace,
             message: proof.message,
-            onSuccess: () => React.toast.info(<p>The proposed Trace has been rejected.</p>),
+            onSuccess: () => {
+              React.toast.info(<p>The proposed Trace has been rejected.</p>);
+              sendAnalyticsTracking('Trace Rejected', {
+                category: 'Trace',
+                action: 'rejected proposed Trace',
+                traceId: trace._id,
+                title: trace.title,
+                ownerId: trace.ownerAddress,
+                traceType: trace.formType,
+                traceRecipientAddress: trace.recipientAddress,
+                parentCampaignId: trace.campaign._id,
+                reviewerAddress: trace.reviewerAddress,
+                userAddress: currentUser.address,
+              });
+            },
             onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
           });
         });
@@ -71,7 +85,6 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                   sendAnalyticsTracking('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
-                    trace,
                     traceId: trace._id,
                     title: trace.title,
                     slug: trace.slug,

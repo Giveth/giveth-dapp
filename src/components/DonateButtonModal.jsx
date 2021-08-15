@@ -398,13 +398,13 @@ const DonateButtonModal = props => {
         let txHash;
         let txUrl;
         const currency = selectedToken.symbol;
-        const valueEth = currency === 'ETH' ? _amount : await convertUsdValueToEthValue(usdValue);
+        const ethValue = currency === 'ETH' ? _amount : await convertUsdValueToEthValue(usdValue);
         const entityOwner = await feathersClient.service('users').get(toAdmin.ownerAddress);
         const analyticsData = {
           donorAddress: userAddress,
           donorName: currentUser.name,
           usdValue,
-          valueEth,
+          ethValue,
           donationOwnerAddress,
           entityType: toAdmin.type,
           traceType: toAdmin.formType,
