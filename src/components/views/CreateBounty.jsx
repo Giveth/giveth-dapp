@@ -113,10 +113,17 @@ function CreateBounty(props) {
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           const analyticsData = {
-            formType: 'bounty',
-            id: res._id,
+            traceId: res._id,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
             title: ms.title,
-            campaignTitle: campaign.title,
+            ownerAddress: ms.ownerAddress,
+            traceType: ms.formType,
+            parentCampaignId: campaign.id,
+            parentCampaignTitle: campaign.title,
+            reviewerAddress: ms.reviewerAddress,
+            userAddress: currentUser.address,
           };
           if (created) {
             if (!userIsCampaignOwner) {

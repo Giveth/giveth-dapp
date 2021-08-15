@@ -13,7 +13,6 @@ import {
   TraceDescription,
   TraceDonateToCommunity,
   TraceFiatAmountCurrency,
-  TracePicture,
   TraceRecipientAddress,
   TraceTitle,
   TraceToken,
@@ -30,6 +29,7 @@ import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 const WAIT_INTERVAL = 1000;
 
@@ -246,10 +246,17 @@ function CreatePayment(props) {
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           const analyticsData = {
-            formType: 'payment',
-            id: res._id,
+            traceId: res._id,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
             title: ms.title,
-            campaignTitle: campaign.title,
+            ownerAddress: ms.ownerAddress,
+            traceType: ms.formType,
+            parentCampaignId: campaign.id,
+            parentCampaignTitle: campaign.title,
+            reviewerAddress: ms.reviewerAddress,
+            userAddress: currentUser.address,
           };
           if (created) {
             if (!userIsCampaignOwner) {
@@ -392,10 +399,10 @@ function CreatePayment(props) {
                   id="description"
                 />
 
-                <TracePicture
+                <UploadPicture
                   setPicture={setPicture}
-                  traceTitle={payment.title}
                   picture={payment.picture}
+                  imgAlt={payment.title}
                 />
 
                 <TraceDonateToCommunity

@@ -145,10 +145,15 @@ function EditBounty(props) {
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
         const analyticsData = {
-          formType: 'bounty',
-          id: res._id,
+          traceId: res._id,
           title: ms.title,
-          campaignTitle: campaign.title,
+          ownerAddress: ms.ownerAddress,
+          traceType: ms.formType,
+          parentCampaignId: campaign.id,
+          parentCampaignTitle: campaign.title,
+          reviewerAddress: ms.reviewerAddress,
+          recipientAddress: ms.recipientAddress,
+          userAddress: currentUser.address,
         };
 
         if (created) {

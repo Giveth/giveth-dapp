@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { Modal } from 'antd';
+import React, { useContext, useEffect, useState } from 'react';
+import { Button, Modal } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 
@@ -9,24 +9,36 @@ const Web3ConnectWarning = () => {
   } = useContext(UserContext);
   const {
     state: { validProvider },
+    actions: { enableProvider },
   } = useContext(Web3Context);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const visible = !validProvider || (!userIsLoading && !currentUser.address);
+    // To stop blinking the modal before web3 prepared
+    setTimeout(() => setIsLoading(false), 1500);
+  }, []);
+
+  useEffect(() => {
+    // This component is just for the single case of user wallet being locked
+    const visible = !isLoading && validProvider && !userIsLoading && !currentUser.address;
     let content = '';
 
     if (visible) {
-      if (!validProvider) {
-        content = (
-          <p>
-            Please install <a href="https://metamask.io/">MetaMask</a> to collaborate
+      content = (
+        <div className="text-center">
+          <p className="text-left">
+            It looks like your Ethereum Provider is locked or you need to enable it.
           </p>
-        );
-      } else {
-        content = 'It looks like your Ethereum Provider is locked or you need to enable it.';
-      }
-    }
-    if (visible) {
+          <Button
+            className="ant-btn-lg ant-btn-donate mt-4"
+            style={{ marginLeft: '-22px' }}
+            onClick={enableProvider}
+          >
+            Connect Wallet
+          </Button>
+        </div>
+      );
       const modal = Modal.info({
         title: 'Wallet is not connected',
         content,
@@ -39,7 +51,7 @@ const Web3ConnectWarning = () => {
       return () => modal.destroy();
     }
     return () => {};
-  }, [validProvider, userIsLoading, currentUser.address]);
+  }, [validProvider, userIsLoading, currentUser.address, isLoading]);
 
   return null;
 };

@@ -1,7 +1,38 @@
 //Custom styles for Ant Design
 
+// Hide Ant close btn
+.antModalNoBtn {
+  .ant-modal-confirm-btns {
+    display: none;
+  }
+}
+
 .ant-menu {
   font-family: 'Red Hat Text', sans-serif;
+}
+
+.custom-ant-modal {
+  width: unset !important;
+}
+
+#donate-modal {
+  textarea, .ant-input-number.ant-input-number-lg {
+    padding: 5px 9px;
+    border: 2px solid #dfdae8 !important;
+    border-radius: 8px !important;
+  }
+  // Hide ant arrows in input to show MAX button instead
+  .ant-input-number-handler-wrap {
+    display: none;
+  }
+}
+
+#delegate-multiple-modal, #delegate-modal {
+  textarea, .ant-input-number.ant-input-number-lg {
+    padding: 5px 9px;
+    border: 2px solid #dfdae8 !important;
+    border-radius: 8px !important;
+  }
 }
 
 // Padding for profile menu
@@ -15,7 +46,7 @@
 		width: 100%;
 		text-align: left;
 		& > label {
-			font-family: Quicksand;
+			font-family: Quicksand, sans-serif;
 			font-style: normal;
 			font-weight: normal;
 			font-size: 16px;
@@ -37,7 +68,7 @@
 
 				padding: 13px 18px;
 
-				font-family: Lato;
+				font-family: Lato, sans-serif;
 				font-style: normal;
 				font-weight: normal;
 				font-size: 18px;
@@ -62,7 +93,7 @@
 
 			padding: 16px 18px;
 
-			font-family: Lato;
+			font-family: Lato, sans-serif;
 			font-style: normal;
 			font-weight: normal;
 			font-size: 18px;
@@ -88,7 +119,7 @@
 
 //custom select
 .ant-select {
-	font-family: Lato;
+	font-family: Lato, sans-serif;
 	font-style: normal;
 	font-weight: normal;
 	font-size: 18px;
@@ -118,7 +149,7 @@
 	border-radius: 8px;
 	height: 52px;
 
-	font-family: Lato;
+	font-family: Lato, sans-serif;
 	font-style: normal;
 	font-weight: normal;
 	font-size: 18px;

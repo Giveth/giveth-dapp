@@ -17,11 +17,11 @@ import {
   TraceCampaignInfo,
   TraceDescription,
   TraceDonateToCommunity,
-  TracePicture,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 function CreateMilestone(props) {
   const {
@@ -35,7 +35,6 @@ function CreateMilestone(props) {
   const { id: campaignId, slug: campaignSlug } = props.match.params;
 
   const campaign = useCampaign(campaignId, campaignSlug);
-  const [form] = Form.useForm();
 
   const [milestone, setMilestone] = useState({
     title: '',
@@ -120,10 +119,17 @@ function CreateMilestone(props) {
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           const analyticsData = {
-            formType: 'milestone',
-            id: res._id,
+            traceId: res._id,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
             title: ms.title,
-            campaignTitle: campaign.title,
+            ownerAddress: ms.ownerAddress,
+            traceType: ms.formType,
+            parentCampaignId: campaign.id,
+            parentCampaignTitle: campaign.title,
+            reviewerAddress: ms.reviewerAddress,
+            userAddress: currentUser.address,
           };
           if (created) {
             if (!userIsCampaignOwner) {
@@ -202,7 +208,6 @@ function CreateMilestone(props) {
               className="card-form"
               requiredMark
               onFinish={submit}
-              form={form}
               scrollToFirstError={{
                 block: 'center',
                 behavior: 'smooth',
@@ -232,10 +237,10 @@ function CreateMilestone(props) {
                   id="description"
                 />
 
-                <TracePicture
+                <UploadPicture
                   setPicture={setPicture}
                   picture={milestone.picture}
-                  traceTitle={milestone.title}
+                  imgAlt={milestone.title}
                 />
 
                 <TraceDonateToCommunity

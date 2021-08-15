@@ -1,6 +1,6 @@
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { CheckboxGroup, Form } from 'formsy-react-components';
+import { Form, Checkbox, Button } from 'antd';
 import { User } from '../models';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { feathersClient } from '../lib/feathersClient';
@@ -17,7 +17,6 @@ function ProfileUpdatePermission({ user, updateUser }) {
   } = useContext(Web3Context);
 
   const [rolesInitValue, setRolesInitValue] = useState([]);
-
   const [changed, setChanged] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,15 +28,18 @@ function ProfileUpdatePermission({ user, updateUser }) {
     setRolesInitValue(roleAccessKeys.filter(key => user[key]));
   };
 
+  const setRoles = roles => {
+    setRolesInitValue(roles);
+    if (!changed) setChanged(true);
+  };
+
   const multiOptions = [
     { label: 'Community Owner', value: 'isDelegator' },
     { label: 'Campaign Owner', value: 'isProjectOwner' },
     { label: 'Reviewer', value: 'isReviewer' },
   ];
 
-  const checkboxRef = useRef();
-
-  const submitForm = data => {
+  const submitForm = () => {
     if (!authenticated) {
       React.signIn();
       return;
@@ -45,9 +47,8 @@ function ProfileUpdatePermission({ user, updateUser }) {
     setLoading(true);
     setChanged(false);
     const mutation = {};
-    const { roles = [] } = data;
     roleAccessKeys.forEach(key => {
-      mutation[key] = roles.includes(key);
+      mutation[key] = rolesInitValue.includes(key);
     });
     authenticateUser(currentUser, false, web3).then(isAuthenticated => {
       if (!isAuthenticated) return;
@@ -56,7 +57,7 @@ function ProfileUpdatePermission({ user, updateUser }) {
         .patch(user.address, mutation)
         .then(newUser => {
           React.toast.success('User permission is updated');
-          updateUser(newUser);
+          updateUser(new User(newUser));
         })
         .catch(err => {
           ErrorHandler(err, 'Something wrong in updating user roles, please try later');
@@ -71,37 +72,30 @@ function ProfileUpdatePermission({ user, updateUser }) {
     updateRolesInitValue();
   }, [user]);
 
-  return (
-    <Fragment>
-      {currentUser.isAdmin && (
-        <Fragment>
-          <Form onSubmit={submitForm}>
-            <div className="update-role-header">
-              <h4>User Role</h4>
-              <button
-                type="submit"
-                disabled={loading || (authenticated && !changed)}
-                className="btn btn-primary btn-lg mx-2 btn-update-role"
-              >
-                {authenticated ? 'Update' : 'Sign In to Update'}
-              </button>
-            </div>
-            <CheckboxGroup
-              disabled={!authenticated || loading}
-              name="roles"
-              labelClassName={[{ 'col-sm-3': false }]}
-              onChange={() => setChanged(true)}
-              options={multiOptions}
-              value={rolesInitValue}
-              componentRef={component => {
-                checkboxRef.current = component;
-              }}
-            />
-          </Form>
-        </Fragment>
-      )}
-    </Fragment>
-  );
+  return currentUser.isAdmin ? (
+    <Form onSubmit={submitForm} className="text-left">
+      <div className="update-role-header">
+        <h4>User Role</h4>
+      </div>
+      <Checkbox.Group
+        options={multiOptions}
+        name="roles"
+        disabled={!authenticated || loading}
+        value={rolesInitValue}
+        onChange={setRoles}
+      />
+      <br />
+      <Button
+        onClick={submitForm}
+        type="primary"
+        disabled={loading || (authenticated && !changed)}
+        className="ant-btn-lg mt-3"
+        loading={loading}
+      >
+        {authenticated ? 'Update' : 'Sign In to Update'}
+      </Button>
+    </Form>
+  ) : null;
 }
 
 ProfileUpdatePermission.propTypes = {

@@ -40,7 +40,21 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
           TraceService.rejectProposedTrace({
             trace,
             message: proof.message,
-            onSuccess: () => React.toast.info(<p>The proposed Trace has been rejected.</p>),
+            onSuccess: () => {
+              React.toast.info(<p>The proposed Trace has been rejected.</p>);
+              sendAnalyticsTracking('Trace Rejected', {
+                category: 'Trace',
+                action: 'rejected proposed Trace',
+                traceId: trace._id,
+                title: trace.title,
+                ownerId: trace.ownerAddress,
+                traceType: trace.formType,
+                traceRecipientAddress: trace.recipientAddress,
+                parentCampaignId: trace.campaign._id,
+                reviewerAddress: trace.reviewerAddress,
+                userAddress: currentUser.address,
+              });
+            },
             onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
           });
         });
@@ -71,8 +85,18 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                   sendAnalyticsTracking('Trace Accepted', {
                     category: 'Trace',
                     action: 'accepted proposed Trace',
-                    id: trace._id,
+                    traceId: trace._id,
                     title: trace.title,
+                    slug: trace.slug,
+                    ownerAddress: trace.ownerAddress,
+                    traceType: trace.formType,
+                    traceRecipientAddress: trace.recipientAddress,
+                    traceOwnerName: trace.owner.name,
+                    traceOwnerAddress: trace.ownerAddress,
+                    parentCampaignId: trace.campaign._id,
+                    parentCampaignTitle: trace.campaign.title,
+                    parentCampaignAddress: trace.campaign.ownerAddress,
+                    reviewerAddress: trace.reviewerAddress,
                     userAddress: currentUser.address,
                     txUrl,
                   });
@@ -149,7 +173,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
         </span>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };

@@ -1,6 +1,7 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { utils } from 'web3';
+import { Modal, Input } from 'antd';
 
 import TraceService from 'services/TraceService';
 import ErrorPopup from 'components/ErrorPopup';
@@ -21,49 +22,60 @@ function ChangeTraceRecipientButton({ trace }) {
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
+  const newRecipient = useRef('');
+
+  const setNewRecipient = input => {
+    newRecipient.current = input.target.value;
+  };
+
   const changeRecipient = () => {
     authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) return;
       checkBalance(balance)
         .then(async () => {
           try {
-            // We want to retrieve MyInput as a pure DOM node:
-            const newRecipient = await React.swal({
-              title: 'Change Trace Recipient?',
-              text: `Are you sure you want to ${
-                trace.hasRecipient ? 'change' : 'set'
-              } the Trace recipient? This action can not be undone.`,
-              icon: 'warning',
-              dangerMode: true,
-              buttons: ['Cancel', 'Yes'],
-              content: {
-                element: 'input',
-                attributes: {
-                  placeholder: 'Set the recipient address ...',
-                  type: 'text',
-                },
-              },
-            });
+            const isNewRecipient = await new Promise(resolve =>
+              Modal.confirm({
+                title: 'Change Trace Recipient?',
+                content: (
+                  <Fragment>
+                    <p>
+                      {`Are you sure you want to ${trace.hasRecipient ? 'change' : 'set'} the Trace
+                      recipient? This action can not be undone.`}
+                    </p>
+                    <Input onChange={setNewRecipient} className="rounded" />
+                  </Fragment>
+                ),
+                cancelText: 'Cancel',
+                okText: 'Yes',
+                centered: true,
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              }),
+            );
 
-            // if null, then "Cancel" was pressed
-            if (newRecipient === null) return;
+            if (!isNewRecipient) return;
 
-            if (!utils.isAddress(newRecipient)) {
+            if (!utils.isAddress(newRecipient.current)) {
               // TODO create a modal & provide input validation before closing the alert
-              await React.swal({
+              Modal.error({
                 title: 'Invalid Address',
-                text: 'The provided address is invalid.',
-                type: 'error',
-                icon: 'error',
+                content: 'The provided address is invalid.',
+                centered: true,
               });
               return;
             }
-            if (newRecipient.toLowerCase() === trace.recipient.address.toLowerCase()) {
-              await React.swal({
+            if (
+              // the bounties doesnt have recipient when creating, so we should first
+              // check if trace has recipient check the address of it
+              trace.recipient &&
+              newRecipient.current.toLowerCase() === trace.recipient.address.toLowerCase()
+            ) {
+              Modal.error({
                 title: 'Redundant Address',
-                text: 'The new recipient address should be different from old recipient address.',
-                type: 'error',
-                icon: 'error',
+                content:
+                  'The new recipient address should be different from old recipient address.',
+                centered: true,
               });
               return;
             }
@@ -71,7 +83,7 @@ function ChangeTraceRecipientButton({ trace }) {
             await TraceService.changeRecipient({
               trace,
               from: currentUser.address,
-              newRecipient,
+              newRecipient: newRecipient.current,
               onTxHash: txUrl => {
                 React.toast.info(
                   <p>
@@ -104,7 +116,7 @@ function ChangeTraceRecipientButton({ trace }) {
           if (err === 'noBalance') {
             ErrorPopup('There is no balance left on the account.', err);
           } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
+            ErrorPopup('Something went wrong while changing recipient.', err);
           }
         });
     });

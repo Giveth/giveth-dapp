@@ -1,24 +1,9 @@
 import React, { Fragment, useCallback, useContext } from 'react';
-import {
-  Checkbox,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  notification,
-  Row,
-  Select,
-  Typography,
-  Upload,
-} from 'antd';
+import { Checkbox, Col, DatePicker, Form, Input, Row, Select, Typography } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
-import { DeleteTwoTone } from '@ant-design/icons';
-import ImgCrop from 'antd-img-crop';
 import moment from 'moment';
 import Web3 from 'web3';
-import config from '../configuration';
-import { IPFSService } from '../services';
 import useReviewers from '../hooks/useReviewers';
 import { getStartOfDayUTC, getHtmlText, ANY_TOKEN } from '../lib/helpers';
 import Editor from './Editor';
@@ -137,80 +122,6 @@ TraceDescription.defaultProps = {
   initialValue: '',
 };
 
-const TracePicture = ({ picture, setPicture, traceTitle, disabled }) => {
-  const uploadProps = {
-    multiple: false,
-    accept: 'image/png, image/jpeg',
-    customRequest: options => {
-      const { onSuccess, onError, file } = options;
-      IPFSService.upload(file)
-        .then(onSuccess)
-        .catch(err => {
-          onError('Failed!', err);
-        });
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        console.log('file uploaded successfully.', info.file.response);
-        setPicture(info.file.response);
-      } else if (status === 'error') {
-        console.log(`${info.file.name} file upload failed.`);
-        const args = {
-          message: 'Error',
-          description: 'Cannot upload picture to IPFS',
-        };
-        notification.error(args);
-      }
-    },
-  };
-
-  function removePicture() {
-    setPicture('');
-  }
-
-  return (
-    <Form.Item
-      name="picture"
-      label="Add a picture (optional)"
-      className="custom-form-item"
-      extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                    aspect ratio."
-    >
-      <Fragment>
-        {picture ? (
-          <div className="picture-upload-preview">
-            <img src={`${config.ipfsGateway}${picture.slice(6)}`} alt={traceTitle} />
-            {!disabled && <DeleteTwoTone onClick={removePicture} disabled={disabled} />}
-          </div>
-        ) : (
-          <ImgCrop aspect={16 / 9}>
-            <Upload.Dragger {...uploadProps} style={disabled ? { display: 'none' } : {}}>
-              <p className="ant-upload-text">
-                Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-              </p>
-            </Upload.Dragger>
-          </ImgCrop>
-        )}
-      </Fragment>
-    </Form.Item>
-  );
-};
-
-TracePicture.propTypes = {
-  picture: PropTypes.string.isRequired,
-  traceTitle: PropTypes.string.isRequired,
-  setPicture: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-};
-
-TracePicture.defaultProps = {
-  disabled: false,
-};
-
 const TraceDonateToCommunity = ({ onChange, value, disabled }) => (
   <Form.Item
     className="custom-form-item trace-donate-community"
@@ -253,7 +164,7 @@ const TraceReviewer = ({
   const reviewers = useReviewers();
   return (
     <Fragment>
-      <Form.Item className="custom-form-item trace-reviewer" valuePropName="checked">
+      <Form.Item className="custom-form-item trace-donate-community" valuePropName="checked">
         {toggleHasReviewer && (
           <Checkbox
             className="trace-reviewer-checkbox"
@@ -261,9 +172,10 @@ const TraceReviewer = ({
             checked={hasReviewer}
             onChange={toggleHasReviewer}
             disabled={disabled}
-          />
+          >
+            {traceType} reviewer
+          </Checkbox>
         )}
-        <span>{`${traceType} reviewer`}</span>
       </Form.Item>
       {hasReviewer && (
         <Fragment>
@@ -323,16 +235,16 @@ const TraceDatePicker = ({ onChange, value, disabled }) => {
   return (
     <Row gutter={16}>
       <Col className="gutter-row" span={10}>
-        <Form.Item label="Date" className="custom-form-item">
+        <Form.Item
+          label="Date"
+          className="custom-form-item"
+          rules={[{ required: true, message: 'Date is required' }]}
+        >
           <DatePicker
+            value={value}
             disabledDate={current => {
               return current && current > moment().startOf('day');
             }}
-            rules={[
-              {
-                required: true,
-              },
-            ]}
             defaultValue={value || maxValue}
             onChange={(_, dateString) => onChange(getStartOfDayUTC(dateString))}
             disabled={disabled}
@@ -391,11 +303,11 @@ const TraceToken = ({
 
   return (
     <Row gutter={16} align="middle">
-      <Col className="gutter-row" span={12}>
+      <Col className="gutter-row" span={14}>
         <Form.Item
           name="Token"
           label={label}
-          className="custom-form-item"
+          className="custom-form-item mb-2"
           extra="Select the token you want to be reimbursed in."
           rules={[{ required: true, message: 'Payment currency is required' }]}
           initialValue={initialValue.symbol}
@@ -427,7 +339,7 @@ const TraceToken = ({
         </Form.Item>
       </Col>
       {!hideTotalAmount && (
-        <Col className="gutter-row" span={12}>
+        <Col className="gutter-row" span={10}>
           <Typography.Text className="ant-form-text" type="secondary">
             ≈ {totalAmount}
           </Typography.Text>
@@ -611,7 +523,6 @@ TraceFiatAmountCurrency.defaultProps = {
 export {
   TraceTitle,
   TraceDescription,
-  TracePicture,
   TraceDonateToCommunity,
   TraceReviewer,
   TraceDatePicker,

@@ -2,17 +2,11 @@
 /* eslint-disable jsx-a11y/label-has-for */
 
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import Lottie from 'lottie-react';
 
-import Trace from 'models/Trace';
-import TraceProof from 'components/TraceProof';
 import { Button, Form, Modal, Row, Col } from 'antd';
 import Editor from './Editor';
 import { getHtmlText } from '../lib/helpers';
-import BridgedTrace from '../models/BridgedTrace';
-import LPPCappedTrace from '../models/LPPCappedTrace';
-import LPTrace from '../models/LPTrace';
 import AcceptProposedAnimation from '../assets/checkmark.json';
 
 /**
@@ -46,9 +40,7 @@ class ConversationModal extends Component {
       formIsValid: false,
       isSaving: false,
       message: '',
-      items: [],
       required: false,
-      enableAttachProof: false,
       textPlaceholder: '',
     };
 
@@ -56,14 +48,8 @@ class ConversationModal extends Component {
 
     this.openModal = this.openModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
-    this.onItemsChanged = this.onItemsChanged.bind(this);
     this.onMessageChange = this.onMessageChange.bind(this);
     this.submit = this.submit.bind(this);
-  }
-
-  onItemsChanged(items) {
-    this.setState({ items });
-    this.triggerRouteBlocking();
   }
 
   onMessageChange(message) {
@@ -73,7 +59,6 @@ class ConversationModal extends Component {
   openModal({ title, description, cta, required, textPlaceholder, type }) {
     this.setState(
       {
-        items: [],
         title,
         description,
         CTA: cta,
@@ -105,7 +90,6 @@ class ConversationModal extends Component {
       } else {
         this.promise.resolve({
           message: this.state.message,
-          items: this.state.items,
         });
       }
     }
@@ -135,13 +119,9 @@ class ConversationModal extends Component {
       title,
       description,
       CTA,
-      items,
-      enableAttachProof,
       textPlaceholder,
       type,
     } = this.state;
-
-    const { trace } = this.props;
 
     let LottieAnimation;
     if (type === 'AcceptProposed') {
@@ -179,7 +159,7 @@ class ConversationModal extends Component {
             )}
           </Row>
           <div className="row">
-            <div className={enableAttachProof ? 'col-md-6' : 'col-12'}>
+            <div className="col-12">
               <Form.Item
                 name="message"
                 label="Accompanying message"
@@ -210,19 +190,6 @@ class ConversationModal extends Component {
                 />
               </Form.Item>
             </div>
-
-            {enableAttachProof && (
-              <div className="col-md-6">
-                <span className="label">Attachments</span>
-                <TraceProof
-                  isEditMode
-                  refreshList={items}
-                  onItemsChanged={returnedItems => this.onItemsChanged(returnedItems)}
-                  traceStatus={trace.status}
-                  token={trace.token}
-                />
-              </div>
-            )}
           </div>
         </Form>
         <div className="text-right">
@@ -253,11 +220,5 @@ class ConversationModal extends Component {
     );
   }
 }
-
-ConversationModal.propTypes = {
-  trace: PropTypes.oneOfType(
-    [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
-  ).isRequired,
-};
 
 export default ConversationModal;

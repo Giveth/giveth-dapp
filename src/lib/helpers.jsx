@@ -1,5 +1,5 @@
-import React from 'react';
-import 'whatwg-fetch';
+import React, { Fragment } from 'react';
+import { Modal, Button } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -8,6 +8,35 @@ import Resizer from 'react-image-file-resizer';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
+
+export const shortenDescription = (description, showAll = false, onClick, charsLength = 110) => {
+  if (!description) {
+    return '';
+  }
+  if (description.length < charsLength || showAll) {
+    return description;
+  }
+
+  return (
+    <Fragment>
+      {`${description.slice(0, charsLength)} ...`}
+      <Button onClick={onClick} type="link" className="px-2 py-0">
+        See more
+      </Button>
+    </Fragment>
+  );
+};
+
+export const shortenAddress = (address, charsLength = 4) => {
+  const prefixLength = 2; // "0x"
+  if (!address) {
+    return '';
+  }
+  if (address.length < charsLength * 2 + prefixLength) {
+    return address;
+  }
+  return `${address.slice(0, charsLength + prefixLength)}…${address.slice(-charsLength)}`;
+};
 
 export const isOwner = (address, currentUser) =>
   address !== undefined && currentUser.address === address;
@@ -27,7 +56,7 @@ export const getTruncatedText = (text = '', maxLength = 45) => {
   return txt;
 };
 
-// displays a sweet alert with an error when the transaction goes wrong
+// displays alert with an error when the transaction goes wrong
 export const displayTransactionError = txHash => {
   let msg;
   const { etherScanUrl } = config;
@@ -43,13 +72,13 @@ export const displayTransactionError = txHash => {
     // TODO: update or remove from feathers? maybe don't remove, so we can inform the user that the
     // tx failed and retry
   } else {
-    msg = <p>Something went wrong with the transaction. Is your wallet unlocked?</p>;
+    msg = <p>Something went wrong with the transaction ...</p>;
   }
 
-  React.swal({
+  Modal.error({
     title: 'Oh no!',
-    content: React.swal.msg(msg),
-    icon: 'error',
+    content: msg,
+    centered: true,
   });
 };
 
@@ -142,20 +171,6 @@ export const ANY_TOKEN = {
   foreignAddress: '0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF',
   symbol: 'ANY_TOKEN',
   decimals: 18,
-};
-
-export const signUpSwal = () => {
-  React.swal({
-    title: 'Sign Up!',
-    content: React.swal.msg(
-      <p>
-        To take this action, please enable Web3 in your browser. We recommend installing{' '}
-        <a href="https://metamask.io/">MetaMask</a>.
-      </p>,
-    ),
-    icon: 'info',
-    buttons: ['Ok'],
-  });
 };
 
 /** *

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import config from 'configuration';
 import Trace from 'models/Trace';
 import Loader from './Loader';
-import { getUserName, getUserAvatar, convertEthHelper } from '../lib/helpers';
+import { getUserName, getUserAvatar, convertEthHelper, shortenDescription } from '../lib/helpers';
 import Donation from '../models/Donation';
 import DonationHistory from './DonationHistory';
 
@@ -21,13 +21,15 @@ class DonationListItem extends Component {
 
     this.state = {
       showDetails: false,
-      itemType: null, // Delegated ro Directly donated
+      fullComment: false,
+      itemType: null, // Delegated or Directly donated
       hasHistory: this.props.d.status === Donation.PAID, // PAID donations always has history
     };
 
     this.toggleDetail = this.toggleDetail.bind(this);
     this.setItemType = this.setItemType.bind(this);
     this.setItemHasHistory = this.setItemHasHistory.bind(this);
+    this.showFullComment = this.showFullComment.bind(this);
   }
 
   setItemType(type) {
@@ -40,6 +42,10 @@ class DonationListItem extends Component {
     this.setState({
       hasHistory,
     });
+  }
+
+  showFullComment() {
+    this.setState({ fullComment: true });
   }
 
   toggleDetail() {
@@ -93,7 +99,9 @@ class DonationListItem extends Component {
           style={isNew ? { background: '#DAEBFC', borderBottom: '2px solid #5191F6' } : {}}
         >
           {hasNew && (
-            <td>{isNew && <div style={{ borderRadius: '50%', border: '4px solid #5191F6' }} />}</td>
+            <td className="align-middle">
+              {isNew && <div style={{ borderRadius: '50%', border: '4px solid #5191F6' }} />}
+            </td>
           )}
           <td>
             {this.state.hasHistory ? (
@@ -140,20 +148,9 @@ class DonationListItem extends Component {
               </Link>
             )}
           </td>
-          {config.homeEtherscan ? (
-            <td className="td-tx-address">
-              <a
-                href={`${config.homeEtherscan}address/${d.giverAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {d.giverAddress}
-              </a>
-            </td>
-          ) : (
-            <td className="td-tx-address">{d.giverAddress}</td>
-          )}
-          <td className="td-user">{d.comment}</td>
+          <td className="td-user" style={{ whiteSpace: 'normal' }}>
+            {shortenDescription(d.comment, this.state.fullComment, this.showFullComment)}
+          </td>
           {this.props.hasProposedDelegation && (
             <td className="td-commit">
               {d.commitTime ? moment(d.commitTime).format('lll') : 'Committed'}
@@ -198,7 +195,7 @@ const DonationList = props => {
         {isLoading && total === 0 && <Loader className="relative" />}
         {donations.length > 0 && (
           <div className="table-container" style={{ marginTop: 0, marginBottom: '50px' }}>
-            <table className="table table-responsive table-hover" style={{ marginTop: 0 }}>
+            <table className="table table-responsive table-hover">
               <thead>
                 <tr>
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -209,7 +206,6 @@ const DonationList = props => {
                   <th>Status</th>
                   <th className="td-donations-amount">Amount</th>
                   <th className="td-user">Name</th>
-                  <th className="td-tx-address">Address</th>
                   <th className="">Comment</th>
                   {hasProposedDelegation && <th className="td-commit">Commit Time</th>}
                 </tr>

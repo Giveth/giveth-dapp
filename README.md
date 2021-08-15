@@ -63,24 +63,29 @@ If your operative system is any distribution of linux you can use an All-in-One 
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Install Microsoft Visual Studio 2017 (double-check the version) from this [link](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=15). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
-2. After downloading, install the packages marked from this [image](./VSstudio.png).
-3. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS).
-4. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
-5. Open the command line in administrator mode by right-clicking on the cmd.exe application and selecting "Run as administrator"
-6. In the administrator command prompt, change to the directory where you want to store this repository.
+1. Install the latest version of Python from this [Link](https://www.python.org/downloads/). (make sure python is added to $PATH)
+2. Install Microsoft Visual Studio 2017 (double-check the version) from this [link](https://download.visualstudio.microsoft.com/download/pr/3e542575-929e-4297-b6c6-bef34d0ee648/639c868e1219c651793aff537a1d3b77/vs_buildtools.exe). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
+3. After downloading, install the packages marked from this [image](https://cdn.discordapp.com/attachments/849682448102457374/850480734291623946/unknown.png).
+4. Then run command below in command prompt
+   ```
+   npm config set msvs_version 2017
+   ```
+5. After installing the above, you should install NodeJS version 10 [LTS](https://nodejs.org/dist/latest-v10.x/) (it is better to be v10.24.1 LTS).
+6. Download and run the node-v10.24.1-x64.msi installer and then continue through the installation as normal. Be sure to have the "Enable in PATH" option enabled before installing.
+7. Open the command line in administrator mode by right-clicking on the cmd.exe application and selecting "Run as administrator"
+8. In the administrator command prompt, change to the directory where you want to store this repository.
    ```
    cd C:\some\directory\for\repositories
    ```
-7. Double-check the node version with CMD command:
+9. Double-check the node version with CMD command:
    ```
    node -v
    ```
-8. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install", you should first delete "node modules" folder.
-   ```
-   yarn install
-   ```
-9. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
+10. After that, install the latest version of Yarn.  Be careful not to install packages with NPM. If you have already tried "npm install", you should first delete "node modules" folder.
+    ```
+    yarn install
+    ```
+11. That is it, you are now ready to run the giveth-dapp! Head to the [Run dapp](#run-dapp) section for further instructions.
 
 ### Run
 1. The Giveth dapp will need to connect to a [feathers-giveth](https://github.com/Giveth/feathers-giveth) server. Follow the feathers-giveth readme instructions to install and run server before proceeding further. Alternatively, you could change the configuration to connect to the `develop` environment, see the [Configuration](#configuration) section.

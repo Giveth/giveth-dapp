@@ -2,20 +2,8 @@ import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-import {
-  Button,
-  Col,
-  Form,
-  Input,
-  Modal,
-  notification,
-  PageHeader,
-  Row,
-  Typography,
-  Upload,
-} from 'antd';
-import { DeleteTwoTone } from '@ant-design/icons';
-import ImgCrop from 'antd-img-crop';
+import { Button, Col, Form, Input, Modal, notification, PageHeader, Row, Typography } from 'antd';
+
 import Loader from '../Loader';
 import { getHtmlText, history, isOwner } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
@@ -27,11 +15,11 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import Editor from '../Editor';
 
-import { IPFSService, CommunityService } from '../../services';
-import config from '../../configuration';
+import { CommunityService } from '../../services';
 import Community from '../../models/Community';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 const { Title, Text } = Typography;
 
@@ -113,7 +101,10 @@ const EditCommunity = ({ isNew, match }) => {
               title: communityItem.title,
               description: communityItem.description,
               communityUrl: communityItem.communityUrl,
+              id: match.params.id,
+              slug: communityItem.slug,
               reviewerAddress: communityItem.reviewerAddress,
+              ownerAddress: communityItem.ownerAddress,
               picture: communityItem.image.match(/\/ipfs\/.*/)[0],
             });
             communityObject.current = communityItem;
@@ -162,42 +153,6 @@ const EditCommunity = ({ isNew, match }) => {
     }
   }, [community]);
 
-  const uploadProps = {
-    multiple: false,
-    accept: 'image/png, image/jpeg',
-    customRequest: options => {
-      const { onSuccess, onError, file } = options;
-      IPFSService.upload(file)
-        .then(address => {
-          onSuccess(address);
-        })
-        .catch(err => {
-          onError('Failed!', err);
-        });
-    },
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (status === 'done') {
-        console.log('file uploaded successfully.', info.file.response);
-        setPicture(info.file.response);
-      } else if (status === 'error') {
-        console.log(`${info.file.name} file upload failed.`);
-        const args = {
-          message: 'Error',
-          description: 'Cannot upload picture to IPFS',
-        };
-        notification.error(args);
-      }
-    },
-  };
-
-  const removePicture = () => {
-    setPicture('');
-  };
-
   const submit = async () => {
     const authenticated = await authenticateUser(currentUser, false, web3);
 
@@ -234,7 +189,7 @@ const EditCommunity = ({ isNew, match }) => {
         }
       };
 
-      const afterCreate = (err, url, id) => {
+      const afterCreate = ({ err, url, txUrl, response }) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
           const msg = (
@@ -247,13 +202,28 @@ const EditCommunity = ({ isNew, match }) => {
             </p>
           );
           notification.info({ description: msg });
-          sendAnalyticsTracking('Community Created', {
-            category: 'Community',
-            action: 'created',
-            id,
+          const analyticsData = {
+            slug: response.slug,
+            title: community.title,
             userAddress: currentUser.address,
-            txUrl: url,
-          });
+            ownerAddress: community.ownerAddress,
+            communityId: response._id,
+            txUrl,
+          };
+          if (isNew) {
+            sendAnalyticsTracking('Community Created', {
+              category: 'Community',
+              action: 'edited',
+              ...analyticsData,
+            });
+          } else {
+            sendAnalyticsTracking('Community Edited', {
+              category: 'Community',
+              action: 'edited',
+              ...analyticsData,
+            });
+          }
+
           history.push('/my-communities');
         }
       };
@@ -365,46 +335,15 @@ const EditCommunity = ({ isNew, match }) => {
                     placeholder="Describe how you're going to solve your cause..."
                   />
                 </Form.Item>
-                <Form.Item
-                  name="Picture"
+
+                <UploadPicture
+                  setPicture={setPicture}
+                  picture={community.picture || ''}
+                  imgAlt={community.title || ''}
                   label="Add a picture"
-                  className="custom-form-item"
-                  rules={[
-                    {
-                      validator: async () => {
-                        if (!community.picture) {
-                          throw new Error('Picture is required');
-                        }
-                      },
-                    },
-                  ]}
-                  extra="A picture says more than a thousand words. Select a png or jpg file in a 1:1
-                    aspect ratio."
-                >
-                  <Fragment>
-                    {community.picture ? (
-                      <div className="picture-upload-preview">
-                        <img
-                          src={
-                            community.picture.startsWith('/ipfs/')
-                              ? `${config.ipfsGateway}${community.picture.slice(6)}`
-                              : community.picture
-                          }
-                          alt={community.title}
-                        />
-                        <DeleteTwoTone onClick={removePicture} />
-                      </div>
-                    ) : (
-                      <ImgCrop aspect={16 / 9}>
-                        <Upload.Dragger {...uploadProps}>
-                          <p className="ant-upload-text">
-                            Drag and Drop JPEG, PNG here or <span>Attach a file.</span>
-                          </p>
-                        </Upload.Dragger>
-                      </ImgCrop>
-                    )}
-                  </Fragment>
-                </Form.Item>
+                  required
+                />
+
                 <Form.Item
                   name="communityUrl"
                   label="Url to join your Community"

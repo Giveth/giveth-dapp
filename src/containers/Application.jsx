@@ -1,5 +1,4 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { Fragment } from 'react';
 import { Helmet } from 'react-helmet';
 
 import { Router } from 'react-router-dom';
@@ -8,8 +7,6 @@ import localforage from 'localforage';
 
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
-
-import Sweetalert from 'sweetalert';
 
 import { history } from '../lib/helpers';
 
@@ -29,22 +26,9 @@ import WhiteListProvider, {
 } from '../contextProviders/WhiteListProvider';
 import NotificationModalProvider from '../contextProviders/NotificationModalProvider';
 
-import '../lib/validators';
-
 /**
  * Here we hack to make stuff globally available
  */
-// Make sweet alert global
-React.swal = Sweetalert;
-
-// Construct a dom node to be used as content for sweet alert
-React.swal.msg = reactNode => {
-  const wrapper = document.createElement('span');
-  ReactDOM.render(reactNode, wrapper);
-  return wrapper.firstChild;
-};
-
-// make toast globally available
 React.toast = toast;
 
 /**
@@ -82,54 +66,51 @@ const Application = () => {
         <WhiteListProvider>
           <WhiteListConsumer>
             {({ state: { fiatWhitelist } }) => (
-              <div>
-                <Web3Provider>
-                  <Web3Consumer>
-                    {({ state: { account, web3 } }) => (
-                      <div>
-                        <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
-                          <UserProvider account={account} web3={web3}>
-                            <UserConsumer>
-                              {({ state: { hasError } }) => (
-                                <div>
-                                  <NotificationModalProvider>
-                                    {!hasError && (
-                                      <div>
-                                        <Header />
-                                        <Routes />
-                                      </div>
-                                    )}
+              <Web3Provider>
+                <Web3Consumer>
+                  {({ state: { account, web3 } }) => (
+                    <ConversionRateProvider fiatWhitelist={fiatWhitelist}>
+                      <UserProvider account={account} web3={web3}>
+                        <UserConsumer>
+                          {({ state: { hasError } }) => (
+                            <Fragment>
+                              <NotificationModalProvider>
+                                {!hasError && (
+                                  <Fragment>
+                                    <Header />
+                                    <Routes />
+                                  </Fragment>
+                                )}
 
-                                    {hasError && (
-                                      <div className="text-center">
-                                        <h2>Oops, something went wrong...</h2>
-                                        <p>
-                                          The Giveth dapp could not load for some reason. Please try
-                                          again...
-                                        </p>
-                                      </div>
-                                    )}
+                                {hasError && (
+                                  <div className="text-center">
+                                    <h2>Oops, something went wrong...</h2>
+                                    <p>
+                                      The Giveth dapp could not load for some reason. Please try
+                                      again...
+                                    </p>
+                                  </div>
+                                )}
 
-                                    <ToastContainer
-                                      position="top-right"
-                                      type="default"
-                                      autoClose={5000}
-                                      hideProgressBar
-                                      newestOnTop={false}
-                                      closeOnClick
-                                      pauseOnHover
-                                    />
-                                  </NotificationModalProvider>
-                                </div>
-                              )}
-                            </UserConsumer>
-                          </UserProvider>
-                        </ConversionRateProvider>
-                      </div>
-                    )}
-                  </Web3Consumer>
-                </Web3Provider>
-              </div>
+                                <ToastContainer
+                                  position="top-right"
+                                  type="default"
+                                  autoClose={5000}
+                                  hideProgressBar
+                                  newestOnTop={false}
+                                  closeOnClick
+                                  pauseOnHover
+                                  style={{ zIndex: '1030' }}
+                                />
+                              </NotificationModalProvider>
+                            </Fragment>
+                          )}
+                        </UserConsumer>
+                      </UserProvider>
+                    </ConversionRateProvider>
+                  )}
+                </Web3Consumer>
+              </Web3Provider>
             )}
           </WhiteListConsumer>
         </WhiteListProvider>

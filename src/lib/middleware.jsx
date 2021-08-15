@@ -48,6 +48,7 @@ const authenticate = async (address, redirectOnFail, web3) => {
       const res = await new Promise(resolve =>
         Modal.confirm({
           title: 'You need to sign in!',
+          centered: true,
           content:
             // 'By signing in we are able to provide instant updates to the app after you take an action. The signin process simply requires you to verify that you own this address by signing a randomly generated message. If you choose to skip this step, the app will not reflect any actions you make until the transactions have been mined.',
             'In order to provide the best experience possible, we are going to ask you to sign a randomly generated message proving that you own the current account. This will enable us to provide instant updates to the app after any action.',
@@ -160,7 +161,6 @@ export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
  * Checks for sufficient wallet balance.
  *
  * @param balance {BN} balance object
- * @param history {object} Standard history object
  *
  */
 export const checkBalance = balance =>
@@ -168,16 +168,16 @@ export const checkBalance = balance =>
     if (balance && balance.gte(React.minimumWalletBalanceInWei)) {
       resolve();
     } else {
-      React.swal({
+      Modal.warning({
         title: 'Insufficient wallet balance',
-        content: React.swal.msg(
+        content: (
           <p>
             Be patient, you need at least {React.minimumWalletBalance} {config.foreignNetworkName}{' '}
             {config.nativeTokenName} in your wallet before you can interact with the Giveth DApp. We
             are sending some to you now!
-          </p>,
+          </p>
         ),
-        icon: 'warning',
+        centered: true,
       });
     }
   });

@@ -17,11 +17,11 @@ import {
   TraceCampaignInfo,
   TraceDescription,
   TraceDonateToCommunity,
-  TracePicture,
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
 import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import UploadPicture from '../UploadPicture';
 
 function EditMilestone(props) {
   const {
@@ -46,8 +46,6 @@ function EditMilestone(props) {
     reviewerAddress: '',
     image: '',
   });
-
-  const [form] = Form.useForm();
 
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
@@ -171,10 +169,14 @@ function EditMilestone(props) {
       afterSave: (created, txUrl, res) => {
         let notificationDescription;
         const analyticsData = {
-          formType: 'milestone',
-          id: res._id,
           title: ms.title,
-          campaignTitle: campaign.title,
+          ownerAddress: ms.ownerAddress,
+          traceType: ms.formType,
+          parentCampaignId: campaign.id,
+          parentCampaignTitle: campaign.title,
+          reviewerAddress: ms.reviewerAddress,
+          recipientAddress: ms.recipientAddress,
+          userAddress: currentUser.address,
         };
         if (created) {
           if (!userIsCampaignOwner) {
@@ -261,7 +263,6 @@ function EditMilestone(props) {
                 className="card-form"
                 requiredMark
                 onFinish={submit}
-                form={form}
                 scrollToFirstError={{
                   block: 'center',
                   behavior: 'smooth',
@@ -294,7 +295,7 @@ function EditMilestone(props) {
                     disabled={traceHasFunded}
                   />
 
-                  <TracePicture setPicture={setPicture} picture={image} traceTitle={trace.title} />
+                  <UploadPicture setPicture={setPicture} picture={image} imgAlt={trace.title} />
 
                   <TraceDonateToCommunity
                     value={donateToCommunity}

@@ -9,7 +9,6 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import DonateButtonModal from './DonateButtonModal';
 
 const modalStyles = {
-  minWidth: '60%',
   maxWidth: '800px',
 };
 
@@ -56,7 +55,7 @@ const DonateButton = props => {
         footer={null}
         centered
         destroyOnClose
-        className="pb-0"
+        className="pb-0 custom-ant-modal"
         style={modalStyles}
       >
         <DonateButtonModal {...props} setModalVisible={setModalVisible} />
@@ -71,6 +70,9 @@ const modelTypes = PropTypes.shape({
   id: PropTypes.string.isRequired,
   communityId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   title: PropTypes.string.isRequired,
+  slug: PropTypes.string.isRequired,
+  // it will fill for traces
+  traceType: PropTypes.string,
   campaignId: PropTypes.string,
   token: PropTypes.shape({}),
   acceptsSingleToken: PropTypes.bool,

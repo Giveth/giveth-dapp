@@ -25,80 +25,11 @@ const JoinGivethCommunity = () => {
   const userIsProjectOwner = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
 
   const createCommunity = () => {
-    if (!userIsDelegator) {
-      React.swal({
-        title: 'Sorry',
-        content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to start a Community! However, Giveth only allow a
-            select group of people to start Communities
-            <br />
-            Please <strong>contact us on our Slack</strong>, or keep browsing
-          </p>,
-        ),
-        icon: 'info',
-        buttons: [false, 'Got it'],
-      });
-      return;
-    }
-    if (currentUser.giverId) {
-      history.push('/communities/new');
-    } else {
-      React.swal({
-        title: "You're almost there...",
-        content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to start a Decentralized Community. To get
-            started, please sign up (or sign in) first.
-          </p>,
-        ),
-        icon: 'info',
-        buttons: ['Cancel', 'Sign up now!'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          history.push('/signup');
-        }
-      });
-    }
+    history.push('/communities/new');
   };
 
   const createCampaign = () => {
-    if (!userIsProjectOwner) {
-      React.swal({
-        title: 'Sorry',
-        content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to start a Campaign, however, Giveth only allow a
-            select group of people to start Campaigns
-            <br />
-            Please <strong>contact us on our Slack</strong>, or keep browsing
-          </p>,
-        ),
-        icon: 'info',
-        buttons: [false, 'Got it'],
-      });
-      return;
-    }
-    // Use has registered
-    if (currentUser.giverId) {
-      history.push('/campaigns/new');
-    } else {
-      React.swal({
-        title: "You're almost there...",
-        content: React.swal.msg(
-          <p>
-            It&#8217;s great to see that you want to start a Campaign. To get started, please sign
-            up (or sign in) first.
-          </p>,
-        ),
-        icon: 'info',
-        buttons: ['Cancel', 'Sign up now!'],
-      }).then(isConfirmed => {
-        if (isConfirmed) {
-          history.push('/signup');
-        }
-      });
-    }
+    history.push('/campaigns/new');
   };
 
   return (

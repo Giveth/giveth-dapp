@@ -1,7 +1,6 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Form } from 'formsy-react-components';
 import moment from 'moment';
 import Avatar from 'react-avatar';
 import { Link } from 'react-router-dom';
@@ -166,36 +165,31 @@ const ViewTrace = props => {
   }, [trace]);
 
   const calculateTraceCurrentBalanceValue = async () => {
-    if (
-      currentUser.address &&
-      !currency &&
-      trace.donationCounters &&
-      trace.donationCounters.length
-    ) {
-      setCurrency(currentUser.currency);
-      try {
-        const rateArray = trace.donationCounters.map(dc => {
-          return {
-            value: dc.currentBalance,
-            currency: dc.symbol,
-          };
-        });
-        const userCurrencyValueResult = await convertMultipleRates(
-          null,
-          currentUser.currency,
-          rateArray,
-        );
-        setCurrentBalanceValue(userCurrencyValueResult.total);
-        setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
-      } catch (e) {
-        console.log('convertMultipleRates error', e);
-      }
+    setCurrency(currentUser.currency);
+    try {
+      const rateArray = trace.donationCounters.map(dc => {
+        return {
+          value: dc.currentBalance,
+          currency: dc.symbol,
+        };
+      });
+      const userCurrencyValueResult = await convertMultipleRates(
+        null,
+        currentUser.currency,
+        rateArray,
+      );
+      setCurrentBalanceValue(userCurrencyValueResult.total);
+      setCurrentBalanceUsdValue(userCurrencyValueResult.usdValues);
+    } catch (e) {
+      console.log('convertMultipleRates error', e);
     }
   };
 
   useEffect(() => {
-    calculateTraceCurrentBalanceValue();
-  });
+    if (currentUser.address && trace.donationCounters && trace.donationCounters.length) {
+      calculateTraceCurrentBalanceValue().then();
+    }
+  }, [currentUser.address, trace]);
 
   useEffect(() => {
     if (!currentBalanceUsdValue) {
@@ -297,6 +291,8 @@ const ViewTrace = props => {
     model: {
       type: Trace.type,
       acceptsSingleToken: trace.acceptsSingleToken,
+      slug: trace.slug,
+      formType: trace.formType,
       title: trace.title,
       id: trace.id,
       adminId: trace.projectId,
@@ -364,348 +360,332 @@ const ViewTrace = props => {
                 inPageLinks={goBackSectionLinks}
               />
 
-              <div className=" col-md-8 m-auto">
-                <h5 className="title">Subscribe to updates </h5>
-                <ProjectSubscription projectTypeId={trace._id} projectType="trace" />
-              </div>
+              <div className="container mt-4">
+                <div className="mx-auto">
+                  <h5 className="title">Subscribe to updates </h5>
+                  <ProjectSubscription projectTypeId={trace._id} projectType="trace" />
+                </div>
 
-              <div className="container-fluid mt-4">
-                <div className="row">
-                  <div className="col-md-8 m-auto">
-                    <ViewTraceAlerts
-                      trace={trace}
-                      campaign={campaign}
-                      isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-                    />
+                <ViewTraceAlerts
+                  trace={trace}
+                  campaign={campaign}
+                  isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                />
 
-                    <div id="description">
-                      <div className="about-section-header">
-                        <h5 className="title">About</h5>
-                        <div className="text-center">
-                          <Link to={`/profile/${trace.ownerAddress}`}>
-                            <Avatar
-                              className="text-center"
-                              size={50}
-                              src={getUserAvatar(trace.owner)}
-                              round
-                            />
-                            <p className="small">{getUserName(trace.owner)}</p>
-                          </Link>
-                        </div>
-                      </div>
-
-                      <div className="card content-card">
-                        <div className="card-body content">{renderDescription()}</div>
-                      </div>
+                <div id="description">
+                  <div className="about-section-header">
+                    <h5 className="title">About</h5>
+                    <div className="text-center">
+                      <Link to={`/profile/${trace.ownerAddress}`}>
+                        <Avatar
+                          className="text-center"
+                          size={50}
+                          src={getUserAvatar(trace.owner)}
+                          round
+                        />
+                        <p className="small">{getUserName(trace.owner)}</p>
+                      </Link>
                     </div>
+                  </div>
 
-                    <div className="row">
-                      <div id="details" className="col-md-6">
-                        <h4>Details</h4>
-                        <div id="detailsCard">
-                          <div className="card details-card">
-                            <div className="form-group">
-                              <DetailLabel
-                                id="reviewer"
-                                title="Reviewer"
-                                explanation="This person will review the actual completion of the Trace"
-                              />
-                              {trace.hasReviewer && (
-                                <Fragment>
-                                  <table className="table-responsive">
-                                    <tbody>
-                                      <tr>
-                                        <td className="td-user">
-                                          <Link to={`/profile/${trace.reviewerAddress}`}>
-                                            <Avatar
-                                              size={30}
-                                              src={getUserAvatar(trace.reviewer)}
-                                              round
-                                            />
-                                            {getUserName(trace.reviewer)}
-                                          </Link>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </Fragment>
-                              )}
-                              {!trace.hasReviewer && (
-                                <p className="form-text alert alert-warning missing-reviewer-alert">
-                                  <i className="fa fa-exclamation-triangle" />
-                                  This Trace does not have a reviewer. Any donations to this Trace
-                                  can be withdrawn at any time and no checks are in place to ensure
-                                  this Trace is completed.
-                                </p>
-                              )}
-                            </div>
+                  <div className="card content-card">
+                    <div className="card-body content">{renderDescription()}</div>
+                  </div>
+                </div>
 
-                            <div className="form-group">
-                              <DetailLabel
-                                id="recipient"
-                                title="Recipient"
-                                explanation={`
+                <div className="row">
+                  <div id="details" className="col-md-6">
+                    <h4>Details</h4>
+                    <div id="detailsCard">
+                      <div className="card details-card">
+                        <div className="form-group">
+                          <DetailLabel
+                            id="reviewer"
+                            title="Reviewer"
+                            explanation="This person will review the actual completion of the Trace"
+                          />
+                          {trace.hasReviewer && (
+                            <Fragment>
+                              <table className="table-responsive">
+                                <tbody>
+                                  <tr>
+                                    <td className="td-user">
+                                      <Link to={`/profile/${trace.reviewerAddress}`}>
+                                        <Avatar
+                                          size={30}
+                                          src={getUserAvatar(trace.reviewer)}
+                                          round
+                                        />
+                                        {getUserName(trace.reviewer)}
+                                      </Link>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </Fragment>
+                          )}
+                          {!trace.hasReviewer && (
+                            <p className="form-text alert alert-warning missing-reviewer-alert">
+                              <i className="fa fa-exclamation-triangle" />
+                              This Trace does not have a reviewer. Any donations to this Trace can
+                              be withdrawn at any time and no checks are in place to ensure this
+                              Trace is completed.
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="form-group">
+                          <DetailLabel
+                            id="recipient"
+                            title="Recipient"
+                            explanation={`
                           Where the ${trace.isCapped ? trace.token.symbol : 'tokens'} will go
                           ${trace.hasReviewer ? ' after successful completion of the Trace' : ''}`}
-                              />
-                              {trace.hasRecipient && (
-                                <Fragment>
-                                  {trace.pendingRecipientAddress && (
-                                    <small className="form-text">
-                                      <span>
-                                        <i className="fa fa-circle-o-notch fa-spin" />
-                                        &nbsp;
-                                      </span>
-                                      This recipient is pending
-                                    </small>
-                                  )}
-
-                                  <table className="table-responsive">
-                                    <tbody>
-                                      <tr>
-                                        <td className="td-user">
-                                          {trace instanceof LPTrace ? (
-                                            <Link to={`/campaigns/${trace.recipient._id}`}>
-                                              Campaign: {trace.recipient.title}
-                                            </Link>
-                                          ) : (
-                                            <Link
-                                              to={`/profile/${trace.pendingRecipientAddress ||
-                                                trace.recipientAddress}`}
-                                            >
-                                              <Avatar
-                                                size={30}
-                                                src={getUserAvatar(recipient)}
-                                                round
-                                              />
-                                              {getUserName(recipient)}
-                                            </Link>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </Fragment>
+                          />
+                          {trace.hasRecipient && (
+                            <Fragment>
+                              {trace.pendingRecipientAddress && (
+                                <small className="form-text">
+                                  <span>
+                                    <i className="fa fa-circle-o-notch fa-spin" />
+                                    &nbsp;
+                                  </span>
+                                  This recipient is pending
+                                </small>
                               )}
-                              {!trace.hasRecipient && (
-                                <p className="form-text">
-                                  This Trace does not have a recipient. If you are interested in
-                                  completing the work for this Trace, contact the Trace manager and
-                                  let them know!
-                                </p>
+
+                              <table className="table-responsive">
+                                <tbody>
+                                  <tr>
+                                    <td className="td-user">
+                                      {trace instanceof LPTrace ? (
+                                        <Link to={`/campaigns/${trace.recipient._id}`}>
+                                          Campaign: {trace.recipient.title}
+                                        </Link>
+                                      ) : (
+                                        <Link
+                                          to={`/profile/${trace.pendingRecipientAddress ||
+                                            trace.recipientAddress}`}
+                                        >
+                                          <Avatar size={30} src={getUserAvatar(recipient)} round />
+                                          {getUserName(recipient)}
+                                        </Link>
+                                      )}
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </Fragment>
+                          )}
+                          {!trace.hasRecipient && (
+                            <p className="form-text">
+                              This Trace does not have a recipient. If you are interested in
+                              completing the work for this Trace, contact the Trace manager and let
+                              them know!
+                            </p>
+                          )}
+                        </div>
+
+                        {trace.communityId !== 0 && trace.communityId !== undefined && (
+                          <div className="form-group">
+                            <DetailLabel
+                              id="community-delegation"
+                              title="Delegating 3% to Community"
+                              explanation="The Community that this Trace is contributing to on every donation"
+                            />
+                            {communityTitle}
+                          </div>
+                        )}
+                        {trace.date && (
+                          <div className="form-group">
+                            <DetailLabel
+                              id="trace-date"
+                              title="Date of Trace"
+                              explanation={
+                                trace.isCapped
+                                  ? `This date defines the ${trace.token.symbol}-fiat conversion rate`
+                                  : 'The date this Trace was created'
+                              }
+                            />
+                            {moment.utc(trace.createdAt).format('Do MMM YYYY')}
+                          </div>
+                        )}
+
+                        {trace.isCapped && (
+                          <div className="form-group">
+                            <DetailLabel
+                              id="max-amount"
+                              title="Max amount to raise"
+                              explanation={`The maximum amount of ${trace.token.symbol} that can be donated to this Trace. Based on the requested amount in fiat.`}
+                            />
+                            {convertEthHelper(trace.maxAmount, trace.token.decimals)}{' '}
+                            {trace.token.symbol}
+                            {trace.items.length === 0 &&
+                              trace.selectedFiatType &&
+                              trace.selectedFiatType !== trace.token.symbol &&
+                              trace.fiatAmount && (
+                                <span>
+                                  {' '}
+                                  ({trace.fiatAmount.toFixed()} {trace.selectedFiatType})
+                                </span>
                               )}
-                            </div>
+                          </div>
+                        )}
 
-                            {trace.communityId !== 0 && trace.communityId !== undefined && (
-                              <div className="form-group">
-                                <DetailLabel
-                                  id="community-delegation"
-                                  title="Delegating 3% to Community"
-                                  explanation="The Community that this Trace is contributing to on every donation"
-                                />
-                                {communityTitle}
-                              </div>
-                            )}
-                            {trace.date && (
-                              <div className="form-group">
-                                <DetailLabel
-                                  id="trace-date"
-                                  title="Date of Trace"
-                                  explanation={
-                                    trace.isCapped
-                                      ? `This date defines the ${trace.token.symbol}-fiat conversion rate`
-                                      : 'The date this Trace was created'
-                                  }
-                                />
-                                {moment.utc(trace.createdAt).format('Do MMM YYYY')}
-                              </div>
-                            )}
-
-                            {trace.isCapped && (
-                              <div className="form-group">
-                                <DetailLabel
-                                  id="max-amount"
-                                  title="Max amount to raise"
-                                  explanation={`The maximum amount of ${trace.token.symbol} that can be donated to this Trace. Based on the requested amount in fiat.`}
-                                />
-                                {convertEthHelper(trace.maxAmount, trace.token.decimals)}{' '}
-                                {trace.token.symbol}
-                                {trace.items.length === 0 &&
-                                  trace.selectedFiatType &&
-                                  trace.selectedFiatType !== trace.token.symbol &&
-                                  trace.fiatAmount && (
-                                    <span>
-                                      {' '}
-                                      ({trace.fiatAmount.toFixed()} {trace.selectedFiatType})
-                                    </span>
-                                  )}
-                              </div>
-                            )}
-
-                            <div className="form-group">
-                              <DetailLabel
-                                id="amount-donated"
-                                title="Amount donated"
-                                explanation={
-                                  trace.acceptsSingleToken
-                                    ? `
+                        <div className="form-group">
+                          <DetailLabel
+                            id="amount-donated"
+                            title="Amount donated"
+                            explanation={
+                              trace.acceptsSingleToken
+                                ? `
                               The amount of ${trace.token.symbol} currently donated to this
                               Trace`
-                                    : 'The total amount(s) donated to this Trace'
-                                }
-                              />
-                              {trace.donationCounters.length &&
-                                trace.donationCounters.map(dc => (
-                                  <p className="donation-counter" key={dc.symbol}>
-                                    {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
-                                  </p>
-                                ))}
-                            </div>
+                                : 'The total amount(s) donated to this Trace'
+                            }
+                          />
+                          {trace.donationCounters.length &&
+                            trace.donationCounters.map(dc => (
+                              <p className="donation-counter" key={dc.symbol}>
+                                {convertEthHelper(dc.totalDonated, dc.decimals)} {dc.symbol}
+                              </p>
+                            ))}
+                        </div>
 
-                            {!trace.isCapped && trace.donationCounters.length > 0 && (
-                              <div className="form-group">
-                                <DetailLabel
-                                  id="current-balance"
-                                  title="Current balance"
-                                  explanation="The current balance(s) of this Trace"
-                                />
-                                {trace.donationCounters.map(dc => (
-                                  <p className="donation-counter" key={dc.symbol}>
-                                    {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
-
-                            {!trace.isCapped && trace.donationCounters.length > 0 && currency && (
-                              <div className="form-group">
-                                <DetailLabel
-                                  id="current-balance-value"
-                                  title="Current balance value"
-                                  explanation="The current balance(s) of this Trace in your native currency"
-                                />
-                                {currentBalanceValue.toFixed(
-                                  (nativeCurrencyWhitelist.find(t => t.symbol === currency) || {})
-                                    .decimals || 2,
-                                )}{' '}
-                                {currency}
-                              </div>
-                            )}
-
-                            <div className="form-group">
-                              <DetailLabel
-                                id="campaign"
-                                title="Campaign"
-                                explanation="The Campaign this Trace belongs to"
-                              />
-                              {campaign.title}
-                            </div>
-
-                            <div className="form-group">
-                              <span className="label">Status</span>
-                              <br />
-                              {getReadableStatus(trace.status)}
-                            </div>
-                          </div>
-
-                          <div className="pt-3">
-                            <TotalGasPaid
-                              gasPaidUsdValue={trace.gasPaidUsdValue}
-                              entity="TRACE"
-                              tweetUrl={fullPath}
+                        {!trace.isCapped && trace.donationCounters.length > 0 && (
+                          <div className="form-group">
+                            <DetailLabel
+                              id="current-balance"
+                              title="Current balance"
+                              explanation="The current balance(s) of this Trace"
                             />
+                            {trace.donationCounters.map(dc => (
+                              <p className="donation-counter" key={dc.symbol}>
+                                {convertEthHelper(dc.currentBalance, dc.decimals)} {dc.symbol}
+                              </p>
+                            ))}
                           </div>
+                        )}
+
+                        {!trace.isCapped && trace.donationCounters.length > 0 && currency && (
+                          <div className="form-group">
+                            <DetailLabel
+                              id="current-balance-value"
+                              title="Current balance value"
+                              explanation="The current balance(s) of this Trace in your native currency"
+                            />
+                            {currentBalanceValue.toFixed(
+                              (nativeCurrencyWhitelist.find(t => t.symbol === currency) || {})
+                                .decimals || 2,
+                            )}{' '}
+                            {currency}
+                          </div>
+                        )}
+
+                        <div className="form-group">
+                          <DetailLabel
+                            id="campaign"
+                            title="Campaign"
+                            explanation="The Campaign this Trace belongs to"
+                          />
+                          {campaign.title}
+                        </div>
+
+                        <div className="form-group">
+                          <span className="label">Status</span>
+                          <br />
+                          {getReadableStatus(trace.status)}
                         </div>
                       </div>
 
-                      <div id="status-updates" className="col-md-6">
-                        <h4>Status updates</h4>
-                        <TraceConversations
-                          trace={trace}
-                          isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
-                          maxHeight={`${detailsCardHeight}px`}
+                      <div className="pt-3">
+                        <TotalGasPaid
+                          gasPaidUsdValue={trace.gasPaidUsdValue}
+                          entity="TRACE"
+                          tweetUrl={fullPath}
                         />
                       </div>
                     </div>
+                  </div>
 
-                    {trace.items && trace.items.length > 0 && (
-                      <div id="proofs" className="spacer-top-50">
-                        <div className="section-header">
-                          <h5>Trace proof</h5>
-                        </div>
-                        <div>
-                          <p>These receipts show how the money of this Trace was spent.</p>
-                        </div>
+                  <div id="status-updates" className="col-md-6 mt-5 mt-md-0">
+                    <h4>Status updates</h4>
+                    <TraceConversations
+                      trace={trace}
+                      isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                      maxHeight={`${detailsCardHeight}px`}
+                    />
+                  </div>
+                </div>
 
-                        {/* MilesteneItem needs to be wrapped in a form or it won't mount */}
-                        <Form>
-                          <div className="table-container">
-                            <table className="table table-striped table-hover">
-                              <thead>
-                                <tr>
-                                  <th className="td-item-date">Date</th>
-                                  <th className="td-item-description">Description</th>
-                                  <th className="td-item-amount-fiat">Amount Fiat</th>
-                                  <th className="td-item-amount-ether">
-                                    Amount {trace.token.symbol}
-                                  </th>
-                                  <th className="td-item-file-upload">Attached proof</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {trace.items.map((item, i) => (
-                                  <TraceItem
-                                    key={item._id}
-                                    name={`traceItem-${i}`}
-                                    item={item}
-                                    token={trace.token}
-                                  />
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </Form>
-                      </div>
-                    )}
+                {trace.items && trace.items.length > 0 && (
+                  <div id="proofs" className="spacer-top-50">
+                    <div className="section-header">
+                      <h5>Trace proof</h5>
+                    </div>
+                    <div>
+                      <p>These receipts show how the money of this Trace was spent.</p>
+                    </div>
 
-                    <div id="donations" className="spacer-top-50">
-                      {trace.status !== Trace.PROPOSED && (
-                        <React.Fragment>
-                          <Row justify="space-between">
-                            <Col span={12} className="align-items-center d-flex">
-                              <h5 className="mb-0">{donationsTitle}</h5>
-                              {newDonations > 0 && (
-                                <span
-                                  className="badge badge-primary ml-4"
-                                  style={{ fontSize: '12px', padding: '6px' }}
-                                >
-                                  {newDonations} NEW
-                                </span>
-                              )}
-                            </Col>
-                            <Col span={12}>
-                              {isActiveTrace() && (
-                                <Row gutter={[16, 16]} justify="end">
-                                  <Col xs={24} sm={12} lg={8}>
-                                    <DonateButton {...donateButtonProps} />
-                                  </Col>
-                                </Row>
-                              )}
-                            </Col>
-                          </Row>
-                          <DonationList
-                            donations={donations}
-                            isLoading={isLoadingDonations}
-                            total={donations.length}
-                            loadMore={loadMoreDonations}
-                            newDonations={newDonations}
-                            useAmountRemaining
-                            status={trace.status}
-                          />
-                        </React.Fragment>
-                      )}
+                    <div className="table-container">
+                      <table className="table table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th className="td-item-date">Date</th>
+                            <th className="td-item-description">Description</th>
+                            <th className="td-item-amount-fiat">Amount Fiat</th>
+                            <th className="td-item-amount-ether">Amount {trace.token.symbol}</th>
+                            <th className="td-item-file-upload">Attached proof</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {trace.items.map(item => (
+                            <TraceItem key={item._id} item={item} token={trace.token} />
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
+                )}
+
+                <div id="donations" className="spacer-top-50 pt-5 mx-auto mb-3">
+                  {trace.status !== Trace.PROPOSED && (
+                    <React.Fragment>
+                      <Row justify="space-between">
+                        <Col span={12} className="align-items-center d-flex">
+                          <h5 className="mb-0">{donationsTitle}</h5>
+                          {newDonations > 0 && (
+                            <span
+                              className="badge badge-primary ml-4"
+                              style={{ fontSize: '12px', padding: '6px' }}
+                            >
+                              {newDonations} NEW
+                            </span>
+                          )}
+                        </Col>
+                        <Col span={12}>
+                          {isActiveTrace() && (
+                            <Row gutter={[16, 16]} justify="end">
+                              <Col xs={24} sm={12} lg={8}>
+                                <DonateButton {...donateButtonProps} />
+                              </Col>
+                            </Row>
+                          )}
+                        </Col>
+                      </Row>
+                    </React.Fragment>
+                  )}
+                </div>
+                <div className="mx-auto">
+                  <DonationList
+                    donations={donations}
+                    isLoading={isLoadingDonations}
+                    total={donations.length}
+                    loadMore={loadMoreDonations}
+                    newDonations={newDonations}
+                    useAmountRemaining
+                    status={trace.status}
+                  />
                 </div>
               </div>
             </div>

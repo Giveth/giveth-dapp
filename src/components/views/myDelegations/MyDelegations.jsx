@@ -13,6 +13,7 @@ import Trace from '../../../models/Trace';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
+import Web3ConnectWarning from '../../Web3ConnectWarning';
 
 /**
  * The my delegations view
@@ -104,6 +105,7 @@ const MyDelegations = () => {
 
   return (
     <Fragment>
+      <Web3ConnectWarning />
       <Helmet>
         <title>My Delegations</title>
       </Helmet>

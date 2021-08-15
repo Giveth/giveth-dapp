@@ -48,13 +48,20 @@ const CancelTraceButton = ({ trace, className }) => {
                 from: currentUser.address,
                 proof,
                 onTxHash: txUrl => {
-                  sendAnalyticsTracking('Trace Canceled', {
+                  sendAnalyticsTracking('Trace Cancelled', {
                     category: 'Trace',
                     action: 'cancel',
-                    id: trace._id,
+                    traceId: trace.id,
                     title: trace.title,
+                    traceOwnerAddress: trace.ownerAddress,
+                    traceType: trace.formType,
+                    slug: trace.slug,
+                    traceRecipientAddress: trace.recipientAddress,
+                    parentCampaignId: trace.campaign._id,
+                    parentCampaignAddress: trace.campaign.ownerAddress,
+                    parentCampaignTitle: trace.campaign.title,
+                    reviewerAddress: trace.reviewerAddress,
                     userAddress: currentUser.address,
-                    donationCounters: trace.donationCounters,
                     txUrl,
                   });
 
@@ -112,7 +119,7 @@ const CancelTraceButton = ({ trace, className }) => {
         </button>
       )}
 
-      <ConversationModal ref={conversationModal} trace={trace} />
+      <ConversationModal ref={conversationModal} />
     </Fragment>
   );
 };

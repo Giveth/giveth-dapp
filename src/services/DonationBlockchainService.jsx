@@ -16,6 +16,10 @@ import config from '../configuration';
 import ErrorHandler from '../lib/ErrorHandler';
 import ErrorPopup from '../components/ErrorPopup';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import {
+  convertUsdValueToEthValue,
+  getConversionRateBetweenTwoSymbol,
+} from './ConversionRateService';
 
 const etherScanUrl = config.etherscan;
 
@@ -86,8 +90,6 @@ const createAllowance = (
         React.toast.info(
           <p>
             Please wait until your transaction is mined...
-            <br />
-            <strong>You will be asked to make another transaction for your donation!</strong>
             <br />
             <a
               href={`${config.homeEtherscan}tx/${txHash}`}
@@ -270,17 +272,13 @@ class DonationBlockchainService {
               ErrorPopup('Unable to update the donation in feathers', err);
               onError(err);
             });
-          const txLink = `${etherScanUrl}tx/${txHash}`;
           const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
-          sendAnalyticsTracking('Delegated', {
-            category: 'Donation',
-            action:
-              newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
-            id: donation._id,
-            txUrl: txLink,
-            userAddress: from,
-            receiverId,
+          DonationBlockchainService.sendDelegateAnalyticsData({
+            donation,
+            newDonation,
             delegateTo,
+            txHash,
+            from,
           });
         });
       })
@@ -391,14 +389,12 @@ class DonationBlockchainService {
             ErrorPopup('Unable to create the donation in feathers', err);
             onError(err);
           });
-        sendAnalyticsTracking('Delegated', {
-          category: 'Donation',
-          action: newDonation.status === Donation.TO_APPROVE ? 'delegation proposed' : 'delegated',
-          id: donation._id,
-          txUrl: txLink,
-          userAddress: from,
-          receiverId,
+        DonationBlockchainService.sendDelegateAnalyticsData({
+          donation,
+          newDonation,
           delegateTo,
+          txHash,
+          from: newDonation.giverAddress,
         });
       })
       .then(() => onSuccess(`${etherScanUrl}tx/${txHash}`))
@@ -406,6 +402,72 @@ class DonationBlockchainService {
         const message = `There was a problem with the delegation transaction.${etherScanUrl}tx/${txHash}`;
         ErrorHandler(err, message, false, onError);
       });
+  }
+
+  /**
+   *
+   * @param donation : it means the parent donation of new donation
+   * @param delegateTo
+   * @param newDonation
+   * @param from
+   * @param txHash
+   */
+  static async sendDelegateAnalyticsData({ donation, delegateTo, newDonation, from, txHash }) {
+    const txLink = `${etherScanUrl}tx/${txHash}`;
+    const currency = newDonation.token.symbol;
+
+    const result = await getConversionRateBetweenTwoSymbol({
+      date: new Date(),
+      symbol: currency,
+      to: 'USD',
+    });
+    const rate = result.rates.USD;
+    const amount = Number(newDonation.amount) / 10 ** 18;
+    const usdValue = amount * rate;
+    const ethValue = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
+    const analyticsData = {
+      category: 'Donation',
+      txUrl: txLink,
+      userAddress: from,
+      currency,
+      amount,
+      usdValue,
+      ethValue,
+      transactionId: newDonation.txHash,
+      entityTitle: delegateTo.title,
+      entityId: delegateTo.id,
+      entitySlug: delegateTo.slug,
+
+      // it;s the only way we can sure the entityType what is it
+      entityType: delegateTo.formType ? 'trace' : 'campaign',
+      entityOwnerAddress: delegateTo.ownerAddress,
+      traceType: delegateTo.formType,
+    };
+
+    if (newDonation.status === Donation.TO_APPROVE) {
+      // it's delegated from community
+      sendAnalyticsTracking('Delegated', {
+        ...analyticsData,
+        action: 'delegation proposed',
+        parentEntityTitle: donation.delegateEntity.title,
+        parentEntityId: donation.delegateEntity._id,
+        parentEntityOwnerAddress: donation.delegateEntity.ownerAddress,
+        parentEntitySlug: donation.delegateEntity.slug,
+        parentEntityType: 'community',
+      });
+    } else {
+      const campaign = await feathersClient.service('campaigns').get(donation.ownerTypeId);
+      // delegate from campaign
+      sendAnalyticsTracking('Delegated', {
+        ...analyticsData,
+        action: 'delegated',
+        parentEntityOwnerAddress: campaign.ownerAddress,
+        parentEntitySlug: campaign.slug,
+        parentEntityTitle: campaign.title,
+        parentEntityId: donation.ownerTypeId,
+        parentEntityType: donation.ownerType,
+      });
+    }
   }
 
   /**
@@ -468,10 +530,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          txHash ? `${etherScanUrl}tx/${txHash}` : err,
-        );
+        ErrorHandler(err, 'Something went wrong with the transaction!');
       });
   }
 
@@ -545,10 +604,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
+        ErrorHandler(err, 'Something went wrong with your transaction!');
       });
   }
 
@@ -608,10 +664,7 @@ class DonationBlockchainService {
       })
       .catch(err => {
         if (txHash && err.message && err.message.includes('unknown transaction')) return; // bug in web3 seems to constantly fail due to this error, but the tx is correct
-        ErrorPopup(
-          'Something went wrong with the transaction. Is your wallet unlocked?',
-          `${etherScanUrl}tx/${txHash}`,
-        );
+        ErrorHandler(err, 'Something went wrong with the transaction.');
       });
   }
 

@@ -1,6 +1,7 @@
 import localforage from 'localforage';
 import rx from 'feathers-reactive';
 import socketio from 'feathers-socketio/client';
+import * as Sentry from '@sentry/react';
 import config from '../configuration';
 
 const feathers = require('@feathersjs/feathers');
@@ -12,13 +13,24 @@ const rest = require('@feathersjs/rest-client');
 const restClient = rest(config.feathersConnection);
 const fetch = require('node-fetch');
 
+let connectErrorSentToSentry = false;
 export const socket = io(config.feathersConnection, {
   transports: ['websocket'],
 });
 
 // socket IO error events
-socket.on('connect_error', _e => console.log('Could not connect to FeatherJS'));
-socket.on('connect_timeout', _e => console.log('Could not connect to FeatherJS: Timeout'));
+socket.on('connect_error', e => {
+  console.log('Could not connect to FeatherJS');
+  if (!connectErrorSentToSentry) {
+    // Check to not send error to sentry multiple times
+    Sentry.captureException(e);
+    connectErrorSentToSentry = true;
+    console.log('send Feathers connection error to sentry');
+  }
+});
+socket.on('connect_timeout', _e => {
+  console.log('Could not connect to FeatherJS: Timeout');
+});
 socket.on('reconnect_attempt', _e => console.log('Trying to reconnect to FeatherJS: Timeout'));
 
 export const feathersRest = feathers()

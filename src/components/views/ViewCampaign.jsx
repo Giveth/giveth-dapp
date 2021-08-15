@@ -308,6 +308,8 @@ const ViewCampaign = ({ match }) => {
                       model={{
                         type: Campaign.type,
                         title: campaign.title,
+                        slug: campaign.slug,
+                        ownerAddress: campaign.ownerAddress,
                         id: campaign.id,
                         adminId: campaign.projectId,
                         customThanksMessage: campaign.customThanksMessage,
@@ -329,10 +331,12 @@ const ViewCampaign = ({ match }) => {
 
               <div className="container mt-4">
                 <div>
-                  <div>
-                    <h5 className="title">Subscribe to updates </h5>
-                    <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
-                  </div>
+                  {campaign.myStatus !== Campaign.CANCELED && (
+                    <div>
+                      <h5 className="title">Subscribe to updates </h5>
+                      <ProjectSubscription projectTypeId={campaign._id} projectType="campaign" />
+                    </div>
+                  )}
 
                   {userIsCommunityOwner && campaign.canReceiveDonate && (
                     <ProjectViewActionAlert message="Delegate some donation to this project">
@@ -340,7 +344,7 @@ const ViewCampaign = ({ match }) => {
                     </ProjectViewActionAlert>
                   )}
 
-                  {userIsOwner && (
+                  {userIsOwner && campaign.myStatus !== Campaign.CANCELED && (
                     <ProjectViewActionAlert message="Change Co-Owner of Campaign">
                       <ChangeOwnershipButton campaign={campaign} />
                     </ProjectViewActionAlert>
@@ -359,7 +363,14 @@ const ViewCampaign = ({ match }) => {
                   </div>
 
                   <div className="card content-card ">
-                    <div className="card-body content">{renderDescription()}</div>
+                    <div className="card-body content">
+                      {renderDescription()}
+                      {campaign.myStatus === Campaign.CANCELED && (
+                        <div className="mt-3" style={{ color: 'red' }}>
+                          This Campaign has been cancelled.
+                        </div>
+                      )}
+                    </div>
 
                     {campaign.communityUrl && (
                       <div className="pl-3 pb-4">
@@ -392,6 +403,8 @@ const ViewCampaign = ({ match }) => {
                               model={{
                                 type: Campaign.type,
                                 title: campaign.title,
+                                slug: campaign.slug,
+                                ownerAddress: campaign.ownerAddress,
                                 id: campaign.id,
                                 adminId: campaign.projectId,
                                 customThanksMessage: campaign.customThanksMessage,
@@ -442,6 +455,7 @@ const ViewCampaign = ({ match }) => {
                                 model={{
                                   type: Campaign.type,
                                   title: campaign.title,
+                                  slug: campaign.slug,
                                   id: campaign.id,
                                   adminId: campaign.projectId,
                                   customThanksMessage: campaign.customThanksMessage,
@@ -523,6 +537,7 @@ const ViewCampaign = ({ match }) => {
                               model={{
                                 type: Campaign.type,
                                 title: campaign.title,
+                                slug: campaign.slug,
                                 id: campaign.id,
                                 adminId: campaign.projectId,
                                 customThanksMessage: campaign.customThanksMessage,
@@ -566,7 +581,7 @@ const ViewCampaign = ({ match }) => {
                           </Fragment>
                         ) : (
                           <Fragment>
-                            <h3 style={{ color: '#2C0B3F' }}>No trace in here!</h3>
+                            <h3 style={{ color: '#2C0B3F' }}>No traces in here!</h3>
                           </Fragment>
                         ))}
                     </div>

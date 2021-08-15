@@ -29,10 +29,15 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
         sendAnalyticsTracking('Trace Delete', {
           category: 'Trace',
           action: 'deleted',
-          formType: trace.formType,
-          id: trace._id,
           title: trace.title,
-          campaignTitle: trace.campaign.title,
+          traceId: trace.id,
+          ownerId: trace.ownerAddress,
+          traceType: trace.formType,
+          traceRecipientAddress: trace.recipientAddress,
+          parentCampaignId: trace.campaign.id,
+          parentCampaignTitle: trace.campaign.title,
+          reviewerAddress: trace.reviewerAddress,
+          userAddress: currentUser.address,
         });
         React.toast.info(<p>The Trace has been deleted.</p>);
       },

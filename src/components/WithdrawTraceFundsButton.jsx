@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import { authenticateUser, checkBalance } from 'lib/middleware';
+import { Modal } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
 import DonationBlockchainService from '../services/DonationBlockchainService';
@@ -14,6 +15,10 @@ import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import {
+  convertUsdValueToEthValue,
+  getConversionRateBetweenTwoSymbol,
+} from '../services/ConversionRateService';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -26,6 +31,44 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     actions: { minPayoutWarningInWithdraw },
   } = useContext(NotificationContext);
+
+  async function sendWithdrawAnalyticsEvent(txUrl) {
+    const donationsCounters = trace.donationCounters.filter(dc => dc.currentBalance.gt(0));
+    // eslint-disable-next-line no-restricted-syntax
+    for (const donationCounter of donationsCounters) {
+      const currency = donationCounter.symbol;
+      // eslint-disable-next-line no-await-in-loop
+      const result = await getConversionRateBetweenTwoSymbol({
+        date: new Date(),
+        symbol: currency,
+        to: 'USD',
+      });
+      const rate = result.rates.USD;
+      const amount = Number(donationCounter.currentBalance);
+      const usdValue = rate * amount;
+      // eslint-disable-next-line no-await-in-loop
+      const ethValue = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
+      sendAnalyticsTracking('Trace Withdraw', {
+        category: 'Trace',
+        action: 'initiated withdrawal',
+        amount,
+        ethValue,
+        currency,
+        usdValue,
+        traceId: trace._id,
+        title: trace.title,
+        slug: trace.slug,
+        ownerAddress: trace.ownerAddress,
+        traceType: trace.formType,
+        traceRecipientAddress: trace.recipientAddress,
+        parentCampaignId: trace.campaign.id,
+        parentCampaignTitle: trace.campaign.title,
+        reviewerAddress: trace.reviewerAddress,
+        userAddress: currentUser.address,
+        txUrl,
+      });
+    }
+  }
 
   async function withdraw() {
     const userAddress = currentUser.address;
@@ -41,11 +84,10 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
             minPayoutWarningInWithdraw();
             return;
           }
-
-          React.swal({
+          Modal.confirm({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
-            content: React.swal.msg(
-              <div>
+            content: (
+              <Fragment>
                 <p>
                   We will initiate the transfer of the funds to{' '}
                   {trace instanceof LPTrace && 'the Campaign.'}
@@ -68,26 +110,18 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                     {isRecipient ? 'your' : "the recipient's"} wallet.
                   </div>
                 )}
-              </div>,
+              </Fragment>
             ),
-            icon: 'warning',
-            dangerMode: true,
-            buttons: ['Cancel', 'Yes, withdrawal'],
-          }).then(isConfirmed => {
-            if (isConfirmed) {
+            cancelText: 'Cancel',
+            okText: 'Yes, withdrawal',
+            centered: true,
+            width: 500,
+            onOk: () =>
               TraceService.withdraw({
                 trace,
                 from: userAddress,
                 onTxHash: txUrl => {
-                  sendAnalyticsTracking('Trace Withdraw', {
-                    category: 'Trace',
-                    action: 'initiated withdrawal',
-                    id: trace._id,
-                    title: trace.title,
-                    userAddress: currentUser.address,
-                    txUrl,
-                  });
-
+                  sendWithdrawAnalyticsEvent(txUrl);
                   React.toast.info(
                     <p>
                       Initiating withdrawal from Trace...
@@ -130,16 +164,14 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                   } else {
                     msg = <p>Something went wrong with the transaction.</p>;
                   }
-
-                  React.swal({
+                  Modal.error({
                     title: 'Oh no!',
-                    content: React.swal.msg(msg),
-                    icon: 'error',
+                    content: msg,
+                    centered: true,
                   });
                 },
                 web3,
-              });
-            }
+              }),
           });
         })
         .catch(err => {

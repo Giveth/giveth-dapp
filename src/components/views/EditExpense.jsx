@@ -80,8 +80,6 @@ function EditExpense(props) {
     }
   }, [loadingAmount, userIsCampaignOwner]);
 
-  const [form] = Form.useForm();
-
   const itemAmountMap = useRef({});
 
   const updateTotalAmount = () => {
@@ -257,10 +255,17 @@ function EditExpense(props) {
         afterSave: (created, txUrl, res) => {
           let notificationDescription;
           const analyticsData = {
-            formType: 'expense',
-            id: res._id,
             title: ms.title,
-            campaignTitle: campaign.title,
+            slug: res.slug,
+            parentCampaignAddress: campaign.ownerAddress,
+            traceRecipientAddress: res.recipientAddress,
+            ownerAddress: ms.ownerAddress,
+            traceType: ms.formType,
+            parentCampaignId: campaign.id,
+            parentCampaignTitle: campaign.title,
+            reviewerAddress: ms.reviewerAddress,
+            recipientAddress: ms.recipientAddress,
+            userAddress: currentUser.address,
           };
 
           if (created) {
@@ -349,7 +354,6 @@ function EditExpense(props) {
             {campaign && (
               <Form
                 className="card-form"
-                form={form}
                 requiredMark
                 onFinish={submit}
                 initialValues={initialValues}
