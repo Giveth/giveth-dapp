@@ -63,10 +63,10 @@ If your operative system is any distribution of linux you can use an All-in-One 
 5. That is it, you are now ready to run the giveth-dapp! Head to the [Run DApp](#run) section for further instructions.
 
 #### Windows
-1. Install the latest version of Python from this [Link](https://www.python.org/downloads/). (make sure to add python to path)
+1. Install the latest version of Python from this [Link](https://www.python.org/downloads/). (make sure python is added to $PATH)
 2. Install Microsoft Visual Studio 2017 (double-check the version) from this [link](https://download.visualstudio.microsoft.com/download/pr/3e542575-929e-4297-b6c6-bef34d0ee648/639c868e1219c651793aff537a1d3b77/vs_buildtools.exe). Giveth-Dapp needs the node-gyp module and node-gyp needs VS C++ 2017 Build Tools to be installed.
 3. After downloading, install the packages marked from this [image](https://cdn.discordapp.com/attachments/849682448102457374/850480734291623946/unknown.png).
-4. Then launch cmd and run
+4. Then run command below in command prompt
    ```
    npm config set msvs_version 2017
    ```
