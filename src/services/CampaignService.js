@@ -409,6 +409,7 @@ class CampaignService {
           err: null,
           mined: !campaign.projectId,
           txUrl: `${etherScanUrl}tx/${txHash}`,
+          txHash,
           response,
           profileHash,
         });

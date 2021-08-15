@@ -44,12 +44,12 @@ const Verification = props => {
     window.open(`${config.githubUrl}/issues/new?body=${encodeURIComponent(body)}`);
   };
 
-  const confirmProject = (txUrl, profileHash) => {
+  const confirmProject = (txHash, profileHash) => {
     feathersClient
       .service('verifiedCampaigns')
       .create({
         slug: projectSlug,
-        txHash: txUrl,
+        txHash,
         url: profileHash,
       })
       .then(_campaign => {
@@ -74,7 +74,7 @@ const Verification = props => {
       reviewerAddress: project.reviewerAddress,
     });
 
-    const afterCreate = ({ err, txUrl, profileHash }) => {
+    const afterCreate = ({ err, txUrl, txHash, profileHash }) => {
       if (!err) {
         const msg = (
           <p>
@@ -86,7 +86,7 @@ const Verification = props => {
           </p>
         );
         notification.info({ message: '', description: msg });
-        confirmProject(txUrl, profileHash);
+        confirmProject(txHash, profileHash);
       }
     };
 
