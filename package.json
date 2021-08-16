@@ -7,7 +7,7 @@
     "@feathersjs/authentication-client": "^4.5.11",
     "@feathersjs/feathers": "^4.5.11",
     "@feathersjs/rest-client": "^4.5.11",
-    "@giveth/bridge-contract-class": "^1.0.2",
+    "@giveth/bridge-contract-class": "^1.0.4",
     "@sentry/react": "^6.8.0",
     "@sentry/tracing": "^6.8.0",
     "antd": "^4.12.2",

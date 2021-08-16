@@ -2068,10 +2068,10 @@
     lodash "^4.17.20"
     radix-router "^3.0.1"
 
-"@giveth/bridge-contract-class@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@giveth/bridge-contract-class/-/bridge-contract-class-1.0.2.tgz#20d12b519546f5d85d2f4f87b9c217c98b10f84a"
-  integrity sha512-9tsGIAgwnGS2xXFgqDvS9TGLYVmF4GW2p57PJHN8cKaFH0TUnJ3Z+tv7FA7/h/7c+lCDkKPs+4wrFzSeW77sMQ==
+"@giveth/bridge-contract-class@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@giveth/bridge-contract-class/-/bridge-contract-class-1.0.4.tgz#37cdfdf1b6c2c59d69eb9be501962e4aacabac3c"
+  integrity sha512-EReQNS3mOQyRtEd3VRgUm0h6SdUVUazp6Zp0hzz3dn6eqiQ9/L5KVnCUczNE6+qZkpDTUVAaWkudKMXe4xNceQ==
   dependencies:
     "@giveth/eth-contract-class" "^1.0.1"
 
