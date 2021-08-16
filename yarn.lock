@@ -2068,6 +2068,20 @@
     lodash "^4.17.20"
     radix-router "^3.0.1"
 
+"@giveth/bridge-contract-class@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@giveth/bridge-contract-class/-/bridge-contract-class-1.0.2.tgz#20d12b519546f5d85d2f4f87b9c217c98b10f84a"
+  integrity sha512-9tsGIAgwnGS2xXFgqDvS9TGLYVmF4GW2p57PJHN8cKaFH0TUnJ3Z+tv7FA7/h/7c+lCDkKPs+4wrFzSeW77sMQ==
+  dependencies:
+    "@giveth/eth-contract-class" "^1.0.1"
+
+"@giveth/eth-contract-class@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@giveth/eth-contract-class/-/eth-contract-class-1.0.1.tgz#a11b23335555fedcf246cec9c3d96746fe1fdbcf"
+  integrity sha512-nprcy03lEPk1sc2f6SdWupKxXFpZAMVhZaDGskqwdrOXsh7xTNAM2eqlJ/0x1Evf40YHEXC8oD2BTbitZRnxEQ==
+  dependencies:
+    web3-core-promievent "^1.5.1"
+
 "@gnosis.pm/safe-apps-provider@^0.5.0":
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-apps-provider/-/safe-apps-provider-0.5.0.tgz#e0121553ef22c1458eb95cf0afed14e8c2570ae3"
@@ -14626,7 +14640,7 @@ npm-which@^3.0.1:
     npm-path "^2.0.2"
     which "^1.2.10"
 
-"npmlog@0 || 1 || 2 || 3 || 4", npmlog@^4.0.0:
+"npmlog@0 || 1 || 2 || 3 || 4", npmlog@^4.0.0, npmlog@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/npmlog/-/npmlog-4.1.2.tgz#08a7f2a8bf734604779a9efa4ad5cc717abb954b"
   integrity sha512-2uUqazuKlTaSI/dC8AzicUck7+IrEaOnN/e0jd3Xtt1KcGpwx30v50mL7oPyr/h9bL3E4aZccVwpwP+5W9Vjkg==
@@ -20906,6 +20920,13 @@ web3-core-promievent@1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/web3-core-promievent/-/web3-core-promievent-1.4.0.tgz#531644dab287e83653d983aeb3d9daa0f894f775"
   integrity sha512-YEwko22kcry7lHwbe0k80BrjXCZ+73jMdvZtptRH5k2B+XZ1XtmXwYL1PFIlZy9V0zgZijdg+3GabCnAHjVXAw==
+  dependencies:
+    eventemitter3 "4.0.4"
+
+web3-core-promievent@^1.5.1:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/web3-core-promievent/-/web3-core-promievent-1.5.2.tgz#2dc9fe0e5bbeb7c360fc1aac5f12b32d9949a59b"
+  integrity sha512-5DacbJXe98ozSor7JlkTNCy6G8945VunRRkPxMk98rUrg60ECVEM/vuefk1atACzjQsKx6tmLZuHxbJQ64TQeQ==
   dependencies:
     eventemitter3 "4.0.4"
 
