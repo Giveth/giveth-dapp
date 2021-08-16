@@ -187,7 +187,7 @@ const EditCampaign = () => {
         if (url) {
           const msg = (
             <p>
-              Your Campaign has been created!
+              Your Campaign has been {isNew ? 'created' : 'updated'}!
               <br />
               <a href={url} target="_blank" rel="noopener noreferrer">
                 View transaction
@@ -210,14 +210,14 @@ const EditCampaign = () => {
         if (!err) {
           const msg = (
             <p>
-              Your Campaign is pending....
+              Your Campaign is {isNew ? 'pending....' : 'is being updated'}
               <br />
               <a href={txUrl} target="_blank" rel="noopener noreferrer">
                 View transaction
               </a>
             </p>
           );
-          notification.info({ description: msg });
+          notification.info({ message: '', description: msg });
           const analyticsData = {
             userAddress: currentUser.address,
             slug: response.slug,
@@ -240,7 +240,7 @@ const EditCampaign = () => {
               ...analyticsData,
             });
           }
-          history.push('/my-campaigns');
+          history.push(`/campaign/${response.slug}`);
         }
       };
 

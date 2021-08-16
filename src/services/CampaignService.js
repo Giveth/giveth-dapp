@@ -322,7 +322,6 @@ class CampaignService {
    * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    * @param web3  Web3  instance
-   * @param tokenWhitelist  tokenWhitelist
    */
   static async save(campaign, from, afterSave = () => {}, afterMined = () => {}, web3) {
     if (campaign.id && campaign.projectId === 0) {
@@ -386,7 +385,6 @@ class CampaignService {
         );
       }
 
-      let { id } = campaign;
       await promise.once('transactionHash', async hash => {
         txHash = hash;
         let response;
@@ -394,7 +392,6 @@ class CampaignService {
           response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         } else {
           response = await campaigns.create(campaign.toFeathers(txHash));
-          id = response._id;
         }
         afterSave({
           err: null,
@@ -404,7 +401,7 @@ class CampaignService {
         });
       });
 
-      afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       const message = `Something went wrong with the Campaign ${
         campaign.projectId > 0 ? 'update' : 'creation'
