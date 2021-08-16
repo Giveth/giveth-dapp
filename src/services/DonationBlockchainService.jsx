@@ -12,9 +12,7 @@ import Campaign from '../models/Campaign';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import config from '../configuration';
-
 import ErrorHandler from '../lib/ErrorHandler';
-import ErrorPopup from '../components/ErrorPopup';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 import {
   convertUsdValueToEthValue,
@@ -386,7 +384,7 @@ class DonationBlockchainService {
           .create(newDonation)
           .then(() => onCreated(txLink))
           .catch(err => {
-            ErrorPopup('Unable to create the donation in feathers', err);
+            ErrorHandler(err, 'Unable to create the donation in feathers');
             onError(err);
           });
         DonationBlockchainService.sendDelegateAnalyticsData({
@@ -585,7 +583,7 @@ class DonationBlockchainService {
             onCreated(`${etherScanUrl}tx/${txHash}`);
           })
           .catch(err => {
-            ErrorPopup('Something went wrong while committing your donation.', err);
+            ErrorHandler(err, 'Something went wrong while committing your donation.');
           });
 
         const txLink = `${etherScanUrl}tx/${txHash}`;
@@ -656,7 +654,7 @@ class DonationBlockchainService {
           .create(newDonation)
           .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            ErrorPopup('Something went wrong while revoking your donation.', err);
+            ErrorHandler(err, 'Something went wrong while revoking your donation.');
           });
       })
       .then(() => {
