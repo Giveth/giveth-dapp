@@ -37,7 +37,7 @@ function updateExistingDonation(donation, amount, status) {
     .service('donations')
     .patch(donation.id, mutation)
     .catch(err => {
-      ErrorPopup('Unable to update the donation in feathers', err);
+      ErrorHandler(err, 'Unable to update the donation in feathers');
     });
 }
 
@@ -269,7 +269,7 @@ class DonationBlockchainService {
             .create(newDonation)
             .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
             .catch(err => {
-              ErrorPopup('Unable to update the donation in feathers', err);
+              ErrorHandler(err, 'Unable to update the donation in feathers!');
               onError(err);
             });
           const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
