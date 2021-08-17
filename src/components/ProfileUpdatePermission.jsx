@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Form, Checkbox, Button } from 'antd';
+import { Form, Checkbox, Button, notification } from 'antd';
 import { User } from '../models';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { feathersClient } from '../lib/feathersClient';
@@ -56,7 +56,10 @@ function ProfileUpdatePermission({ user, updateUser }) {
         .service('users')
         .patch(user.address, mutation)
         .then(newUser => {
-          React.toast.success('User permission is updated');
+          notification.success({
+            message: '',
+            description: 'User permission is updated',
+          });
           updateUser(new User(newUser));
         })
         .catch(err => {

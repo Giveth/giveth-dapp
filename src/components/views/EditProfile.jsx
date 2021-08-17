@@ -5,7 +5,7 @@ import Loader from '../Loader';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import { history } from '../../lib/helpers';
+import { history, txNotification } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
@@ -105,36 +105,23 @@ const EditProfile = () => {
       user.linkedin !== oldUserData._linkedin ||
       user.email !== oldUserData._email;
 
-    const showToast = (msg, url, isSuccess = false) => {
-      const toast = url ? (
-        <p>
-          {msg}
-          <br />
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>
-      ) : (
-        msg
-      );
-
-      if (isSuccess) React.toast.success(toast);
-      else React.toast.info(toast);
-    };
     const reset = () => {
       setIsSaving(false);
       setIsPristine(false);
     };
-    const afterMined = (created, url) => {
-      const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
-      showToast(msg, url, true);
+
+    const afterMined = (created, txUrl) => {
+      txNotification(
+        created ? 'You are now a registered user' : 'Your profile has been updated',
+        txUrl,
+      );
 
       if (created) {
         sendAnalyticsTracking('User Created', {
           category: 'User',
           action: 'created',
           userAddress: user.address,
-          txUrl: url,
+          txUrl,
         });
       } else {
         setOldUserData({ ...user });
@@ -144,19 +131,23 @@ const EditProfile = () => {
           category: 'User',
           action: 'updated',
           userAddress: user.address,
-          txUrl: url,
+          txUrl,
         });
       }
     };
-    const afterSave = (created, url) => {
+
+    const afterSave = (created, txUrl) => {
       if (mounted) {
         setIsSaving(false);
         setIsPristine(true);
       }
       updateUserData();
 
-      const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
-      showToast(msg, url);
+      txNotification(
+        created ? 'We are registering you as a user' : 'Your profile is being updated',
+        txUrl,
+        true,
+      );
 
       if (created) history.push('/');
     };

@@ -10,7 +10,7 @@ import config from 'configuration';
 import { Helmet } from 'react-helmet';
 import { Modal } from 'antd';
 import Loader from '../Loader';
-import { convertEthHelper } from '../../lib/helpers';
+import { convertEthHelper, txNotification } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
 import DonationService from '../../services/DonationService';
@@ -80,29 +80,11 @@ const MyDonations = () => {
       }
       checkBalance(balance)
         .then(() => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refusal of the delegation is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl =>
+            txNotification('The refusal of the delegation is pending...', txUrl, true);
 
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation delegation has been rejected.
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl =>
+            txNotification('Your donation delegation has been rejected.', txUrl);
 
           Modal.confirm({
             title: 'Reject your donation?',
@@ -139,29 +121,10 @@ const MyDonations = () => {
       }
       checkBalance(balance)
         .then(() => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The commitment of the donation is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl =>
+            txNotification('The commitment of the donation is pending...', txUrl, true);
 
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been committed!
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl => txNotification('Your donation has been committed!', txUrl);
 
           Modal.confirm({
             title: 'Commit your donation?',
@@ -197,30 +160,9 @@ const MyDonations = () => {
       }
       checkBalance(balance).then(() => {
         const confirmRefund = () => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refund is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl => txNotification('The refund is pending...', txUrl, true);
 
-          // Inform user after the refund transaction is mined
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been refunded!
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl => txNotification('Your donation has been refunded!', txUrl);
 
           DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined, web3);
         };

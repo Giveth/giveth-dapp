@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
-import { Input, Select, Slider, Form, InputNumber, Modal, Typography } from 'antd';
+import { Input, Select, Slider, Form, InputNumber, Modal, Typography, notification } from 'antd';
 import Web3, { utils } from 'web3';
 import PropTypes from 'prop-types';
 
@@ -9,7 +9,7 @@ import Trace from 'models/Trace';
 import Campaign from 'models/Campaign';
 import ReactTooltip from 'react-tooltip';
 import DonationBlockchainService from '../../../services/DonationBlockchainService';
-import { convertEthHelper, roundBigNumber } from '../../../lib/helpers';
+import { convertEthHelper, roundBigNumber, txNotification } from '../../../lib/helpers';
 import AmountSliderMarks from '../../AmountSliderMarks';
 
 function getFilterType(types, donation) {
@@ -141,7 +141,10 @@ class DelegateButtonModal extends Component {
       admin.isCapped &&
       admin.maxAmount.lte(admin.currentBalance || 0)
     ) {
-      React.toast.error('That Trace has reached its funding goal. Please pick another.');
+      notification.error({
+        message: '',
+        description: 'That Trace has reached its funding goal. Please pick another.',
+      });
       return;
     }
 
@@ -175,17 +178,7 @@ class DelegateButtonModal extends Component {
       });
     };
 
-    const onSuccess = txLink => {
-      React.toast.success(
-        <p>
-          Your donation has been confirmed!
-          <br />
-          <a href={`${txLink}`} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>,
-      );
-    };
+    const onSuccess = txUrl => txNotification('Your donation has been confirmed!', txUrl);
 
     const onError = () => {
       this.setState({ isSaving: false });

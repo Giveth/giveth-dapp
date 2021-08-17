@@ -1,4 +1,3 @@
-import React from 'react';
 import { LPPCampaign } from 'lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
@@ -18,6 +17,7 @@ import {
   convertUsdValueToEthValue,
   getConversionRateBetweenTwoSymbol,
 } from './ConversionRateService';
+import { txNotification } from '../lib/helpers';
 
 const etherScanUrl = config.etherscan;
 
@@ -59,46 +59,18 @@ const createAllowance = (
   const opts = { from: tokenHolderAddress };
   if (nonce) opts.nonce = nonce;
 
-  let txHash;
   return token.methods
     .approve(config.givethBridgeAddress, amount)
     .send(opts)
     .on('transactionHash', transactionHash => {
-      txHash = transactionHash;
-
+      const txUrl = `${config.homeEtherscan}tx/${transactionHash}`;
       if (amount === 0) {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...
-            <br />
-            <strong>
-              You will be asked to make another transaction to set the correct allowance!
-            </strong>
-            <br />
-            <a
-              href={`${config.homeEtherscan}tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View transaction
-            </a>
-          </p>,
+        txNotification(
+          'Please wait until your transaction is mined. You will be asked to make another transaction to set the correct allowance!',
+          txUrl,
+          true,
         );
-      } else {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...
-            <br />
-            <a
-              href={`${config.homeEtherscan}tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View transaction
-            </a>
-          </p>,
-        );
-      }
+      } else txNotification('Please wait until your transaction is mined...', txUrl, true);
     });
 };
 
@@ -696,25 +668,12 @@ class DonationBlockchainService {
     const allowanceNumber = new BigNumber(allowance);
 
     if (!allowanceNumber.isZero()) {
-      let txHash;
       await token.methods
         .approve(config.givethBridgeAddress, '0')
         .send({ from: tokenHolderAddress })
         .on('transactionHash', transactionHash => {
-          txHash = transactionHash;
-          React.toast.info(
-            <p>
-              Please wait until your transaction is mined...
-              <br />
-              <a
-                href={`${config.homeEtherscan}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View transaction
-              </a>
-            </p>,
-          );
+          const txUrl = `${config.homeEtherscan}tx/${transactionHash}`;
+          txNotification('Please wait until your transaction is mined...', txUrl, true);
         });
     }
   }

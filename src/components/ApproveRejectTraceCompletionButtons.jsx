@@ -12,6 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
 
 const ApproveRejectTraceCompletionButtons = ({ trace }) => {
   const {
@@ -62,27 +63,9 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     txUrl,
                   });
 
-                  React.toast.info(
-                    <p>
-                      Approving this Trace is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Approving this Trace is pending...', txUrl, true);
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace has been approved!
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl => txNotification('The Trace has been approved!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
                     ErrorPopup("Something went wrong with approving this Trace's completion", err);
@@ -143,27 +126,14 @@ const ApproveRejectTraceCompletionButtons = ({ trace }) => {
                     userAddress: currentUser.address,
                   });
 
-                  React.toast.info(
-                    <p>
-                      Rejecting this Trace&apos;s completion is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
+                  txNotification(
+                    'Rejecting this Trace&apos;s completion is pending...',
+                    txUrl,
+                    true,
                   );
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace&apos;s completion has been rejected.
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl =>
+                  txNotification('The Trace&apos;s completion has been rejected.', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
                     ErrorPopup("Something went wrong with rejecting this Trace's completion", err);
