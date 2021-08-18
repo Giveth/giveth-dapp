@@ -354,7 +354,6 @@ class CampaignService {
         if (!profileHash) {
           response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
-        afterSave(null, false);
         afterSave({
           err: null,
           mined: false,

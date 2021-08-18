@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import walletIcon from '../../../assets/wallet.svg';
-import { sendAnalyticsTracking } from '../../../lib/SegmentAnalytics';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import User from '../../../models/User';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
@@ -28,49 +27,7 @@ const ConfirmProfile = ({ handleNextStep, owner, reportIssue, formIsValid }) => 
       user.email = email || '';
       user.linkedin = url || '';
 
-      const showToast = (msg, _url, isSuccess = false) => {
-        const toast = _url ? (
-          <p>
-            {msg}
-            <br />
-            <a href={_url} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        ) : (
-          msg
-        );
-
-        if (isSuccess) React.toast.success(toast);
-        else React.toast.info(toast);
-      };
-      const afterMined = (created, _url) => {
-        const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
-        showToast(msg, _url, true);
-
-        if (created) {
-          sendAnalyticsTracking('User Created', {
-            category: 'User',
-            action: 'created',
-            userAddress,
-            txUrl: _url,
-          });
-        } else {
-          sendAnalyticsTracking('User Updated', {
-            category: 'User',
-            action: 'updated',
-            userAddress,
-            txUrl: _url,
-          });
-        }
-      };
-      const afterSave = (created, _url) => {
-        const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
-        showToast(msg, _url);
-        handleNextStep();
-      };
-
-      user.save(afterSave, afterMined, () => {}, true, web3);
+      user.save(true, web3, handleNextStep);
     }
   };
 

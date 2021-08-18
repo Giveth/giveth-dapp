@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { notification } from 'antd';
 
 import Header from './Header';
 import ConnectWallet from './ConnectWallet';
@@ -17,6 +16,7 @@ import { authenticateUser, checkBalance, checkForeignNetwork } from '../../../li
 import ErrorPopup from '../../ErrorPopup';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import Campaign from '../../../models/Campaign';
+import { txNotification } from '../../../lib/helpers';
 
 const Verification = props => {
   const {
@@ -76,16 +76,7 @@ const Verification = props => {
 
     const afterCreate = ({ err, txUrl, txHash, profileHash }) => {
       if (!err) {
-        const msg = (
-          <p>
-            Your Campaign is pending....
-            <br />
-            <a href={txUrl} target="_blank" rel="noopener noreferrer">
-              View transaction
-            </a>
-          </p>
-        );
-        notification.info({ message: '', description: msg });
+        txNotification('Your Campaign is pending....', txUrl, true);
         confirmProject(txHash, profileHash);
       }
     };

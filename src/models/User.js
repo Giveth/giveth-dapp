@@ -2,7 +2,8 @@ import { toast } from 'react-toastify';
 import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
-import { cleanIpfsPath } from '../lib/helpers';
+import { cleanIpfsPath, txNotification } from '../lib/helpers';
+import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 
 /**
  * The DApp User model
@@ -71,7 +72,27 @@ class User extends Model {
     return user;
   }
 
-  save(onSave, afterEmit, reset, pushToNetwork, web3) {
+  save(pushToNetwork, web3, onSave, afterEmit, reset) {
+    const _onSave = (created, txUrl) => {
+      const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
+      txNotification(msg, txUrl, true);
+      onSave();
+    };
+
+    const _afterEmit = (created, txUrl) => {
+      const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
+      txNotification(msg, txUrl);
+
+      sendAnalyticsTracking(created ? 'User Created' : 'User Updated', {
+        category: 'User',
+        action: created ? 'created' : 'updated',
+        userAddress: this._address,
+        txUrl,
+      });
+
+      afterEmit();
+    };
+
     if (this._newAvatar) {
       return IPFSService.upload(this._newAvatar)
         .then(hash => {
@@ -79,10 +100,10 @@ class User extends Model {
           this._avatar = hash;
           delete this._newAvatar;
         })
-        .then(_ => UserService.save(this, onSave, afterEmit, reset, true, web3))
+        .then(_ => UserService.save(this, _onSave, _afterEmit, reset, true, web3))
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return UserService.save(this, onSave, afterEmit, reset, pushToNetwork, web3);
+    return UserService.save(this, _onSave, _afterEmit, reset, pushToNetwork, web3);
   }
 
   // eslint-disable-next-line class-methods-use-this

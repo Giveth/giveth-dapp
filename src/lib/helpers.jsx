@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Modal, Button } from 'antd';
+import { Modal, Button, notification } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -8,6 +8,34 @@ import Resizer from 'react-image-file-resizer';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
+
+export const txNotification = (message, txUrl, isInfo) => {
+  const description = (
+    <Fragment>
+      {message}
+      {txUrl && (
+        <Fragment>
+          <br />
+          <a href={txUrl} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </Fragment>
+      )}
+    </Fragment>
+  );
+
+  if (isInfo) {
+    notification.info({
+      message: '',
+      description,
+    });
+  } else {
+    notification.success({
+      message: '',
+      description,
+    });
+  }
+};
 
 export const shortenDescription = (description, showAll = false, onClick, charsLength = 110) => {
   if (!description) {
