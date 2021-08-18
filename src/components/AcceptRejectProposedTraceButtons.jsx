@@ -56,6 +56,12 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 traceType: trace.formType,
                 traceRecipientAddress: trace.recipientAddress,
                 parentCampaignId: trace.campaign._id,
+                slug: trace.slug,
+                ownerAddress: trace.ownerAddress,
+                traceOwnerName: trace.owner.name,
+                traceOwnerAddress: trace.ownerAddress,
+                parentCampaignTitle: trace.campaign.title,
+                parentCampaignAddress: trace.campaign.ownerAddress,
                 reviewerAddress: trace.reviewerAddress,
                 userAddress: currentUser.address,
               });
