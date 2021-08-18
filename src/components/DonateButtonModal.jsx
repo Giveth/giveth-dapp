@@ -7,7 +7,7 @@ import { utils } from 'web3';
 import { Link } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
 import { Form, Select, Input, InputNumber, Checkbox, Button, Modal, Typography } from 'antd';
-import { GivethBridge } from '@giveth/bridge-contract-class';
+import { GivethBridge } from '@giveth/bridge-contract';
 
 import getTokens from '../lib/blockchain/getTokens';
 import extraGas from '../lib/blockchain/extraGas';

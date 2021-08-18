@@ -1,4 +1,4 @@
-import { LPPCampaign, LPPCampaignFactory } from 'lpp-campaign';
+import { LPPCampaign, LPPCampaignFactory } from '@giveth/lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import Trace from '../models/Trace';
 import extraGas from '../lib/blockchain/extraGas';

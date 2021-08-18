@@ -1,5 +1,5 @@
 import React from 'react';
-import { LPPCampaign } from 'lpp-campaign';
+import { LPPCampaign } from '@giveth/lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';

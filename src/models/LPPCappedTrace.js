@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { LPPCappedMilestone as LPPCappedMilestoneContract } from 'lpp-capped-milestone';
+import { LPPCappedMilestone as LPPCappedMilestoneContract } from '@giveth/lpp-capped-milestone';
 import Trace from './Trace';
 
 /**
