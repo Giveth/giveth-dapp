@@ -2021,13 +2021,14 @@
   dependencies:
     web3-core-promievent "^1.5.1"
 
-"@giveth/liquidpledging-contract@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@giveth/liquidpledging-contract/-/liquidpledging-contract-1.0.0.tgz#e2d3f2fd1ddbfd100954e9cba45660e104229448"
-  integrity sha512-rWj/IDHKAwgyUf16BXDgameLQ4SXElPpK2f876pOsHeYCXTaEyj0o+YRhW9hiJbbwRS/L76yrNBn3ZVCXXLIIw==
+"@giveth/liquidpledging-contract@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@giveth/liquidpledging-contract/-/liquidpledging-contract-1.0.1.tgz#ff89acc87dc58ef1780d2c66f451e9ac96899197"
+  integrity sha512-10ZDwgUym4w41Am0MulSAfbp/JhdyPNC1ZhpOVBn86JR8KyWD4ulpLVFvO9kLuOwoYA4hFk6cjw1WwNfbTiung==
   dependencies:
     "@aragon/os" "3.1.9"
     "@giveth/eth-contract-class" "^1.0.2"
+    chai "^4.1.0"
 
 "@giveth/liquidpledging-contract@^2.0.0-beta.6":
   version "2.0.0-beta.6"
@@ -2046,20 +2047,20 @@
     "@giveth/eth-contract-class" "^1.0.2"
     "@giveth/liquidpledging-contract" "^2.0.0-beta.6"
 
-"@giveth/lpp-capped-milestone@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@giveth/lpp-capped-milestone/-/lpp-capped-milestone-1.1.1.tgz#13fff658e3e42cbe623699f25a881c95600940cb"
-  integrity sha512-d7HgluhSafEq/4iEm3Oz3E2JxvNLNM2MSJpF9c/eG9ydWeXYqAC7KTyqPM6BddbUa30nucQoKz6JbtqXlL3vDw==
+"@giveth/lpp-capped-milestone@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@giveth/lpp-capped-milestone/-/lpp-capped-milestone-1.1.2.tgz#fab878800d2e37bc6f24c9e7c2fe0208b46aa235"
+  integrity sha512-+DAYs3wPqwz3HoFDb3RUcPdYm0f4c10kyaEBxkVhkSQuqEZfOIvSyF6ENtjV7ipSAsIhiIAWD15olYbp0gnPcA==
   dependencies:
     "@aragon/os" "3.1.9"
     "@giveth/bridge-contract" "^1.0.6"
     "@giveth/eth-contract-class" "^1.0.2"
-    "@giveth/liquidpledging-contract" "^1.0.0"
+    "@giveth/liquidpledging-contract" "^1.0.1"
 
-"@giveth/lpp-milestones@^2.0.0-beta.2":
-  version "2.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@giveth/lpp-milestones/-/lpp-milestones-2.0.0-beta.2.tgz#394729d45457ffccd09e09117756135c29ff3367"
-  integrity sha512-N9PfvFVQnqneOZ7dAU/6mp706nyRio9QFykyrZkIO/hsg0JpUQf8pr7wa5825Cx4V7TgunYpsJrlD8aLc2zgzA==
+"@giveth/lpp-milestones@^2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.yarnpkg.com/@giveth/lpp-milestones/-/lpp-milestones-2.0.0-beta.4.tgz#cc6578f051c45dd2b880796786d7c242fd96dc59"
+  integrity sha512-XvBY8ib/lfcRhEjbmqM9yRtfBq4aYHa/l2ntZm64LWX4r/KCzy0QNRED3PhCdObRafmTRJBWemG1rzxRD00ZFg==
   dependencies:
     "@aragon/os" "4.0.1"
     "@giveth/bridge-contract" "^1.0.6"
@@ -4038,6 +4039,11 @@ assert@^1.1.1:
     object-assign "^4.1.1"
     util "0.10.3"
 
+assertion-error@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
+  integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
+
 assign-symbols@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/assign-symbols/-/assign-symbols-1.0.0.tgz#59667f41fadd4f20ccbc2bb96b8d4f7f78ec0367"
@@ -5724,6 +5730,18 @@ catharsis@^0.9.0:
   dependencies:
     lodash "^4.17.15"
 
+chai@^4.1.0:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.4.tgz#b55e655b31e1eac7099be4c08c21964fce2e6c49"
+  integrity sha512-yS5H68VYOCtN1cjfwumDSuzn/9c+yza4f3reKXlE5rUg7SFcCEy90gJvydNgOYtblyf4Zi6jIWRnXOgErta0KA==
+  dependencies:
+    assertion-error "^1.1.0"
+    check-error "^1.0.2"
+    deep-eql "^3.0.1"
+    get-func-name "^2.0.0"
+    pathval "^1.1.1"
+    type-detect "^4.0.5"
+
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.0.1, chalk@^2.3.1, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -5761,6 +5779,11 @@ charenc@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
   integrity sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=
+
+check-error@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/check-error/-/check-error-1.0.2.tgz#574d312edd88bb5dd8912e9286dd6c0aed4aac82"
+  integrity sha1-V00xLt2Iu13YkS6Sht1sCu1KrII=
 
 check-types@^11.1.1:
   version "11.1.2"
@@ -6772,6 +6795,13 @@ dedent@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
   integrity sha1-JJXduvbrh0q7Dhvp3yLS5aVEMmw=
+
+deep-eql@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/deep-eql/-/deep-eql-3.0.1.tgz#dfc9404400ad1c8fe023e7da1df1c147c4b444df"
+  integrity sha512-+QeIQyN5ZuO+3Uk5DYh6/1eKO0m0YmJFGNmFHGACpf1ClL1nmlV/p4gNgbl2pJGxgXb4faqo6UE+M5ACEMyVcw==
+  dependencies:
+    type-detect "^4.0.0"
 
 deep-equal@^1.0.1, deep-equal@~1.1.1:
   version "1.1.1"
@@ -9016,6 +9046,11 @@ get-caller-file@^2.0.1:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-2.0.5.tgz#4f94412a82db32f36e3b0b9741f8a97feb031f7e"
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
+
+get-func-name@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/get-func-name/-/get-func-name-2.0.0.tgz#ead774abee72e20409433a066366023dd6887a41"
+  integrity sha1-6td0q+5y4gQJQzoGY2YCPdaIekE=
 
 get-intrinsic@^1.0.2, get-intrinsic@^1.1.0, get-intrinsic@^1.1.1:
   version "1.1.1"
@@ -13296,6 +13331,11 @@ path-type@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
+
+pathval@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.1.tgz#8534e77a77ce7ac5a2512ea21e0fdb8fcf6c3d8d"
+  integrity sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==
 
 pbjs@^0.0.5:
   version "0.0.5"
@@ -17617,7 +17657,7 @@ type-check@~0.3.2:
   dependencies:
     prelude-ls "~1.1.2"
 
-type-detect@4.0.8:
+type-detect@4.0.8, type-detect@^4.0.0, type-detect@^4.0.5:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
