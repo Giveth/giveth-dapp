@@ -7,7 +7,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { utils } from 'web3';
 
 import CreateExpenseItem from '../CreateExpenseItem';
-import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getStartOfDayUTC,
+  history,
+  isOwner,
+  txNotification,
+} from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   TraceCampaignInfo,
@@ -252,8 +258,7 @@ function EditExpense(props) {
       await TraceService.save({
         trace: ms,
         from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
+        afterSave: (txUrl, res) => {
           const analyticsData = {
             title: ms.title,
             slug: res.slug,
@@ -267,62 +272,28 @@ function EditExpense(props) {
             recipientAddress: ms.recipientAddress,
             userAddress: currentUser.address,
           };
-
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Expense proposed to the Campaign Owner';
-              sendAnalyticsTracking('Trace Edit', {
-                action: 'updated proposed',
-                ...analyticsData,
-              });
-            } else {
-              notificationDescription = 'The Expense has been updated!';
-              sendAnalyticsTracking('Trace Edit', {
-                action: 'updated proposed',
-                ...analyticsData,
-              });
-            }
+          if (!userIsCampaignOwner) {
+            txNotification('Expense proposed to the Campaign owner', false, true);
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Expense is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
+            txNotification('Your Expense is pending....', txUrl, true);
             sendAnalyticsTracking('Trace Edit', {
               action: 'created',
               ...analyticsData,
             });
           } else {
-            notificationDescription = 'Your Expense has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
+            const notificationError =
+              'It seems your Expense has been updated!, this should not be happened';
+            notification.error({ message: '', description: notificationError });
           }
 
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
+          history.push(`/trace/${res.slug}`);
         },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Expense has been updated!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
+        afterMined: txUrl => txNotification('Your Expense has been updated!', txUrl),
         onError(message, err, isLessThanMinPayout) {
           setLoading(false);
           if (isLessThanMinPayout) {

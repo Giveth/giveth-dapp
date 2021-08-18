@@ -13,7 +13,7 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
+import { ANY_TOKEN, history, txNotification, ZERO_ADDRESS } from '../../lib/helpers';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
@@ -52,7 +52,7 @@ function CreateBounty(props) {
         currentUser.address &&
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),
     );
-  }, [campaign, currentUser]);
+  }, [campaign.id, currentUser.address]);
 
   const handleInputChange = event => {
     const { name, value, type, checked } = event.target;
@@ -110,8 +110,7 @@ function CreateBounty(props) {
       await TraceService.save({
         trace: ms,
         from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
+        afterSave: (txUrl, res) => {
           const analyticsData = {
             traceId: res._id,
             slug: res.slug,
@@ -125,24 +124,14 @@ function CreateBounty(props) {
             reviewerAddress: ms.reviewerAddress,
             userAddress: currentUser.address,
           };
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Bounty proposed to the Campaign Owner';
-              sendAnalyticsTracking('Trace Create', {
-                action: 'proposed',
-                ...analyticsData,
-              });
-            }
+          if (!userIsCampaignOwner) {
+            txNotification('Bounty proposed to the Campaign owner', false, true);
+            sendAnalyticsTracking('Trace Create', {
+              action: 'proposed',
+              ...analyticsData,
+            });
           } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Bounty is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
+            txNotification('Your Bounty is pending....', txUrl, true);
             sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
@@ -150,28 +139,13 @@ function CreateBounty(props) {
           } else {
             const notificationError =
               'It seems your Bounty has been updated!, this should not be happened';
-            notification.error({ description: notificationError });
+            notification.error({ message: '', description: notificationError });
           }
 
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
+          history.push(`/trace/${res.slug}`);
         },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Bounty has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
+        afterMined: txUrl => txNotification('Your Bounty has been created!', txUrl),
         onError(message, err) {
           setLoading(false);
           return ErrorHandler(err, message);

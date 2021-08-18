@@ -12,7 +12,7 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { history, isOwner } from '../../lib/helpers';
+import { history, isOwner, txNotification } from '../../lib/helpers';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
@@ -142,8 +142,7 @@ function EditBounty(props) {
     await TraceService.save({
       trace: ms,
       from: currentUser.address,
-      afterSave: (created, txUrl, res) => {
-        let notificationDescription;
+      afterSave: (txUrl, res) => {
         const analyticsData = {
           traceId: res._id,
           title: ms.title,
@@ -155,62 +154,28 @@ function EditBounty(props) {
           recipientAddress: ms.recipientAddress,
           userAddress: currentUser.address,
         };
-
-        if (created) {
-          if (!userIsCampaignOwner) {
-            notificationDescription = 'Bounty proposed to the campaign owner';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          } else {
-            notificationDescription = 'The Bounty has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          }
+        if (!userIsCampaignOwner) {
+          txNotification('Bounty proposed to the Campaign owner', false, true);
+          sendAnalyticsTracking('Trace Edit', {
+            action: 'updated proposed',
+            ...analyticsData,
+          });
         } else if (txUrl) {
-          notificationDescription = (
-            <p>
-              Your Bounty is pending....
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
+          txNotification('Your Bounty is pending....', txUrl, true);
           sendAnalyticsTracking('Trace Edit', {
             action: 'created',
             ...analyticsData,
           });
         } else {
-          notificationDescription = 'Your Bounty has been updated!';
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
+          const notificationError =
+            'It seems your Bounty has been updated!, this should not be happened';
+          notification.error({ message: '', description: notificationError });
         }
 
-        if (notificationDescription) {
-          notification.info({ description: notificationDescription });
-        }
         setLoading(false);
-        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
+        history.push(`/trace/${res.slug}`);
       },
-      afterMined: (created, txUrl) => {
-        notification.success({
-          description: (
-            <p>
-              Your Bounty has been updated!
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          ),
-        });
-      },
+      afterMined: txUrl => txNotification('Your Bounty has been updated!', txUrl),
       onError(message, err) {
         setLoading(false);
         return ErrorHandler(err, message);

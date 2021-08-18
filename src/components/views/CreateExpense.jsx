@@ -7,7 +7,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { utils } from 'web3';
 import CreateExpenseItem from '../CreateExpenseItem';
 import useCampaign from '../../hooks/useCampaign';
-import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getStartOfDayUTC,
+  history,
+  txNotification,
+  ZERO_ADDRESS,
+} from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   TraceCampaignInfo,
@@ -208,8 +214,7 @@ function CreateExpense(props) {
       await TraceService.save({
         trace: ms,
         from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
+        afterSave: (txUrl, res) => {
           const analyticsData = {
             traceId: res._id,
             slug: res.slug,
@@ -223,24 +228,14 @@ function CreateExpense(props) {
             reviewerAddress: ms.reviewerAddress,
             userAddress: currentUser.address,
           };
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Expense proposed to the Campaign Owner';
-              sendAnalyticsTracking('Trace Create', {
-                action: 'proposed',
-                ...analyticsData,
-              });
-            }
+          if (!userIsCampaignOwner) {
+            txNotification('Expense proposed to the Campaign owner', false, true);
+            sendAnalyticsTracking('Trace Create', {
+              action: 'proposed',
+              ...analyticsData,
+            });
           } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Expense is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
+            txNotification('Your Expense is pending....', txUrl, true);
             sendAnalyticsTracking('Trace Create', {
               action: 'created',
               ...analyticsData,
@@ -248,28 +243,13 @@ function CreateExpense(props) {
           } else {
             const notificationError =
               'It seems your Expense has been updated!, this should not be happened';
-            notification.error({ description: notificationError });
+            notification.error({ message: '', description: notificationError });
           }
 
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
+          history.push(`/trace/${res.slug}`);
         },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Expense has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
+        afterMined: txUrl => txNotification('Your Expense has been created!', txUrl),
         onError(message, err, isLessThanMinPayout) {
           setLoading(false);
           if (isLessThanMinPayout) {

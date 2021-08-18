@@ -19,7 +19,13 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
-import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
+import {
+  convertEthHelper,
+  getStartOfDayUTC,
+  history,
+  isOwner,
+  txNotification,
+} from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { authenticateUser } from '../../lib/middleware';
 import config from '../../configuration';
@@ -282,8 +288,7 @@ function EditPayment(props) {
       await TraceService.save({
         trace: ms,
         from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
+        afterSave: (txUrl, res) => {
           const analyticsData = {
             title: ms.title,
             slug: res.slug,
@@ -297,61 +302,28 @@ function EditPayment(props) {
             recipientAddress: ms.recipientAddress,
             userAddress: currentUser.address,
           };
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Payment proposed to the campaign owner';
-              sendAnalyticsTracking('Trace Edit', {
-                action: 'updated proposed',
-                ...analyticsData,
-              });
-            } else {
-              notificationDescription = 'The Payment has been updated!';
-              sendAnalyticsTracking('Trace Edit', {
-                action: 'updated proposed',
-                ...analyticsData,
-              });
-            }
+          if (!userIsCampaignOwner) {
+            txNotification('Payment proposed to the Campaign owner', false, true);
+            sendAnalyticsTracking('Trace Edit', {
+              action: 'updated proposed',
+              ...analyticsData,
+            });
           } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Payment is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
+            txNotification('Your Payment is pending....', txUrl, true);
             sendAnalyticsTracking('Trace Edit', {
               action: 'created',
               ...analyticsData,
             });
           } else {
-            notificationDescription = 'Your Payment has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
+            const notificationError =
+              'It seems your Payment has been updated!, this should not be happened';
+            notification.error({ message: '', description: notificationError });
           }
 
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
           setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
+          history.push(`/trace/${res.slug}`);
         },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Payment has been updated!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
+        afterMined: txUrl => txNotification('Your Payment has been updated!', txUrl),
         onError(message, err, isLessThanMinPayout) {
           setLoading(false);
           if (isLessThanMinPayout) {
