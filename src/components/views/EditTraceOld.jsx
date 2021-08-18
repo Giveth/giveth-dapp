@@ -13,7 +13,6 @@ import {
   getStartOfDayUTC,
   history,
   isOwner,
-  txNotification,
   ZERO_ADDRESS,
 } from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
@@ -37,11 +36,11 @@ import LPTrace from '../../models/LPTrace';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
 import config from '../../configuration';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import BridgedTrace from '../../models/BridgedTrace';
+import { TraceSave } from '../../lib/traceSave';
 
 const WAIT_INTERVAL = 1000;
 
@@ -397,56 +396,15 @@ function EditTraceOld(props) {
 
     setLoading(true);
 
-    await TraceService.save({
+    TraceSave({
       trace: newTrace,
-      from: currentUser.address,
-      afterSave: (txUrl, res) => {
-        const analyticsData = {
-          title: newTrace.title,
-          slug: res.slug,
-          parentCampaignAddress: campaign.ownerAddress,
-          traceRecipientAddress: res.recipientAddress,
-          ownerAddress: newTrace.ownerAddress,
-          traceType: newTrace.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: newTrace.reviewerAddress,
-          recipientAddress: newTrace.recipientAddress,
-          userAddress: currentUser.address,
-        };
-
-        if (!userIsCampaignOwner) {
-          txNotification('Trace proposed to the Campaign owner', txUrl, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        } else if (txUrl) {
-          txNotification('Your Trace is pending....', txUrl, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          txNotification('Your Trace has been updated!', txUrl, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        }
-
-        setLoading(false);
-        history.push(`/trace/${res.slug}`);
-      },
-      afterMined: txUrl => txNotification('Your Trace has been updated!', txUrl),
-      onError(message, err, isLessThanMinPayout) {
-        setLoading(false);
-        if (isLessThanMinPayout) {
-          return minPayoutWarningInCreatEdit();
-        }
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
+      minPayoutWarningInCreatEdit,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 

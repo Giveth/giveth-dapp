@@ -1,9 +1,9 @@
 import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 
-import { history, isOwner, txNotification, ZERO_ADDRESS } from '../../lib/helpers';
+import { history, isOwner, ZERO_ADDRESS } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
@@ -20,8 +20,8 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
+import { TraceSave } from '../../lib/traceSave';
 
 function EditMilestone(props) {
   const {
@@ -163,47 +163,14 @@ function EditMilestone(props) {
 
     setLoading(true);
 
-    await TraceService.save({
+    TraceSave({
       trace: ms,
-      from: currentUser.address,
-      afterSave: (txUrl, res) => {
-        const analyticsData = {
-          title: ms.title,
-          ownerAddress: ms.ownerAddress,
-          traceType: ms.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: ms.reviewerAddress,
-          recipientAddress: ms.recipientAddress,
-          userAddress: currentUser.address,
-        };
-        if (!userIsCampaignOwner) {
-          txNotification('Milestone proposed to the Campaign owner', false, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        } else if (txUrl) {
-          txNotification('Your Milestone is pending....', txUrl, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          const notificationError =
-            'It seems your Milestone has been updated!, this should not be happened';
-          notification.error({ message: '', description: notificationError });
-        }
-
-        setLoading(false);
-        history.push(`/trace/${res.slug}`);
-      },
-      afterMined: txUrl => txNotification('Your Milestone has been updated!', txUrl),
-      onError(message, err) {
-        setLoading(false);
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 

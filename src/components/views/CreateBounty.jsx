@@ -1,5 +1,5 @@
 import React, { memo, useContext, useEffect, useState, Fragment } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
@@ -13,14 +13,12 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { ANY_TOKEN, history, txNotification, ZERO_ADDRESS } from '../../lib/helpers';
+import { ANY_TOKEN, history, ZERO_ADDRESS } from '../../lib/helpers';
 import config from '../../configuration';
 import { Trace } from '../../models';
-import { TraceService } from '../../services';
-import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import { TraceSave } from '../../lib/traceSave';
 
 function CreateBounty(props) {
   const {
@@ -97,60 +95,19 @@ function CreateBounty(props) {
       ms.parentProjectId = campaign.projectId;
       ms.formType = Trace.BOUNTYTYPE;
 
-      if (bounty.donateToCommunity) {
-        ms.communityId = config.defaultCommunityId;
-      }
+      if (bounty.donateToCommunity) ms.communityId = config.defaultCommunityId;
 
-      if (!userIsCampaignOwner) {
-        ms.status = Trace.PROPOSED;
-      }
+      if (!userIsCampaignOwner) ms.status = Trace.PROPOSED;
 
       setLoading(true);
-
-      await TraceService.save({
+      TraceSave({
         trace: ms,
-        from: currentUser.address,
-        afterSave: (txUrl, res) => {
-          const analyticsData = {
-            traceId: res._id,
-            slug: res.slug,
-            parentCampaignAddress: campaign.ownerAddress,
-            traceRecipientAddress: res.recipientAddress,
-            title: ms.title,
-            ownerAddress: ms.ownerAddress,
-            traceType: ms.formType,
-            parentCampaignId: campaign.id,
-            parentCampaignTitle: campaign.title,
-            reviewerAddress: ms.reviewerAddress,
-            userAddress: currentUser.address,
-          };
-          if (!userIsCampaignOwner) {
-            txNotification('Bounty proposed to the Campaign owner', false, true);
-            sendAnalyticsTracking('Trace Create', {
-              action: 'proposed',
-              ...analyticsData,
-            });
-          } else if (txUrl) {
-            txNotification('Your Bounty is pending....', txUrl, true);
-            sendAnalyticsTracking('Trace Create', {
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            const notificationError =
-              'It seems your Bounty has been updated!, this should not be happened';
-            notification.error({ message: '', description: notificationError });
-          }
-
-          setLoading(false);
-          history.push(`/trace/${res.slug}`);
-        },
-        afterMined: txUrl => txNotification('Your Bounty has been created!', txUrl),
-        onError(message, err) {
-          setLoading(false);
-          return ErrorHandler(err, message);
-        },
+        userIsCampaignOwner,
+        campaign,
         web3,
+        from: currentUser.address,
+        afterSave: () => setLoading(false),
+        onError: () => setLoading(false),
       });
     }
   };

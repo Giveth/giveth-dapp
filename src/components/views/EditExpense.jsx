@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -7,13 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { utils } from 'web3';
 
 import CreateExpenseItem from '../CreateExpenseItem';
-import {
-  convertEthHelper,
-  getStartOfDayUTC,
-  history,
-  isOwner,
-  txNotification,
-} from '../../lib/helpers';
+import { convertEthHelper, getStartOfDayUTC, history, isOwner } from '../../lib/helpers';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import {
   TraceCampaignInfo,
@@ -29,7 +23,7 @@ import TraceItem from '../../models/TraceItem';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import { TraceSave } from '../../lib/traceSave';
 
 function EditExpense(props) {
   const {
@@ -255,53 +249,15 @@ function EditExpense(props) {
 
       setLoading(true);
 
-      await TraceService.save({
+      TraceSave({
         trace: ms,
-        from: currentUser.address,
-        afterSave: (txUrl, res) => {
-          const analyticsData = {
-            title: ms.title,
-            slug: res.slug,
-            parentCampaignAddress: campaign.ownerAddress,
-            traceRecipientAddress: res.recipientAddress,
-            ownerAddress: ms.ownerAddress,
-            traceType: ms.formType,
-            parentCampaignId: campaign.id,
-            parentCampaignTitle: campaign.title,
-            reviewerAddress: ms.reviewerAddress,
-            recipientAddress: ms.recipientAddress,
-            userAddress: currentUser.address,
-          };
-          if (!userIsCampaignOwner) {
-            txNotification('Expense proposed to the Campaign owner', false, true);
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          } else if (txUrl) {
-            txNotification('Your Expense is pending....', txUrl, true);
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            const notificationError =
-              'It seems your Expense has been updated!, this should not be happened';
-            notification.error({ message: '', description: notificationError });
-          }
-
-          setLoading(false);
-          history.push(`/trace/${res.slug}`);
-        },
-        afterMined: txUrl => txNotification('Your Expense has been updated!', txUrl),
-        onError(message, err, isLessThanMinPayout) {
-          setLoading(false);
-          if (isLessThanMinPayout) {
-            return minPayoutWarningInCreatEdit();
-          }
-          return ErrorHandler(err, message);
-        },
+        userIsCampaignOwner,
+        campaign,
         web3,
+        minPayoutWarningInCreatEdit,
+        from: currentUser.address,
+        afterSave: () => setLoading(false),
+        onError: () => setLoading(false),
       });
     }
   };

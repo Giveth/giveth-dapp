@@ -1,5 +1,5 @@
 import React, { memo, useContext, useEffect, useState, Fragment } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import {
@@ -12,14 +12,14 @@ import {
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { authenticateUser } from '../../lib/middleware';
-import { history, isOwner, txNotification } from '../../lib/helpers';
+import { history, isOwner } from '../../lib/helpers';
 import config from '../../configuration';
 import { Trace } from '../../models';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import { TraceSave } from '../../lib/traceSave';
 
 function EditBounty(props) {
   const {
@@ -139,48 +139,14 @@ function EditBounty(props) {
     ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
     setLoading(true);
-    await TraceService.save({
+    TraceSave({
       trace: ms,
-      from: currentUser.address,
-      afterSave: (txUrl, res) => {
-        const analyticsData = {
-          traceId: res._id,
-          title: ms.title,
-          ownerAddress: ms.ownerAddress,
-          traceType: ms.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: ms.reviewerAddress,
-          recipientAddress: ms.recipientAddress,
-          userAddress: currentUser.address,
-        };
-        if (!userIsCampaignOwner) {
-          txNotification('Bounty proposed to the Campaign owner', false, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        } else if (txUrl) {
-          txNotification('Your Bounty is pending....', txUrl, true);
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          const notificationError =
-            'It seems your Bounty has been updated!, this should not be happened';
-          notification.error({ message: '', description: notificationError });
-        }
-
-        setLoading(false);
-        history.push(`/trace/${res.slug}`);
-      },
-      afterMined: txUrl => txNotification('Your Bounty has been updated!', txUrl),
-      onError(message, err) {
-        setLoading(false);
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 
