@@ -1,6 +1,6 @@
 /* eslint-disable import/no-cycle */
 
-import { toast } from 'react-toastify';
+import { notification } from 'antd';
 import BasicModel from './BasicModel';
 import CampaignService from '../services/CampaignService';
 import IPFSService from '../services/IPFSService';
@@ -113,7 +113,12 @@ class Campaign extends BasicModel {
           this.newImage = false;
         })
         .then(_ => CampaignService.save(this, this.owner.address, afterSave, afterMined, web3))
-        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
+        .catch(_ =>
+          notification.error({
+            message: '',
+            description: 'Cannot connect to IPFS server. Please try again.',
+          }),
+        );
     }
     return CampaignService.save(this, this.owner.address, afterSave, afterMined, web3);
   }

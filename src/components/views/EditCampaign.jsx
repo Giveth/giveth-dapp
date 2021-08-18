@@ -1,20 +1,9 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt, useParams } from 'react-router-dom';
 
-import {
-  Button,
-  Col,
-  Form,
-  Input,
-  Modal,
-  notification,
-  PageHeader,
-  Row,
-  Select,
-  Typography,
-} from 'antd';
+import { Button, Col, Form, Input, Modal, PageHeader, Row, Select, Typography } from 'antd';
 import Loader from '../Loader';
-import { getHtmlText, history, isOwner } from '../../lib/helpers';
+import { getHtmlText, history, isOwner, txNotification } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
 import CampaignService from '../../services/CampaignService';
 import ErrorHandler from '../../lib/ErrorHandler';
@@ -183,41 +172,19 @@ const EditCampaign = () => {
         image: campaign.picture,
       });
 
-      const afterMined = url => {
-        if (url) {
-          const msg = (
-            <p>
-              Your Campaign has been {isNew ? 'created' : 'updated'}!
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          notification.success({ message: '', description: msg });
-        } else {
-          if (mounted.current) setIsSaving(false);
-          notification.success({
-            message: '',
-            description: 'Your Campaign has been updated!',
-          });
-          history.push(`/campaigns/${campaignObject.current.id}`);
-        }
+      const afterMined = txUrl => {
+        txNotification(`Your Campaign has been ${isNew ? 'created' : 'updated'}!`, txUrl);
+        if (mounted.current) setIsSaving(false);
       };
 
-      const afterCreate = ({ err, txUrl, response }) => {
+      const afterCreate = (txUrl, response, err) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
-          const msg = (
-            <p>
-              Your Campaign is {isNew ? 'pending....' : 'is being updated'}
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
+          txNotification(
+            `Your Campaign is ${isNew ? 'pending....' : 'is being updated'}`,
+            txUrl,
+            true,
           );
-          notification.info({ message: '', description: msg });
           const analyticsData = {
             userAddress: currentUser.address,
             slug: response.slug,
