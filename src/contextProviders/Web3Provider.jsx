@@ -10,9 +10,10 @@ import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWa
 const Context = createContext({});
 const { Provider, Consumer } = Context;
 
-const wallets = [{ walletName: 'metamask', preferred: true }];
-const torusWallet = { walletName: 'torus', preferred: true };
-if (['develop', 'Ganache'].includes(config.title)) wallets.push(torusWallet);
+const wallets = [
+  { walletName: 'metamask', preferred: true },
+  { walletName: 'torus', preferred: true },
+];
 
 const Web3Provider = props => {
   const [validProvider, setValidProvider] = useState(false);

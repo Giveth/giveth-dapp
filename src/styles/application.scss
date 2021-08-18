@@ -51,6 +51,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: $page-background;
+  overflow: auto !important;
 }
 
 .page-layout {
