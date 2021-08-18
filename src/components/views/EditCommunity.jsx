@@ -2,10 +2,10 @@ import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
 import { Prompt } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-import { Button, Col, Form, Input, Modal, notification, PageHeader, Row, Typography } from 'antd';
+import { Button, Col, Form, Input, Modal, PageHeader, Row, Typography } from 'antd';
 
 import Loader from '../Loader';
-import { getHtmlText, history, isOwner } from '../../lib/helpers';
+import { getHtmlText, history, isOwner, txNotification } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
 import ErrorHandler from '../../lib/ErrorHandler';
 
@@ -28,7 +28,7 @@ const { Title, Text } = Typography;
  *
  * @param isNew    If set, component will load an empty model.
  *                 Otherwise component expects an id param and will load a Community object
- * @param id       URL parameter which is an id of a Community object
+ * @param match
  */
 const EditCommunity = ({ isNew, match }) => {
   const {
@@ -167,41 +167,19 @@ const EditCommunity = ({ isNew, match }) => {
         image: community.picture,
       });
 
-      const afterMined = url => {
-        if (url) {
-          const msg = (
-            <p>
-              Your Community has been created!
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          notification.success({ message: '', description: msg });
-        } else {
-          if (mounted.current) setIsSaving(false);
-          notification.success({
-            message: '',
-            description: 'Your Community has been updated!',
-          });
-          history.push(`/communities/${communityObject.current.id}`);
-        }
+      const afterMined = txUrl => {
+        txNotification(`Your Community has been ${isNew ? 'created' : 'updated'}!`, txUrl);
+        if (mounted.current) setIsSaving(false);
       };
 
-      const afterCreate = ({ err, url, txUrl, response }) => {
+      const afterCreate = ({ err, txUrl, response }) => {
         if (mounted.current) setIsSaving(false);
         if (!err) {
-          const msg = (
-            <p>
-              Your Community is pending....
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
+          txNotification(
+            `Your Community is ${isNew ? 'pending....' : 'is being updated'}`,
+            txUrl,
+            true,
           );
-          notification.info({ description: msg });
           const analyticsData = {
             slug: response.slug,
             title: community.title,
@@ -223,8 +201,7 @@ const EditCommunity = ({ isNew, match }) => {
               ...analyticsData,
             });
           }
-
-          history.push('/my-communities');
+          history.push(`/community/${response.slug}`);
         }
       };
 
@@ -248,7 +225,7 @@ const EditCommunity = ({ isNew, match }) => {
       {isLoading ? (
         <Loader className="fixed" />
       ) : (
-        <div id="create-Campaint-view">
+        <Fragment>
           <Row>
             <Col span={24}>
               <PageHeader
@@ -372,7 +349,7 @@ const EditCommunity = ({ isNew, match }) => {
               </Form>
             </div>
           </Row>
-        </div>
+        </Fragment>
       )}
     </Fragment>
   );
