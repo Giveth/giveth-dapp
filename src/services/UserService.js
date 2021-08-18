@@ -1,4 +1,4 @@
-import { LiquidPledging } from 'giveth-liquidpledging';
+import { LiquidPledging } from '@giveth/liquidpledging-contract';
 
 import { feathersClient } from '../lib/feathersClient';
 import ErrorPopup from '../components/ErrorPopup';

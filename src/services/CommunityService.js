@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
-import { LiquidPledging } from 'giveth-liquidpledging';
+import { LiquidPledging } from '@giveth/liquidpledging-contract';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Community from '../models/Community';
