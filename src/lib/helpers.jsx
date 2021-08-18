@@ -125,8 +125,6 @@ export const getUserAvatar = owner => {
   return DefaultAvatar;
 };
 
-export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
-
 export const getReadableStatus = status => {
   switch (status) {
     case 'InProgress':
