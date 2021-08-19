@@ -5,13 +5,12 @@ import Loader from '../Loader';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/middleware';
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
-import { history, txNotification } from '../../lib/helpers';
+import { history } from '../../lib/helpers';
 import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
 
 /**
@@ -99,6 +98,8 @@ const EditProfile = () => {
   const submit = () => {
     if (!user.name) return;
 
+    const created = !oldUserData._giverId;
+
     const pushToNetwork =
       user.name !== oldUserData._name ||
       user.avatar !== oldUserData._avatar ||
@@ -110,50 +111,26 @@ const EditProfile = () => {
       setIsPristine(false);
     };
 
-    const afterMined = (created, txUrl) => {
-      txNotification(
-        created ? 'You are now a registered user' : 'Your profile has been updated',
-        txUrl,
-      );
-
-      if (created) {
-        sendAnalyticsTracking('User Created', {
-          category: 'User',
-          action: 'created',
-          userAddress: user.address,
-          txUrl,
-        });
-      } else {
+    const afterMined = () => {
+      if (!created) {
         setOldUserData({ ...user });
         setIsPristine(true);
         if (mounted) setIsSaving(false);
-        sendAnalyticsTracking('User Updated', {
-          category: 'User',
-          action: 'updated',
-          userAddress: user.address,
-          txUrl,
-        });
       }
     };
 
-    const afterSave = (created, txUrl) => {
+    const afterSave = () => {
       if (mounted) {
         setIsSaving(false);
         setIsPristine(true);
       }
       updateUserData();
 
-      txNotification(
-        created ? 'We are registering you as a user' : 'Your profile is being updated',
-        txUrl,
-        true,
-      );
-
       if (created) history.push('/');
     };
 
     setIsSaving(true);
-    user.save(afterSave, afterMined, reset, pushToNetwork, web3).finally(() => {
+    user.save(pushToNetwork, web3, afterSave, afterMined, reset).finally(() => {
       setIsSaving(false);
     });
   };

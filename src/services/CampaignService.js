@@ -322,8 +322,16 @@ class CampaignService {
    * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    * @param web3  Web3  instance
+   * @param networkOnly Do not send to DB
    */
-  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}, web3) {
+  static async save(
+    campaign,
+    from,
+    afterSave = () => {},
+    afterMined = () => {},
+    web3,
+    networkOnly,
+  ) {
     if (campaign.id && campaign.projectId === 0) {
       throw new Error(
         'You must wait for your Campaign to be creation to finish before you can update it',
@@ -382,10 +390,12 @@ class CampaignService {
       await promise.once('transactionHash', async hash => {
         txHash = hash;
         let response;
-        if (campaign.id) {
-          response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
-        } else {
-          response = await campaigns.create(campaign.toFeathers(txHash));
+        if (!networkOnly) {
+          if (campaign.id) {
+            response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+          } else {
+            response = await campaigns.create(campaign.toFeathers(txHash));
+          }
         }
         afterSave(`${etherScanUrl}tx/${txHash}`, response);
       });
