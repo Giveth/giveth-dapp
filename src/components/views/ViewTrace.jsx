@@ -70,7 +70,6 @@ const ViewTrace = props => {
   const [campaign, setCampaign] = useState({});
   const [trace, setTrace] = useState({});
   const [communityTitle, setCommunityTitle] = useState('');
-  const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
@@ -79,6 +78,7 @@ const ViewTrace = props => {
 
   const donationsObserver = useRef();
   const traceSubscription = useRef();
+  const newDonations = useRef(0);
   const donationsPerBatch = 50;
 
   const getCommunityTitle = async communityId => {
@@ -140,19 +140,20 @@ const ViewTrace = props => {
   }, []);
 
   useEffect(() => {
-    if (trace.id) {
+    if (trace.id && !donationsObserver.current) {
       loadMoreDonations(true);
-
       // subscribe to donation count
       donationsObserver.current = TraceService.subscribeNewDonations(
         trace.id,
         _newDonations => {
-          setNewDonations(_newDonations);
-          if (_newDonations > 0) {
+          if (_newDonations > 0 && _newDonations !== newDonations.current) {
+            newDonations.current = _newDonations;
             loadMoreDonations(true);
           }
         },
-        () => setNewDonations(0),
+        () => {
+          newDonations.current = 0;
+        },
       );
     }
 
@@ -654,12 +655,12 @@ const ViewTrace = props => {
                       <Row justify="space-between">
                         <Col span={12} className="align-items-center d-flex">
                           <h5 className="mb-0">{donationsTitle}</h5>
-                          {newDonations > 0 && (
+                          {newDonations.current > 0 && (
                             <span
                               className="badge badge-primary ml-4"
                               style={{ fontSize: '12px', padding: '6px' }}
                             >
-                              {newDonations} NEW
+                              {newDonations.current} NEW
                             </span>
                           )}
                         </Col>
@@ -682,7 +683,7 @@ const ViewTrace = props => {
                     isLoading={isLoadingDonations}
                     total={donations.length}
                     loadMore={loadMoreDonations}
-                    newDonations={newDonations}
+                    newDonations={newDonations.current}
                     useAmountRemaining
                     status={trace.status}
                   />
