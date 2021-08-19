@@ -354,7 +354,7 @@ class CampaignService {
         if (!profileHash) {
           response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
-        afterSave(false, response || campaign);
+        afterSave({ response: response || campaign });
 
         afterMined(false);
         return;
@@ -397,7 +397,7 @@ class CampaignService {
             response = await campaigns.create(campaign.toFeathers(txHash));
           }
         }
-        afterSave(`${etherScanUrl}tx/${txHash}`, response);
+        afterSave({ txUrl: `${etherScanUrl}tx/${txHash}`, response, txHash, profileHash });
       });
 
       afterMined(`${etherScanUrl}tx/${txHash}`);
@@ -406,7 +406,7 @@ class CampaignService {
         campaign.projectId > 0 ? 'update' : 'creation'
       }. View transaction ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       ErrorHandler(err, message);
-      afterSave(false, {}, err);
+      afterSave({ err });
     }
   }
 

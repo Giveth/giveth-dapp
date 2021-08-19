@@ -15,6 +15,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { txNotification } from '../lib/helpers';
+import CampaignService from '../services/CampaignService';
 
 const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -85,7 +86,13 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else {
             const campaign = new Campaign(trace.campaign);
             campaign.archivedTraces.add(trace.projectId);
-            campaign.save(afterSave, afterMined, web3).then();
+            CampaignService.save(
+              campaign,
+              campaign.owner.address,
+              ({ txUrl }) => afterSave(txUrl),
+              afterMined,
+              web3,
+            ).then();
           }
         })
         .catch(err => {

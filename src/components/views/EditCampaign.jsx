@@ -3,7 +3,7 @@ import { Prompt, useParams } from 'react-router-dom';
 
 import { Button, Col, Form, Input, Modal, PageHeader, Row, Select, Typography } from 'antd';
 import Loader from '../Loader';
-import { getHtmlText, history, isOwner, txNotification } from '../../lib/helpers';
+import { getHtmlText, history, isOwner } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
 import CampaignService from '../../services/CampaignService';
 import ErrorHandler from '../../lib/ErrorHandler';
@@ -17,7 +17,6 @@ import Editor from '../Editor';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import useReviewers from '../../hooks/useReviewers';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
 
 const { Title, Text } = Typography;
@@ -172,48 +171,14 @@ const EditCampaign = () => {
         image: campaign.picture,
       });
 
-      const afterMined = txUrl => {
-        txNotification(`Your Campaign has been ${isNew ? 'created' : 'updated'}!`, txUrl);
+      const afterCreate = ({ response, err }) => {
         if (mounted.current) setIsSaving(false);
-      };
-
-      const afterCreate = (txUrl, response, err) => {
-        if (mounted.current) setIsSaving(false);
-        if (!err) {
-          txNotification(
-            `Your Campaign is ${isNew ? 'pending....' : 'is being updated'}`,
-            txUrl,
-            true,
-          );
-          const analyticsData = {
-            userAddress: currentUser.address,
-            slug: response.slug,
-            reviewerAddress: campaign.reviewerAddress,
-            campaignOwnerAddress: campaign.ownerAddress,
-            title: campaign.title,
-            campaignId: response._id,
-            txUrl,
-          };
-          if (isNew) {
-            sendAnalyticsTracking('Campaign Created', {
-              category: 'Campaign',
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            sendAnalyticsTracking('Campaign Edited', {
-              category: 'Campaign',
-              action: 'edited',
-              ...analyticsData,
-            });
-          }
-          history.push(`/campaign/${response.slug}`);
-        }
+        if (!err) history.push(`/campaign/${response.slug}`);
       };
 
       setIsSaving(true);
       setIsBlocking(false);
-      campaignObject.current.save(afterCreate, afterMined, web3).finally(() => {
+      campaignObject.current.save(web3, afterCreate).finally(() => {
         setIsSaving(false);
       });
     }

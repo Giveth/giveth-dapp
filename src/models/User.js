@@ -101,12 +101,13 @@ class User extends Model {
           delete this._newAvatar;
         })
         .then(_ => UserService.save(this, _onSave, _afterEmit, reset, true, web3))
-        .catch(_ =>
+        .catch(_ => {
           notification.error({
             message: '',
             description: 'Cannot connect to IPFS server, Please try again',
-          }),
-        );
+          });
+          reset();
+        });
     }
     return UserService.save(this, _onSave, _afterEmit, reset, pushToNetwork, web3);
   }
