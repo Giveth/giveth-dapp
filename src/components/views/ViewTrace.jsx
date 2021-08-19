@@ -100,7 +100,7 @@ const ViewTrace = props => {
       },
       err => {
         setLoadingDonations(false);
-        ErrorHandler(err, 'Some error on fetching trace donations, please try later');
+        ErrorHandler(err, 'Some error on fetching trace donations!');
       },
     );
   }
