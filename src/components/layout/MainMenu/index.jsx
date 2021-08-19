@@ -7,6 +7,9 @@ import ManageMenu from './ManageMenu';
 
 const Header = () => {
   const { pathname } = useLocation();
+
+  const isVerification = pathname.startsWith('/verification');
+
   const profileArray = [
     '/my-traces',
     '/my-donations',
@@ -15,10 +18,14 @@ const Header = () => {
     '/my-campaigns',
   ];
   return (
-    <div id="header">
-      <Banner />
-      <MainMenu />
-      {profileArray.includes(pathname) && <ManageMenu />}
+    <div>
+      {!isVerification && (
+        <div id="header">
+          <Banner />
+          <MainMenu />
+          {profileArray.includes(pathname) && <ManageMenu />}
+        </div>
+      )}
     </div>
   );
 };

@@ -103,8 +103,9 @@ class Campaign extends BasicModel {
    * @param afterSave   Callback function once the campaign has been saved to feathers
    * @param afterMined  Callback function once the transaction is mined
    * @param web3        web3 instance
+   * @param networkOnly Do not send to DB
    */
-  save(afterSave, afterMined, web3) {
+  save(afterSave, afterMined, web3, networkOnly) {
     if (this.newImage) {
       return IPFSService.upload(this.image)
         .then(hash => {
@@ -112,10 +113,12 @@ class Campaign extends BasicModel {
           this.image = hash;
           this.newImage = false;
         })
-        .then(_ => CampaignService.save(this, this.owner.address, afterSave, afterMined, web3))
+        .then(_ =>
+          CampaignService.save(this, this.owner.address, afterSave, afterMined, web3, networkOnly),
+        )
         .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
     }
-    return CampaignService.save(this, this.owner.address, afterSave, afterMined, web3);
+    return CampaignService.save(this, this.owner.address, afterSave, afterMined, web3, networkOnly);
   }
 
   /**

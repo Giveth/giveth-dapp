@@ -264,7 +264,7 @@ const EditCampaign = () => {
       {isLoading ? (
         <Loader className="fixed" />
       ) : (
-        <div id="create-Campaint-view">
+        <Fragment>
           <Row>
             <Col span={24}>
               <PageHeader
@@ -413,7 +413,7 @@ const EditCampaign = () => {
               </Form>
             </div>
           </Row>
-        </div>
+        </Fragment>
       )}
     </Fragment>
   );
