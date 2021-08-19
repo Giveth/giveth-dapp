@@ -21,7 +21,7 @@ export const TraceSave = props => {
       traceId: res._id,
       slug: res.slug,
       parentCampaignAddress: campaign.ownerAddress,
-      recipientAddress: res.recipientAddress,
+      traceRecipientAddress: trace.recipientAddress,
       title: trace.title,
       ownerAddress: trace.ownerAddress,
       traceType: trace.formType,
