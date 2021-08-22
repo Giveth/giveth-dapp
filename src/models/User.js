@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify';
+import { notification } from 'antd';
 import Model from './Model';
 import IPFSService from '../services/IPFSService';
 import UserService from '../services/UserService';
@@ -101,7 +101,13 @@ class User extends Model {
           delete this._newAvatar;
         })
         .then(_ => UserService.save(this, _onSave, _afterEmit, reset, true, web3))
-        .catch(_ => toast.error('Cannot connect to IPFS server. Please try again'));
+        .catch(_ => {
+          notification.error({
+            message: '',
+            description: 'Cannot connect to IPFS server, Please try again',
+          });
+          reset();
+        });
     }
     return UserService.save(this, _onSave, _afterEmit, reset, pushToNetwork, web3);
   }

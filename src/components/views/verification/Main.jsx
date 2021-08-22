@@ -16,7 +16,7 @@ import { authenticateUser, checkBalance, checkForeignNetwork } from '../../../li
 import ErrorPopup from '../../ErrorPopup';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import Campaign from '../../../models/Campaign';
-import { txNotification } from '../../../lib/helpers';
+import User from '../../../models/User';
 
 const Verification = props => {
   const {
@@ -42,6 +42,32 @@ const Verification = props => {
   const reportIssue = () => {
     const body = `Issue type: User and Project Verification \nMy address: ${userAddress} \nGiveth.io Slug: ${projectSlug} \n`;
     window.open(`${config.githubUrl}/issues/new?body=${encodeURIComponent(body)}`);
+  };
+
+  const submitProfile = () => {
+    const { email, url, avatar, name } = project.owner;
+
+    const onUserError = () => setIsSaving(false);
+
+    const afterUserSave = () => {
+      setIsSaving(false);
+      setStep(step + 1);
+    };
+
+    if (!name) return;
+    if (currentUser.giverId) setStep(step + 1);
+    else {
+      const user = new User(currentUser);
+      user.name = name;
+      user.avatar = avatar || '';
+      user.newAvatar = avatar || '';
+      user.email = email || '';
+      user.linkedin = url || '';
+
+      setIsSaving(true);
+
+      user.save(true, web3, afterUserSave, () => {}, onUserError);
+    }
   };
 
   const confirmProject = (txHash, profileHash) => {
@@ -74,14 +100,12 @@ const Verification = props => {
       reviewerAddress: project.reviewerAddress,
     });
 
-    const afterCreate = ({ err, txUrl, txHash, profileHash }) => {
-      if (!err) {
-        txNotification('Your Campaign is pending....', txUrl, true);
-        confirmProject(txHash, profileHash);
-      }
+    const afterCreate = ({ err, txHash, profileHash }) => {
+      if (!err) confirmProject(txHash, profileHash);
+      else setIsSaving(false);
     };
 
-    campaign.save(afterCreate, () => {}, web3, true);
+    campaign.save(web3, afterCreate, true);
   };
 
   const fetchProject = () => {
@@ -105,6 +129,7 @@ const Verification = props => {
 
   const handleNextStep = () => {
     if (!project.id) fetchProject();
+    else if (step === 2) submitProfile();
     else if (step === 3) createCampaignOnNetwork();
     else setStep(step + 1);
   };
@@ -167,6 +192,7 @@ const Verification = props => {
                 owner={project.owner}
                 handleNextStep={handleNextStep}
                 formIsValid={formIsValid}
+                isSaving={isSaving}
               />
             )}
             {step === 3 && (

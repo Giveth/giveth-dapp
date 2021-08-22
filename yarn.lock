@@ -7638,13 +7638,6 @@ dom-converter@^0.2:
   dependencies:
     utila "~0.4"
 
-dom-helpers@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/dom-helpers/-/dom-helpers-3.4.0.tgz#e9b369700f959f62ecde5a6babde4bccd9169af8"
-  integrity sha512-LnuPJ+dwqKDIyotW1VzmOZ5TONUN7CwkCR5hrgawTUbkBGYdeoNLZo6nNfGkCrjtE1nXXaj7iMMpDa8/d9WoIA==
-  dependencies:
-    "@babel/runtime" "^7.1.2"
-
 dom-serializer@0:
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-0.2.2.tgz#1afb81f533717175d478655debc5e332d9f9bb51"
@@ -17187,7 +17180,7 @@ react-js-pagination@^3.0.1:
     react "15.x.x - 16.x.x"
     tar "2.2.2"
 
-react-lifecycles-compat@^3.0.0, react-lifecycles-compat@^3.0.4:
+react-lifecycles-compat@^3.0.0:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
@@ -17340,30 +17333,12 @@ react-side-effect@^1.1.0:
   dependencies:
     shallowequal "^1.0.1"
 
-react-toastify@2.1.7:
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/react-toastify/-/react-toastify-2.1.7.tgz#12ea05b7338d1ca554069f95120179156d5ccfd8"
-  integrity sha512-iMS5wXiTDKXcWTIF055BmsSwJINcxs9+CUGeEPMSllU0I00IKfV2inb3xhRxrB7d+4QvPqWZAtDPTk6nz6o1nA==
-  dependencies:
-    prop-types "^15.6.0"
-    react-transition-group "^2.2.1"
-
 react-tooltip@^3.11.1:
   version "3.11.6"
   resolved "https://registry.yarnpkg.com/react-tooltip/-/react-tooltip-3.11.6.tgz#4f9735a2a4aa50580af351ce23e74a56f41afc0c"
   integrity sha512-nTc1yHHaPCHHURvMpf/VNF17pIZiU4zwUGFJBUVr1fZkezFC7E0VPMMVrCfDjt+IpwTHICyzlyx+1FiQ7lw5LQ==
   dependencies:
     prop-types "^15.6.0"
-
-react-transition-group@^2.2.1:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-2.9.0.tgz#df9cdb025796211151a436c69a8f3b97b5b07c8d"
-  integrity sha512-+HzNTCHpeQyl4MJ/bdE0u6XRMe9+XG/+aL4mCxVN4DnPBQ0/5bfHWPDuOZUzYdMj94daZaZdCCc1Dzt9R/xSSg==
-  dependencies:
-    dom-helpers "^3.4.0"
-    loose-envify "^1.4.0"
-    prop-types "^15.6.2"
-    react-lifecycles-compat "^3.0.4"
 
 "react@15.x.x - 16.x.x":
   version "16.14.0"

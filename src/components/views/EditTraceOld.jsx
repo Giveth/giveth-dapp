@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Button, Checkbox, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Checkbox, Col, Form, PageHeader, Row } from 'antd';
 import BigNumber from 'bignumber.js';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
@@ -36,11 +36,11 @@ import LPTrace from '../../models/LPTrace';
 import Trace from '../../models/Trace';
 import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
 import config from '../../configuration';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import BridgedTrace from '../../models/BridgedTrace';
+import { TraceSave } from '../../lib/traceSave';
 
 const WAIT_INTERVAL = 1000;
 
@@ -396,88 +396,15 @@ function EditTraceOld(props) {
 
     setLoading(true);
 
-    await TraceService.save({
+    TraceSave({
       trace: newTrace,
-      from: currentUser.address,
-      afterSave: (created, txUrl, res) => {
-        let notificationDescription;
-        const analyticsData = {
-          title: newTrace.title,
-          slug: res.slug,
-          parentCampaignAddress: campaign.ownerAddress,
-          traceRecipientAddress: res.recipientAddress,
-          ownerAddress: newTrace.ownerAddress,
-          traceType: newTrace.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: newTrace.reviewerAddress,
-          recipientAddress: newTrace.recipientAddress,
-          userAddress: currentUser.address,
-        };
-
-        if (created) {
-          if (!userIsCampaignOwner) {
-            notificationDescription = 'Expense proposed to the Campaign Owner';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          } else {
-            notificationDescription = 'The Expense has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          }
-        } else if (txUrl) {
-          notificationDescription = (
-            <p>
-              Your Expense is pending....
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          notificationDescription = 'Your Expense has been updated!';
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        }
-
-        if (notificationDescription) {
-          notification.info({ description: notificationDescription });
-        }
-        setLoading(false);
-        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
-      },
-      afterMined: (created, txUrl) => {
-        notification.success({
-          description: (
-            <p>
-              Your Expense has been updated!
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          ),
-        });
-      },
-      onError(message, err, isLessThanMinPayout) {
-        setLoading(false);
-        if (isLessThanMinPayout) {
-          return minPayoutWarningInCreatEdit();
-        }
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
+      minPayoutWarningInCreatEdit,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 

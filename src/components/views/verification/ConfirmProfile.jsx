@@ -1,35 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import walletIcon from '../../../assets/wallet.svg';
-import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
-import User from '../../../models/User';
-import { Context as UserContext } from '../../../contextProviders/UserProvider';
 
-const ConfirmProfile = ({ handleNextStep, owner, reportIssue, formIsValid }) => {
-  const {
-    state: { web3 },
-  } = useContext(Web3Context);
-  const {
-    state: { currentUser },
-  } = useContext(UserContext);
-
+const ConfirmProfile = ({ handleNextStep, owner, reportIssue, formIsValid, isSaving }) => {
   const { email, url, location, avatar, name, address: userAddress } = owner;
-
-  const submitProfile = () => {
-    if (!name) return;
-    if (currentUser.giverId) handleNextStep();
-    else {
-      const user = new User(currentUser);
-      user.name = name;
-      user.avatar = avatar || '';
-      user.newAvatar = avatar || '';
-      user.email = email || '';
-      user.linkedin = url || '';
-
-      user.save(true, web3, handleNextStep);
-    }
-  };
 
   return (
     <div className="p-5">
@@ -62,7 +37,7 @@ const ConfirmProfile = ({ handleNextStep, owner, reportIssue, formIsValid }) => 
               <div className="profile-value">{url}</div>
             </div>
           </div>
-          <Button disabled={!formIsValid} ghost onClick={submitProfile}>
+          <Button loading={isSaving} disabled={!formIsValid} ghost onClick={handleNextStep}>
             CONFIRM YOUR PROFILE
           </Button>
           <Button onClick={reportIssue} type="text">
@@ -79,6 +54,7 @@ ConfirmProfile.propTypes = {
   owner: PropTypes.shape().isRequired,
   reportIssue: PropTypes.func.isRequired,
   formIsValid: PropTypes.bool.isRequired,
+  isSaving: PropTypes.bool.isRequired,
 };
 
 export default ConfirmProfile;

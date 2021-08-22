@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import { updateSubscription, inquirySubscriptionStatus } from '../services/subscriptionService';
 import ErrorHandler from '../lib/ErrorHandler';
@@ -30,11 +31,12 @@ function ProjectSubscription({ projectTypeId, projectType }) {
         enabled,
       });
       setSubscribed(result.enabled);
-      React.toast.success(
-        enabled
+      notification.success({
+        message: '',
+        description: enabled
           ? 'You have been subscribed successfully'
           : 'You have been unsubscribed successfully',
-      );
+      });
     } catch (err) {
       ErrorHandler(err, 'Something wrong in updating subscription, please try later');
     } finally {

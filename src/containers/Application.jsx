@@ -5,9 +5,6 @@ import { Router } from 'react-router-dom';
 
 import localforage from 'localforage';
 
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
-
 import { history } from '../lib/helpers';
 
 import config from '../configuration';
@@ -25,11 +22,6 @@ import WhiteListProvider, {
   Consumer as WhiteListConsumer,
 } from '../contextProviders/WhiteListProvider';
 import NotificationModalProvider from '../contextProviders/NotificationModalProvider';
-
-/**
- * Here we hack to make stuff globally available
- */
-React.toast = toast;
 
 /**
  * This container holds the application and its routes.
@@ -91,17 +83,6 @@ const Application = () => {
                                     </p>
                                   </div>
                                 )}
-
-                                <ToastContainer
-                                  position="top-right"
-                                  type="default"
-                                  autoClose={5000}
-                                  hideProgressBar
-                                  newestOnTop={false}
-                                  closeOnClick
-                                  pauseOnHover
-                                  style={{ zIndex: '1030' }}
-                                />
                               </NotificationModalProvider>
                             </Fragment>
                           )}

@@ -85,14 +85,13 @@ export const getTruncatedText = (text = '', maxLength = 45) => {
 };
 
 // displays alert with an error when the transaction goes wrong
-export const displayTransactionError = txHash => {
+export const displayTransactionError = txUrl => {
   let msg;
-  const { etherScanUrl } = config;
-  if (txHash) {
+  if (txUrl) {
     msg = (
       <p>
         Something went wrong with the transaction.
-        <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+        <a href={txUrl} target="_blank" rel="noopener noreferrer">
           View transaction
         </a>
       </p>
@@ -125,8 +124,6 @@ export const getUserAvatar = owner => {
   }
   return DefaultAvatar;
 };
-
-export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
 
 export const getReadableStatus = status => {
   switch (status) {

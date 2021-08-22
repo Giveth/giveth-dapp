@@ -12,6 +12,7 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { txNotification } from '../lib/helpers';
 
 function ChangeTraceRecipientButton({ trace }) {
   const {
@@ -84,26 +85,16 @@ function ChangeTraceRecipientButton({ trace }) {
               trace,
               from: currentUser.address,
               newRecipient: newRecipient.current,
-              onTxHash: txUrl => {
-                React.toast.info(
-                  <p>
-                    {trace.hasRecipient ? 'Changing ' : 'Setting '} Trace recipient is pending...
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
+              onTxHash: txUrl =>
+                txNotification(
+                  `${trace.hasRecipient ? 'Changing ' : 'Setting '} Trace recipient is pending...`,
+                  txUrl,
+                  true,
+                ),
               onConfirmation: txUrl => {
-                React.toast.success(
-                  <p>
-                    The Trace recipient has been {trace.hasRecipient ? 'changed' : 'set'}!
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
+                txNotification(
+                  `The Trace recipient has been ${trace.hasRecipient ? 'changed' : 'set'}!`,
+                  txUrl,
                 );
               },
               web3,
