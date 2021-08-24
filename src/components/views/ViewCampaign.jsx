@@ -38,6 +38,7 @@ import ProjectSubscription from '../ProjectSubscription';
 import SearchAnimation from '../../assets/search-file.json';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
+import ArchiveCampaignButton from '../ArchiveCampaignButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -300,6 +301,11 @@ const ViewCampaign = ({ match }) => {
                   campaign={campaign}
                   className="m-1 ghostButtonHeader"
                   onCancel={getCampaign}
+                />
+                <ArchiveCampaignButton
+                  campaign={campaign}
+                  className="m-1 ghostButtonHeader"
+                  onArchive={getCampaign}
                 />
 
                 {campaign.canReceiveDonate && (

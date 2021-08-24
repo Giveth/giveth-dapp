@@ -23,6 +23,10 @@ class Campaign extends BasicModel {
     return 'Active';
   }
 
+  static get ARCHIVED() {
+    return 'Archived';
+  }
+
   static get type() {
     return 'campaign';
   }
@@ -114,7 +118,7 @@ class Campaign extends BasicModel {
 
       if (!err && !networkOnly) {
         txNotification(
-          `Your Campaign is ${!this._id ? 'pending....' : 'is being updated'}`,
+          `Your Campaign is ${!this._id ? 'pending....' : 'being updated'}`,
           txUrl,
           true,
         );
@@ -171,6 +175,42 @@ class Campaign extends BasicModel {
     );
   }
 
+  archive(web3, from, afterSave, unarchive) {
+    const _afterMined = txUrl =>
+      txNotification(`Your Campaign has been ${unarchive ? 'unarchived!' : 'archived!'}`, txUrl);
+
+    const _afterSave = props => {
+      const { txUrl, response, err } = props;
+
+      if (!err) {
+        txNotification(
+          `Your Campaign is being ${unarchive ? 'unarchived!' : 'archived!'}`,
+          txUrl,
+          true,
+        );
+        const analyticsData = {
+          userAddress: from,
+          slug: response.slug,
+          reviewerAddress: this.reviewerAddress,
+          campaignOwnerAddress: this.ownerAddress,
+          title: this.title,
+          campaignId: response._id,
+          txUrl,
+        };
+        sendAnalyticsTracking(`Campaign ${unarchive ? 'unarchived!' : 'archived!'}`, {
+          category: 'Campaign',
+          action: 'edited',
+          ...analyticsData,
+        });
+      }
+
+      afterSave();
+    };
+
+    this.myStatus = unarchive ? Campaign.ACTIVE : Campaign.ARCHIVED;
+    return CampaignService.save(this, from, _afterSave, _afterMined, web3);
+  }
+
   /**
    * Cancel the campaign in feathers and blockchain
    *
@@ -206,7 +246,11 @@ class Campaign extends BasicModel {
   }
 
   set status(value) {
-    this.checkValue(value, [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED], 'status');
+    this.checkValue(
+      value,
+      [Campaign.PENDING, Campaign.ACTIVE, Campaign.CANCELED, Campaign.ARCHIVED],
+      'status',
+    );
     this.myStatus = value;
     if (value === Campaign.PENDING) this.myOrder = 1;
     else if (value === Campaign.ACTIVE) this.myOrder = 2;

@@ -34,10 +34,12 @@ const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
 
   const userCanDelegate =
     userIsCommunityOwner || (userAddress && userAddress === campaignOwnerAddress);
+  const traceIsDelegateable =
+    userCanDelegate && traceIsActive && campaign.status !== Campaign.ARCHIVED;
 
   return (
     <div>
-      {traceIsActive && userCanDelegate && (
+      {traceIsDelegateable && (
         <ProjectViewActionAlert message="Delegate some donation to this project">
           <DelegateMultipleButton trace={trace} campaign={campaign} />
         </ProjectViewActionAlert>
