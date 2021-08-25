@@ -362,13 +362,11 @@ const ViewCampaign = ({ match }) => {
                     </ProjectViewActionAlert>
                   )}
 
-                  {userIsOwner &&
-                    campaign.status !== Campaign.CANCELED &&
-                    campaign.status !== Campaign.ARCHIVED && (
-                      <ProjectViewActionAlert message="Change Co-Owner of Campaign">
-                        <ChangeOwnershipButton campaign={campaign} />
-                      </ProjectViewActionAlert>
-                    )}
+                  {userIsOwner && campaign.status !== Campaign.CANCELED && !campaign.isArchived && (
+                    <ProjectViewActionAlert message="Change Co-Owner of Campaign">
+                      <ChangeOwnershipButton campaign={campaign} />
+                    </ProjectViewActionAlert>
+                  )}
                 </div>
 
                 <div id="description">

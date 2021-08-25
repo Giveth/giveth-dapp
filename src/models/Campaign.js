@@ -94,6 +94,10 @@ class Campaign extends BasicModel {
     return this.status === Campaign.ACTIVE;
   }
 
+  get isArchived() {
+    return this.status === Campaign.ARCHIVED;
+  }
+
   get canReceiveDonate() {
     return this.isActive && !this._disableDonate;
   }

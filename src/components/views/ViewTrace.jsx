@@ -210,7 +210,7 @@ const ViewTrace = props => {
 
   const isActiveTrace = () => {
     const { fullyFunded, status } = trace;
-    return status === Trace.IN_PROGRESS && !fullyFunded && campaign.status !== Campaign.ARCHIVED;
+    return status === Trace.IN_PROGRESS && !fullyFunded && !campaign.isArchived;
   };
 
   const renderDescription = () => DescriptionRender(trace.description);

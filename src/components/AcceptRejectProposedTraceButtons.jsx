@@ -14,6 +14,7 @@ import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 import { txNotification } from '../lib/helpers';
+import Campaign from '../models/Campaign';
 
 const AcceptRejectProposedTraceButtons = ({ trace }) => {
   const conversationModal = useRef();
@@ -142,16 +143,18 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
     <Fragment>
       {trace.canUserAcceptRejectProposal(currentUser) && (
         <span>
-          <button
-            type="button"
-            className="btn btn-success btn-sm m-1"
-            onClick={() =>
-              isForeignNetwork ? acceptProposedTrace() : displayForeignNetRequiredWarning()
-            }
-          >
-            <i className="fa fa-check-square-o" />
-            &nbsp;Accept
-          </button>
+          {trace.campaign.status !== Campaign.ARCHIVED && (
+            <button
+              type="button"
+              className="btn btn-success btn-sm m-1"
+              onClick={() =>
+                isForeignNetwork ? acceptProposedTrace() : displayForeignNetRequiredWarning()
+              }
+            >
+              <i className="fa fa-check-square-o" />
+              &nbsp;Accept
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-danger btn-sm m-1"
