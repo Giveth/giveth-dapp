@@ -44,7 +44,7 @@ export default (type, title, successCallback) => {
       </Fragment>
     ),
     cancelText: 'Dismiss',
-    okText: 'Yes, Delete',
+    okText: 'Yes, Cancel',
     centered: true,
     width: 500,
     onOk: () => {
