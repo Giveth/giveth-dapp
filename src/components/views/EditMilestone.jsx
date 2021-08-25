@@ -1,5 +1,5 @@
 import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 
@@ -20,8 +20,8 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
+import { TraceSave } from '../../lib/traceSave';
 
 function EditMilestone(props) {
   const {
@@ -163,81 +163,14 @@ function EditMilestone(props) {
 
     setLoading(true);
 
-    await TraceService.save({
+    TraceSave({
       trace: ms,
-      from: currentUser.address,
-      afterSave: (created, txUrl, res) => {
-        let notificationDescription;
-        const analyticsData = {
-          title: ms.title,
-          ownerAddress: ms.ownerAddress,
-          traceType: ms.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: ms.reviewerAddress,
-          recipientAddress: ms.recipientAddress,
-          userAddress: currentUser.address,
-        };
-        if (created) {
-          if (!userIsCampaignOwner) {
-            notificationDescription = 'Milestone proposed to the Campaign Owner';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          } else {
-            notificationDescription = 'The Milestone has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          }
-        } else if (txUrl) {
-          notificationDescription = (
-            <p>
-              Your Milestone is pending....
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          notificationDescription = 'Your Milestone has been updated!';
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        }
-
-        if (notificationDescription) {
-          notification.info({ description: notificationDescription });
-        }
-        setLoading(false);
-        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
-      },
-      afterMined: (created, txUrl) => {
-        notification.success({
-          description: (
-            <p>
-              Your Milestone has been updated!
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          ),
-        });
-      },
-      onError(message, err) {
-        setLoading(false);
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 

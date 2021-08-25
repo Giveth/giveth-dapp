@@ -14,6 +14,8 @@ import { Context as NotificationContext } from '../contextProviders/Notification
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { txNotification } from '../lib/helpers';
+import CampaignService from '../services/CampaignService';
 
 const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -57,29 +59,9 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
 
           if (!proceed) return;
 
-          const afterSave = txUrl => {
-            React.toast.info(
-              <p>
-                Archiving this Trace...
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterSave = txUrl => txNotification('Archiving this Trace...', txUrl, true);
 
-          const afterMined = txUrl => {
-            React.toast.success(
-              <p>
-                The Trace has been archived!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl => txNotification('The Trace has been archived!', txUrl);
 
           const onError = (_, err) => {
             if (err === 'patch-error') {
@@ -104,7 +86,13 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
           } else {
             const campaign = new Campaign(trace.campaign);
             campaign.archivedTraces.add(trace.projectId);
-            campaign.save(afterSave, afterMined, web3).then();
+            CampaignService.save(
+              campaign,
+              campaign.owner.address,
+              ({ txUrl }) => afterSave(txUrl),
+              afterMined,
+              web3,
+            ).then();
           }
         })
         .catch(err => {

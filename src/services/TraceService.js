@@ -3,6 +3,7 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { notification } from 'antd';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
@@ -10,7 +11,6 @@ import TraceFactory from 'models/TraceFactory';
 import { feathersClient } from 'lib/feathersClient';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationBlockchainService from 'services/DonationBlockchainService';
-import { toast } from 'react-toastify';
 import { MilestoneFactory } from '@giveth/lpp-milestones';
 import { LPPCappedMilestoneFactory } from '@giveth/lpp-capped-milestone';
 import Trace from '../models/Trace';
@@ -402,7 +402,7 @@ class TraceService {
       });
       if (response.total && response.total > 0) {
         const message = 'A trace with this title already exists. Please select a different title.';
-        ErrorHandler({ message }, message, true);
+        ErrorHandler({ message }, message);
         return onError();
       }
       if (trace.maxAmount && trace.isCapped) {
@@ -428,7 +428,7 @@ class TraceService {
           res = await traces.create(trace.toFeathers());
         }
 
-        afterSave(true, null, TraceFactory.create(res));
+        afterSave(false, TraceFactory.create(res));
         return true;
       }
 
@@ -438,7 +438,7 @@ class TraceService {
         if (!profileHash) {
           res = await traces.patch(trace._id, trace.toFeathers());
         }
-        afterSave(null, false, res);
+        afterSave(false, res);
         return true;
       }
 
@@ -457,7 +457,7 @@ class TraceService {
         } else if (trace instanceof LPPCappedTrace) {
           // LPPCappedTrace has no update function, so just update feathers
           res = await traces.patch(trace._id, trace.toFeathers());
-          afterSave(null, false, res);
+          afterSave(false, res);
           return true;
         }
       } else {
@@ -485,10 +485,10 @@ class TraceService {
           // create trace in feathers
           res = await traces.create(trace.toFeathers(txHash));
         }
-        afterSave(false, `${etherScanUrl}tx/${txHash}`, res);
+        afterSave(`${etherScanUrl}tx/${txHash}`, res);
       });
 
-      afterMined(!trace.projectId, `${etherScanUrl}tx/${txHash}`, res._id);
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       const message = `Something went wrong with the Trace ${
         trace.projectId > 0 ? 'update' : 'creation'
@@ -574,7 +574,10 @@ class TraceService {
           trace.image = await IPFSService.upload(trace.image);
           trace.newImage = false;
         } catch (err) {
-          toast.error('Failed to upload trace image to ipfs');
+          notification.error({
+            message: '',
+            description: 'Failed to upload trace image to ipfs',
+          });
           return undefined;
         }
       }
@@ -587,7 +590,10 @@ class TraceService {
               traceItem.image = await IPFSService.upload(traceItem.image);
               traceItem.newImage = false;
             } catch (err) {
-              toast.error('Failed to upload trace item image to ipfs');
+              notification.error({
+                message: '',
+                description: 'Failed to upload trace item image to ipfs',
+              });
               return undefined;
             }
           }

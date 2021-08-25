@@ -322,9 +322,16 @@ class CampaignService {
    * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    * @param web3  Web3  instance
-   * @param tokenWhitelist  tokenWhitelist
+   * @param networkOnly Do not send to DB
    */
-  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}, web3) {
+  static async save(
+    campaign,
+    from,
+    afterSave = () => {},
+    afterMined = () => {},
+    web3,
+    networkOnly,
+  ) {
     if (campaign.id && campaign.projectId === 0) {
       throw new Error(
         'You must wait for your Campaign to be creation to finish before you can update it',
@@ -347,15 +354,9 @@ class CampaignService {
         if (!profileHash) {
           response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
-        afterSave(null, false);
-        afterSave({
-          err: null,
-          mined: false,
-          txUrl: '',
-          response: response || campaign,
-        });
+        afterSave({ response: response || campaign });
 
-        afterMined(false, undefined, campaign.id);
+        afterMined(false);
         return;
       }
 
@@ -386,31 +387,26 @@ class CampaignService {
         );
       }
 
-      let { id } = campaign;
       await promise.once('transactionHash', async hash => {
         txHash = hash;
         let response;
-        if (campaign.id) {
-          response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
-        } else {
-          response = await campaigns.create(campaign.toFeathers(txHash));
-          id = response._id;
+        if (!networkOnly) {
+          if (campaign.id) {
+            response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+          } else {
+            response = await campaigns.create(campaign.toFeathers(txHash));
+          }
         }
-        afterSave({
-          err: null,
-          mined: !campaign.projectId,
-          txUrl: `${etherScanUrl}tx/${txHash}`,
-          response,
-        });
+        afterSave({ txUrl: `${etherScanUrl}tx/${txHash}`, response, txHash, profileHash });
       });
 
-      afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       const message = `Something went wrong with the Campaign ${
         campaign.projectId > 0 ? 'update' : 'creation'
-      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      }. View transaction ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       ErrorHandler(err, message);
-      afterSave(err);
+      afterSave({ err });
     }
   }
 
@@ -424,52 +420,14 @@ class CampaignService {
    * @param owner       Address of the user that will own the Campaign
    * @param coowner     Address of the user that will coown the Campaign
    * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
-   * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static changeOwnership(
-    campaign,
-    from,
-    owner,
-    coowner,
-    afterCreate = () => {},
-    afterMined = () => {},
-  ) {
+  static changeOwnership(campaign, from, owner, coowner, afterCreate = () => {}) {
     campaigns
       .patch(campaign.id, {
         ownerAddress: owner,
         coownerAddress: coowner,
       })
-      .then(() => {
-        afterCreate();
-        afterMined();
-      })
-      .catch(err => {
-        ErrorPopup('Something went wrong with updating campaign', err);
-      });
-  }
-
-  /**
-   * Change funds forwarder address on a campaign
-   *
-   * //TODO: update contact for transaction on this
-   *
-   * @param campaignId    Campaign ID to be modified
-   * @param address        Address of the funds forwarder
-   */
-  static addFundsForwarderAddress(
-    campaignId,
-    address,
-    afterCreate = () => {},
-    afterMined = () => {},
-  ) {
-    campaigns
-      .patch(campaignId, {
-        fundsForwarder: address,
-      })
-      .then(() => {
-        afterCreate();
-        afterMined();
-      })
+      .then(afterCreate)
       .catch(err => {
         ErrorPopup('Something went wrong with updating campaign', err);
       });

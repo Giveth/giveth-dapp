@@ -1,5 +1,5 @@
 import React, { Fragment, memo, useContext, useEffect, useState } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import useCampaign from '../../hooks/useCampaign';
@@ -9,10 +9,8 @@ import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import LPTrace from '../../models/LPTrace';
 import { Trace } from '../../models';
-import { TraceService } from '../../services';
 import config from '../../configuration';
 import { authenticateUser } from '../../lib/middleware';
-import ErrorHandler from '../../lib/ErrorHandler';
 import {
   TraceCampaignInfo,
   TraceDescription,
@@ -20,8 +18,8 @@ import {
   TraceReviewer,
   TraceTitle,
 } from '../EditTraceCommons';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
+import { TraceSave } from '../../lib/traceSave';
 
 function CreateMilestone(props) {
   const {
@@ -113,76 +111,14 @@ function CreateMilestone(props) {
 
       setLoading(true);
 
-      await TraceService.save({
+      TraceSave({
         trace: ms,
-        from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
-          const analyticsData = {
-            traceId: res._id,
-            slug: res.slug,
-            parentCampaignAddress: campaign.ownerAddress,
-            traceRecipientAddress: res.recipientAddress,
-            title: ms.title,
-            ownerAddress: ms.ownerAddress,
-            traceType: ms.formType,
-            parentCampaignId: campaign.id,
-            parentCampaignTitle: campaign.title,
-            reviewerAddress: ms.reviewerAddress,
-            userAddress: currentUser.address,
-          };
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Milestone proposed to the Campaign Owner';
-              sendAnalyticsTracking('Trace Create', {
-                action: 'proposed',
-                ...analyticsData,
-              });
-            }
-          } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Trace is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            sendAnalyticsTracking('Trace Create', {
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            const notificationError =
-              'It seems your Milestone has been updated!, this should not be happened';
-            notification.error({ description: notificationError });
-          }
-
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
-          setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
-        },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Milestone has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
-        onError(message, err) {
-          setLoading(false);
-          return ErrorHandler(err, message);
-        },
+        userIsCampaignOwner,
+        campaign,
         web3,
+        from: currentUser.address,
+        afterSave: () => setLoading(false),
+        onError: () => setLoading(false),
       });
     }
   };

@@ -48,7 +48,7 @@ const DelegateMultipleButton = props => {
   return (
     <Fragment>
       <Button
-        type="text"
+        className="ant-btn-delegate"
         onClick={() => {
           if (validProvider && !isForeignNetwork) {
             displayForeignNetRequiredWarning();

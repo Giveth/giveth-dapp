@@ -12,6 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
 
 const CancelTraceButton = ({ trace, className }) => {
   const {
@@ -65,27 +66,9 @@ const CancelTraceButton = ({ trace, className }) => {
                     txUrl,
                   });
 
-                  React.toast.info(
-                    <p>
-                      Canceling this Trace is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Canceling this Trace is pending...', txUrl, true);
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace has been cancelled!
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl => txNotification('The Trace has been cancelled!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
                     ErrorPopup('Something went wrong with canceling your Trace', err);

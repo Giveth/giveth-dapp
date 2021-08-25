@@ -1,0 +1,148 @@
+@font-face {
+  font-family: 'TeX-Gyre-Adventor';
+  src: local('TeX-Gyre-Adventor'), url('../assets/fonts/texgyreadventor-regular.woff') format('woff');
+  font-weight: normal;
+}
+@font-face {
+  font-family: 'TeX-Gyre-Adventor';
+  src: local('TeX-Gyre-Adventor'), url('../assets/fonts/texgyreadventor-bold.woff') format('woff');
+  font-weight: bold;
+}
+
+#verification {
+  $purple: #3C14C4;
+  $darkBlue: #253D85;
+  $pink: #E1458D;
+
+  color: white;
+  font-family: 'Red Hat Text', sans-serif;
+  font-size: 16px;
+
+  > h1 {
+    font-family: TeX-Gyre-Adventor, sans-serif;
+    font-size: 55px;
+    font-weight: 700;
+    line-height: 77px;
+    color: $darkBlue;
+  }
+
+  h6 {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24px;
+    color: white;
+    margin-bottom: 0;
+  }
+
+  .link-small {
+    font-family: 'Red Hat Display', sans-serif;
+    font-size: 14px;
+    line-height: 28px;
+    color: #CABAFF;
+  }
+
+  .profile-value {
+    font-size: 18px;
+    line-height: 28px;
+  }
+
+  .verification-header {
+    button {
+      color: $pink;
+      border-color: $pink;
+      font-family: TeX-Gyre-Adventor, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 20px;
+      border-radius: 50px;
+      border-width: 2px;
+      padding: 0 24px;
+    }
+  }
+
+  .verification-subtitle {
+    color: #303B72;
+    font-size: 25px;
+    line-height: 35px;
+  }
+
+  .verification-steps {
+    > div {
+      font-size: 14px;
+      line-height: 19px;
+      text-align: left;
+      color: $purple;
+      Opacity: 40%;
+      border-bottom: $purple solid 8px;
+      width: 100%;
+      padding-bottom: 10px;
+    }
+
+    .verification-steps-active {
+      Opacity: 100%;
+    }
+  }
+
+  .verification-body {
+    background-color: $purple;
+    width: 100%;
+    h2 {
+      font-family: 'Red Hat Display', sans-serif;
+      font-size: 35px;
+      line-height: 61px;
+      color: white;
+    }
+    button {
+      color: white;
+      height: 60px;
+      padding: 4px 60px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border-radius: 50px;
+
+      &.connect-wallet-btn {
+        border-color: transparent;
+        background: $pink;
+      }
+    }
+  }
+
+  .verification-arcs {
+    div:nth-child(1) {
+      border-radius: 50%;
+      border-width: 40px;
+      border-style: solid;
+      border-color: #5cc8e0 #5cc8e0 transparent transparent;
+      position: fixed;
+      bottom: -1206px;
+      right: 250px;
+      width: 1600px;
+      height: 1600px;
+      z-index: -2;
+      transform: rotate(41deg);
+    }
+    div:nth-child(2) {
+      border-radius: 50%;
+      border-width: 64px;
+      border-style: solid;
+      position: fixed;
+      border-color: #5326ec;
+      bottom: -350px;
+      left: -350px;
+      width: 700px;
+      height: 700px;
+      z-index: -1;
+    }
+  }
+
+  .custom-title {
+    font-family: TeX-Gyre-Adventor, sans-serif;
+    font-size: 40px;
+    line-height: 61px;
+    color: #FED670;
+    text-align: left;
+    margin-bottom: 20px;
+    letter-spacing: 0.8px;
+  }
+}

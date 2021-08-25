@@ -1,4 +1,3 @@
-import React from 'react';
 import { LPPCampaign } from '@giveth/lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
@@ -12,14 +11,13 @@ import Campaign from '../models/Campaign';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import config from '../configuration';
-
 import ErrorHandler from '../lib/ErrorHandler';
-import ErrorPopup from '../components/ErrorPopup';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 import {
   convertUsdValueToEthValue,
   getConversionRateBetweenTwoSymbol,
 } from './ConversionRateService';
+import { txNotification } from '../lib/helpers';
 
 const etherScanUrl = config.etherscan;
 
@@ -37,7 +35,7 @@ function updateExistingDonation(donation, amount, status) {
     .service('donations')
     .patch(donation.id, mutation)
     .catch(err => {
-      ErrorPopup('Unable to update the donation in feathers', err);
+      ErrorHandler(err, 'Unable to update the donation in feathers');
     });
 }
 
@@ -61,46 +59,18 @@ const createAllowance = (
   const opts = { from: tokenHolderAddress };
   if (nonce) opts.nonce = nonce;
 
-  let txHash;
   return token.methods
     .approve(config.givethBridgeAddress, amount)
     .send(opts)
     .on('transactionHash', transactionHash => {
-      txHash = transactionHash;
-
+      const txUrl = `${config.homeEtherscan}tx/${transactionHash}`;
       if (amount === 0) {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...
-            <br />
-            <strong>
-              You will be asked to make another transaction to set the correct allowance!
-            </strong>
-            <br />
-            <a
-              href={`${config.homeEtherscan}tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View transaction
-            </a>
-          </p>,
+        txNotification(
+          'Please wait until your transaction is mined. You will be asked to make another transaction to set the correct allowance!',
+          txUrl,
+          true,
         );
-      } else {
-        React.toast.info(
-          <p>
-            Please wait until your transaction is mined...
-            <br />
-            <a
-              href={`${config.homeEtherscan}tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View transaction
-            </a>
-          </p>,
-        );
-      }
+      } else txNotification('Please wait until your transaction is mined...', txUrl, true);
     });
 };
 
@@ -269,7 +239,7 @@ class DonationBlockchainService {
             .create(newDonation)
             .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
             .catch(err => {
-              ErrorPopup('Unable to update the donation in feathers', err);
+              ErrorHandler(err, 'Unable to update the donation in feathers!');
               onError(err);
             });
           const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
@@ -386,7 +356,7 @@ class DonationBlockchainService {
           .create(newDonation)
           .then(() => onCreated(txLink))
           .catch(err => {
-            ErrorPopup('Unable to create the donation in feathers', err);
+            ErrorHandler(err, 'Unable to create the donation in feathers');
             onError(err);
           });
         DonationBlockchainService.sendDelegateAnalyticsData({
@@ -585,7 +555,7 @@ class DonationBlockchainService {
             onCreated(`${etherScanUrl}tx/${txHash}`);
           })
           .catch(err => {
-            ErrorPopup('Something went wrong while committing your donation.', err);
+            ErrorHandler(err, 'Something went wrong while committing your donation.');
           });
 
         const txLink = `${etherScanUrl}tx/${txHash}`;
@@ -656,7 +626,7 @@ class DonationBlockchainService {
           .create(newDonation)
           .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
           .catch(err => {
-            ErrorPopup('Something went wrong while revoking your donation.', err);
+            ErrorHandler(err, 'Something went wrong while revoking your donation.');
           });
       })
       .then(() => {
@@ -698,25 +668,12 @@ class DonationBlockchainService {
     const allowanceNumber = new BigNumber(allowance);
 
     if (!allowanceNumber.isZero()) {
-      let txHash;
       await token.methods
         .approve(config.givethBridgeAddress, '0')
         .send({ from: tokenHolderAddress })
         .on('transactionHash', transactionHash => {
-          txHash = transactionHash;
-          React.toast.info(
-            <p>
-              Please wait until your transaction is mined...
-              <br />
-              <a
-                href={`${config.homeEtherscan}tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View transaction
-              </a>
-            </p>,
-          );
+          const txUrl = `${config.homeEtherscan}tx/${transactionHash}`;
+          txNotification('Please wait until your transaction is mined...', txUrl, true);
         });
     }
   }

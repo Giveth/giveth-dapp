@@ -1,5 +1,6 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
@@ -12,6 +13,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
 
 const AcceptRejectProposedTraceButtons = ({ trace }) => {
   const conversationModal = useRef();
@@ -41,7 +43,10 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
             trace,
             message: proof.message,
             onSuccess: () => {
-              React.toast.info(<p>The proposed Trace has been rejected.</p>);
+              notification.info({
+                message: '',
+                description: 'The proposed Trace has been rejected.',
+              });
               sendAnalyticsTracking('Trace Rejected', {
                 category: 'Trace',
                 action: 'rejected proposed Trace',
@@ -51,6 +56,12 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 traceType: trace.formType,
                 traceRecipientAddress: trace.recipientAddress,
                 parentCampaignId: trace.campaign._id,
+                slug: trace.slug,
+                ownerAddress: trace.ownerAddress,
+                traceOwnerName: trace.owner.name,
+                traceOwnerAddress: trace.ownerAddress,
+                parentCampaignTitle: trace.campaign.title,
+                parentCampaignAddress: trace.campaign.ownerAddress,
                 reviewerAddress: trace.reviewerAddress,
                 userAddress: currentUser.address,
               });
@@ -100,28 +111,9 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     userAddress: currentUser.address,
                     txUrl,
                   });
-
-                  React.toast.info(
-                    <p>
-                      Accepting this Trace is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Accepting this Trace is pending...', txUrl, true);
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace has been accepted!
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl => txNotification('The Trace has been accepted!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
                     ErrorPopup('Something went wrong with accepting this proposed Trace', err);
