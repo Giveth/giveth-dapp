@@ -336,6 +336,18 @@ const ViewCampaign = ({ match }) => {
               />
 
               <div className="container mt-4">
+                {campaign.status === Campaign.ARCHIVED && (
+                  <div className="alert alert-info py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-info-circle fa-2x mr-3" />
+                    This campaign is archived. It no longer accepts funds, nor its traces.
+                  </div>
+                )}
+                {campaign.status === Campaign.CANCELED && (
+                  <div className="alert alert-danger py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-exclamation-triangle fa-2x mr-3" />
+                    This Campaign has been cancelled.
+                  </div>
+                )}
                 <div>
                   {campaign.myStatus !== Campaign.CANCELED && (
                     <div>
@@ -369,14 +381,7 @@ const ViewCampaign = ({ match }) => {
                   </div>
 
                   <div className="card content-card ">
-                    <div className="card-body content">
-                      {renderDescription()}
-                      {campaign.myStatus === Campaign.CANCELED && (
-                        <div className="mt-3" style={{ color: 'red' }}>
-                          This Campaign has been cancelled.
-                        </div>
-                      )}
-                    </div>
+                    <div className="card-body content">{renderDescription()}</div>
 
                     {campaign.communityUrl && (
                       <div className="pl-3 pb-4">
