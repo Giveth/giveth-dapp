@@ -35,20 +35,34 @@ function ChangeTraceRecipientButton({ trace }) {
       checkBalance(balance)
         .then(async () => {
           try {
+            const ifChangeRecipient = await new Promise(resolve =>
+              Modal.confirm({
+                title: `${trace.hasRecipient ? 'Change' : 'Set'} Trace Recipient?`,
+                content: `Are you sure you want to ${
+                  trace.hasRecipient ? 'change' : 'set'
+                } the Trace
+                    recipient? This action can not be undone.`,
+                cancelText: 'Cancel',
+                okText: 'Yes',
+                centered: true,
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              }),
+            );
+
+            if (!ifChangeRecipient) return;
+
             const isNewRecipient = await new Promise(resolve =>
               Modal.confirm({
-                title: 'Change Trace Recipient?',
+                title: `${trace.hasRecipient ? 'Change' : 'Set'} Trace Recipient?`,
                 content: (
                   <Fragment>
-                    <p>
-                      {`Are you sure you want to ${trace.hasRecipient ? 'change' : 'set'} the Trace
-                      recipient? This action can not be undone.`}
-                    </p>
+                    <p>{`${trace.hasRecipient ? 'New recipient' : 'Recipient'} address:`}</p>
                     <Input onChange={setNewRecipient} className="rounded" />
                   </Fragment>
                 ),
                 cancelText: 'Cancel',
-                okText: 'Yes',
+                okText: trace.hasRecipient ? 'Change recipient' : 'Set recipient',
                 centered: true,
                 onOk: () => resolve(true),
                 onCancel: () => resolve(false),
