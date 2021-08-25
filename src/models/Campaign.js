@@ -175,40 +175,28 @@ class Campaign extends BasicModel {
     );
   }
 
-  archive(web3, from, afterSave, unarchive) {
-    const _afterMined = txUrl =>
-      txNotification(`Your Campaign has been ${unarchive ? 'unarchived!' : 'archived!'}`, txUrl);
+  archive(from, onSuccess, unarchive) {
+    const _onSuccess = response => {
+      txNotification(`Your Campaign has been ${unarchive ? 'unarchived!' : 'archived!'}`);
+      const analyticsData = {
+        userAddress: from,
+        slug: response.slug,
+        reviewerAddress: this.reviewerAddress,
+        campaignOwnerAddress: this.ownerAddress,
+        title: this.title,
+        campaignId: response._id,
+      };
+      sendAnalyticsTracking(`Campaign ${unarchive ? 'unarchived' : 'archived'}`, {
+        category: 'Campaign',
+        action: 'edited',
+        ...analyticsData,
+      });
 
-    const _afterSave = props => {
-      const { txUrl, response, err } = props;
-
-      if (!err) {
-        txNotification(
-          `Your Campaign is being ${unarchive ? 'unarchived!' : 'archived!'}`,
-          txUrl,
-          true,
-        );
-        const analyticsData = {
-          userAddress: from,
-          slug: response.slug,
-          reviewerAddress: this.reviewerAddress,
-          campaignOwnerAddress: this.ownerAddress,
-          title: this.title,
-          campaignId: response._id,
-          txUrl,
-        };
-        sendAnalyticsTracking(`Campaign ${unarchive ? 'unarchived!' : 'archived!'}`, {
-          category: 'Campaign',
-          action: 'edited',
-          ...analyticsData,
-        });
-      }
-
-      afterSave();
+      onSuccess();
     };
 
     this.myStatus = unarchive ? Campaign.ACTIVE : Campaign.ARCHIVED;
-    return CampaignService.save(this, from, _afterSave, _afterMined, web3);
+    return CampaignService.archive(this, _onSuccess);
   }
 
   /**

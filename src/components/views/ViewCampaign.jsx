@@ -305,7 +305,7 @@ const ViewCampaign = ({ match }) => {
                 <ArchiveCampaignButton
                   campaign={campaign}
                   className="m-1 ghostButtonHeader"
-                  onArchive={getCampaign}
+                  onSuccess={getCampaign}
                 />
 
                 {campaign.canReceiveDonate && (
