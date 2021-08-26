@@ -784,13 +784,6 @@ const DonateButtonModal = props => {
 
                 {!zeroBalance && (
                   <Fragment>
-                    {showCustomAddress && (
-                      <div className="alert alert-success py-1 mb-1">
-                        <i className="fa fa-exclamation-triangle" />
-                        The donation will be donated on behalf of address:
-                      </div>
-                    )}
-
                     <div className="mb-1">
                       <Checkbox
                         checked={showCustomAddress}
@@ -802,6 +795,12 @@ const DonateButtonModal = props => {
                         </div>
                       </Checkbox>
                     </div>
+                    {showCustomAddress && (
+                      <div className="alert alert-success py-1 mb-1">
+                        <i className="fa fa-exclamation-triangle" />
+                        The donation will be donated on behalf of address:
+                      </div>
+                    )}
                     {showCustomAddress && (
                       <Form.Item
                         className="mb-0"
