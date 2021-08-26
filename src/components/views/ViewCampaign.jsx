@@ -38,6 +38,7 @@ import ProjectSubscription from '../ProjectSubscription';
 import SearchAnimation from '../../assets/search-file.json';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
+import ArchiveCampaignButton from '../ArchiveCampaignButton';
 
 /**
  * The Campaign detail view mapped to /campaing/id
@@ -301,6 +302,11 @@ const ViewCampaign = ({ match }) => {
                   className="m-1 ghostButtonHeader"
                   onCancel={getCampaign}
                 />
+                <ArchiveCampaignButton
+                  campaign={campaign}
+                  className="m-1 ghostButtonHeader"
+                  onSuccess={getCampaign}
+                />
 
                 {campaign.canReceiveDonate && (
                   <div className="mt-4">
@@ -330,6 +336,18 @@ const ViewCampaign = ({ match }) => {
               />
 
               <div className="container mt-4">
+                {campaign.status === Campaign.ARCHIVED && (
+                  <div className="alert alert-info py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-info-circle fa-2x mr-3" />
+                    This campaign is archived. It no longer accepts funds, nor its traces.
+                  </div>
+                )}
+                {campaign.status === Campaign.CANCELED && (
+                  <div className="alert alert-danger py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-exclamation-triangle fa-2x mr-3" />
+                    This Campaign has been cancelled.
+                  </div>
+                )}
                 <div>
                   {campaign.myStatus !== Campaign.CANCELED && (
                     <div>
@@ -344,7 +362,7 @@ const ViewCampaign = ({ match }) => {
                     </ProjectViewActionAlert>
                   )}
 
-                  {userIsOwner && campaign.myStatus !== Campaign.CANCELED && (
+                  {userIsOwner && campaign.status !== Campaign.CANCELED && !campaign.isArchived && (
                     <ProjectViewActionAlert message="Change Co-Owner of Campaign">
                       <ChangeOwnershipButton campaign={campaign} />
                     </ProjectViewActionAlert>
@@ -363,14 +381,7 @@ const ViewCampaign = ({ match }) => {
                   </div>
 
                   <div className="card content-card ">
-                    <div className="card-body content">
-                      {renderDescription()}
-                      {campaign.myStatus === Campaign.CANCELED && (
-                        <div className="mt-3" style={{ color: 'red' }}>
-                          This Campaign has been cancelled.
-                        </div>
-                      )}
-                    </div>
+                    <div className="card-body content">{renderDescription()}</div>
 
                     {campaign.communityUrl && (
                       <div className="pl-3 pb-4">

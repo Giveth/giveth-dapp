@@ -66,7 +66,7 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
           className={`btn btn-danger btn-sm ${className}`}
           onClick={cancelCampaign}
         >
-          <i className="fa fa-ban mr-2" />
+          <i className="fa fa-trash-o mr-2" />
           &nbsp;Cancel
         </button>
       )}

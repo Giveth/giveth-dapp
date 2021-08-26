@@ -210,7 +210,7 @@ const ViewTrace = props => {
 
   const isActiveTrace = () => {
     const { fullyFunded, status } = trace;
-    return status === Trace.IN_PROGRESS && !fullyFunded;
+    return status === Trace.IN_PROGRESS && !fullyFunded && !campaign.isArchived;
   };
 
   const renderDescription = () => DescriptionRender(trace.description);
@@ -362,6 +362,15 @@ const ViewTrace = props => {
               />
 
               <div className="container mt-4">
+                {campaign.status === Campaign.ARCHIVED && (
+                  <div className="alert alert-info py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-info-circle fa-2x mr-3" />
+                    <div>
+                      Due to <strong>{campaign.title}</strong> campaign is archived, This Trace no
+                      longer accepts funds.
+                    </div>
+                  </div>
+                )}
                 <div className="mx-auto">
                   <h5 className="title">Subscribe to updates </h5>
                   <ProjectSubscription projectTypeId={trace._id} projectType="trace" />

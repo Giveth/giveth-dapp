@@ -410,27 +410,32 @@ class CampaignService {
     }
   }
 
+  // For Archiving and UnArchiving campaigns
+  static archive(campaign, afterSave) {
+    campaigns
+      .patch(campaign.id, { status: campaign.status })
+      .then(afterSave)
+      .catch(err => ErrorHandler(err, 'Something went wrong with updating campaign'));
+  }
+
   /**
    * Change ownership from campaign
    *
    * //TODO: update contact for transaction on this
    *
    * @param campaign    Campaign to be modified
-   * @param from        Address of the user changing the Campaign
    * @param owner       Address of the user that will own the Campaign
    * @param coowner     Address of the user that will coown the Campaign
    * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
    */
-  static changeOwnership(campaign, from, owner, coowner, afterCreate = () => {}) {
+  static changeOwnership(campaign, owner, coowner, afterCreate = () => {}) {
     campaigns
       .patch(campaign.id, {
         ownerAddress: owner,
         coownerAddress: coowner,
       })
       .then(afterCreate)
-      .catch(err => {
-        ErrorPopup('Something went wrong with updating campaign', err);
-      });
+      .catch(err => ErrorHandler(err, 'Something went wrong with updating campaign'));
   }
 
   /**

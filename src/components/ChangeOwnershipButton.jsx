@@ -65,13 +65,7 @@ const ChangeOwnershipButton = props => {
       setModalVisible(false);
     };
 
-    CampaignService.changeOwnership(
-      campaign,
-      currentUser.address,
-      campaign.ownerAddress,
-      coownerAddress,
-      afterCreate,
-    );
+    CampaignService.changeOwnership(campaign, campaign.ownerAddress, coownerAddress, afterCreate);
   };
 
   // Set initial value for select component
