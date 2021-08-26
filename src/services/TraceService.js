@@ -940,8 +940,8 @@ class TraceService {
    * @param web3
    */
 
-  static changeRecipient({ trace, from, newRecipient, onConfirmation, web3 }) {
-    let txHash;
+  static changeRecipient({ trace, from, newRecipient, onTxHash, onConfirmation, web3 }) {
+    let txUrl;
 
     const traceContract = trace.contract(web3);
 
@@ -951,11 +951,12 @@ class TraceService {
         $extraGas: extraGas(),
       })
       .once('transactionHash', async hash => {
-        txHash = hash;
+        txUrl = `${etherScanUrl}tx/${hash}`;
+        onTxHash(txUrl);
       })
-      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .on('receipt', () => onConfirmation(txUrl))
       .catch(err => {
-        ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
+        ErrorHandler(err, txUrl);
       });
   }
 
