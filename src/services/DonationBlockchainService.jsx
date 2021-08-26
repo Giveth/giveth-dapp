@@ -1,8 +1,8 @@
-import { LPPCampaign } from 'lpp-campaign';
+import { LPPCampaign } from '@giveth/lpp-campaign';
 import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
 import { paramsForServer } from 'feathers-hooks-common';
-import { LiquidPledging } from 'giveth-liquidpledging';
+import { LiquidPledging } from '@giveth/liquidpledging-contract';
 
 import Donation from '../models/Donation';
 import Community from '../models/Community';
