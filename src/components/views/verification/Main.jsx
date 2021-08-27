@@ -13,7 +13,6 @@ import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import config from '../../../configuration';
 import { authenticateUser, checkBalance, checkForeignNetwork } from '../../../lib/middleware';
-import ErrorPopup from '../../ErrorPopup';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import Campaign from '../../../models/Campaign';
 import User from '../../../models/User';
@@ -142,13 +141,8 @@ const Verification = props => {
           checkBalance(balance)
             .then(() => setFormIsValid(true))
             .catch(err => {
-              if (err === 'noBalance') {
-                ErrorPopup('Insufficient balance!', err);
-                setFormIsValid(false);
-              } else {
-                ErrorPopup('Something went wrong!', err);
-                setFormIsValid(false);
-              }
+              ErrorHandler(err, 'Something went wrong on getting user balance.');
+              setFormIsValid(false);
             });
         }),
       )

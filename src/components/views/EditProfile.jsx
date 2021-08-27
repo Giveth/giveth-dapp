@@ -6,12 +6,12 @@ import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/m
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
-import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import UploadPicture from '../UploadPicture';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -76,12 +76,8 @@ const EditProfile = () => {
               });
             })
             .catch(err => {
-              if (err === 'noBalance') {
-                ErrorPopup('Something went wrong.', err);
-                history.goBack();
-              } else {
-                setIsLoading(false);
-              }
+              ErrorHandler(err, 'Something went wrong on getting user balance.');
+              setIsLoading(false);
             });
         }),
       )

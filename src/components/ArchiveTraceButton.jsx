@@ -95,13 +95,7 @@ const ArchiveTraceButton = ({ trace, isAmountEnoughForWithdraw }) => {
             ).then();
           }
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorHandler(err, 'There is no balance left on the account.');
-          } else if (err !== undefined) {
-            ErrorHandler(err, 'Something went wrong while archiving.');
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong while archiving.'));
     });
   };
 

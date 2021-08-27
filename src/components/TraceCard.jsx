@@ -8,12 +8,12 @@ import { getTruncatedText, getUserAvatar, getUserName, history } from '../lib/he
 import { checkBalance } from '../lib/middleware';
 import CardStats from './CardStats';
 import GivethLogo from '../assets/logo.svg';
-import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import ErrorHandler from '../lib/ErrorHandler';
 
 /**
  * A single trace
@@ -57,13 +57,7 @@ const TraceCard = ({ trace }) => {
             history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
           }
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     },
     [balance, trace],
   );

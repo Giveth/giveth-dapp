@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import BigNumber from 'bignumber.js';
 import { Modal } from 'antd';
 import Web3 from 'web3';
-
 import PropTypes from 'prop-types';
 
 import Donation from 'models/Donation';
-import ErrorPopup from '../../ErrorPopup';
 import { authenticateUser, checkBalance } from '../../../lib/middleware';
 import User from '../../../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
+import ErrorHandler from '../../../lib/ErrorHandler';
 
 const modalStyles = {
   minWidth: '60%',
@@ -38,16 +37,7 @@ class DelegateButton extends Component {
           modalVisible: true,
         });
       })
-      .catch(err => {
-        // error code 4001 means user has canceled the transaction
-        if (err.code !== 4001) {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        }
-      });
+      .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
   }
 
   closeDialog() {
