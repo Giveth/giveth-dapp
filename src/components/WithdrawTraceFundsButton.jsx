@@ -141,13 +141,9 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
               }),
           });
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorHandler(err, 'There is no balance left on the account.', true);
-          } else if (err !== undefined) {
-            ErrorHandler(err, 'Something went wrong.', true);
-          }
-        });
+        .catch(err =>
+          ErrorHandler(err, 'Something went wrong on getting user balance or donation counts.'),
+        );
     });
   }
 

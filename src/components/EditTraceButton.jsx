@@ -4,12 +4,12 @@ import PropTypes from 'prop-types';
 import Trace from 'models/Trace';
 import { authenticateUser, checkBalance } from 'lib/middleware';
 import { history } from 'lib/helpers';
-import ErrorPopup from './ErrorPopup';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const EditTraceButton = ({ trace, className }) => {
   const {
@@ -40,13 +40,7 @@ const EditTraceButton = ({ trace, className }) => {
             history.push(`/campaigns/${trace.campaignId}/traces/${trace._id}/edit`);
           }
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 

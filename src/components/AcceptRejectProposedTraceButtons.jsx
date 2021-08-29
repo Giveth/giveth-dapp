@@ -15,6 +15,7 @@ import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
 import { txNotification } from '../lib/helpers';
 import Campaign from '../models/Campaign';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const AcceptRejectProposedTraceButtons = ({ trace }) => {
   const conversationModal = useRef();
@@ -129,13 +130,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
               });
             }),
         )
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 

@@ -4,7 +4,6 @@ import { utils } from 'web3';
 import { Modal, Input } from 'antd';
 
 import TraceService from 'services/TraceService';
-import ErrorPopup from 'components/ErrorPopup';
 import { authenticateUser, checkBalance } from 'lib/middleware';
 import Trace from '../models/Trace';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -13,6 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { txNotification } from '../lib/helpers';
+import ErrorHandler from '../lib/ErrorHandler';
 
 function ChangeTraceRecipientButton({ trace }) {
   const {
@@ -117,13 +117,7 @@ function ChangeTraceRecipientButton({ trace }) {
             console.error(e);
           }
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong while changing recipient.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 
