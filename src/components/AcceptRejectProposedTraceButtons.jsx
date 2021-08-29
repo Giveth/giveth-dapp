@@ -4,7 +4,6 @@ import { notification } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import ErrorPopup from 'components/ErrorPopup';
 import { authenticateUser, checkBalance } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -68,7 +67,7 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 userAddress: currentUser.address,
               });
             },
-            onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
+            onError: e => ErrorHandler(e, 'Something went wrong with rejecting the proposed Trace'),
           });
         });
     });
@@ -118,13 +117,19 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 onConfirmation: txUrl => txNotification('The Trace has been accepted!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
-                    ErrorPopup('Something went wrong with accepting this proposed Trace', err);
-                  } else {
-                    ErrorPopup(
-                      'Something went wrong with the transaction.',
-                      `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                    ErrorHandler(err, 'Something went wrong with accepting this proposed Trace');
+                  } else if (txUrl) {
+                    const message = (
+                      <Fragment>
+                        <p>Something went wrong with the transaction.</p>
+                        <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                          <p>View Transaction</p>
+                        </a>
+                        <p>{JSON.stringify(err, null, 2)}</p>
+                      </Fragment>
                     );
-                  }
+                    ErrorHandler(err, message);
+                  } else ErrorHandler(err);
                 },
                 web3,
               });
