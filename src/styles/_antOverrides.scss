@@ -4,6 +4,11 @@
   padding-right: 20px;
 }
 
+// Stop moving dropdown in select component when scrolling on background
+.ant-select-dropdown {
+  position: fixed;
+}
+
 // Hide Ant close btn
 .antModalNoBtn {
   .ant-modal-confirm-btns {
