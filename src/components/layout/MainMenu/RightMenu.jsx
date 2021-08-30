@@ -84,7 +84,7 @@ const RightMenu = () => {
   };
 
   const getUserDelegations = () => {
-    LoadProjectsInfo({ userAddress, noTraces: true })
+    LoadProjectsInfo(userAddress)
       .then(resArray => {
         const communities = resArray[0].data;
         const campaigns = resArray[1].data.map(c => new Campaign(c));
