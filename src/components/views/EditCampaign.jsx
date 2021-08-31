@@ -244,7 +244,7 @@ const EditCampaign = () => {
                       required: true,
                       type: 'string',
                       min: 3,
-                      message: 'Please provide at least 3 characters',
+                      message: 'Please provide at least 4 characters',
                     },
                   ]}
                 >
