@@ -18,7 +18,7 @@ import ErrorHandler from '../../../lib/ErrorHandler';
 
 function getFilterType(types, donation) {
   return types.filter(t => {
-    if (t.isCapped && t.maxAmount.lte(t.currentBalance || 0)) return false;
+    if (t.fullyFunded) return false;
     return !t.acceptsSingleToken || t.token.symbol === donation.token.symbol;
   });
 }
@@ -31,6 +31,8 @@ function getTypes(types) {
     el.type = isTrace ? Trace.type : Campaign.type;
     el.id = t._id;
     el.projectId = t.projectId;
+    el.maxAmount = t.maxAmount;
+    el.donationCounters = t.donationCounters;
     return el;
   });
 }
@@ -83,6 +85,35 @@ class DelegateButtonModal extends Component {
 
     this.debouncedCampaignSearch.current = debounce(query => this.fetchCampaigns(query), 1000);
     this.debouncedTraceSearch.current = debounce(query => this.fetchCampaignTraces(query), 1000);
+  }
+
+  setMaxAmount() {
+    const { donation } = this.props;
+    const { amount, selectedTrace, delegateToTrace } = this.state;
+    const donationMaxAmount = donation.amountRemaining;
+    const { decimals } = donation.token;
+
+    let traceAmountRemaining;
+    if (delegateToTrace && selectedTrace.maxAmount) {
+      const hasDonations =
+        selectedTrace.donationCounters && selectedTrace.donationCounters.length > 0;
+      const traceTotalDonations =
+        hasDonations && BigNumber.sum(...selectedTrace.donationCounters.map(d => d.currentBalance));
+      traceAmountRemaining = traceTotalDonations
+        ? selectedTrace.maxAmount.minus(traceTotalDonations)
+        : selectedTrace.maxAmount;
+    }
+
+    const maxAmount = traceAmountRemaining
+      ? BigNumber.min(donationMaxAmount, traceAmountRemaining)
+      : donationMaxAmount;
+    const sliderMarks = AmountSliderMarks(maxAmount, decimals);
+
+    this.setState({
+      maxAmount: roundBigNumber(maxAmount, decimals),
+      amount: convertEthHelper(BigNumber.min(amount, maxAmount), decimals),
+      sliderMarks,
+    });
   }
 
   fetchCampaignTraces(query) {
@@ -151,41 +182,25 @@ class DelegateButtonModal extends Component {
   }
 
   selectTrace(traceId) {
-    const { donation } = this.props;
-    const { amount, traces } = this.state;
-    const maxAmount = donation.amountRemaining;
-    const { decimals } = donation.token;
-    const max = roundBigNumber(maxAmount, decimals);
-    const sliderMarks = AmountSliderMarks(max, decimals);
-    const selectedTrace = traces.filter(t => t.id === traceId)[0];
-
-    this.setState({
-      maxAmount: max,
-      amount: convertEthHelper(BigNumber.min(amount, maxAmount), decimals),
-      sliderMarks,
-      selectedTrace,
-    });
+    const { traces } = this.state;
+    const selectedTrace = traces.find(t => t.id === traceId);
+    this.setState({ selectedTrace }, this.setMaxAmount);
   }
 
   selectCampaign(campaignId) {
-    const { donation } = this.props;
-    const { amount, campaigns } = this.state;
-    const maxAmount = donation.amountRemaining;
-    const { decimals } = donation.token;
-    const max = roundBigNumber(maxAmount, decimals);
-    const sliderMarks = AmountSliderMarks(max, decimals);
-    const selectedCampaign = campaigns.filter(t => t.id === campaignId)[0];
+    const { campaigns } = this.state;
+    const selectedCampaign = campaigns.find(t => t.id === campaignId);
 
     this.setState(
       {
         isLoading: true,
-        maxAmount: max,
-        amount: convertEthHelper(BigNumber.min(amount, maxAmount), decimals),
-        sliderMarks,
         selectedCampaign,
         selectedTrace: {},
       },
-      this.fetchCampaignTraces,
+      () => {
+        this.fetchCampaignTraces();
+        this.setMaxAmount();
+      },
     );
   }
 
@@ -317,7 +332,7 @@ class DelegateButtonModal extends Component {
                   placeholder="Select a Campaign"
                   showSearch
                   allowClear
-                  onClear={() => this.setState({ selectedCampaign: {} })}
+                  onClear={() => this.setState({ selectedCampaign: {} }, this.setMaxAmount)}
                   optionFilterProp="children"
                   disabled={!!traceOnly}
                   value={selectedCampaignName}
@@ -340,7 +355,9 @@ class DelegateButtonModal extends Component {
                 {!traceOnly && (
                   <Checkbox
                     checked={delegateToTrace}
-                    onChange={() => this.setState({ delegateToTrace: !delegateToTrace })}
+                    onChange={() =>
+                      this.setState({ delegateToTrace: !delegateToTrace }, this.setMaxAmount)
+                    }
                     className="mb-3"
                   >
                     <div>I want to delegate to Trace</div>
@@ -354,6 +371,8 @@ class DelegateButtonModal extends Component {
                     showSearch
                     optionFilterProp="children"
                     value={selectedTraceName}
+                    allowClear
+                    onClear={() => this.setState({ selectedTrace: {} }, this.setMaxAmount)}
                     onSelect={this.selectTrace}
                     onSearch={query => {
                       if (!isLoadingEntities) this.setState({ isLoadingEntities: true });
