@@ -366,8 +366,8 @@ const ViewTrace = props => {
                   <div className="alert alert-info py-2 my-3 d-flex align-items-center">
                     <i className="fa fa-info-circle fa-2x mr-3" />
                     <div>
-                      Due to <strong>{campaign.title}</strong> campaign is archived, This Trace no
-                      longer accepts funds.
+                      Because <strong>{campaign.title}</strong> campaign is archived, This Trace no
+                      longer accepts donations.
                     </div>
                   </div>
                 )}

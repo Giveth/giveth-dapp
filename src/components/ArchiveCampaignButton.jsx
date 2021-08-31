@@ -18,11 +18,14 @@ const ArchiveCampaignButton = ({ campaign, className, onSuccess }) => {
   const archiveCampaign = unarchive => {
     authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) return;
+
+      const archiveMessage =
+        'By archiving this campaign, it will no longer be listed and will be unable to accept future donations or delegations. Any TRACES listed under this campaign will be archived as well. Would you like to proceed?';
+      const unarchiveMessage = 'Are you sure you want to Unarchive this Campaign?';
+
       Modal.confirm({
         title: <h5>{unarchive ? 'Unarchive' : 'Archive'} campaign?</h5>,
-        content: (
-          <p>Are you sure you want to {unarchive ? 'Unarchive' : 'Archive'} this Campaign?</p>
-        ),
+        content: <p>{unarchive ? unarchiveMessage : archiveMessage}</p>,
         cancelText: 'Dismiss',
         okText: `Yes, ${unarchive ? 'Unarchive' : 'Archive'}`,
         centered: true,
