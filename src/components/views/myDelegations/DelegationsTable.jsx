@@ -2,10 +2,16 @@ import React from 'react';
 import Pagination from 'react-js-pagination';
 import PropTypes from 'prop-types';
 import DelegationsItem from './DelegationsItem';
-import { Donation } from '../../../models';
+import { Donation, Trace } from '../../../models';
+import Campaign from '../../../models/Campaign';
+import BridgedTrace from '../../../models/BridgedTrace';
+import LPPCappedTrace from '../../../models/LPPCappedTrace';
+import LPTrace from '../../../models/LPTrace';
 
 function DelegationsTable({
   delegations,
+  campaigns,
+  traces,
   totalResults,
   skipPages,
   itemsPerPage,
@@ -31,7 +37,7 @@ function DelegationsTable({
             </thead>
             <tbody>
               {delegations.map(d => (
-                <DelegationsItem key={d.id} donation={d} />
+                <DelegationsItem key={d.id} donation={d} campaigns={campaigns} traces={traces} />
               ))}
             </tbody>
           </table>
@@ -69,6 +75,10 @@ function DelegationsTable({
 
 DelegationsTable.propTypes = {
   delegations: PropTypes.arrayOf(PropTypes.instanceOf(Donation)).isRequired,
+  campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
+  traces: PropTypes.arrayOf(
+    PropTypes.oneOfType([Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf)),
+  ).isRequired,
   totalResults: PropTypes.number.isRequired,
   skipPages: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
