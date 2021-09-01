@@ -1,6 +1,17 @@
 import React, { Component, Fragment } from 'react';
 import BigNumber from 'bignumber.js';
-import { Input, Select, Slider, Form, InputNumber, Modal, Typography, Checkbox, Spin } from 'antd';
+import {
+  Input,
+  Select,
+  Slider,
+  Form,
+  InputNumber,
+  Modal,
+  Typography,
+  Checkbox,
+  Spin,
+  notification,
+} from 'antd';
 import Web3, { utils } from 'web3';
 import PropTypes from 'prop-types';
 import debounce from 'lodash.debounce';
@@ -15,12 +26,10 @@ import AmountSliderMarks from '../../AmountSliderMarks';
 import CampaignService from '../../../services/CampaignService';
 import Loader from '../../Loader';
 import ErrorHandler from '../../../lib/ErrorHandler';
+import { TraceService } from '../../../services';
 
 function getFilterType(types, donation) {
-  return types.filter(t => {
-    if (t.fullyFunded) return false;
-    return !t.acceptsSingleToken || t.token.symbol === donation.token.symbol;
-  });
+  return types.filter(t => !t.acceptsSingleToken || t.token.symbol === donation.token.symbol);
 }
 
 function getTypes(types) {
@@ -31,8 +40,20 @@ function getTypes(types) {
     el.type = isTrace ? Trace.type : Campaign.type;
     el.id = t._id;
     el.projectId = t.projectId;
-    el.maxAmount = t.maxAmount;
-    el.donationCounters = t.donationCounters;
+
+    if (isTrace) {
+      el.maxAmount = t.maxAmount;
+      el.donationCounters = t.donationCounters;
+      el.campaign = {};
+      el.campaign.name = t.campaign.title;
+      el.campaign.id = t.campaign._id;
+      el.campaign.projectId = t.campaign.projectId;
+      el.campaign.status = t.campaign.status;
+      el.campaign.type = Campaign.type;
+    } else {
+      el.status = t.status;
+    }
+
     return el;
   });
 }
@@ -63,7 +84,7 @@ class DelegateButtonModal extends Component {
     this.debouncedTraceSearch = React.createRef();
 
     this.fetchCommunityCampaigns = this.fetchCommunityCampaigns.bind(this);
-    this.fetchCampaignTraces = this.fetchCampaignTraces.bind(this);
+    this.fetchTraces = this.fetchTraces.bind(this);
     this.selectCampaign = this.selectCampaign.bind(this);
     this.submit = this.submit.bind(this);
     this.selectTrace = this.selectTrace.bind(this);
@@ -81,10 +102,10 @@ class DelegateButtonModal extends Component {
         },
         () => this.selectCampaign(ownerTypeId),
       );
-    } else this.fetchCommunityCampaigns();
+    } else this.fetchCommunityCampaigns(); // Proposing campaigns that Community had delegated before
 
     this.debouncedCampaignSearch.current = debounce(query => this.fetchCampaigns(query), 1000);
-    this.debouncedTraceSearch.current = debounce(query => this.fetchCampaignTraces(query), 1000);
+    this.debouncedTraceSearch.current = debounce(query => this.fetchTraces(query), 1000);
   }
 
   setMaxAmount() {
@@ -116,12 +137,20 @@ class DelegateButtonModal extends Component {
     });
   }
 
-  fetchCampaignTraces(query) {
+  fetchTraces(searchPhrase) {
     const { selectedCampaign } = this.state;
 
-    CampaignService.getTraces(
-      selectedCampaign.id || { $exists: true },
-      query,
+    const query = { fullyFunded: { $ne: true } };
+
+    if (selectedCampaign.id) query.campaignId = selectedCampaign.id;
+
+    if (searchPhrase) {
+      query.$text = { $search: searchPhrase };
+      query.$sort = { score: { $meta: 'textScore' } };
+      query.$select = { score: { $meta: 'textScore' } };
+    }
+
+    TraceService.getActiveTraces(
       10,
       0,
       _traces => {
@@ -134,9 +163,10 @@ class DelegateButtonModal extends Component {
         });
       },
       err => {
-        ErrorHandler(err, 'Some error on fetching campaign traces, please try later');
+        ErrorHandler(err, 'Some error on fetching Traces, please try later');
         this.setState({ isLoading: false, isLoadingEntities: false });
       },
+      query,
     );
   }
 
@@ -147,7 +177,7 @@ class DelegateButtonModal extends Component {
         this.setState({ campaigns: objectsToDelegateTypes, isLoading: false });
       })
       .catch(err => {
-        ErrorHandler(err, 'Some error on fetching campaigns, please try later');
+        ErrorHandler(err, 'Some error on fetching Campaigns, please try later');
         this.setState({ isLoading: false });
       });
   }
@@ -166,7 +196,7 @@ class DelegateButtonModal extends Component {
         });
       },
       err => {
-        ErrorHandler(err, 'Some error on fetching campaigns, please try later');
+        ErrorHandler(err, 'Some error on fetching Campaigns, please try later');
         this.setState({ isLoading: false, isLoadingEntities: false });
       },
       ['_id', 'title', 'projectId'],
@@ -184,7 +214,7 @@ class DelegateButtonModal extends Component {
   selectTrace(traceId) {
     const { traces } = this.state;
     const selectedTrace = traces.find(t => t.id === traceId);
-    this.setState({ selectedTrace }, this.setMaxAmount);
+    this.setState({ selectedTrace, selectedCampaign: selectedTrace.campaign }, this.setMaxAmount);
   }
 
   selectCampaign(campaignId) {
@@ -198,7 +228,7 @@ class DelegateButtonModal extends Component {
         selectedTrace: {},
       },
       () => {
-        this.fetchCampaignTraces();
+        this.fetchTraces();
         this.setMaxAmount();
       },
     );
@@ -211,6 +241,12 @@ class DelegateButtonModal extends Component {
     const { selectedCampaign, selectedTrace, delegateToTrace } = this.state;
     // find the type of where we delegate to
     const admin = !delegateToTrace || !selectedTrace.name ? selectedCampaign : selectedTrace;
+
+    if (selectedCampaign.status === Campaign.ARCHIVED)
+      return notification.error({
+        message: '',
+        description: `${selectedCampaign.name} Campaign is archived. This campaign and its Traces can't be delegated.`,
+      });
 
     const onCreated = txLink => {
       this.props.closeDialog();
@@ -249,7 +285,7 @@ class DelegateButtonModal extends Component {
       this.props.closeDialog();
     };
 
-    DonationBlockchainService.delegate(
+    return DonationBlockchainService.delegate(
       donation,
       utils.toWei(this.state.amount),
       this.state.delegationComment,
@@ -306,7 +342,7 @@ class DelegateButtonModal extends Component {
           </strong>{' '}
           that has been donated to <strong>{donation.donatedTo.name}</strong>
         </p>
-        <Form onFinish={this.submit}>
+        <Form onFinish={this.submit} requiredMark>
           <div className="form-group">
             <div className="alert alert-info py-2 my-3 d-flex align-items-center">
               <i className="fa fa-info-circle fa-2x mr-3" />
@@ -365,29 +401,39 @@ class DelegateButtonModal extends Component {
                 )}
 
                 {delegateToTrace && (
-                  <Select
+                  <Form.Item
                     name="delegateToTrace"
-                    placeholder="Select a Trace"
-                    showSearch
-                    optionFilterProp="children"
-                    value={selectedTraceName}
-                    allowClear
-                    onClear={() => this.setState({ selectedTrace: {} }, this.setMaxAmount)}
-                    onSelect={this.selectTrace}
-                    onSearch={query => {
-                      if (!isLoadingEntities) this.setState({ isLoadingEntities: true });
-                      this.debouncedTraceSearch.current(query);
-                    }}
-                    style={{ width: '100%' }}
-                    className="mb-3"
-                    notFoundContent={isLoadingEntities ? <Spin size="small" /> : null}
+                    rules={[
+                      {
+                        required: true,
+                        message: 'In case of delegating to Trace, this field is required.',
+                      },
+                    ]}
                   >
-                    {traces.map(item => (
-                      <Select.Option value={item.id} key={item.id}>
-                        {item.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                    <Select
+                      name="delegateToTrace"
+                      placeholder="Select a Trace"
+                      showSearch
+                      optionFilterProp="children"
+                      value={selectedTraceName}
+                      allowClear
+                      onClear={() => this.setState({ selectedTrace: {} }, this.setMaxAmount)}
+                      onSelect={this.selectTrace}
+                      onSearch={query => {
+                        if (!isLoadingEntities) this.setState({ isLoadingEntities: true });
+                        this.debouncedTraceSearch.current(query);
+                      }}
+                      style={{ width: '100%' }}
+                      className="mb-3"
+                      notFoundContent={isLoadingEntities ? <Spin size="small" /> : null}
+                    >
+                      {traces.map(item => (
+                        <Select.Option value={item.id} key={item.id}>
+                          {item.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
                 )}
               </div>
             )}

@@ -256,20 +256,23 @@ class TraceService {
    * Get Active Traces sorted by created date
    *
    * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of records to be skipped
+   * @param $skip     Amount of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
+   * @param query
    */
-  static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+  static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}, query) {
+    const _query = {
+      status: Trace.IN_PROGRESS,
+      $sort: { createdAt: -1 },
+      $limit,
+      $skip,
+    };
+
+    if (query) Object.assign(_query, query);
+
     return traces
-      .find({
-        query: {
-          status: Trace.IN_PROGRESS,
-          $sort: { createdAt: -1 },
-          $limit,
-          $skip,
-        },
-      })
+      .find({ query: _query })
       .then(resp =>
         onSuccess(
           resp.data.map(m => TraceFactory.create(m)),
