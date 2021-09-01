@@ -10,13 +10,9 @@ import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpe
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
 import { Context as ConversionRateContext } from '../../../contextProviders/ConversionRateProvider';
-import { Trace } from '../../../models';
 import Campaign from '../../../models/Campaign';
-import BridgedTrace from '../../../models/BridgedTrace';
-import LPPCappedTrace from '../../../models/LPPCappedTrace';
-import LPTrace from '../../../models/LPTrace';
 
-function DelegationsItem({ campaigns, donation, traces }) {
+function DelegationsItem({ donation }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -39,7 +35,6 @@ function DelegationsItem({ campaigns, donation, traces }) {
           donation.amountRemaining > 0 && (
             <DelegateButton
               web3={web3}
-              types={campaigns.concat(traces)}
               donation={donation}
               balance={balance}
               currentUser={currentUser}
@@ -50,17 +45,12 @@ function DelegationsItem({ campaigns, donation, traces }) {
 
         {/* When donated to a campaign, only allow delegation
                                       to traces of that campaign */}
-        {donation.ownerType === 'campaign' &&
+        {donation.ownerType === Campaign.type &&
           isForeignNetwork &&
           donation.status === Donation.COMMITTED &&
           donation.amountRemaining > 0 && (
             <DelegateButton
               web3={web3}
-              types={traces.filter(
-                m =>
-                  m.campaignId === donation.ownerTypeId &&
-                  (!m.acceptsSingleToken || m.token.symbol === donation.token.symbol),
-              )}
               donation={donation}
               getConversionRates={getConversionRates}
               balance={balance}
@@ -101,10 +91,6 @@ function DelegationsItem({ campaigns, donation, traces }) {
 
 DelegationsItem.propTypes = {
   donation: PropTypes.instanceOf(Donation).isRequired,
-  traces: PropTypes.arrayOf(
-    PropTypes.oneOfType([Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf)),
-  ).isRequired,
-  campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
 };
 
 export default React.memo(DelegationsItem);

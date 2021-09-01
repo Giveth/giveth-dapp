@@ -80,10 +80,12 @@ class CampaignService {
    * Get Campaigns
    *
    * @param $limit      Amount of records to be loaded
-   * @param $skip       Amounds of record to be skipped
+   * @param $skip       Amount of records to be skipped
    * @param onlyRecent  Bool flag only fetch campaigns updated recently (projectsUpdatedAtLimitMonth)
    * @param onSuccess   Callback function once response is obtained successfylly
    * @param onError     Callback function if error is encountered
+   * @param $select
+   * @param searchPhrase
    */
   static getCampaigns(
     $limit = 100,
@@ -91,6 +93,8 @@ class CampaignService {
     onlyRecent = false,
     onSuccess = () => {},
     onError = () => {},
+    $select,
+    searchPhrase,
   ) {
     const query = {
       projectId: { $gt: 0 }, // 0 is a pending campaign
@@ -109,6 +113,15 @@ class CampaignService {
 
       query.updatedAt = { $gt: lastDate };
     }
+
+    if (searchPhrase) {
+      query.$text = { $search: searchPhrase };
+      query.$sort = { score: { $meta: 'textScore' } };
+      query.$select = { score: { $meta: 'textScore' } };
+    }
+
+    if ($select) query.$select = $select;
+
     return campaigns
       .find({
         query,
@@ -141,6 +154,7 @@ class CampaignService {
    * @param $skip         Amounds of record to be skipped
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
+   * @param $select
    */
   static getTraces(
     id,
@@ -149,6 +163,7 @@ class CampaignService {
     $skip = 0,
     onSuccess = () => {},
     onError = () => {},
+    $select,
   ) {
     const query = {
       campaignId: id,
@@ -167,6 +182,8 @@ class CampaignService {
     } else {
       query.$sort = { projectAddedAt: -1, projectId: -1 };
     }
+
+    if ($select) query.$select = $select;
 
     return feathersClient
       .service('traces')
