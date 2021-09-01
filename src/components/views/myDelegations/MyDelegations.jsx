@@ -9,6 +9,7 @@ import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import AuthenticationWarning from '../../AuthenticationWarning';
 import DelegationsTable from './DelegationsTable';
 import Campaign from '../../../models/Campaign';
+import Trace from '../../../models/Trace';
 import ErrorHandler from '../../../lib/ErrorHandler';
 import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
@@ -39,16 +40,17 @@ const MyDelegations = () => {
 
   const fetchProjects = useCallback(
     () =>
-      LoadProjectsInfo(userAddress)
+      LoadProjectsInfo({ userAddress })
         .then(resArray => {
-          const [{ data: communities }, { data: campaigns }] = resArray;
+          const [{ data: communities }, { data: campaigns }, { data: traces }] = resArray;
           setProjectsInfo({
             communities,
             campaigns: campaigns.map(c => new Campaign(c)),
+            traces: traces.map(m => new Trace(m)),
           });
         })
         .catch(err => {
-          const message = `Unable to load Communities or Campaigns. ${err}`;
+          const message = `Unable to load communities, Campaigns or Traces. ${err}`;
           ErrorHandler(err, message);
           setLoading(false);
         }),
@@ -124,6 +126,8 @@ const MyDelegations = () => {
             {!isLoading && (
               <DelegationsTable
                 delegations={delegations}
+                campaigns={projectsInfo.campaigns}
+                traces={projectsInfo.traces}
                 totalResults={totalResults}
                 itemsPerPage={itemsPerPage}
                 skipPages={skipPages}
