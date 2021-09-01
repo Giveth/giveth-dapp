@@ -339,7 +339,7 @@ const ViewCampaign = ({ match }) => {
                 {campaign.status === Campaign.ARCHIVED && (
                   <div className="alert alert-info py-2 my-3 d-flex align-items-center">
                     <i className="fa fa-info-circle fa-2x mr-3" />
-                    This campaign is archived. It no longer accepts funds, nor its traces.
+                    This campaign is archived and no longer accepts funds.
                   </div>
                 )}
                 {campaign.status === Campaign.CANCELED && (
