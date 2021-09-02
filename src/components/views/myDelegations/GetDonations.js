@@ -47,12 +47,9 @@ const GetDonations = ({
       schema: 'includeTypeAndGiverDetails',
     });
 
-    if (subscribe) {
-      return DonationService.subscribe(query, onResult, onError);
-    }
-    return DonationService.getDonations(query, onResult, onError);
+    if (subscribe) DonationService.subscribe(query, onResult, onError);
+    else DonationService.getDonations(query, onResult, onError);
   }
-  return null;
 };
 
 export default GetDonations;
