@@ -245,7 +245,7 @@ class DelegateButtonModal extends Component {
     if (selectedCampaign.status === Campaign.ARCHIVED)
       return notification.error({
         message: '',
-        description: `${selectedCampaign.name} Campaign is archived. This campaign and its Traces can't be delegated.`,
+        description: `${selectedCampaign.name} Campaign is archived. You can't delegate to this Campaign nor its Traces.`,
       });
 
     const onCreated = txLink => {
