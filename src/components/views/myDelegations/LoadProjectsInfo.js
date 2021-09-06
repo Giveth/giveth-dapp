@@ -7,7 +7,7 @@ const LoadProjectsInfo = async userAddress => {
     query: {
       status: Community.ACTIVE,
       ownerAddress: userAddress,
-      $select: ['_id'],
+      $select: ['_id', 'title'],
       $limit: 100,
       $sort: {
         createdAt: -1,

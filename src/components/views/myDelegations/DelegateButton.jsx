@@ -15,6 +15,8 @@ const modalStyles = {
   maxWidth: '800px',
 };
 
+const bodyElement = document.getElementsByTagName('body');
+
 // FIXME: We need slider component that uses bignumbers, there are some precision issues here
 class DelegateButton extends Component {
   constructor(props) {
@@ -27,6 +29,9 @@ class DelegateButton extends Component {
   }
 
   async openDialog() {
+    // Hide overflow when modal opens due to Ant select dropdown bug
+    bodyElement[0].classList.add('overflow-hidden');
+
     const authenticated = await authenticateUser(this.props.currentUser, false, this.props.web3);
     if (!authenticated) {
       return;
@@ -41,6 +46,8 @@ class DelegateButton extends Component {
   }
 
   closeDialog() {
+    // Show overflow when modal closes due to Ant select dropdown bug
+    bodyElement[0].classList.remove('overflow-hidden');
     this.setState({
       modalVisible: false,
     });
