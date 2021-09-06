@@ -8,20 +8,12 @@ import DelegateButton from './DelegateButton';
 import config from '../../../configuration';
 import { convertEthHelper, getUserAvatar, getUserName } from '../../../lib/helpers';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
-import { Context as Web3Provider } from '../../../contextProviders/Web3Provider';
-import { Context as ConversionRateContext } from '../../../contextProviders/ConversionRateProvider';
 import Campaign from '../../../models/Campaign';
 
 function DelegationsItem({ donation }) {
   const {
     state: { currentUser },
   } = useContext(UserContext);
-  const {
-    state: { balance, isForeignNetwork, web3 },
-  } = useContext(Web3Provider);
-  const {
-    actions: { getConversionRates },
-  } = useContext(ConversionRateContext);
 
   return (
     <tr>
@@ -30,34 +22,14 @@ function DelegationsItem({ donation }) {
                                     to campaigns and traces */}
         {(donation.delegateId > 0 ||
           (currentUser.address && donation.ownerTypeId === currentUser.address)) &&
-          isForeignNetwork &&
           donation.status === Donation.WAITING &&
-          donation.amountRemaining > 0 && (
-            <DelegateButton
-              web3={web3}
-              donation={donation}
-              balance={balance}
-              currentUser={currentUser}
-              symbol={(donation.token && donation.token.symbol) || config.nativeTokenName}
-              getConversionRates={getConversionRates}
-            />
-          )}
+          donation.amountRemaining > 0 && <DelegateButton donation={donation} />}
 
         {/* When donated to a campaign, only allow delegation
                                       to traces of that campaign */}
         {donation.ownerType === Campaign.type &&
-          isForeignNetwork &&
           donation.status === Donation.COMMITTED &&
-          donation.amountRemaining > 0 && (
-            <DelegateButton
-              web3={web3}
-              donation={donation}
-              getConversionRates={getConversionRates}
-              balance={balance}
-              currentUser={currentUser}
-              traceOnly
-            />
-          )}
+          donation.amountRemaining > 0 && <DelegateButton donation={donation} traceOnly />}
       </td>
 
       <td className="td-date">{moment(donation.createdAt).format('MM/DD/YYYY')}</td>

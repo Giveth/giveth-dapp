@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import BigNumber from 'bignumber.js';
+import React, { useContext, useState } from 'react';
 import { Modal } from 'antd';
-import Web3 from 'web3';
 import PropTypes from 'prop-types';
 
 import Donation from 'models/Donation';
 import { authenticateUser, checkBalance } from '../../../lib/middleware';
-import User from '../../../models/User';
 import DelegateButtonModal from './DelegateButtonModal';
 import ErrorHandler from '../../../lib/ErrorHandler';
+import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
+import { Context as ConversionRateContext } from '../../../contextProviders/ConversionRateProvider';
+import { Context as UserContext } from '../../../contextProviders/UserProvider';
 
 const modalStyles = {
   minWidth: '60%',
@@ -17,73 +17,78 @@ const modalStyles = {
 
 const bodyElement = document.getElementsByTagName('body');
 
-// FIXME: We need slider component that uses bignumbers, there are some precision issues here
-class DelegateButton extends Component {
-  constructor(props) {
-    super(props);
+// FIXME: We need slider component that uses bignumber, there are some precision issues here
+const DelegateButton = props => {
+  const {
+    state: { web3, isForeignNetwork, balance },
+    actions: { displayForeignNetRequiredWarning },
+  } = useContext(Web3Context);
+  const {
+    actions: { getConversionRates },
+  } = useContext(ConversionRateContext);
+  const {
+    state: { currentUser },
+  } = useContext(UserContext);
 
-    this.state = {
-      modalVisible: false,
-    };
-    this.closeDialog = this.closeDialog.bind(this);
-  }
+  const [modalVisible, setModalVisible] = useState(false);
 
-  async openDialog() {
-    // Hide overflow when modal opens due to Ant select dropdown bug
-    bodyElement[0].classList.add('overflow-hidden');
-
-    const authenticated = await authenticateUser(this.props.currentUser, false, this.props.web3);
+  const openDialog = async () => {
+    const authenticated = await authenticateUser(currentUser, false, web3);
     if (!authenticated) {
       return;
     }
-    checkBalance(this.props.balance)
+
+    if (!isForeignNetwork) {
+      displayForeignNetRequiredWarning();
+      return;
+    }
+
+    checkBalance(balance)
       .then(() => {
-        this.setState({
-          modalVisible: true,
-        });
+        // Hide overflow when modal opens due to Ant select dropdown bug
+        bodyElement[0].classList.add('overflow-hidden');
+        setModalVisible(true);
       })
       .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
-  }
+  };
 
-  closeDialog() {
+  const closeDialog = () => {
     // Show overflow when modal closes due to Ant select dropdown bug
     bodyElement[0].classList.remove('overflow-hidden');
-    this.setState({
-      modalVisible: false,
-    });
-  }
+    setModalVisible(false);
+  };
 
-  render() {
-    const style = { display: 'inline-block' };
+  const style = { display: 'inline-block' };
 
-    return (
-      <span style={style}>
-        <button type="button" className="btn btn-success btn-sm" onClick={() => this.openDialog()}>
-          Delegate
-        </button>
+  return (
+    <span style={style}>
+      <button type="button" className="btn btn-success btn-sm" onClick={openDialog}>
+        Delegate
+      </button>
 
-        <Modal
-          visible={this.state.modalVisible}
-          onCancel={this.closeDialog}
-          footer={null}
-          centered
-          destroyOnClose
-          className="pb-0 custom-ant-modal"
-          style={modalStyles}
-        >
-          <DelegateButtonModal {...this.props} closeDialog={this.closeDialog} />
-        </Modal>
-      </span>
-    );
-  }
-}
+      <Modal
+        visible={modalVisible}
+        onCancel={closeDialog}
+        footer={null}
+        centered
+        destroyOnClose
+        className="pb-0 custom-ant-modal"
+        style={modalStyles}
+      >
+        <DelegateButtonModal
+          {...props}
+          web3={web3}
+          closeDialog={closeDialog}
+          getConversionRates={getConversionRates}
+        />
+      </Modal>
+    </span>
+  );
+};
 
 DelegateButton.propTypes = {
-  balance: PropTypes.instanceOf(BigNumber).isRequired,
   traceOnly: PropTypes.bool,
   donation: PropTypes.instanceOf(Donation).isRequired,
-  currentUser: PropTypes.instanceOf(User).isRequired,
-  web3: PropTypes.instanceOf(Web3).isRequired,
 };
 
 DelegateButton.defaultProps = {
