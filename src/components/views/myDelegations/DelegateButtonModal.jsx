@@ -93,7 +93,9 @@ class DelegateButtonModal extends Component {
   componentDidMount() {
     const { traceOnly, donation } = this.props;
     const ownerTypeId = donation._ownerTypeId;
+
     this.updateRates();
+
     if (traceOnly) {
       this.setState(
         {
@@ -102,7 +104,13 @@ class DelegateButtonModal extends Component {
         },
         () => this.selectCampaign(ownerTypeId),
       );
-    } else this.fetchCommunityCampaigns(); // Proposing campaigns that Community had delegated before
+    }
+    // Proposing campaigns that Community had delegated before
+    else if (donation._delegateEntity) this.fetchCommunityCampaigns();
+    // When donation owner type is GIVER
+    else {
+      this.setState({ isLoading: false });
+    }
 
     this.debouncedCampaignSearch.current = debounce(query => this.fetchCampaigns(query), 1000);
     this.debouncedTraceSearch.current = debounce(query => this.fetchTraces(query), 1000);
@@ -245,7 +253,7 @@ class DelegateButtonModal extends Component {
     if (selectedCampaign.status === Campaign.ARCHIVED)
       return notification.error({
         message: '',
-        description: `${selectedCampaign.name} Campaign is archived. This campaign and its Traces can't be delegated.`,
+        description: `${selectedCampaign.name} Campaign is archived. You can't delegate to this Campaign nor its Traces.`,
       });
 
     const onCreated = txLink => {
