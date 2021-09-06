@@ -562,7 +562,7 @@ const ViewTrace = props => {
                             ))}
                         </div>
 
-                        {!trace.isCapped && trace.donationCounters.length > 0 && (
+                        {trace.donationCounters.length > 0 && (
                           <div className="form-group">
                             <DetailLabel
                               id="current-balance"
@@ -577,7 +577,7 @@ const ViewTrace = props => {
                           </div>
                         )}
 
-                        {!trace.isCapped && trace.donationCounters.length > 0 && currency && (
+                        {trace.donationCounters.length > 0 && currency && (
                           <div className="form-group">
                             <DetailLabel
                               id="current-balance-value"
