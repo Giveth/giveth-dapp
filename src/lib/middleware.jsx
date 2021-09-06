@@ -160,7 +160,7 @@ export const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 /**
  * Checks for sufficient wallet balance.
  *
- * @param balance {BN} balance object
+ * @param balance {BigNumber} balance object
  *
  */
 export const checkBalance = balance =>
