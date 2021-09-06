@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import { Modal } from 'antd';
 import PropTypes from 'prop-types';
 
@@ -58,10 +58,8 @@ const DelegateButton = props => {
     setModalVisible(false);
   };
 
-  const style = { display: 'inline-block' };
-
   return (
-    <span style={style}>
+    <Fragment>
       <button type="button" className="btn btn-success btn-sm" onClick={openDialog}>
         Delegate
       </button>
@@ -82,7 +80,7 @@ const DelegateButton = props => {
           getConversionRates={getConversionRates}
         />
       </Modal>
-    </span>
+    </Fragment>
   );
 };
 
