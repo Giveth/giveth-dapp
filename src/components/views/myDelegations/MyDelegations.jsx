@@ -142,7 +142,7 @@ const MyDelegations = () => {
       setLoading(true);
       fetchDonations();
     }
-    return () => cleanup();
+    return cleanup;
   }, [skipPages, projectsInfo]);
 
   const handlePageChanged = newPage => setSkipPages(newPage - 1);
