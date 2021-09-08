@@ -16,7 +16,7 @@ function DelegationsTable({
     <div className="dashboard-table-view">
       {delegations && delegations.length > 0 && (
         <div className="table-container">
-          <table className="table table-responsive table-striped table-hover">
+          <table className="table table-responsive table-striped table-hover mt-3">
             <thead>
               <tr>
                 {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -50,17 +50,15 @@ function DelegationsTable({
         </div>
       )}
       {delegations && delegations.length === 0 && (
-        <div>
-          <div className="text-center">
-            <h3>There&apos;s nothing to delegate (yet)!</h3>
-            <img
-              className="empty-state-img"
-              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-              width="200px"
-              height="200px"
-              alt="no-delegations-icon"
-            />
-          </div>
+        <div className="text-center mt-5">
+          <h3>There&apos;s nothing to delegate (yet)!</h3>
+          <img
+            className="empty-state-img"
+            src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+            width="200px"
+            height="200px"
+            alt="no-delegations-icon"
+          />
         </div>
       )}
     </div>
