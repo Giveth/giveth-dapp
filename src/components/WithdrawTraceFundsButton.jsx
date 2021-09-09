@@ -19,6 +19,7 @@ import {
   convertUsdValueToEthValue,
   getConversionRateBetweenTwoSymbol,
 } from '../services/ConversionRateService';
+import { displayTransactionError, txNotification } from '../lib/helpers';
 
 const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -47,12 +48,12 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
       const amount = Number(donationCounter.currentBalance);
       const usdValue = rate * amount;
       // eslint-disable-next-line no-await-in-loop
-      const valueEth = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
+      const ethValue = currency === 'ETH' ? amount : await convertUsdValueToEthValue(usdValue);
       sendAnalyticsTracking('Trace Withdraw', {
         category: 'Trace',
         action: 'initiated withdrawal',
         amount,
-        valueEth,
+        ethValue,
         currency,
         usdValue,
         traceId: trace._id,
@@ -122,65 +123,27 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                 from: userAddress,
                 onTxHash: txUrl => {
                   sendWithdrawAnalyticsEvent(txUrl);
-                  React.toast.info(
-                    <p>
-                      Initiating withdrawal from Trace...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Initiating withdrawal from Trace...', txUrl, true);
                 },
                 onConfirmation: txUrl => {
-                  React.toast.info(
-                    <p>
-                      The Trace withdraw has been initiated...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('The Trace withdraw has been initiated...', txUrl);
                 },
                 onError: (err, txUrl) => {
-                  let msg;
                   if (err === 'patch-error') {
                     ErrorHandler(err, 'Issue on connecting server and pushing updates');
                   } else if (err.message === 'no-donations') {
-                    msg = <p>Nothing to withdraw. There are no donations to this Trace.</p>;
-                  } else if (txUrl) {
-                    // TODO: need to update feathers to reset the donations to previous state as this
-                    // tx failed.
-                    msg = (
-                      <p>
-                        Something went wrong with the transaction.
-                        <br />
-                        <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                          View transaction
-                        </a>
-                      </p>
-                    );
-                  } else {
-                    msg = <p>Something went wrong with the transaction.</p>;
+                    ErrorHandler(err, 'Nothing to withdraw. There are no donations to this Trace.');
                   }
-                  Modal.error({
-                    title: 'Oh no!',
-                    content: msg,
-                    centered: true,
-                  });
+                  // TODO: need to update feathers to reset the donations to previous state as this
+                  else displayTransactionError(txUrl);
                 },
                 web3,
               }),
           });
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorHandler(err, 'There is no balance left on the account.', true);
-          } else if (err !== undefined) {
-            ErrorHandler(err, 'Something went wrong.', true);
-          }
-        });
+        .catch(err =>
+          ErrorHandler(err, 'Something went wrong on getting user balance or donation counts.'),
+        );
     });
   }
 

@@ -6,80 +6,51 @@ import TraceItemModel from 'models/TraceItem';
 import { utils } from 'web3';
 import DescriptionRender from './DescriptionRender';
 
-class TraceItem extends React.Component {
-  componentDidMount() {
-    if (this.props.isEditMode) this.props.setValue(true); // required for validation being true
-  }
+const TraceItem = ({ item, token }) => {
+  return (
+    <tr>
+      <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
 
-  render() {
-    const { removeItem, item, isEditMode, token } = this.props;
-    return (
-      <tr>
-        {isEditMode && (
-          <td className="td-item-remove">
-            <button type="button" className="btn btn-link" onClick={removeItem}>
-              X
-            </button>
-          </td>
+      <td
+        className="td-item-description"
+        style={{
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+          minWidth: 150,
+          marginBottom: 20,
+        }}
+      >
+        {DescriptionRender(item.description)}
+      </td>
+
+      <td className="td-item-amount-fiat">
+        {item.selectedFiatType} {item.fiatAmount.toFixed()}
+        <br />
+        <span className="help-block">
+          {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
+        </span>
+      </td>
+
+      <td className="td-item-amount-ether">
+        {convertEthHelper(utils.fromWei(item.wei), token.decimals)}
+      </td>
+
+      <td className="td-item-file-upload">
+        {item.image && (
+          <div className="image-preview small">
+            <a href={item.image} target="_blank" rel="noopener noreferrer">
+              <img src={item.image} alt="View uploaded file" style={{ height: 'initial' }} />
+            </a>
+          </div>
         )}
-        <td className="td-item-date">{moment.utc(item.date).format('Do MMM YYYY')}</td>
-
-        <td
-          className="td-item-description"
-          style={{
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-            minWidth: 150,
-            marginBottom: 20,
-          }}
-        >
-          {DescriptionRender(item.description)}
-        </td>
-
-        <td className="td-item-amount-fiat">
-          {item.selectedFiatType} {item.fiatAmount.toFixed()}
-          <br />
-          <span className="help-block">
-            {`1 ${token.name} = ${item.conversionRate} ${item.selectedFiatType}`}
-          </span>
-        </td>
-
-        <td className="td-item-amount-ether">
-          {convertEthHelper(utils.fromWei(item.wei), token.decimals)}
-        </td>
-
-        <td className="td-item-file-upload">
-          {item.image && isEditMode && (
-            <div className="image-preview small">
-              <img src={item.image} alt="Preview of uploaded file" />
-            </div>
-          )}
-
-          {item.image && !isEditMode && (
-            <div className="image-preview small">
-              <a href={item.image} target="_blank" rel="noopener noreferrer">
-                <img src={item.image} alt="View uploaded file" style={{ height: 'initial' }} />
-              </a>
-            </div>
-          )}
-        </td>
-      </tr>
-    );
-  }
-}
-
-TraceItem.propTypes = {
-  setValue: PropTypes.func.isRequired,
-
-  removeItem: PropTypes.func,
-  item: PropTypes.instanceOf(TraceItemModel).isRequired,
-  isEditMode: PropTypes.bool,
-  token: PropTypes.shape().isRequired,
+      </td>
+    </tr>
+  );
 };
 
-TraceItem.defaultProps = {
-  isEditMode: false,
-  removeItem: () => {},
+TraceItem.propTypes = {
+  item: PropTypes.instanceOf(TraceItemModel).isRequired,
+  token: PropTypes.shape().isRequired,
 };
 
 export default TraceItem;

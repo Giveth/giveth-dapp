@@ -1,5 +1,9 @@
 //Custom styles for Ant Design
 
+.ant-notification-notice-with-icon {
+  padding-right: 20px;
+}
+
 // Hide Ant close btn
 .antModalNoBtn {
   .ant-modal-confirm-btns {
@@ -261,7 +265,7 @@
   }
 }
 
-.ant-btn-text {
+.ant-btn-delegate {
 	color: #fff;
 	background: #9254de;
 	border-color: #9254de;

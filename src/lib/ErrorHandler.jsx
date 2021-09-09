@@ -2,18 +2,26 @@ import { notification } from 'antd';
 import ErrorPopup from '../components/ErrorPopup';
 
 export default (err, message, forcePopup = false, onCancel = () => {}, onError = () => {}) => {
-  if (!err || (err && err.message && err.message.includes('unknown transaction'))) return;
+  let _message = '';
+  let _description = '';
 
   if (forcePopup) {
-    ErrorPopup(message, err);
-  } else if (err.code === 4001) {
-    notification.warning({
-      message: 'User Denied',
-      description: 'User denied transaction signature',
-    });
+    return ErrorPopup(message, err);
+  }
+
+  if (err && err.code === 4001) {
+    _message = 'User Denied';
+    _description = 'User denied transaction signature!';
     onCancel();
+  } else if (err === 'noBalance') {
+    _message = 'No Balance';
+    _description = 'There is no balance left on the account!';
+  } else if (!message) {
+    _description = 'Something went wrong!';
   } else {
-    notification.warning({ message: '', description: message });
+    _description = message;
     onError();
   }
+
+  return notification.warning({ message: _message, description: _description });
 };

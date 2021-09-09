@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { paramsForServer } from 'feathers-hooks-common';
-import { LiquidPledging } from 'giveth-liquidpledging';
+import { LiquidPledging } from '@giveth/liquidpledging-contract';
 import extraGas from '../lib/blockchain/extraGas';
 import { feathersClient } from '../lib/feathersClient';
 import Community from '../models/Community';
@@ -252,7 +252,7 @@ class CommunityService {
       } else {
         message = `Something went wrong with the Community ${
           community.delegateId > 0 ? 'update' : 'creation'
-        }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+        }. View transaction ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
         console.log('Something went wrong with the Community create/update', err);
       }
       ErrorHandler(err, message, showMessageInPopup);
@@ -275,8 +275,8 @@ class CommunityService {
         if (!ipfsHash) {
           response = await communities.patch(community.id, community.toFeathers(txHash));
         }
-        afterSave({ err: null, url: false, response: response || community });
-        afterMined(false, undefined, community.id);
+        afterSave({ response: response || community });
+        afterMined(false);
         return;
       }
 
@@ -296,33 +296,29 @@ class CommunityService {
             $extraGas: extraGas(),
           });
 
-      let { id } = community;
-      await new Promise((resolve, reject) => {
-        promise.once('transactionHash', async hash => {
-          txHash = hash;
-          try {
-            let response;
-            if (community.id) {
-              response = await communities.patch(community.id, community.toFeathers(txHash));
-            } else {
-              response = await communities.create(community.toFeathers(txHash));
-              id = response._id;
-            }
-            afterSave({
-              err: null,
-              url: !community.delegateId,
-              txUrl: `${etherScanUrl}tx/${txHash}`,
-              response,
-            });
-            afterMined(!community.delegateId, `${etherScanUrl}tx/${txHash}`, id);
-            resolve();
-          } catch (err) {
-            reject(err);
+      await promise.once('transactionHash', async hash => {
+        txHash = hash;
+        try {
+          let response;
+          if (community.id) {
+            response = await communities.patch(community.id, community.toFeathers(txHash));
+          } else {
+            response = await communities.create(community.toFeathers(txHash));
           }
-        });
+          afterSave({
+            txUrl: `${etherScanUrl}tx/${txHash}`,
+            response,
+          });
+        } catch (err) {
+          ErrorHandler(err, 'Something went wrong.');
+          afterSave({ err });
+        }
       });
+
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       sendError(err);
+      afterSave({ err });
     }
   }
 }

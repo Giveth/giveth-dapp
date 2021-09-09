@@ -1,5 +1,6 @@
 import React, { Fragment, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
@@ -39,7 +40,10 @@ const DeleteProposedTraceButton = ({ trace, className }) => {
           reviewerAddress: trace.reviewerAddress,
           userAddress: currentUser.address,
         });
-        React.toast.info(<p>The Trace has been deleted.</p>);
+        notification.info({
+          message: '',
+          description: 'The Trace has been deleted.',
+        });
       },
       onError: e => ErrorPopup('Something went wrong with deleting your Trace', e),
     });

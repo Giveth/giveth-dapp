@@ -3,6 +3,7 @@
 
 /* eslint-disable no-await-in-loop */
 
+import { notification } from 'antd';
 import BigNumber from 'bignumber.js';
 import { utils } from 'web3';
 import { paramsForServer } from 'feathers-hooks-common';
@@ -10,9 +11,8 @@ import TraceFactory from 'models/TraceFactory';
 import { feathersClient } from 'lib/feathersClient';
 import extraGas from 'lib/blockchain/extraGas';
 import DonationBlockchainService from 'services/DonationBlockchainService';
-import { toast } from 'react-toastify';
-import { MilestoneFactory } from 'lpp-milestones';
-import { LPPCappedMilestoneFactory } from 'lpp-capped-milestone';
+import { MilestoneFactory } from '@giveth/lpp-milestones';
+import { LPPCappedMilestoneFactory } from '@giveth/lpp-capped-milestone';
 import Trace from '../models/Trace';
 import IPFSService from './IPFSService';
 import ErrorPopup from '../components/ErrorPopup';
@@ -256,20 +256,23 @@ class TraceService {
    * Get Active Traces sorted by created date
    *
    * @param $limit    Amount of records to be loaded
-   * @param $skip     Amounds of records to be skipped
+   * @param $skip     Amount of records to be skipped
    * @param onSuccess Callback function once response is obtained successfully
    * @param onError   Callback function if error is encountered
+   * @param query
    */
-  static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}) {
+  static getActiveTraces($limit = 100, $skip = 0, onSuccess = () => {}, onError = () => {}, query) {
+    const _query = {
+      status: Trace.IN_PROGRESS,
+      $sort: { createdAt: -1 },
+      $limit,
+      $skip,
+    };
+
+    if (query) Object.assign(_query, query);
+
     return traces
-      .find({
-        query: {
-          status: Trace.IN_PROGRESS,
-          $sort: { createdAt: -1 },
-          $limit,
-          $skip,
-        },
-      })
+      .find({ query: _query })
       .then(resp =>
         onSuccess(
           resp.data.map(m => TraceFactory.create(m)),
@@ -402,7 +405,7 @@ class TraceService {
       });
       if (response.total && response.total > 0) {
         const message = 'A trace with this title already exists. Please select a different title.';
-        ErrorHandler({ message }, message, true);
+        ErrorHandler({ message }, message);
         return onError();
       }
       if (trace.maxAmount && trace.isCapped) {
@@ -428,7 +431,7 @@ class TraceService {
           res = await traces.create(trace.toFeathers());
         }
 
-        afterSave(true, null, TraceFactory.create(res));
+        afterSave(false, TraceFactory.create(res));
         return true;
       }
 
@@ -438,7 +441,7 @@ class TraceService {
         if (!profileHash) {
           res = await traces.patch(trace._id, trace.toFeathers());
         }
-        afterSave(null, false, res);
+        afterSave(false, res);
         return true;
       }
 
@@ -457,7 +460,7 @@ class TraceService {
         } else if (trace instanceof LPPCappedTrace) {
           // LPPCappedTrace has no update function, so just update feathers
           res = await traces.patch(trace._id, trace.toFeathers());
-          afterSave(null, false, res);
+          afterSave(false, res);
           return true;
         }
       } else {
@@ -485,10 +488,10 @@ class TraceService {
           // create trace in feathers
           res = await traces.create(trace.toFeathers(txHash));
         }
-        afterSave(false, `${etherScanUrl}tx/${txHash}`, res);
+        afterSave(`${etherScanUrl}tx/${txHash}`, res);
       });
 
-      afterMined(!trace.projectId, `${etherScanUrl}tx/${txHash}`, res._id);
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       const message = `Something went wrong with the Trace ${
         trace.projectId > 0 ? 'update' : 'creation'
@@ -574,7 +577,10 @@ class TraceService {
           trace.image = await IPFSService.upload(trace.image);
           trace.newImage = false;
         } catch (err) {
-          toast.error('Failed to upload trace image to ipfs');
+          notification.error({
+            message: '',
+            description: 'Failed to upload trace image to ipfs',
+          });
           return undefined;
         }
       }
@@ -587,7 +593,10 @@ class TraceService {
               traceItem.image = await IPFSService.upload(traceItem.image);
               traceItem.newImage = false;
             } catch (err) {
-              toast.error('Failed to upload trace item image to ipfs');
+              notification.error({
+                message: '',
+                description: 'Failed to upload trace item image to ipfs',
+              });
               return undefined;
             }
           }
@@ -934,8 +943,8 @@ class TraceService {
    * @param web3
    */
 
-  static changeRecipient({ trace, from, newRecipient, onConfirmation, web3 }) {
-    let txHash;
+  static changeRecipient({ trace, from, newRecipient, onTxHash, onConfirmation, web3 }) {
+    let txUrl;
 
     const traceContract = trace.contract(web3);
 
@@ -945,11 +954,12 @@ class TraceService {
         $extraGas: extraGas(),
       })
       .once('transactionHash', async hash => {
-        txHash = hash;
+        txUrl = `${etherScanUrl}tx/${hash}`;
+        onTxHash(txUrl);
       })
-      .on('receipt', () => onConfirmation(`${etherScanUrl}tx/${txHash}`))
+      .on('receipt', () => onConfirmation(txUrl))
       .catch(err => {
-        ErrorHandler(err, `${etherScanUrl}tx/${txHash}`);
+        ErrorHandler(err, txUrl);
       });
   }
 

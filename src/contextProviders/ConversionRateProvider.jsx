@@ -1,16 +1,16 @@
 // eslint-disable-next-line max-classes-per-file
 import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 import BigNumber from 'bignumber.js';
 import { getStartOfDayUTC } from '../lib/helpers';
-import ErrorPopup from '../components/ErrorPopup';
 import ErrorHandler from '../lib/ErrorHandler';
 import {
   convertMultipleRatesHourly,
   getConversionRateBetweenTwoSymbol,
 } from '../services/ConversionRateService';
 
-const Context = createContext();
+const Context = createContext({});
 const { Consumer, Provider } = Context;
 export { Consumer, Context };
 
@@ -161,14 +161,16 @@ class ConversionRateProvider extends Component {
       };
     } catch (e) {
       if (showPopupOnError) {
-        ErrorPopup(
-          'Sadly we were unable to get the exchange rate! Please try again after refresh.',
+        ErrorHandler(
           e,
+          'Sadly we were unable to get the exchange rate! Please try again after refresh.',
         );
       } else {
-        React.toast.error(
-          'Sadly we were unable to get the exchange rate! Please refresh the page later.',
-        );
+        notification.error({
+          message: '',
+          description:
+            'Sadly we were unable to get the exchange rate! Please refresh the page later.',
+        });
       }
     }
   }

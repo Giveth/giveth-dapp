@@ -33,6 +33,7 @@ import EditPayment from '../components/views/EditPayment';
 import EditExpense from '../components/views/EditExpense';
 import EditMilestone from '../components/views/EditMilestone';
 import EditCampaign from '../components/views/EditCampaign';
+import Verification from '../components/views/verification/Main';
 
 const Routes = () => {
   const { pathname } = useLocation();
@@ -49,6 +50,7 @@ const Routes = () => {
       {/* Routes are defined here. Persistent data is set as props on components
                                 NOTE order matters, wrong order breaks routes!
                             */}
+      <Route exact path="/verification/:slug" render={props => <Verification {...props} />} />
       <Route exact path="/communities/new" render={props => <EditCommunity isNew {...props} />} />
       <Route exact path="/communities/:id/edit" render={props => <EditCommunity {...props} />} />
       <Route

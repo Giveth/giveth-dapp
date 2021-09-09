@@ -2,16 +2,10 @@ import React from 'react';
 import Pagination from 'react-js-pagination';
 import PropTypes from 'prop-types';
 import DelegationsItem from './DelegationsItem';
-import { Donation, Trace } from '../../../models';
-import Campaign from '../../../models/Campaign';
-import BridgedTrace from '../../../models/BridgedTrace';
-import LPPCappedTrace from '../../../models/LPPCappedTrace';
-import LPTrace from '../../../models/LPTrace';
+import { Donation } from '../../../models';
 
 function DelegationsTable({
   delegations,
-  campaigns,
-  traces,
   totalResults,
   skipPages,
   itemsPerPage,
@@ -22,7 +16,7 @@ function DelegationsTable({
     <div className="dashboard-table-view">
       {delegations && delegations.length > 0 && (
         <div className="table-container">
-          <table className="table table-responsive table-striped table-hover">
+          <table className="table table-responsive table-striped table-hover mt-3">
             <thead>
               <tr>
                 {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -37,7 +31,7 @@ function DelegationsTable({
             </thead>
             <tbody>
               {delegations.map(d => (
-                <DelegationsItem key={d.id} donation={d} campaigns={campaigns} traces={traces} />
+                <DelegationsItem key={d.id} donation={d} />
               ))}
             </tbody>
           </table>
@@ -56,17 +50,15 @@ function DelegationsTable({
       )}
 
       {delegations && delegations.length === 0 && (
-        <div>
-          <div className="text-center">
-            <h3>There&apos;s nothing to delegate (yet)!</h3>
-            <img
-              className="empty-state-img"
-              src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
-              width="200px"
-              height="200px"
-              alt="no-delegations-icon"
-            />
-          </div>
+        <div className="text-center mt-5">
+          <h3>There&apos;s nothing to delegate (yet)!</h3>
+          <img
+            className="empty-state-img"
+            src={`${process.env.PUBLIC_URL}/img/delegation.svg`}
+            width="200px"
+            height="200px"
+            alt="no-delegations-icon"
+          />
         </div>
       )}
     </div>
@@ -75,10 +67,6 @@ function DelegationsTable({
 
 DelegationsTable.propTypes = {
   delegations: PropTypes.arrayOf(PropTypes.instanceOf(Donation)).isRequired,
-  campaigns: PropTypes.arrayOf(PropTypes.instanceOf(Campaign)).isRequired,
-  traces: PropTypes.arrayOf(
-    PropTypes.oneOfType([Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf)),
-  ).isRequired,
   totalResults: PropTypes.number.isRequired,
   skipPages: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,

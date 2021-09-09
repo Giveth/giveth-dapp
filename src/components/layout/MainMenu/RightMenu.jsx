@@ -11,7 +11,6 @@ import MenuBarCreateButton from '../../MenuBarCreateButton';
 import TotalGasPaid from '../../views/TotalGasPaid';
 import TraceService from '../../../services/TraceService';
 import DonationService from '../../../services/DonationService';
-import ErrorPopup from '../../ErrorPopup';
 import LoadProjectsInfo from '../../views/myDelegations/LoadProjectsInfo';
 import GetDonations from '../../views/myDelegations/GetDonations';
 import Campaign from '../../../models/Campaign';
@@ -64,7 +63,7 @@ const RightMenu = () => {
         setUserTotalTraces(resp.total);
       },
       onError: err => {
-        ErrorPopup('Something went wrong on getting user Traces!', err);
+        ErrorHandler(err, 'Something went wrong on getting user Traces!');
       },
     }).then();
   };
@@ -79,13 +78,13 @@ const RightMenu = () => {
         setUserTotalDonations(resp.total);
       },
       onError: err => {
-        ErrorPopup('Something went wrong on getting user donations!', err);
+        ErrorHandler(err, 'Something went wrong on getting user donations!');
       },
     });
   };
 
   const getUserDelegations = () => {
-    LoadProjectsInfo({ userAddress, noTraces: true })
+    LoadProjectsInfo(userAddress)
       .then(resArray => {
         const communities = resArray[0].data;
         const campaigns = resArray[1].data.map(c => new Campaign(c));

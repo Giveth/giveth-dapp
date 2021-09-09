@@ -1,7 +1,7 @@
 import React, { Fragment, useContext, useState, useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { Button, Modal, Select, Form } from 'antd';
+import { Button, Modal, Select, Form, notification } from 'antd';
 
 import Campaign from 'models/Campaign';
 import { checkBalance, authenticateUser } from '../lib/middleware';
@@ -56,26 +56,16 @@ const ChangeOwnershipButton = props => {
   const submit = () => {
     setSaving(true);
 
-    const afterCreate = async () => {
-      const msg = <p>The owner has been updated!</p>;
-      React.toast.success(msg);
+    const afterCreate = () => {
+      notification.success({
+        message: '',
+        description: 'The co-owner has been updated!',
+      });
       setSaving(false);
       setModalVisible(false);
     };
 
-    const afterMined = () => {
-      // const msg = <p>The owner has been updated!</p>;
-      // React.toast.success(msg);
-    };
-
-    CampaignService.changeOwnership(
-      campaign,
-      currentUser.address,
-      campaign.ownerAddress,
-      coownerAddress,
-      afterCreate,
-      afterMined,
-    );
+    CampaignService.changeOwnership(campaign, campaign.ownerAddress, coownerAddress, afterCreate);
   };
 
   // Set initial value for select component

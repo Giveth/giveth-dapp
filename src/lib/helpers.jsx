@@ -1,5 +1,5 @@
-import React from 'react';
-import { Modal } from 'antd';
+import React, { Fragment } from 'react';
+import { Modal, Button, notification } from 'antd';
 import { createBrowserHistory } from 'history';
 import moment from 'moment';
 import BigNumber from 'bignumber.js';
@@ -8,6 +8,52 @@ import Resizer from 'react-image-file-resizer';
 import DefaultAvatar from '../assets/avatar-100.svg';
 import config from '../configuration';
 import { sendAnalyticsPage } from './SegmentAnalytics';
+
+export const txNotification = (message, txUrl, isInfo) => {
+  const description = (
+    <Fragment>
+      {message}
+      {txUrl && (
+        <Fragment>
+          <br />
+          <a href={txUrl} target="_blank" rel="noopener noreferrer">
+            View transaction
+          </a>
+        </Fragment>
+      )}
+    </Fragment>
+  );
+
+  if (isInfo) {
+    notification.info({
+      message: '',
+      description,
+    });
+  } else {
+    notification.success({
+      message: '',
+      description,
+    });
+  }
+};
+
+export const shortenDescription = (description, showAll = false, onClick, charsLength = 110) => {
+  if (!description) {
+    return '';
+  }
+  if (description.length < charsLength || showAll) {
+    return description;
+  }
+
+  return (
+    <Fragment>
+      {`${description.slice(0, charsLength)} ...`}
+      <Button onClick={onClick} type="link" className="px-2 py-0">
+        See more
+      </Button>
+    </Fragment>
+  );
+};
 
 export const shortenAddress = (address, charsLength = 4) => {
   const prefixLength = 2; // "0x"
@@ -39,14 +85,13 @@ export const getTruncatedText = (text = '', maxLength = 45) => {
 };
 
 // displays alert with an error when the transaction goes wrong
-export const displayTransactionError = txHash => {
+export const displayTransactionError = txUrl => {
   let msg;
-  const { etherScanUrl } = config;
-  if (txHash) {
+  if (txUrl) {
     msg = (
       <p>
         Something went wrong with the transaction.
-        <a href={`${etherScanUrl}tx/${txHash}`} target="_blank" rel="noopener noreferrer">
+        <a href={txUrl} target="_blank" rel="noopener noreferrer">
           View transaction
         </a>
       </p>
@@ -79,8 +124,6 @@ export const getUserAvatar = owner => {
   }
   return DefaultAvatar;
 };
-
-export const getRandomWhitelistAddress = wl => wl[Math.floor(Math.random() * wl.length)].address;
 
 export const getReadableStatus = status => {
   switch (status) {

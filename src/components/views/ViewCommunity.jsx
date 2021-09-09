@@ -22,7 +22,6 @@ import CampaignCard from '../CampaignCard';
 import config from '../../configuration';
 import NotFound from './NotFound';
 import { checkBalance } from '../../lib/middleware';
-import ErrorPopup from '../ErrorPopup';
 import DescriptionRender from '../DescriptionRender';
 import ErrorBoundary from '../ErrorBoundary';
 import GoBackSection from '../GoBackSection';
@@ -191,13 +190,7 @@ const ViewCommunity = ({ match }) => {
       .then(() => {
         history.push(`/communities/${id}/edit`);
       })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorPopup('There is no balance left on the account.', err);
-        } else if (err !== undefined) {
-          ErrorPopup('Something went wrong.', err);
-        }
-      });
+      .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
   };
 
   const renderDescription = () => {
