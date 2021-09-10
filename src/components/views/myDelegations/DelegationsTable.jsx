@@ -35,20 +35,20 @@ function DelegationsTable({
               ))}
             </tbody>
           </table>
+          {totalResults > itemsPerPage && (
+            <div className="text-center">
+              <Pagination
+                activePage={skipPages + 1}
+                itemsCountPerPage={itemsPerPage}
+                totalItemsCount={totalResults}
+                pageRangeDisplayed={pageRangeDisplayed}
+                onChange={handlePageChanged}
+              />
+            </div>
+          )}
         </div>
       )}
 
-      {delegations && totalResults > itemsPerPage && (
-        <div className="text-center">
-          <Pagination
-            activePage={skipPages + 1}
-            itemsCountPerPage={itemsPerPage}
-            totalItemsCount={totalResults}
-            pageRangeDisplayed={pageRangeDisplayed}
-            onChange={handlePageChanged}
-          />
-        </div>
-      )}
       {delegations && delegations.length === 0 && (
         <div className="text-center mt-5">
           <h3>There&apos;s nothing to delegate (yet)!</h3>

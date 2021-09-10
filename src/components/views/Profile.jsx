@@ -100,7 +100,7 @@ const Profile = props => {
       <div className="container-fluid page-layout dashboard-table-view">
         <div className="row">
           <div className="col-md-8 m-auto">
-            <div className="text-center">
+            <div className="text-left">
               {(isLoading || (!isLoading && !user.address)) && (
                 <Lottie
                   animationData={SearchAnimation}
