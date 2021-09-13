@@ -3,6 +3,7 @@ import { TraceService } from '../services';
 import { history, txNotification } from './helpers';
 import { sendAnalyticsTracking } from './SegmentAnalytics';
 import ErrorHandler from './ErrorHandler';
+import { Trace } from '../models';
 
 export const TraceSave = props => {
   const {
@@ -32,7 +33,7 @@ export const TraceSave = props => {
     };
 
     if (!userIsCampaignOwner) {
-      txNotification(`${trace.formType} proposed to the Campaign owner`, false, true);
+      txNotification(`Your ${trace.formType} proposed to the Campaign owner`, false, true);
       sendAnalyticsTracking(trace.id ? 'Trace Edit' : 'Trace Create', {
         action: trace.id ? 'updated proposed' : 'proposed',
         ...analyticsData,
@@ -43,6 +44,8 @@ export const TraceSave = props => {
         action: 'created',
         ...analyticsData,
       });
+    } else if (res._status === Trace.PROPOSED) {
+      txNotification(`The proposed ${trace.formType} has been updated.`);
     } else {
       const notificationError = `It seems your ${trace.formType} has been ${
         trace.id ? 'updated' : 'created'
