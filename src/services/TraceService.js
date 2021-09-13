@@ -392,7 +392,11 @@ class TraceService {
       const query = {
         campaignId: trace.campaignId,
         title: {
-          $regex: `\\s*${trace.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*`,
+          /**
+           * The regex should be exactly like we use in feathers-giveth
+           * @see{@link https://github.com/Giveth/feathers-giveth/blob/develop/src/utils/regexUtils.js#L2}
+           */
+          $regex: `^\\s*${trace.title.replace(/^\s+|\s+$|\s+(?=\s)/g, '')}\\s*$`,
           $options: 'i',
         },
         $limit: 1,
