@@ -151,7 +151,7 @@ export const checkForeignNetwork = async (isForeignNetwork, displayForeignNetReq
   // already on correct network
   if (isForeignNetwork) return Promise.resolve();
 
-  displayForeignNetRequiredWarning(historyBackWFallback, 'Back');
+  displayForeignNetRequiredWarning();
   return Promise.reject(new Error('wrongNetwork'));
 };
 

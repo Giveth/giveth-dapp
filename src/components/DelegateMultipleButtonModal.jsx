@@ -39,6 +39,7 @@ const ModalContent = props => {
   } = useContext(UserContext);
   const {
     state: { isForeignNetwork, validProvider, isEnabled: Web3ContextIsEnabled, web3 },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
   const {
     actions: { delegationPending, delegationSuccessful, delegationFailed },
@@ -340,11 +341,6 @@ const ModalContent = props => {
 
   const modalContent = (
     <div id="delegate-multiple-modal">
-      <p>
-        You are delegating donations to
-        {!trace && <strong> {campaign.title}</strong>}
-        {trace && <strong> {trace.title}</strong>}
-      </p>
       <Fragment>
         {isLimitedDelegateCount() && (
           <div className="alert alert-warning">
@@ -488,8 +484,10 @@ const ModalContent = props => {
   const isContextReady =
     !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isCommunitiesFetched;
 
+  const modalBody = isContextReady ? modalContent : modalLoading;
+
   return (
-    <React.Fragment>
+    <Fragment>
       {!validProvider && (
         <div className="alert alert-warning">
           <i className="fa fa-exclamation-triangle" />
@@ -497,13 +495,21 @@ const ModalContent = props => {
         </div>
       )}
       {validProvider && (
-        <ActionNetworkWarning
-          incorrectNetwork={!isForeignNetwork}
-          networkName={config.foreignNetworkName}
-        />
-      )}{' '}
-      {isContextReady ? validProvider && isForeignNetwork && modalContent : modalLoading}
-    </React.Fragment>
+        <Fragment>
+          <p>
+            You are delegating donations to
+            {!trace && <strong> {campaign.title}</strong>}
+            {trace && <strong> {trace.title}</strong>}
+          </p>
+          <ActionNetworkWarning
+            incorrectNetwork={!isForeignNetwork}
+            switchNetwork={switchNetwork}
+            web3={web3}
+          />
+        </Fragment>
+      )}
+      {isForeignNetwork && modalBody}
+    </Fragment>
   );
 };
 

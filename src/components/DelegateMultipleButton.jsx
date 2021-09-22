@@ -25,8 +25,7 @@ const modalStyles = {
  */
 const DelegateMultipleButton = props => {
   const {
-    state: { isForeignNetwork, validProvider, balance, web3 },
-    actions: { displayForeignNetRequiredWarning },
+    state: { balance, web3 },
   } = useContext(Web3Context);
 
   const {
@@ -49,13 +48,7 @@ const DelegateMultipleButton = props => {
     <Fragment>
       <Button
         className="ant-btn-delegate"
-        onClick={() => {
-          if (validProvider && !isForeignNetwork) {
-            displayForeignNetRequiredWarning();
-          } else {
-            openDialog().then();
-          }
-        }}
+        onClick={openDialog}
         block
         size={props.size}
         style={props.style}

@@ -81,6 +81,7 @@ const DonateButtonModal = props => {
   } = useContext(UserContext);
   const {
     state: { isHomeNetwork, validProvider, balance: NativeTokenBalance, web3 },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
   const {
     actions: { donationPending, donationSuccessful, donationFailed },
@@ -690,6 +691,8 @@ const DonateButtonModal = props => {
             <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.homeNetworkName}
+              switchNetwork={switchNetwork}
+              web3={web3}
             />
           )}
 

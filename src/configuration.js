@@ -72,8 +72,10 @@ const configurations = {
     foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
+    foreignNetworkChainId: '0x4',
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
+    homeNetworkChainId: '0x3',
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     homeUrl: 'https://develop.giveth.io',
     analytics: {
@@ -103,8 +105,10 @@ const configurations = {
     foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
+    foreignNetworkChainId: '0x4',
     homeNetworkName: 'Ropsten',
     homeNetworkId: 3,
+    homeNetworkChainId: '0x3',
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     homeUrl: 'https://release.giveth.io',
     analytics: {
@@ -131,8 +135,10 @@ const configurations = {
     foreignNodeConnection: 'https://rinkeby2.giveth.io',
     foreignNetworkName: 'Rinkeby',
     foreignNetworkId: 4,
+    foreignNetworkChainId: '0x4',
     homeNetworkName: 'Mainnet',
     homeNetworkId: 1,
+    homeNetworkChainId: '0x1',
     ipfsGateway: 'https://ipfs.giveth.io/ipfs/',
     homeUrl: 'https://trace.giveth.io',
     analytics: {
