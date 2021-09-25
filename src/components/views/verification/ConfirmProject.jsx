@@ -6,13 +6,15 @@ import DescriptionRender from '../../DescriptionRender';
 const ConfirmProject = ({ handleNextStep, project, reportIssue, formIsValid, isSaving }) => {
   return (
     <div>
-      <img
-        className="w-100"
-        height={150}
-        src={project.image}
-        alt={project.title}
-        style={{ objectFit: 'cover' }}
-      />
+      {project.image && (
+        <img
+          className="w-100"
+          height={150}
+          src={project.image}
+          alt={project.title}
+          style={{ objectFit: 'cover' }}
+        />
+      )}
       <div className="row p-4">
         <div className="col-md-4">
           <div className="custom-title">Confirm your Project to make it traceable</div>

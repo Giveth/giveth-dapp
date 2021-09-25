@@ -15,13 +15,15 @@ const Congratulations = ({ campaignSlug, project }) => {
 
   return (
     <div>
-      <img
-        className="w-100"
-        height={150}
-        src={project.image}
-        alt={project.title}
-        style={{ objectFit: 'cover' }}
-      />
+      {project.image && (
+        <img
+          className="w-100"
+          height={150}
+          src={project.image}
+          alt={project.title}
+          style={{ objectFit: 'cover' }}
+        />
+      )}
       <div className="text-left p-5">
         <div>
           <strong>Title: </strong>
