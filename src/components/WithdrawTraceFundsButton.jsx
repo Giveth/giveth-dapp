@@ -1,6 +1,6 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Select } from 'antd';
+import { Modal, notification, Select } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
@@ -149,8 +149,14 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw, withdrawal
             okText: 'Withdrawal',
             centered: true,
             width: 500,
-            onOk: () =>
-              TraceService.withdraw({
+            onOk: () => {
+              if (selectedTokens.current.length < 1) {
+                return notification.error({
+                  message: 'No token selected!',
+                  description: 'Select at least one token to withdraw.',
+                });
+              }
+              return TraceService.withdraw({
                 web3,
                 trace,
                 from: userAddress,
@@ -171,7 +177,8 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw, withdrawal
                   // TODO: need to update feathers to reset the donations to previous state as this
                   else displayTransactionError(txUrl);
                 },
-              }),
+              });
+            },
           });
         })
         .catch(err =>
