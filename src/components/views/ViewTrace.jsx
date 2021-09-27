@@ -71,15 +71,16 @@ const ViewTrace = props => {
   const [trace, setTrace] = useState({});
   const [communityTitle, setCommunityTitle] = useState('');
   const [notFound, setNotFound] = useState(false);
-  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
+  const [withdrawalTokens, setWithdrawalTokens] = useState([]);
 
   const donationsObserver = useRef();
   const traceSubscription = useRef();
   const newDonations = useRef(0);
   const donationsPerBatch = 50;
+  const isAmountEnoughForWithdraw = withdrawalTokens.length > 0;
 
   const getCommunityTitle = async communityId => {
     if (communityId === 0) return;
@@ -196,16 +197,20 @@ const ViewTrace = props => {
     if (!currentBalanceUsdValue) {
       return;
     }
+    const _withdrawalTokens = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const currencyUsdValue of currentBalanceUsdValue) {
-      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
-      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
-      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
-        setIsAmountEnoughForWithdraw(false);
-        return;
+      if (currencyUsdValue.usdValue >= minimumPayoutUsdValue) {
+        const token = activeTokenWhitelist.find(
+          _token => _token.symbol === currencyUsdValue.currency,
+        );
+        _withdrawalTokens.push(token);
       }
     }
-    setIsAmountEnoughForWithdraw(true);
+
+    if (_withdrawalTokens.length) {
+      setWithdrawalTokens(_withdrawalTokens);
+    }
   }, [currentBalanceUsdValue]);
 
   const isActiveTrace = () => {
@@ -380,6 +385,7 @@ const ViewTrace = props => {
                   trace={trace}
                   campaign={campaign}
                   isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                  withdrawalTokens={withdrawalTokens}
                 />
 
                 <div id="description">
@@ -624,6 +630,7 @@ const ViewTrace = props => {
                       trace={trace}
                       isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                       maxHeight={`${detailsCardHeight}px`}
+                      withdrawalTokens={withdrawalTokens}
                     />
                   </div>
                 </div>

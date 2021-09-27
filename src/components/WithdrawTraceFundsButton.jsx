@@ -1,16 +1,16 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { Modal, Select } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
 import { authenticateUser, checkBalance } from 'lib/middleware';
-import { Modal } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../contextProviders/NotificationModalProvider';
+import { Context as UserContext } from '../contextProviders/UserProvider';
 import DonationBlockchainService from '../services/DonationBlockchainService';
 import LPTrace from '../models/LPTrace';
 import config from '../configuration';
-import { Context as UserContext } from '../contextProviders/UserProvider';
 import ErrorHandler from '../lib/ErrorHandler';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
@@ -21,7 +21,7 @@ import {
 } from '../services/ConversionRateService';
 import { displayTransactionError, txNotification } from '../lib/helpers';
 
-const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
+const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw, withdrawalTokens }) => {
   const {
     state: { currentUser },
   } = useContext(UserContext);
@@ -32,6 +32,8 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
     actions: { minPayoutWarningInWithdraw },
   } = useContext(NotificationContext);
+
+  const selectedTokens = useRef([]);
 
   async function sendWithdrawAnalyticsEvent(txUrl) {
     const donationsCounters = trace.donationCounters.filter(dc => dc.currentBalance.gt(0));
@@ -85,6 +87,15 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
             minPayoutWarningInWithdraw();
             return;
           }
+
+          let defaultValue;
+          if (withdrawalTokens.length === 1) {
+            const token = withdrawalTokens[0];
+            // eslint-disable-next-line react/prop-types
+            defaultValue = token.address;
+            selectedTokens.current = defaultValue;
+          }
+
           Modal.confirm({
             title: isRecipient ? 'Withdrawal Funds to Wallet' : 'Disburse Funds to Recipient',
             content: (
@@ -111,16 +122,39 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                     {isRecipient ? 'your' : "the recipient's"} wallet.
                   </div>
                 )}
+
+                <div className="my-3 font-weight-bold">Select tokens to withdraw:</div>
+                <Select
+                  mode="multiple"
+                  id="token-select"
+                  allowClear
+                  placeholder="------ Select tokens ------"
+                  defaultValue={defaultValue}
+                  onChange={address => {
+                    selectedTokens.current = address;
+                  }}
+                  disabled={withdrawalTokens.length === 1}
+                  style={{ width: '100%' }}
+                  className="ant-select-custom-multiple"
+                >
+                  {withdrawalTokens.map(item => (
+                    <Select.Option value={item.address} key={item.symbol}>
+                      {item.symbol}
+                    </Select.Option>
+                  ))}
+                </Select>
               </Fragment>
             ),
             cancelText: 'Cancel',
-            okText: 'Yes, withdrawal',
+            okText: 'Withdrawal',
             centered: true,
             width: 500,
             onOk: () =>
               TraceService.withdraw({
+                web3,
                 trace,
                 from: userAddress,
+                selectedTokens: selectedTokens.current,
                 onTxHash: txUrl => {
                   sendWithdrawAnalyticsEvent(txUrl);
                   txNotification('Initiating withdrawal from Trace...', txUrl, true);
@@ -137,7 +171,6 @@ const WithdrawTraceFundsButton = ({ trace, isAmountEnoughForWithdraw }) => {
                   // TODO: need to update feathers to reset the donations to previous state as this
                   else displayTransactionError(txUrl);
                 },
-                web3,
               }),
           });
         })
@@ -170,6 +203,11 @@ WithdrawTraceFundsButton.propTypes = {
     [Trace, BridgedTrace, LPPCappedTrace, LPTrace].map(PropTypes.instanceOf),
   ).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  withdrawalTokens: PropTypes.arrayOf(PropTypes.shape({})),
+};
+
+WithdrawTraceFundsButton.defaultProps = {
+  withdrawalTokens: [],
 };
 
 export default React.memo(WithdrawTraceFundsButton);
