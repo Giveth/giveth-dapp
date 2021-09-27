@@ -117,6 +117,8 @@ const Verification = props => {
         },
       })
       .then(_project => {
+        // Default project images in IO are saved as numbers, we remove them
+        if (/^\d+$/.test(_project.image)) _project.image = '';
         setProject(_project);
         setStep(step + 1);
       })
