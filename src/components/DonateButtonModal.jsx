@@ -691,7 +691,7 @@ const DonateButtonModal = props => {
             <ActionNetworkWarning
               incorrectNetwork={!isCorrectNetwork}
               networkName={config.homeNetworkName}
-              switchNetwork={switchNetwork}
+              switchNetwork={() => switchNetwork(config.homeNetworkChainId)}
               web3={web3}
             />
           )}

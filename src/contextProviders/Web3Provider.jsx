@@ -73,14 +73,18 @@ const Web3Provider = props => {
   const isMetaMask = web3 && web3.MetaMask;
   const isEnabled = !!web3 && !!account && !!balance && !!networkId;
 
-  const switchNetwork = () => {
+  const switchNetwork = _chainId => {
     if (isMetaMask) {
-      window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [
-          { chainId: isForeignNetwork ? config.homeNetworkChainId : config.foreignNetworkChainId },
-        ],
-      });
+      let chainId = config.foreignNetworkChainId;
+      if (isForeignNetwork) chainId = config.homeNetworkChainId;
+      if (typeof _chainId === 'string') chainId = _chainId;
+      window.ethereum
+        .request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId }],
+        })
+        .then(() => setShowForeignNetWarning(false))
+        .catch();
     }
   };
 
@@ -97,7 +101,7 @@ const Web3Provider = props => {
       <NetworkWarningModal
         show={showForeignNetWarning && !isForeignNetwork}
         closeModal={() => setShowForeignNetWarning(false)}
-        switchNetwork={switchNetwork}
+        switchNetwork={chainId => switchNetwork(chainId)}
         web3={web3}
       />
       <Provider
@@ -116,7 +120,7 @@ const Web3Provider = props => {
             enableProvider,
             initOnBoard,
             displayForeignNetRequiredWarning: () => setShowForeignNetWarning(true),
-            switchNetwork,
+            switchNetwork: chainId => switchNetwork(chainId),
           },
         }}
       >
