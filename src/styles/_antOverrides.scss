@@ -154,6 +154,14 @@
   .ant-select-selection-item {
     line-height: 30px !important;
     height: 30px;
+    border-radius: 20px;
+    font-size: 14px;
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+  .ant-select-selection-item-remove {
+    margin-top: -3px;
+    margin-left: 5px;
   }
 }
 
