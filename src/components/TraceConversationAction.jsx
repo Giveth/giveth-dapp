@@ -1,5 +1,5 @@
 /* eslint-disable react/prefer-stateless-function */
-// @dev: not prefering stateless here because functionality will be extended
+// @dev: not preferring stateless here because functionality will be extended
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
@@ -16,7 +16,7 @@ import LPTrace from '../models/LPTrace';
 
 class TraceConversationAction extends Component {
   render() {
-    const { messageContext, trace, isAmountEnoughForWithdraw } = this.props;
+    const { messageContext, trace, isAmountEnoughForWithdraw, withdrawalTokens } = this.props;
 
     switch (messageContext) {
       case 'proposed':
@@ -38,6 +38,7 @@ class TraceConversationAction extends Component {
           <WithdrawTraceFundsButton
             trace={trace}
             isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+            withdrawalTokens={withdrawalTokens}
           />
         );
 
@@ -68,6 +69,11 @@ TraceConversationAction.propTypes = {
   ).isRequired,
   messageContext: PropTypes.string.isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  withdrawalTokens: PropTypes.arrayOf(PropTypes.shape({})),
+};
+
+TraceConversationAction.defaultProps = {
+  withdrawalTokens: [],
 };
 
 export default React.memo(TraceConversationAction);

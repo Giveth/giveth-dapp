@@ -143,7 +143,12 @@ const getEtherScanUrl = ({ messageContext }) =>
     ? config.homeEtherscan
     : config.etherscan;
 
-function TraceConversationItem({ conversation, trace, isAmountEnoughForWithdraw }) {
+function TraceConversationItem({
+  conversation,
+  trace,
+  isAmountEnoughForWithdraw,
+  withdrawalTokens,
+}) {
   if (!conversation) return null;
   const { txHash, messageContext, message, performedByRole, createdAt, owner } = conversation;
 
@@ -180,6 +185,7 @@ function TraceConversationItem({ conversation, trace, isAmountEnoughForWithdraw 
             messageContext={messageContext}
             trace={trace}
             isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+            withdrawalTokens={withdrawalTokens}
           />
         </div>
 
@@ -195,6 +201,11 @@ TraceConversationItem.propTypes = {
   ).isRequired,
   conversation: PropTypes.instanceOf(Object).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  withdrawalTokens: PropTypes.arrayOf(PropTypes.shape({})),
+};
+
+TraceConversationItem.defaultProps = {
+  withdrawalTokens: [],
 };
 
 export default React.memo(TraceConversationItem);

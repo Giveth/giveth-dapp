@@ -146,6 +146,25 @@
 	}
 }
 
+//Ant custom multi select with ant-select-custom-multiple class
+.ant-select-custom-multiple {
+  .ant-select-selection-overflow {
+    margin-top: -3px;
+  }
+  .ant-select-selection-item {
+    line-height: 30px !important;
+    height: 30px;
+    border-radius: 20px;
+    font-size: 14px;
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+  .ant-select-selection-item-remove {
+    margin-top: -3px;
+    margin-left: 5px;
+  }
+}
+
 .ant-picker {
 	width: 100%;
 	border: 2px solid #dfdae8;

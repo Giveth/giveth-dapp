@@ -18,7 +18,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 
-const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
+const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw, withdrawalTokens }) => {
   const {
     state: { currentUser, userIsCommunityOwner },
   } = useContext(UserContext);
@@ -92,6 +92,7 @@ const ViewTraceAlerts = ({ trace, campaign, isAmountEnoughForWithdraw }) => {
           <WithdrawTraceFundsButton
             trace={trace}
             isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+            withdrawalTokens={withdrawalTokens}
           />
         </ProjectViewActionAlert>
       )}
@@ -105,6 +106,11 @@ ViewTraceAlerts.propTypes = {
   ).isRequired,
   campaign: PropTypes.instanceOf(Campaign).isRequired,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  withdrawalTokens: PropTypes.arrayOf(PropTypes.shape({})),
+};
+
+ViewTraceAlerts.defaultProps = {
+  withdrawalTokens: [],
 };
 
 export default React.memo(ViewTraceAlerts);
