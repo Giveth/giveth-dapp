@@ -839,7 +839,7 @@ class DonationBlockchainService {
       .then(({ total }) => total);
   }
 
-  static async getTraceDonations(traceId) {
+  static async getTraceDonations(traceId, selectedTokens) {
     const service = feathersClient.service('/donations');
     let data = [];
     let total;
@@ -857,6 +857,11 @@ class DonationBlockchainService {
         $limit: spare || 1,
         $sort: { tokenAddress: 1, pledgeId: 1 }, // group by token
       };
+
+      if (selectedTokens) {
+        query.tokenAddress = { $in: selectedTokens };
+      }
+
       // eslint-disable-next-line no-await-in-loop
       const resp = await service.find({ query });
 

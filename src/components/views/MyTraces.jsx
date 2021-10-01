@@ -2,24 +2,21 @@ import React, { useState, useEffect, useContext, useCallback, Fragment, useRef }
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
+import { Helmet } from 'react-helmet';
 
+import TraceActions from 'components/TraceActions';
 import ActionNetworkWarning from 'components/ActionNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import { Context as WhiteListContext } from 'contextProviders/WhiteListProvider';
-import TraceActions from 'components/TraceActions';
-import { Helmet } from 'react-helmet';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
-
 import AuthenticationWarning from '../AuthenticationWarning';
 import Loader from '../Loader';
-
 import {
   getTruncatedText,
   getReadableStatus,
   convertEthHelper,
   ANY_TOKEN,
 } from '../../lib/helpers';
-
 import TraceService from '../../services/TraceService';
 import Trace from '../../models/Trace';
 import ErrorHandler from '../../lib/ErrorHandler';

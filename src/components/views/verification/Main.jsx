@@ -82,8 +82,7 @@ const Verification = props => {
         setStep(step + 1);
       })
       .catch(err => {
-        if (err.message) ErrorHandler(err, err.message);
-        else ErrorHandler(err, 'Something went wrong!');
+        ErrorHandler(err, err.message);
       })
       .finally(() => setIsSaving(false));
   };

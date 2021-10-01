@@ -82,7 +82,8 @@ class TraceService {
     } else if (slug) {
       query.slug = slug;
     }
-    traces
+
+    return traces
       .watch({ listStrategy: 'always' })
       .find({ query })
       .subscribe(resp => {
@@ -971,19 +972,21 @@ class TraceService {
    * Withdraw the donations (pledges) from a trace
    * Only possible when the traces was approved for completion
    *
-   * @param trace       a Trace model
+   * @param trace           a Trace model
    * @param from            (string) Ethereum address
    * @param onTxHash        Callback function once the transaction was created
    * @param onConfirmation  Callback function once the transaction was mined
    * @param onError         Callback function if error is encountered
+   * @param selectedToken   Selected Token to withdraw
    * @param web3
    */
 
-  static withdraw({ trace, from, onTxHash, onConfirmation, onError, web3 }) {
+  static withdraw({ trace, from, onTxHash, onConfirmation, onError, web3, selectedTokens }) {
     let txHash;
-
-    DonationBlockchainService.getTraceDonations(trace._id)
+    DonationBlockchainService.getTraceDonations(trace._id, selectedTokens)
       .then(data => {
+        // console.log(data);
+
         const traceContract = trace.contract(web3);
 
         const execute = opts => {

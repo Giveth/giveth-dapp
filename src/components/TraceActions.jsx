@@ -24,13 +24,15 @@ function TraceActions({ trace }) {
     actions: { convertMultipleRates },
   } = useContext(ConversionRateContext);
   const {
-    state: { minimumPayoutUsdValue },
+    state: { minimumPayoutUsdValue, activeTokenWhitelist },
   } = useContext(WhiteListContext);
   const {
     state: { currentUser },
   } = useContext(UserContext);
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
-  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
+  const [withdrawalTokens, setWithdrawalTokens] = useState([]);
+
+  const isAmountEnoughForWithdraw = withdrawalTokens.length > 0;
 
   const calculateTraceCurrentBalanceUsdValue = async () => {
     try {
@@ -55,16 +57,20 @@ function TraceActions({ trace }) {
     if (!currentBalanceUsdValue) {
       return;
     }
+    const _withdrawalTokens = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const currencyUsdValue of currentBalanceUsdValue) {
-      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
-      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
-      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
-        setIsAmountEnoughForWithdraw(false);
-        return;
+      if (currencyUsdValue.usdValue >= minimumPayoutUsdValue) {
+        const token = activeTokenWhitelist.find(
+          _token => _token.symbol === currencyUsdValue.currency,
+        );
+        _withdrawalTokens.push(token);
       }
     }
-    setIsAmountEnoughForWithdraw(true);
+
+    if (_withdrawalTokens.length) {
+      setWithdrawalTokens(_withdrawalTokens);
+    }
   }, [currentBalanceUsdValue]);
 
   useEffect(() => {
@@ -107,6 +113,7 @@ function TraceActions({ trace }) {
       <WithdrawTraceFundsButton
         trace={trace}
         isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+        withdrawalTokens={withdrawalTokens}
       />
 
       <EditTraceButton trace={trace} />
