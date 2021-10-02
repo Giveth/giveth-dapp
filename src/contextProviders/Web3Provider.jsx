@@ -83,7 +83,9 @@ const Web3Provider = props => {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId }],
         })
-        .then(() => setShowForeignNetWarning(false))
+        .then(() => {
+          if (showForeignNetWarning) setShowForeignNetWarning(false);
+        })
         .catch();
     }
   };
