@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
-import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
@@ -19,6 +18,7 @@ import { authenticateUser, checkBalance } from '../../lib/middleware';
 import DonationBlockchainService from '../../services/DonationBlockchainService';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import ActionNetworkWarning from '../ActionNetworkWarning';
 
 const { useBreakpoint } = Grid;
 const etherScanUrl = config.etherscan;
@@ -34,7 +34,8 @@ const MyDonations = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const {
-    state: { isForeignNetwork, balance, web3 },
+    state: { isForeignNetwork, web3, balance },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
 
   const {
@@ -194,9 +195,11 @@ const MyDonations = () => {
           <div className="col-md-10 m-auto">
             {(isLoading || (donations && donations.length > 0)) && <h1>My Donations</h1>}
 
-            <ViewNetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isForeignNetwork}
-              networkName={config.foreignNetworkName}
+              switchNetwork={switchNetwork}
+              web3={web3}
+              isInline
             />
 
             <AuthenticationWarning />

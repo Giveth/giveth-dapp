@@ -2,9 +2,7 @@ import React, { Fragment, useCallback, useContext, useEffect, useRef, useState }
 import { Helmet } from 'react-helmet';
 import { Select, Grid, Button } from 'antd';
 
-import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
-import config from 'configuration';
 import Loader from '../../Loader';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import AuthenticationWarning from '../../AuthenticationWarning';
@@ -15,6 +13,7 @@ import ErrorHandler from '../../../lib/ErrorHandler';
 import LoadProjectsInfo from './LoadProjectsInfo';
 import GetDonations from './GetDonations';
 import Web3ConnectWarning from '../../Web3ConnectWarning';
+import ActionNetworkWarning from '../../ActionNetworkWarning';
 
 const { useBreakpoint } = Grid;
 
@@ -23,7 +22,8 @@ const { useBreakpoint } = Grid;
  */
 const MyDelegations = () => {
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
   const {
     state: { currentUser },
@@ -158,9 +158,11 @@ const MyDelegations = () => {
           <div className="col-md-10 m-auto">
             {(isLoading || (delegations && delegations.length > 0)) && <h1>My Delegations</h1>}
 
-            <ViewNetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isForeignNetwork}
-              networkName={config.foreignNetworkName}
+              switchNetwork={switchNetwork}
+              web3={web3}
+              isInline
             />
 
             <AuthenticationWarning />

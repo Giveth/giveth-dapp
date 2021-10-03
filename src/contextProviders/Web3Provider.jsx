@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
 import Onboard from 'bnc-onboard';
 import Web3 from 'web3';
-
 import config from '../configuration';
-import { ForeignRequiredModal, HomeRequiredModal } from '../components/NetworkWarningModal';
+import NetworkWarningModal from '../components/NetworkWarningModal';
 
 const Context = createContext({});
 const { Provider, Consumer } = Context;
@@ -22,14 +21,7 @@ const Web3Provider = props => {
   const [account, setAccount] = useState();
   const [balance, setBalance] = useState();
   const [onboard, setOnboard] = useState({});
-  const [homeNetRequiredWarning, setHomeNetRequiredWarning] = useState({
-    showHomeNetRequiredWarning: false,
-    homeNetWarningButtonLabel: 'Close',
-  });
-  const [foreignNetRequiredWarning, setForeignNetRequiredWarning] = useState({
-    showForeignNetRequiredWarning: false,
-    foreignNetWarningButtonLabel: 'Close',
-  });
+  const [showForeignNetWarning, setShowForeignNetWarning] = useState(false);
 
   const setNetworkState = networkId => {
     const isHomeNetwork = networkId === config.homeNetworkId;
@@ -77,33 +69,26 @@ const Web3Provider = props => {
     onboard.walletCheck().then();
   };
 
-  const displayForeignNetRequiredWarning = (onClose, buttonLabel = 'Close') => {
-    setForeignNetRequiredWarning({
-      showForeignNetRequiredWarning: true,
-      onForeignNetWarningClose: onClose,
-      foreignNetWarningButtonLabel: buttonLabel,
-    });
-  };
-
-  const displayHomeNetRequiredWarning = (onClose, buttonLabel = 'Close') => {
-    setHomeNetRequiredWarning({
-      showHomeNetRequiredWarning: true,
-      onHomeNetWarningClose: onClose,
-      homeNetWarningButtonLabel: buttonLabel,
-    });
-  };
-
   const { networkId, isForeignNetwork, isHomeNetwork } = network;
-  const {
-    showHomeNetRequiredWarning,
-    onHomeNetWarningClose,
-    homeNetWarningButtonLabel,
-  } = homeNetRequiredWarning;
-  const {
-    showForeignNetRequiredWarning,
-    onForeignNetWarningClose,
-    foreignNetWarningButtonLabel,
-  } = foreignNetRequiredWarning;
+  const isMetaMask = web3 && web3.MetaMask;
+  const isEnabled = !!web3 && !!account && !!balance && !!networkId;
+
+  const switchNetwork = _chainId => {
+    if (isMetaMask) {
+      let chainId = config.foreignNetworkChainId;
+      if (isForeignNetwork) chainId = config.homeNetworkChainId;
+      if (typeof _chainId === 'string') chainId = _chainId;
+      window.ethereum
+        .request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId }],
+        })
+        .then(() => {
+          if (showForeignNetWarning) setShowForeignNetWarning(false);
+        })
+        .catch();
+    }
+  };
 
   useEffect(() => {
     initOnBoard();
@@ -113,35 +98,13 @@ const Web3Provider = props => {
     if (networkId) onboard.config({ networkId });
   }, [networkId]);
 
-  const isEnabled = !!web3 && !!account && !!balance && !!networkId;
-
   return (
     <Fragment>
-      <ForeignRequiredModal
-        show={showForeignNetRequiredWarning && !isForeignNetwork}
-        closeModal={() => {
-          const onClose = onForeignNetWarningClose || (() => {});
-          setForeignNetRequiredWarning({
-            showForeignNetRequiredWarning: false,
-            onForeignNetWarningClose: undefined,
-            foreignNetWarningButtonLabel: 'Close',
-          });
-          onClose();
-        }}
-        buttonLabel={foreignNetWarningButtonLabel}
-      />
-      <HomeRequiredModal
-        show={showHomeNetRequiredWarning && !isHomeNetwork}
-        closeModal={() => {
-          const onClose = onHomeNetWarningClose || (() => {});
-          setHomeNetRequiredWarning({
-            showHomeNetRequiredWarning: false,
-            onHomeNetWarningClose: undefined,
-            homeNetWarningButtonLabel: undefined,
-          });
-          onClose();
-        }}
-        buttonLabel={homeNetWarningButtonLabel}
+      <NetworkWarningModal
+        show={showForeignNetWarning && !isForeignNetwork}
+        closeModal={() => setShowForeignNetWarning(false)}
+        switchNetwork={chainId => switchNetwork(chainId)}
+        web3={web3}
       />
       <Provider
         value={{
@@ -158,8 +121,8 @@ const Web3Provider = props => {
             switchWallet,
             enableProvider,
             initOnBoard,
-            displayForeignNetRequiredWarning,
-            displayHomeNetRequiredWarning,
+            displayForeignNetRequiredWarning: () => setShowForeignNetWarning(true),
+            switchNetwork: chainId => switchNetwork(chainId),
           },
         }}
       >

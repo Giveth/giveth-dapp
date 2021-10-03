@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal } from 'antd';
+import Web3 from 'web3';
 import ActionNetworkWarning from './ActionNetworkWarning';
-import config from '../configuration';
 
 const NetworkWarningModal = props => {
-  const { show, closeModal, networkName } = props;
+  const { show, closeModal, switchNetwork, web3 } = props;
   return (
     <Modal
       visible={show}
@@ -19,9 +19,7 @@ const NetworkWarningModal = props => {
         </Button>,
       ]}
     >
-      <div>
-        <ActionNetworkWarning incorrectNetwork networkName={networkName} />
-      </div>
+      <ActionNetworkWarning incorrectNetwork switchNetwork={switchNetwork} web3={web3} />
     </Modal>
   );
 };
@@ -29,25 +27,13 @@ const NetworkWarningModal = props => {
 NetworkWarningModal.propTypes = {
   show: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
-  networkName: PropTypes.string.isRequired,
+  switchNetwork: PropTypes.func,
+  web3: PropTypes.instanceOf(Web3),
 };
 
-const ForeignRequiredModal = props => {
-  return <NetworkWarningModal networkName={config.foreignNetworkName} {...props} />;
-};
-const HomeRequiredModal = props => {
-  return <NetworkWarningModal networkName={config.foreignNetworkName} {...props} />;
+NetworkWarningModal.defaultProps = {
+  switchNetwork: () => {},
+  web3: undefined,
 };
 
-ForeignRequiredModal.propTypes = {
-  show: PropTypes.bool.isRequired,
-  closeModal: PropTypes.func.isRequired,
-  buttonLabel: PropTypes.string.isRequired,
-};
-HomeRequiredModal.propTypes = {
-  show: PropTypes.bool.isRequired,
-  closeModal: PropTypes.func.isRequired,
-  buttonLabel: PropTypes.string.isRequired,
-};
-
-export { ForeignRequiredModal, HomeRequiredModal };
+export default NetworkWarningModal;
