@@ -239,7 +239,7 @@ class DonationBlockchainService {
             .create(newDonation)
             .then(() => onCreated(`${etherScanUrl}tx/${txHash}`))
             .catch(err => {
-              ErrorHandler(err, 'Unable to update the donation in feathers!');
+              ErrorHandler(err, 'Unable to create the donation in feathers!');
               onError(err);
             });
           const from = delegateId > 0 ? delegateEntity.ownerAddress : ownerEntity.ownerAddress;
