@@ -23,8 +23,8 @@ const ArchiveCampaignButton = ({ campaign, className, onSuccess }) => {
         <Fragment>
           <p>
             By Archiving this Campaign, it will no longer be listed and will be unable to accept
-            future donations or delegations. Any Traces listed under this Campaign will be archived
-            as well. It can be reactivated again by Giveth Admin only
+            future donations or delegations. Any Traces listed under this Campaign will be Archived
+            as well. This action can only be reversed by a Giveth admin.
           </p>
           <p>Would you like to proceed?</p>
         </Fragment>
