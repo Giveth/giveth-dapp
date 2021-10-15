@@ -19,8 +19,16 @@ const ArchiveCampaignButton = ({ campaign, className, onSuccess }) => {
     authenticateUser(currentUser, false, web3).then(authenticated => {
       if (!authenticated) return;
 
-      const archiveMessage =
-        'By archiving this campaign, it will no longer be listed and will be unable to accept future donations or delegations. Any TRACES listed under this campaign will be archived as well. Would you like to proceed?';
+      const archiveMessage = (
+        <Fragment>
+          <p>
+            By Archiving this Campaign, it will no longer be listed and will be unable to accept
+            future donations or delegations. Any Traces listed under this Campaign will be archived
+            as well. It can be reactivated again by Giveth Admin only
+          </p>
+          <p>Would you like to proceed?</p>
+        </Fragment>
+      );
       const unarchiveMessage = 'Are you sure you want to Unarchive this Campaign?';
 
       Modal.confirm({
@@ -38,8 +46,9 @@ const ArchiveCampaignButton = ({ campaign, className, onSuccess }) => {
   const userAddress = currentUser.address;
   const { ownerAddress } = campaign;
   const canUserArchive = userAddress && (userAddress === ownerAddress || currentUser.isAdmin);
+  const canUserUnArchive = userAddress && currentUser.isAdmin;
   const isArchiveable = canUserArchive && campaign.isActive;
-  const isUnArchiveable = canUserArchive && campaign.status === Campaign.ARCHIVED;
+  const isUnArchiveable = canUserUnArchive && campaign.status === Campaign.ARCHIVED;
 
   return (
     <Fragment>
