@@ -61,7 +61,7 @@ class DonationHistory extends Component {
       historyItem.parentIds,
       historyItem,
     );
-    if (parents.length > 0) {
+    if (!historyItem.homeTxHash && parents.length > 0) {
       historyItem.parents = parents.map(d => DonationHistory.createHistoryItem(d));
       await Promise.all(historyItem.parents.map(item => this.loadCommittedParents(item)));
     }
@@ -77,7 +77,6 @@ class DonationHistory extends Component {
     } else {
       await this.loadCommittedParents(root);
       parents = root.parents;
-
       if (donation.status === Donation.COMMITTED) {
         if (parents.length > 0) {
           setItemHasHistory(true);

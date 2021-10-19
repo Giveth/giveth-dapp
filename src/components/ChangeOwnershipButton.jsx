@@ -1,12 +1,11 @@
 import React, { Fragment, useContext, useState, useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
-import { Button, Modal, Select, Form } from 'antd';
+import { Button, Modal, Select, Form, notification } from 'antd';
 
 import Campaign from 'models/Campaign';
 import { checkBalance, authenticateUser } from '../lib/middleware';
 import { ZERO_ADDRESS } from '../lib/helpers';
-import config from '../configuration';
 import ActionNetworkWarning from './ActionNetworkWarning';
 
 import CampaignService from '../services/CampaignService';
@@ -31,6 +30,7 @@ const noCoownerOption = {
 const ChangeOwnershipButton = props => {
   const {
     state: { balance, isForeignNetwork, validProvider, web3 },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
   const {
     state: { currentUser },
@@ -56,26 +56,16 @@ const ChangeOwnershipButton = props => {
   const submit = () => {
     setSaving(true);
 
-    const afterCreate = async () => {
-      const msg = <p>The owner has been updated!</p>;
-      React.toast.success(msg);
+    const afterCreate = () => {
+      notification.success({
+        message: '',
+        description: 'The co-owner has been updated!',
+      });
       setSaving(false);
       setModalVisible(false);
     };
 
-    const afterMined = () => {
-      // const msg = <p>The owner has been updated!</p>;
-      // React.toast.success(msg);
-    };
-
-    CampaignService.changeOwnership(
-      campaign,
-      currentUser.address,
-      campaign.ownerAddress,
-      coownerAddress,
-      afterCreate,
-      afterMined,
-    );
+    CampaignService.changeOwnership(campaign, campaign.ownerAddress, coownerAddress, afterCreate);
   };
 
   // Set initial value for select component
@@ -113,16 +103,19 @@ const ChangeOwnershipButton = props => {
           </div>
         )}
         {validProvider && (
-          <ActionNetworkWarning
-            incorrectNetwork={!isForeignNetwork}
-            networkName={config.foreignNetworkName}
-          />
-        )}
-        {isForeignNetwork && (
-          <Form onFinish={submit}>
+          <Fragment>
             <p>
               Changing ownership for<strong> {campaign.title}</strong>
             </p>
+            <ActionNetworkWarning
+              incorrectNetwork={!isForeignNetwork}
+              switchNetwork={switchNetwork}
+              web3={web3}
+            />
+          </Fragment>
+        )}
+        {isForeignNetwork && (
+          <Form onFinish={submit}>
             <div className="label mb-2">Select a new co-owner:</div>
             {formIsReady && (
               <Fragment>

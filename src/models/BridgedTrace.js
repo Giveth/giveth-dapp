@@ -1,4 +1,4 @@
-import { BridgedMilestone as BridgedMilestoneContract } from 'lpp-milestones';
+import { BridgedMilestone as BridgedMilestoneContract } from '@giveth/lpp-milestones';
 import Trace from './Trace';
 
 /**

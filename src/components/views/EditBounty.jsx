@@ -1,5 +1,5 @@
 import React, { memo, useContext, useEffect, useState, Fragment } from 'react';
-import { Button, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import {
@@ -19,7 +19,7 @@ import { TraceService } from '../../services';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
 import BridgedTrace from '../../models/BridgedTrace';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
+import { TraceSave } from '../../lib/traceSave';
 
 function EditBounty(props) {
   const {
@@ -139,83 +139,14 @@ function EditBounty(props) {
     ms.status = isProposed || trace.status === Trace.REJECTED ? Trace.PROPOSED : trace.status; // make sure not to change status!
 
     setLoading(true);
-    await TraceService.save({
+    TraceSave({
       trace: ms,
-      from: currentUser.address,
-      afterSave: (created, txUrl, res) => {
-        let notificationDescription;
-        const analyticsData = {
-          traceId: res._id,
-          title: ms.title,
-          ownerAddress: ms.ownerAddress,
-          traceType: ms.formType,
-          parentCampaignId: campaign.id,
-          parentCampaignTitle: campaign.title,
-          reviewerAddress: ms.reviewerAddress,
-          recipientAddress: ms.recipientAddress,
-          userAddress: currentUser.address,
-        };
-
-        if (created) {
-          if (!userIsCampaignOwner) {
-            notificationDescription = 'Bounty proposed to the campaign owner';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          } else {
-            notificationDescription = 'The Bounty has been updated!';
-            sendAnalyticsTracking('Trace Edit', {
-              action: 'updated proposed',
-              ...analyticsData,
-            });
-          }
-        } else if (txUrl) {
-          notificationDescription = (
-            <p>
-              Your Bounty is pending....
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'created',
-            ...analyticsData,
-          });
-        } else {
-          notificationDescription = 'Your Bounty has been updated!';
-          sendAnalyticsTracking('Trace Edit', {
-            action: 'updated proposed',
-            ...analyticsData,
-          });
-        }
-
-        if (notificationDescription) {
-          notification.info({ description: notificationDescription });
-        }
-        setLoading(false);
-        history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
-      },
-      afterMined: (created, txUrl) => {
-        notification.success({
-          description: (
-            <p>
-              Your Bounty has been updated!
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          ),
-        });
-      },
-      onError(message, err) {
-        setLoading(false);
-        return ErrorHandler(err, message);
-      },
+      userIsCampaignOwner,
+      campaign,
       web3,
+      from: currentUser.address,
+      afterSave: () => setLoading(false),
+      onError: () => setLoading(false),
     });
   };
 

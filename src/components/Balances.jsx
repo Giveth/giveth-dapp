@@ -61,8 +61,8 @@ const Balances = ({ entity }) => {
   return (
     <div className="dashboard-table-view">
       {entity.donationCounters && entity.donationCounters.length > 0 && (
-        <div className="table-container">
-          <table className="table table-hover text-left mt-0">
+        <div className="table-container w-100">
+          <table className="table table-hover text-left mt-0 w-100">
             <thead>
               <tr>
                 <th className="td-donations-amount">Current balance</th>

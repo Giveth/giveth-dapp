@@ -7,6 +7,7 @@ import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { Context as UserContext } from '../contextProviders/UserProvider';
 import confirmationDialog from '../lib/confirmationDialog';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
 
 const CancelCampaignButton = ({ campaign, className, onCancel }) => {
   const {
@@ -25,17 +26,8 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
       if (!authenticated) return;
       checkBalance(balance).then(() => {
         const confirmCancelCampaign = () => {
-          const afterCreate = url => {
-            const msg = (
-              <p>
-                Campaign cancellation pending...
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.info(msg);
+          const afterCreate = txUrl => {
+            txNotification('Campaign cancellation pending...', txUrl, true);
             onCancel();
             sendAnalyticsTracking('Campaign Cancelled', {
               category: 'Campaign',
@@ -44,21 +36,12 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
               title: campaign.title,
               slug: campaign.slug,
               ownerAddress: campaign.ownerAddress,
-              txUrl: url,
+              txUrl,
             });
           };
 
-          const afterMined = url => {
-            const msg = (
-              <p>
-                The Campaign has been cancelled!
-                <br />
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            React.toast.success(msg);
+          const afterMined = txUrl => {
+            txNotification('The Campaign has been cancelled!', txUrl);
             onCancel();
           };
           campaign.cancel(currentUser.address, afterCreate, afterMined, web3);
@@ -83,7 +66,7 @@ const CancelCampaignButton = ({ campaign, className, onCancel }) => {
           className={`btn btn-danger btn-sm ${className}`}
           onClick={cancelCampaign}
         >
-          <i className="fa fa-ban mr-2" />
+          <i className="fa fa-trash-o mr-2" />
           &nbsp;Cancel
         </button>
       )}

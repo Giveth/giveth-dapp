@@ -1,4 +1,4 @@
-import { LPPCampaign, LPPCampaignFactory } from 'lpp-campaign';
+import { LPPCampaign, LPPCampaignFactory } from '@giveth/lpp-campaign';
 import { paramsForServer } from 'feathers-hooks-common';
 import Trace from '../models/Trace';
 import extraGas from '../lib/blockchain/extraGas';
@@ -80,10 +80,12 @@ class CampaignService {
    * Get Campaigns
    *
    * @param $limit      Amount of records to be loaded
-   * @param $skip       Amounds of record to be skipped
+   * @param $skip       Amount of records to be skipped
    * @param onlyRecent  Bool flag only fetch campaigns updated recently (projectsUpdatedAtLimitMonth)
    * @param onSuccess   Callback function once response is obtained successfylly
    * @param onError     Callback function if error is encountered
+   * @param $select
+   * @param searchPhrase
    */
   static getCampaigns(
     $limit = 100,
@@ -91,6 +93,8 @@ class CampaignService {
     onlyRecent = false,
     onSuccess = () => {},
     onError = () => {},
+    $select,
+    searchPhrase,
   ) {
     const query = {
       projectId: { $gt: 0 }, // 0 is a pending campaign
@@ -109,6 +113,15 @@ class CampaignService {
 
       query.updatedAt = { $gt: lastDate };
     }
+
+    if (searchPhrase) {
+      query.$text = { $search: searchPhrase };
+      query.$sort = { score: { $meta: 'textScore' } };
+      query.$select = { score: { $meta: 'textScore' } };
+    }
+
+    if ($select) query.$select = $select;
+
     return campaigns
       .find({
         query,
@@ -141,6 +154,7 @@ class CampaignService {
    * @param $skip         Amounds of record to be skipped
    * @param onSuccess     Callback function once response is obtained successfully
    * @param onError       Callback function if error is encountered
+   * @param $select
    */
   static getTraces(
     id,
@@ -149,6 +163,7 @@ class CampaignService {
     $skip = 0,
     onSuccess = () => {},
     onError = () => {},
+    $select,
   ) {
     const query = {
       campaignId: id,
@@ -167,6 +182,8 @@ class CampaignService {
     } else {
       query.$sort = { projectAddedAt: -1, projectId: -1 };
     }
+
+    if ($select) query.$select = $select;
 
     return feathersClient
       .service('traces')
@@ -322,9 +339,16 @@ class CampaignService {
    * @param afterSave   Callback to be triggered after the Campaign is saved in feathers
    * @param afterMined  Callback to be triggered after the transaction is mined
    * @param web3  Web3  instance
-   * @param tokenWhitelist  tokenWhitelist
+   * @param networkOnly Do not send to DB
    */
-  static async save(campaign, from, afterSave = () => {}, afterMined = () => {}, web3) {
+  static async save(
+    campaign,
+    from,
+    afterSave = () => {},
+    afterMined = () => {},
+    web3,
+    networkOnly,
+  ) {
     if (campaign.id && campaign.projectId === 0) {
       throw new Error(
         'You must wait for your Campaign to be creation to finish before you can update it',
@@ -347,15 +371,9 @@ class CampaignService {
         if (!profileHash) {
           response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
         }
-        afterSave(null, false);
-        afterSave({
-          err: null,
-          mined: false,
-          txUrl: '',
-          response: response || campaign,
-        });
+        afterSave({ response: response || campaign });
 
-        afterMined(false, undefined, campaign.id);
+        afterMined(false);
         return;
       }
 
@@ -386,32 +404,35 @@ class CampaignService {
         );
       }
 
-      let { id } = campaign;
       await promise.once('transactionHash', async hash => {
         txHash = hash;
         let response;
-        if (campaign.id) {
-          response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
-        } else {
-          response = await campaigns.create(campaign.toFeathers(txHash));
-          id = response._id;
+        if (!networkOnly) {
+          if (campaign.id) {
+            response = await campaigns.patch(campaign.id, campaign.toFeathers(txHash));
+          } else {
+            response = await campaigns.create(campaign.toFeathers(txHash));
+          }
         }
-        afterSave({
-          err: null,
-          mined: !campaign.projectId,
-          txUrl: `${etherScanUrl}tx/${txHash}`,
-          response,
-        });
+        afterSave({ txUrl: `${etherScanUrl}tx/${txHash}`, response, txHash, profileHash });
       });
 
-      afterMined(!campaign.projectId, `${etherScanUrl}tx/${txHash}`, id);
+      afterMined(`${etherScanUrl}tx/${txHash}`);
     } catch (err) {
       const message = `Something went wrong with the Campaign ${
         campaign.projectId > 0 ? 'update' : 'creation'
-      }. Is your wallet unlocked? ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
+      }. View transaction ${etherScanUrl}tx/${txHash} => ${JSON.stringify(err, null, 2)}`;
       ErrorHandler(err, message);
-      afterSave(err);
+      afterSave({ err });
     }
+  }
+
+  // For Archiving and UnArchiving campaigns
+  static archive(campaign, afterSave) {
+    campaigns
+      .patch(campaign.id, { status: campaign.status })
+      .then(afterSave)
+      .catch(err => ErrorHandler(err, 'Something went wrong with updating campaign'));
   }
 
   /**
@@ -420,59 +441,18 @@ class CampaignService {
    * //TODO: update contact for transaction on this
    *
    * @param campaign    Campaign to be modified
-   * @param from        Address of the user changing the Campaign
    * @param owner       Address of the user that will own the Campaign
    * @param coowner     Address of the user that will coown the Campaign
    * @param afterCreate Callback to be triggered after the Campaign is cancelled in feathers
-   * @param afterMined  Callback to be triggered after the transaction is mined
    */
-  static changeOwnership(
-    campaign,
-    from,
-    owner,
-    coowner,
-    afterCreate = () => {},
-    afterMined = () => {},
-  ) {
+  static changeOwnership(campaign, owner, coowner, afterCreate = () => {}) {
     campaigns
       .patch(campaign.id, {
         ownerAddress: owner,
         coownerAddress: coowner,
       })
-      .then(() => {
-        afterCreate();
-        afterMined();
-      })
-      .catch(err => {
-        ErrorPopup('Something went wrong with updating campaign', err);
-      });
-  }
-
-  /**
-   * Change funds forwarder address on a campaign
-   *
-   * //TODO: update contact for transaction on this
-   *
-   * @param campaignId    Campaign ID to be modified
-   * @param address        Address of the funds forwarder
-   */
-  static addFundsForwarderAddress(
-    campaignId,
-    address,
-    afterCreate = () => {},
-    afterMined = () => {},
-  ) {
-    campaigns
-      .patch(campaignId, {
-        fundsForwarder: address,
-      })
-      .then(() => {
-        afterCreate();
-        afterMined();
-      })
-      .catch(err => {
-        ErrorPopup('Something went wrong with updating campaign', err);
-      });
+      .then(afterCreate)
+      .catch(err => ErrorHandler(err, 'Something went wrong with updating campaign'));
   }
 
   /**

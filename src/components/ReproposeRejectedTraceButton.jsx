@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import { Input, Modal } from 'antd';
+import { Input, Modal, notification } from 'antd';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
 import { authenticateUser } from '../lib/middleware';
 import { Context as UserContext } from '../contextProviders/UserProvider';
@@ -54,7 +54,7 @@ function ReproposeRejectedTraceButton({ trace }) {
             onSuccess: () => {
               sendAnalyticsTracking('Rejected Trace Reproposed', {
                 category: 'Trace',
-                action: 'reproposed rejected trace',
+                action: 're-proposed rejected trace',
                 id: trace._id,
                 traceId: trace._id,
                 title: trace.title,
@@ -66,7 +66,10 @@ function ReproposeRejectedTraceButton({ trace }) {
                 reviewerAddress: trace.reviewerAddress,
                 userAddress: currentUser.address,
               });
-              React.toast.info(<p>The Trace has been re-proposed.</p>);
+              notification.info({
+                message: '',
+                description: 'The Trace has been re-proposed.',
+              });
             },
             onError: e => ErrorHandler(e, 'Something went wrong with re-proposing your Trace'),
           });

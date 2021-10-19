@@ -3,7 +3,7 @@ import React, { useContext, useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal } from 'antd';
 
-import { authenticateUser, checkBalance } from '../lib/middleware';
+import { authenticateUser, checkBalance, checkForeignNetwork } from '../lib/middleware';
 import ModalContent from './DelegateMultipleButtonModal';
 
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -25,7 +25,7 @@ const modalStyles = {
  */
 const DelegateMultipleButton = props => {
   const {
-    state: { isForeignNetwork, validProvider, balance, web3 },
+    state: { isForeignNetwork, web3, balance },
     actions: { displayForeignNetRequiredWarning },
   } = useContext(Web3Context);
 
@@ -40,39 +40,39 @@ const DelegateMultipleButton = props => {
     if (!authenticated) {
       return;
     }
-    checkBalance(balance).then(() => {
-      setModalVisible(true);
-    });
+    checkForeignNetwork(isForeignNetwork, displayForeignNetRequiredWarning)
+      .then(() => {
+        checkBalance(balance).then(() => {
+          setModalVisible(true);
+        });
+      })
+      .catch(console.log);
   }
 
   return (
     <Fragment>
       <Button
-        type="text"
-        onClick={() => {
-          if (validProvider && !isForeignNetwork) {
-            displayForeignNetRequiredWarning();
-          } else {
-            openDialog().then();
-          }
-        }}
+        className="ant-btn-delegate"
+        onClick={openDialog}
         block
         size={props.size}
         style={props.style}
       >
         Delegate funds here
       </Button>
-      <Modal
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-        centered
-        destroyOnClose
-        className="pb-0 custom-ant-modal"
-        style={modalStyles}
-      >
-        <ModalContent {...props} setModalVisible={setModalVisible} />
-      </Modal>
+      {modalVisible && (
+        <Modal
+          visible={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          footer={null}
+          centered
+          destroyOnClose
+          className="pb-0 custom-ant-modal"
+          style={modalStyles}
+        >
+          <ModalContent {...props} setModalVisible={setModalVisible} />
+        </Modal>
+      )}
     </Fragment>
   );
 };

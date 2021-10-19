@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
-import { Button, Checkbox, Col, Form, notification, PageHeader, Row } from 'antd';
+import { Button, Checkbox, Col, Form, PageHeader, Row } from 'antd';
 import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import BigNumber from 'bignumber.js';
@@ -21,15 +21,14 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
-import { convertEthHelper, getStartOfDayUTC, history, ZERO_ADDRESS } from '../../lib/helpers';
+import { convertEthHelper, getStartOfDayUTC, ZERO_ADDRESS } from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { authenticateUser } from '../../lib/middleware';
 import BridgedTrace from '../../models/BridgedTrace';
 import config from '../../configuration';
 import { Trace } from '../../models';
-import { TraceService } from '../../services';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
+import { TraceSave } from '../../lib/traceSave';
 
 const WAIT_INTERVAL = 1000;
 
@@ -240,79 +239,15 @@ function CreatePayment(props) {
 
       setLoading(true);
 
-      await TraceService.save({
+      TraceSave({
         trace: ms,
-        from: currentUser.address,
-        afterSave: (created, txUrl, res) => {
-          let notificationDescription;
-          const analyticsData = {
-            traceId: res._id,
-            slug: res.slug,
-            parentCampaignAddress: campaign.ownerAddress,
-            traceRecipientAddress: res.recipientAddress,
-            title: ms.title,
-            ownerAddress: ms.ownerAddress,
-            traceType: ms.formType,
-            parentCampaignId: campaign.id,
-            parentCampaignTitle: campaign.title,
-            reviewerAddress: ms.reviewerAddress,
-            userAddress: currentUser.address,
-          };
-          if (created) {
-            if (!userIsCampaignOwner) {
-              notificationDescription = 'Payment proposed to the Campaign Owner';
-              sendAnalyticsTracking('Trace Create', {
-                action: 'proposed',
-                ...analyticsData,
-              });
-            }
-          } else if (txUrl) {
-            notificationDescription = (
-              <p>
-                Your Payment is pending....
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            );
-            sendAnalyticsTracking('Trace Create', {
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            const notificationError =
-              'It seems your Payment has been updated!, this should not be happened';
-            notification.error({ description: notificationError });
-          }
-
-          if (notificationDescription) {
-            notification.info({ description: notificationDescription });
-          }
-          setLoading(false);
-          history.push(`/campaigns/${campaign._id}/traces/${res._id}`);
-        },
-        afterMined: (created, txUrl) => {
-          notification.success({
-            description: (
-              <p>
-                Your Payment has been created!
-                <br />
-                <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>
-            ),
-          });
-        },
-        onError(message, err, isLessThanMinPayout) {
-          setLoading(false);
-          if (isLessThanMinPayout) {
-            return minPayoutWarningInCreatEdit();
-          }
-          return ErrorHandler(err, message);
-        },
+        userIsCampaignOwner,
+        campaign,
+        minPayoutWarningInCreatEdit,
         web3,
+        from: currentUser.address,
+        afterSave: () => setLoading(false),
+        onError: () => setLoading(false),
       });
     }
   };

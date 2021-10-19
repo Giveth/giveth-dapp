@@ -1,9 +1,9 @@
 import React, { Fragment, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { notification } from 'antd';
 
 import TraceService from 'services/TraceService';
 import Trace from 'models/Trace';
-import ErrorPopup from 'components/ErrorPopup';
 import { authenticateUser, checkBalance } from 'lib/middleware';
 import ConversationModal from 'components/ConversationModal';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -12,6 +12,9 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
+import Campaign from '../models/Campaign';
+import ErrorHandler from '../lib/ErrorHandler';
 
 const AcceptRejectProposedTraceButtons = ({ trace }) => {
   const conversationModal = useRef();
@@ -41,7 +44,10 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
             trace,
             message: proof.message,
             onSuccess: () => {
-              React.toast.info(<p>The proposed Trace has been rejected.</p>);
+              notification.info({
+                message: '',
+                description: 'The proposed Trace has been rejected.',
+              });
               sendAnalyticsTracking('Trace Rejected', {
                 category: 'Trace',
                 action: 'rejected proposed Trace',
@@ -51,11 +57,17 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                 traceType: trace.formType,
                 traceRecipientAddress: trace.recipientAddress,
                 parentCampaignId: trace.campaign._id,
+                slug: trace.slug,
+                ownerAddress: trace.ownerAddress,
+                traceOwnerName: trace.owner.name,
+                traceOwnerAddress: trace.ownerAddress,
+                parentCampaignTitle: trace.campaign.title,
+                parentCampaignAddress: trace.campaign.ownerAddress,
                 reviewerAddress: trace.reviewerAddress,
                 userAddress: currentUser.address,
               });
             },
-            onError: e => ErrorPopup('Something went wrong with rejecting the proposed Trace', e),
+            onError: e => ErrorHandler(e, 'Something went wrong with rejecting the proposed Trace'),
           });
         });
     });
@@ -100,49 +112,30 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
                     userAddress: currentUser.address,
                     txUrl,
                   });
-
-                  React.toast.info(
-                    <p>
-                      Accepting this Trace is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Accepting this Trace is pending...', txUrl, true);
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace has been accepted!
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl => txNotification('The Trace has been accepted!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
-                    ErrorPopup('Something went wrong with accepting this proposed Trace', err);
-                  } else {
-                    ErrorPopup(
-                      'Something went wrong with the transaction.',
-                      `${txUrl} => ${JSON.stringify(err, null, 2)}`,
+                    ErrorHandler(err, 'Something went wrong with accepting this proposed Trace');
+                  } else if (txUrl) {
+                    const message = (
+                      <Fragment>
+                        <p>Something went wrong with the transaction.</p>
+                        <a href={txUrl} target="_blank" rel="noopener noreferrer">
+                          <p>View Transaction</p>
+                        </a>
+                        <p>{JSON.stringify(err, null, 2)}</p>
+                      </Fragment>
                     );
-                  }
+                    ErrorHandler(err, message);
+                  } else ErrorHandler(err);
                 },
                 web3,
               });
             }),
         )
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 
@@ -150,16 +143,18 @@ const AcceptRejectProposedTraceButtons = ({ trace }) => {
     <Fragment>
       {trace.canUserAcceptRejectProposal(currentUser) && (
         <span>
-          <button
-            type="button"
-            className="btn btn-success btn-sm m-1"
-            onClick={() =>
-              isForeignNetwork ? acceptProposedTrace() : displayForeignNetRequiredWarning()
-            }
-          >
-            <i className="fa fa-check-square-o" />
-            &nbsp;Accept
-          </button>
+          {trace.campaign.status !== Campaign.ARCHIVED && (
+            <button
+              type="button"
+              className="btn btn-success btn-sm m-1"
+              onClick={() =>
+                isForeignNetwork ? acceptProposedTrace() : displayForeignNetRequiredWarning()
+              }
+            >
+              <i className="fa fa-check-square-o" />
+              &nbsp;Accept
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-danger btn-sm m-1"

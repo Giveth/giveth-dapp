@@ -1,26 +1,15 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import gasLogo from '../../../assets/gas-logo.svg';
 import { Context as WhiteListContext } from '../../../contextProviders/WhiteListProvider';
 
-const Banner = () => {
+const Banner = ({ setNotify }) => {
   const {
     state: { minimumPayoutUsdValue },
   } = useContext(WhiteListContext);
-  const [gotTxLimit, setGotTxLimit] = useState(false);
-  const setNotify = () => {
-    setGotTxLimit(true);
-    localStorage.setItem('gotTxLimit', 'true');
-  };
-  useEffect(() => {
-    const NotifyState = localStorage.getItem('gotTxLimit') === 'true';
-    setGotTxLimit(NotifyState);
-  });
 
   return (
-    <div
-      className={`row text-white align-items-center p-4 m-0 ${gotTxLimit ? 'd-none' : ''}`}
-      id="tx-limit-banner"
-    >
+    <div className="row text-white align-items-center p-4 m-0" id="tx-limit-banner">
       <div className="col-1 text-right">
         <img alt="Gas logo" src={gasLogo} />
       </div>
@@ -41,6 +30,10 @@ const Banner = () => {
       </div>
     </div>
   );
+};
+
+Banner.propTypes = {
+  setNotify: PropTypes.func.isRequired,
 };
 
 export default Banner;

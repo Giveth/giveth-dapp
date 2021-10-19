@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { LPMilestone as LPMilestoneContract } from 'lpp-milestones';
+import { LPMilestone as LPMilestoneContract } from '@giveth/lpp-milestones';
 import Trace from './Trace';
 
 /**

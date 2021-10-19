@@ -14,6 +14,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 import { sendAnalyticsTracking } from '../lib/SegmentAnalytics';
+import { txNotification } from '../lib/helpers';
 
 const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) => {
   const {
@@ -90,27 +91,10 @@ const RequestMarkTraceCompleteButton = ({ trace, isAmountEnoughForWithdraw }) =>
                     txUrl,
                   });
 
-                  React.toast.info(
-                    <p>
-                      Marking this Trace as complete is pending...
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
+                  txNotification('Marking this Trace as complete is pending...', txUrl, true);
                 },
-                onConfirmation: txUrl => {
-                  React.toast.success(
-                    <p>
-                      The Trace has been marked as complete!
-                      <br />
-                      <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                        View transaction
-                      </a>
-                    </p>,
-                  );
-                },
+                onConfirmation: txUrl =>
+                  txNotification('The Trace has been marked as complete!', txUrl),
                 onError: (err, txUrl) => {
                   if (err === 'patch-error') {
                     ErrorPopup('Something went wrong with marking your Trace as complete', err);

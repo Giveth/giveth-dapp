@@ -1,14 +1,13 @@
 import { feathersClient } from '../../../lib/feathersClient';
 import Campaign from '../../../models/Campaign';
-import Trace from '../../../models/Trace';
 import Community from '../../../models/Community';
 
-const LoadProjectsInfo = async ({ userAddress, noTraces }) => {
+const LoadProjectsInfo = async userAddress => {
   const communities = feathersClient.service('communities').find({
     query: {
       status: Community.ACTIVE,
       ownerAddress: userAddress,
-      $select: ['_id'],
+      $select: ['_id', 'title'],
       $limit: 100,
       $sort: {
         createdAt: -1,
@@ -28,33 +27,7 @@ const LoadProjectsInfo = async ({ userAddress, noTraces }) => {
     },
   });
 
-  let promiseArray = [];
-  if (noTraces) {
-    promiseArray = [communities, campaigns];
-  } else {
-    const traces = feathersClient.service('traces').find({
-      query: {
-        status: Trace.IN_PROGRESS,
-        fullyFunded: { $ne: true },
-        $select: [
-          'title',
-          '_id',
-          'projectId',
-          'campaignId',
-          'maxAmount',
-          'status',
-          'tokenAddress',
-          'donationCounters',
-        ],
-        $limit: 100,
-        $sort: {
-          createdAt: -1,
-        },
-      },
-    });
-    promiseArray = [communities, campaigns, traces];
-  }
-
+  const promiseArray = [communities, campaigns];
   return Promise.all(promiseArray);
 };
 

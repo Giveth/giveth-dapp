@@ -6,7 +6,7 @@
 
   table {
     font-size: 0.8rem;
-    margin-top: 50px;
+    margin-top: 20px;
 
     @media (max-width: 768px) {
       font-size: 1rem;
@@ -23,7 +23,7 @@
 
     .td-name,
     .td-donated-to {
-      min-width: 350px;
+      min-width: 150px;
     }
 
     .td-donations-number,
@@ -41,6 +41,10 @@
     }
 
     .td-transaction-status {
+      min-width: 100px;
+    }
+
+    .td-tx-address {
       min-width: 100px;
     }
 

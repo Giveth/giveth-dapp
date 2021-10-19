@@ -70,16 +70,17 @@ const ViewTrace = props => {
   const [campaign, setCampaign] = useState({});
   const [trace, setTrace] = useState({});
   const [communityTitle, setCommunityTitle] = useState('');
-  const [newDonations, setNewDonations] = useState(0);
   const [notFound, setNotFound] = useState(false);
-  const [isAmountEnoughForWithdraw, setIsAmountEnoughForWithdraw] = useState(true);
   const [currency, setCurrency] = useState(null);
   const [currentBalanceValue, setCurrentBalanceValue] = useState(0);
   const [currentBalanceUsdValue, setCurrentBalanceUsdValue] = useState(0);
+  const [withdrawalTokens, setWithdrawalTokens] = useState([]);
 
   const donationsObserver = useRef();
   const traceSubscription = useRef();
+  const newDonations = useRef(0);
   const donationsPerBatch = 50;
+  const isAmountEnoughForWithdraw = withdrawalTokens.length > 0;
 
   const getCommunityTitle = async communityId => {
     if (communityId === 0) return;
@@ -100,7 +101,7 @@ const ViewTrace = props => {
       },
       err => {
         setLoadingDonations(false);
-        ErrorHandler(err, 'Some error on fetching trace donations, please try later');
+        ErrorHandler(err, 'Some error on fetching trace donations!');
       },
     );
   }
@@ -140,19 +141,20 @@ const ViewTrace = props => {
   }, []);
 
   useEffect(() => {
-    if (trace.id) {
+    if (trace.id && !donationsObserver.current) {
       loadMoreDonations(true);
-
       // subscribe to donation count
       donationsObserver.current = TraceService.subscribeNewDonations(
         trace.id,
         _newDonations => {
-          setNewDonations(_newDonations);
-          if (_newDonations > 0) {
+          if (_newDonations > 0 && _newDonations !== newDonations.current) {
+            newDonations.current = _newDonations;
             loadMoreDonations(true);
           }
         },
-        () => setNewDonations(0),
+        () => {
+          newDonations.current = 0;
+        },
       );
     }
 
@@ -195,21 +197,25 @@ const ViewTrace = props => {
     if (!currentBalanceUsdValue) {
       return;
     }
+    const _withdrawalTokens = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const currencyUsdValue of currentBalanceUsdValue) {
-      // if usdValue is zero we should not set setIsAmountEnoughForWithdraw(false) because we check
-      // minimumPayoutUsdValue comparison when usdValue for a currency is not zero
-      if (currencyUsdValue.usdValue && currencyUsdValue.usdValue < minimumPayoutUsdValue) {
-        setIsAmountEnoughForWithdraw(false);
-        return;
+      if (currencyUsdValue.usdValue >= minimumPayoutUsdValue) {
+        const token = activeTokenWhitelist.find(
+          _token => _token.symbol === currencyUsdValue.currency,
+        );
+        _withdrawalTokens.push(token);
       }
     }
-    setIsAmountEnoughForWithdraw(true);
+
+    if (_withdrawalTokens.length) {
+      setWithdrawalTokens(_withdrawalTokens);
+    }
   }, [currentBalanceUsdValue]);
 
   const isActiveTrace = () => {
     const { fullyFunded, status } = trace;
-    return status === Trace.IN_PROGRESS && !fullyFunded;
+    return status === Trace.IN_PROGRESS && !fullyFunded && !campaign.isArchived;
   };
 
   const renderDescription = () => DescriptionRender(trace.description);
@@ -361,6 +367,15 @@ const ViewTrace = props => {
               />
 
               <div className="container mt-4">
+                {campaign.status === Campaign.ARCHIVED && (
+                  <div className="alert alert-info py-2 my-3 d-flex align-items-center">
+                    <i className="fa fa-info-circle fa-2x mr-3" />
+                    <div>
+                      Because <strong>{campaign.title}</strong> campaign is archived, This Trace no
+                      longer accepts donations.
+                    </div>
+                  </div>
+                )}
                 <div className="mx-auto">
                   <h5 className="title">Subscribe to updates </h5>
                   <ProjectSubscription projectTypeId={trace._id} projectType="trace" />
@@ -370,6 +385,7 @@ const ViewTrace = props => {
                   trace={trace}
                   campaign={campaign}
                   isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                  withdrawalTokens={withdrawalTokens}
                 />
 
                 <div id="description">
@@ -552,7 +568,7 @@ const ViewTrace = props => {
                             ))}
                         </div>
 
-                        {!trace.isCapped && trace.donationCounters.length > 0 && (
+                        {trace.donationCounters.length > 0 && (
                           <div className="form-group">
                             <DetailLabel
                               id="current-balance"
@@ -567,7 +583,7 @@ const ViewTrace = props => {
                           </div>
                         )}
 
-                        {!trace.isCapped && trace.donationCounters.length > 0 && currency && (
+                        {trace.donationCounters.length > 0 && currency && (
                           <div className="form-group">
                             <DetailLabel
                               id="current-balance-value"
@@ -614,6 +630,7 @@ const ViewTrace = props => {
                       trace={trace}
                       isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
                       maxHeight={`${detailsCardHeight}px`}
+                      withdrawalTokens={withdrawalTokens}
                     />
                   </div>
                 </div>
@@ -654,12 +671,12 @@ const ViewTrace = props => {
                       <Row justify="space-between">
                         <Col span={12} className="align-items-center d-flex">
                           <h5 className="mb-0">{donationsTitle}</h5>
-                          {newDonations > 0 && (
+                          {newDonations.current > 0 && (
                             <span
                               className="badge badge-primary ml-4"
                               style={{ fontSize: '12px', padding: '6px' }}
                             >
-                              {newDonations} NEW
+                              {newDonations.current} NEW
                             </span>
                           )}
                         </Col>
@@ -682,7 +699,7 @@ const ViewTrace = props => {
                     isLoading={isLoadingDonations}
                     total={donations.length}
                     loadMore={loadMoreDonations}
-                    newDonations={newDonations}
+                    newDonations={newDonations.current}
                     useAmountRemaining
                     status={trace.status}
                   />

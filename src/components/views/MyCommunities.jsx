@@ -69,13 +69,7 @@ const MyCommunities = () => {
       .then(() => {
         history.push(`/communities/${id}/edit`);
       })
-      .catch(err => {
-        if (err === 'noBalance') {
-          ErrorHandler(err, 'There is no balance left on the account.');
-        } else if (err !== undefined) {
-          ErrorHandler(err, 'Something went wrong on getting balance.');
-        }
-      });
+      .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
   };
 
   useEffect(() => {

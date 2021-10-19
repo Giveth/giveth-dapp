@@ -12,7 +12,6 @@ import Trace from 'models/Trace';
 import { feathersClient } from '../lib/feathersClient';
 import Loader from './Loader';
 import config from '../configuration';
-import ActionNetworkWarning from './ActionNetworkWarning';
 import AmountSliderMarks from './AmountSliderMarks';
 
 import DonationBlockchainService from '../services/DonationBlockchainService';
@@ -340,12 +339,13 @@ const ModalContent = props => {
 
   const modalContent = (
     <div id="delegate-multiple-modal">
-      <p>
-        You are delegating donations to
-        {!trace && <strong> {campaign.title}</strong>}
-        {trace && <strong> {trace.title}</strong>}
-      </p>
       <Fragment>
+        <p>
+          You are delegating donations to
+          {!trace && <strong> {campaign.title}</strong>}
+          {trace && <strong> {trace.title}</strong>}
+        </p>
+
         {isLimitedDelegateCount() && (
           <div className="alert alert-warning">
             <p>
@@ -488,22 +488,18 @@ const ModalContent = props => {
   const isContextReady =
     !whiteListIsLoading && !userContextIsLoading && Web3ContextIsEnabled && isCommunitiesFetched;
 
+  const modalBody = isContextReady ? modalContent : modalLoading;
+
   return (
-    <React.Fragment>
+    <Fragment>
       {!validProvider && (
         <div className="alert alert-warning">
           <i className="fa fa-exclamation-triangle" />
           It is recommended that you install <a href="https://metamask.io/">MetaMask</a> to donate
         </div>
       )}
-      {validProvider && (
-        <ActionNetworkWarning
-          incorrectNetwork={!isForeignNetwork}
-          networkName={config.foreignNetworkName}
-        />
-      )}{' '}
-      {isContextReady ? validProvider && isForeignNetwork && modalContent : modalLoading}
-    </React.Fragment>
+      {isForeignNetwork && modalBody}
+    </Fragment>
   );
 };
 

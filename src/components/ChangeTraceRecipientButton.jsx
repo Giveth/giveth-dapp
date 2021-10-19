@@ -4,7 +4,6 @@ import { utils } from 'web3';
 import { Modal, Input } from 'antd';
 
 import TraceService from 'services/TraceService';
-import ErrorPopup from 'components/ErrorPopup';
 import { authenticateUser, checkBalance } from 'lib/middleware';
 import Trace from '../models/Trace';
 import { Context as Web3Context } from '../contextProviders/Web3Provider';
@@ -12,6 +11,8 @@ import { Context as UserContext } from '../contextProviders/UserProvider';
 import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
+import { txNotification } from '../lib/helpers';
+import ErrorHandler from '../lib/ErrorHandler';
 
 function ChangeTraceRecipientButton({ trace }) {
   const {
@@ -34,20 +35,34 @@ function ChangeTraceRecipientButton({ trace }) {
       checkBalance(balance)
         .then(async () => {
           try {
+            const ifChangeRecipient = await new Promise(resolve =>
+              Modal.confirm({
+                title: `${trace.hasRecipient ? 'Change' : 'Set'} Trace Recipient?`,
+                content: `Are you sure you want to ${
+                  trace.hasRecipient ? 'change' : 'set'
+                } the Trace
+                    recipient? This action can not be undone.`,
+                cancelText: 'Cancel',
+                okText: 'Yes',
+                centered: true,
+                onOk: () => resolve(true),
+                onCancel: () => resolve(false),
+              }),
+            );
+
+            if (!ifChangeRecipient) return;
+
             const isNewRecipient = await new Promise(resolve =>
               Modal.confirm({
-                title: 'Change Trace Recipient?',
+                title: `${trace.hasRecipient ? 'Change' : 'Set'} Trace Recipient?`,
                 content: (
                   <Fragment>
-                    <p>
-                      {`Are you sure you want to ${trace.hasRecipient ? 'change' : 'set'} the Trace
-                      recipient? This action can not be undone.`}
-                    </p>
+                    <p>{`${trace.hasRecipient ? 'New recipient' : 'Recipient'} address:`}</p>
                     <Input onChange={setNewRecipient} className="rounded" />
                   </Fragment>
                 ),
                 cancelText: 'Cancel',
-                okText: 'Yes',
+                okText: trace.hasRecipient ? 'Change recipient' : 'Set recipient',
                 centered: true,
                 onOk: () => resolve(true),
                 onCancel: () => resolve(false),
@@ -84,26 +99,16 @@ function ChangeTraceRecipientButton({ trace }) {
               trace,
               from: currentUser.address,
               newRecipient: newRecipient.current,
-              onTxHash: txUrl => {
-                React.toast.info(
-                  <p>
-                    {trace.hasRecipient ? 'Changing ' : 'Setting '} Trace recipient is pending...
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
-                );
-              },
+              onTxHash: txUrl =>
+                txNotification(
+                  `${trace.hasRecipient ? 'Changing ' : 'Setting '} Trace recipient is pending...`,
+                  txUrl,
+                  true,
+                ),
               onConfirmation: txUrl => {
-                React.toast.success(
-                  <p>
-                    The Trace recipient has been {trace.hasRecipient ? 'changed' : 'set'}!
-                    <br />
-                    <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                      View transaction
-                    </a>
-                  </p>,
+                txNotification(
+                  `The Trace recipient has been ${trace.hasRecipient ? 'changed' : 'set'}!`,
+                  txUrl,
                 );
               },
               web3,
@@ -112,13 +117,7 @@ function ChangeTraceRecipientButton({ trace }) {
             console.error(e);
           }
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorPopup('There is no balance left on the account.', err);
-          } else if (err !== undefined) {
-            ErrorPopup('Something went wrong while changing recipient.', err);
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 

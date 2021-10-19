@@ -12,7 +12,7 @@ import BridgedTrace from '../models/BridgedTrace';
 import LPPCappedTrace from '../models/LPPCappedTrace';
 import LPTrace from '../models/LPTrace';
 
-const TraceConversations = ({ trace, maxHeight, isAmountEnoughForWithdraw }) => {
+const TraceConversations = ({ trace, maxHeight, isAmountEnoughForWithdraw, withdrawalTokens }) => {
   const conversationsNumPerLoad = 5;
   const [conversations, setConversations] = useState({});
   const [isLoading, setLoading] = useState(true);
@@ -66,6 +66,7 @@ const TraceConversations = ({ trace, maxHeight, isAmountEnoughForWithdraw }) => 
                 conversation={conversation}
                 trace={trace}
                 isAmountEnoughForWithdraw={isAmountEnoughForWithdraw}
+                withdrawalTokens={withdrawalTokens}
               />
             ))}
           </div>
@@ -85,10 +86,12 @@ TraceConversations.propTypes = {
   ).isRequired,
   maxHeight: PropTypes.string,
   isAmountEnoughForWithdraw: PropTypes.bool.isRequired,
+  withdrawalTokens: PropTypes.arrayOf(PropTypes.shape({})),
 };
 
 TraceConversations.defaultProps = {
   maxHeight: 'unset',
+  withdrawalTokens: [],
 };
 
 export default React.memo(TraceConversations);

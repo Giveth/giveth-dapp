@@ -1,18 +1,7 @@
 import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import { Prompt, useParams } from 'react-router-dom';
 
-import {
-  Button,
-  Col,
-  Form,
-  Input,
-  Modal,
-  notification,
-  PageHeader,
-  Row,
-  Select,
-  Typography,
-} from 'antd';
+import { Button, Col, Form, Input, Modal, PageHeader, Row, Select, Typography } from 'antd';
 import Loader from '../Loader';
 import { getHtmlText, history, isOwner } from '../../lib/helpers';
 import { authenticateUser, checkProfile } from '../../lib/middleware';
@@ -28,7 +17,6 @@ import Editor from '../Editor';
 import Campaign from '../../models/Campaign';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import useReviewers from '../../hooks/useReviewers';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
 
 const { Title, Text } = Typography;
@@ -183,70 +171,14 @@ const EditCampaign = () => {
         image: campaign.picture,
       });
 
-      const afterMined = url => {
-        if (url) {
-          const msg = (
-            <p>
-              Your Campaign has been created!
-              <br />
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          notification.success({ message: '', description: msg });
-        } else {
-          if (mounted.current) setIsSaving(false);
-          notification.success({
-            message: '',
-            description: 'Your Campaign has been updated!',
-          });
-          history.push(`/campaigns/${campaignObject.current.id}`);
-        }
-      };
-
-      const afterCreate = ({ err, txUrl, response }) => {
+      const afterCreate = ({ response, err }) => {
         if (mounted.current) setIsSaving(false);
-        if (!err) {
-          const msg = (
-            <p>
-              Your Campaign is pending....
-              <br />
-              <a href={txUrl} target="_blank" rel="noopener noreferrer">
-                View transaction
-              </a>
-            </p>
-          );
-          notification.info({ description: msg });
-          const analyticsData = {
-            userAddress: currentUser.address,
-            slug: response.slug,
-            reviewerAddress: campaign.reviewerAddress,
-            campaignOwnerAddress: campaign.ownerAddress,
-            title: campaign.title,
-            campaignId: response._id,
-            txUrl,
-          };
-          if (isNew) {
-            sendAnalyticsTracking('Campaign Created', {
-              category: 'Campaign',
-              action: 'created',
-              ...analyticsData,
-            });
-          } else {
-            sendAnalyticsTracking('Campaign Edited', {
-              category: 'Campaign',
-              action: 'edited',
-              ...analyticsData,
-            });
-          }
-          history.push('/my-campaigns');
-        }
+        if (!err) history.push(`/campaign/${response.slug}`);
       };
 
       setIsSaving(true);
       setIsBlocking(false);
-      campaignObject.current.save(afterCreate, afterMined, web3).finally(() => {
+      campaignObject.current.save(web3, afterCreate).finally(() => {
         setIsSaving(false);
       });
     }
@@ -264,7 +196,7 @@ const EditCampaign = () => {
       {isLoading ? (
         <Loader className="fixed" />
       ) : (
-        <div id="create-Campaint-view">
+        <Fragment>
           <Row>
             <Col span={24}>
               <PageHeader
@@ -413,7 +345,7 @@ const EditCampaign = () => {
               </Form>
             </div>
           </Row>
-        </div>
+        </Fragment>
       )}
     </Fragment>
   );

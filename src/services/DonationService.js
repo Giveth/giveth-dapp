@@ -37,7 +37,7 @@ class DonationService {
   }
 
   static subscribe(query, onResult, onError) {
-    getDonations
+    return getDonations
       .watch({ listStrategy: 'always' })
       .find(query)
       .subscribe(resp => {

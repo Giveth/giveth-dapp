@@ -6,13 +6,12 @@ import { authenticateUser, checkBalance, checkForeignNetwork } from '../../lib/m
 import LoaderButton from '../LoaderButton';
 import User from '../../models/User';
 import { history } from '../../lib/helpers';
-import ErrorPopup from '../ErrorPopup';
 import { Consumer as WhiteListConsumer } from '../../contextProviders/WhiteListProvider';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import Web3ConnectWarning from '../Web3ConnectWarning';
-import { sendAnalyticsTracking } from '../../lib/SegmentAnalytics';
 import UploadPicture from '../UploadPicture';
+import ErrorHandler from '../../lib/ErrorHandler';
 
 /**
  * The edit user profile view mapped to /profile/
@@ -77,12 +76,8 @@ const EditProfile = () => {
               });
             })
             .catch(err => {
-              if (err === 'noBalance') {
-                ErrorPopup('Something went wrong.', err);
-                history.goBack();
-              } else {
-                setIsLoading(false);
-              }
+              ErrorHandler(err, 'Something went wrong on getting user balance.');
+              setIsLoading(false);
             });
         }),
       )
@@ -99,70 +94,39 @@ const EditProfile = () => {
   const submit = () => {
     if (!user.name) return;
 
+    const created = !oldUserData._giverId;
+
     const pushToNetwork =
       user.name !== oldUserData._name ||
       user.avatar !== oldUserData._avatar ||
       user.linkedin !== oldUserData._linkedin ||
       user.email !== oldUserData._email;
 
-    const showToast = (msg, url, isSuccess = false) => {
-      const toast = url ? (
-        <p>
-          {msg}
-          <br />
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            View transaction
-          </a>
-        </p>
-      ) : (
-        msg
-      );
-
-      if (isSuccess) React.toast.success(toast);
-      else React.toast.info(toast);
-    };
     const reset = () => {
       setIsSaving(false);
       setIsPristine(false);
     };
-    const afterMined = (created, url) => {
-      const msg = created ? 'You are now a registered user' : 'Your profile has been updated';
-      showToast(msg, url, true);
 
-      if (created) {
-        sendAnalyticsTracking('User Created', {
-          category: 'User',
-          action: 'created',
-          userAddress: user.address,
-          txUrl: url,
-        });
-      } else {
+    const afterMined = () => {
+      if (!created) {
         setOldUserData({ ...user });
         setIsPristine(true);
         if (mounted) setIsSaving(false);
-        sendAnalyticsTracking('User Updated', {
-          category: 'User',
-          action: 'updated',
-          userAddress: user.address,
-          txUrl: url,
-        });
       }
     };
-    const afterSave = (created, url) => {
+
+    const afterSave = () => {
       if (mounted) {
         setIsSaving(false);
         setIsPristine(true);
       }
       updateUserData();
 
-      const msg = created ? 'We are registering you as a user' : 'Your profile is being updated';
-      showToast(msg, url);
-
       if (created) history.push('/');
     };
 
     setIsSaving(true);
-    user.save(afterSave, afterMined, reset, pushToNetwork, web3).finally(() => {
+    user.save(pushToNetwork, web3, afterSave, afterMined, reset).finally(() => {
       setIsSaving(false);
     });
   };

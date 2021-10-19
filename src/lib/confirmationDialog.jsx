@@ -4,8 +4,12 @@ import { Modal, Input } from 'antd';
 export default (type, title, successCallback) => {
   let dialogTitle;
   let dialogText;
-
   let input = '';
+  let validationChar = 5;
+  const formattedTitle = title.split(' ').join('');
+  const formattedTitleLength = formattedTitle.length;
+
+  if (formattedTitleLength < 5) validationChar = formattedTitleLength;
 
   const onInputChange = userInput => {
     input = userInput.target.value;
@@ -14,17 +18,17 @@ export default (type, title, successCallback) => {
   if (type === 'trace') {
     dialogTitle = 'Delete Trace?';
     dialogText = `Are you sure you want to delete this Trace?
-          Please enter the first 5 characters (without space) of the Trace title while skipping any spaces:
+          Please enter the first ${validationChar} characters (without space) of the Trace title while skipping any spaces:
     `;
   } else if (type === 'refund') {
     dialogTitle = 'Refund Donation?';
     dialogText = `Are you sure you want to refund your donation?
-          Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet. Please enter the first 5 letters (without space) of the Campaign/Community.
+          Your donation will be cancelled and a payment will be authorized to refund your tokens. All withdrawals must be confirmed for security reasons and may take a day or two. Upon confirmation, your tokens will be transferred to your wallet. Please enter the first ${validationChar} characters (without space) of the Campaign/Community.
     `;
   } else if (type === 'campaign') {
     dialogTitle = 'Cancel Campaign?';
     dialogText = `Are you sure you want to cancel this Campaign?
-          Please enter the first 5 characters (without space) of the Campaign title while skipping any spaces:
+          Please enter the first ${validationChar} characters (without space) of the Campaign title while skipping any spaces:
     `;
   }
 
@@ -44,15 +48,11 @@ export default (type, title, successCallback) => {
       </Fragment>
     ),
     cancelText: 'Dismiss',
-    okText: 'Yes, Delete',
+    okText: 'Yes, Cancel',
     centered: true,
     width: 500,
     onOk: () => {
-      const formattedTitle = title
-        .split(' ')
-        .join('')
-        .slice(0, 5);
-      if (input === formattedTitle) {
+      if (input === formattedTitle.slice(0, validationChar)) {
         successCallback();
       } else {
         Modal.error({

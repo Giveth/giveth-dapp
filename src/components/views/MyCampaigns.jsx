@@ -1,22 +1,20 @@
 import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-js-pagination';
-
-import ViewNetworkWarning from 'components/ViewNetworkWarning';
-import { Context as Web3Context } from 'contextProviders/Web3Provider';
-import config from 'configuration';
 import { Helmet } from 'react-helmet';
 
+import { Context as Web3Context } from '../../contextProviders/Web3Provider';
+import { Context as UserContext } from '../../contextProviders/UserProvider';
 import Loader from '../Loader';
 import { convertEthHelper, getTruncatedText } from '../../lib/helpers';
 import CampaignService from '../../services/CampaignService';
 import Campaign from '../../models/Campaign';
 import AuthenticationWarning from '../AuthenticationWarning';
-import { Context as UserContext } from '../../contextProviders/UserProvider';
 import CancelCampaignButton from '../CancelCampaignButton';
 import EditCampaignButton from '../EditCampaignButton';
 import ErrorHandler from '../../lib/ErrorHandler';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import ActionNetworkWarning from '../ActionNetworkWarning';
 
 /**
  * The my campaings view
@@ -26,7 +24,8 @@ function MyCampaigns() {
     state: { currentUser },
   } = useContext(UserContext);
   const {
-    state: { isForeignNetwork },
+    state: { isForeignNetwork, web3 },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
 
   const [isLoading, setLoading] = useState(true);
@@ -107,9 +106,11 @@ function MyCampaigns() {
 
             <AuthenticationWarning />
 
-            <ViewNetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isForeignNetwork}
-              networkName={config.foreignNetworkName}
+              switchNetwork={switchNetwork}
+              web3={web3}
+              isInline
             />
 
             {isLoading && <Loader className="fixed" />}

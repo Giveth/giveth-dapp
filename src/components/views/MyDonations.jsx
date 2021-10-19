@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Pagination from 'react-js-pagination';
 
-import ViewNetworkWarning from 'components/ViewNetworkWarning';
 import { Context as Web3Context } from 'contextProviders/Web3Provider';
 import config from 'configuration';
 
 import { Helmet } from 'react-helmet';
-import { Modal } from 'antd';
+import { Grid, Modal } from 'antd';
 import Loader from '../Loader';
-import { convertEthHelper } from '../../lib/helpers';
+import { convertEthHelper, txNotification, shortenAddress } from '../../lib/helpers';
 import { Context as UserContext } from '../../contextProviders/UserProvider';
 import AuthenticationWarning from '../AuthenticationWarning';
 import DonationService from '../../services/DonationService';
@@ -19,10 +18,11 @@ import { authenticateUser, checkBalance } from '../../lib/middleware';
 import DonationBlockchainService from '../../services/DonationBlockchainService';
 import confirmationDialog from '../../lib/confirmationDialog';
 import Web3ConnectWarning from '../Web3ConnectWarning';
+import ActionNetworkWarning from '../ActionNetworkWarning';
 
+const { useBreakpoint } = Grid;
 const etherScanUrl = config.etherscan;
 const itemsPerPage = 20;
-const visiblePages = 10;
 
 /**
  * The my donations view
@@ -34,13 +34,16 @@ const MyDonations = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const {
-    state: { isForeignNetwork, balance, web3 },
+    state: { isForeignNetwork, web3, balance },
+    actions: { switchNetwork },
   } = useContext(Web3Context);
 
   const {
     state: { currentUser },
   } = useContext(UserContext);
 
+  const { xs } = useBreakpoint();
+  const visiblePages = xs ? 6 : 10;
   const userAddress = currentUser.address;
 
   const donationSubscription = useRef();
@@ -80,29 +83,11 @@ const MyDonations = () => {
       }
       checkBalance(balance)
         .then(() => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refusal of the delegation is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl =>
+            txNotification('The refusal of the delegation is pending...', txUrl, true);
 
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation delegation has been rejected.
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl =>
+            txNotification('Your donation delegation has been rejected.', txUrl);
 
           Modal.confirm({
             title: 'Reject your donation?',
@@ -122,13 +107,7 @@ const MyDonations = () => {
               ),
           });
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorHandler(err, 'There is no balance left on the account.');
-          } else if (err !== undefined) {
-            ErrorHandler(err, 'Something went wrong.');
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 
@@ -139,29 +118,10 @@ const MyDonations = () => {
       }
       checkBalance(balance)
         .then(() => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The commitment of the donation is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl =>
+            txNotification('The commitment of the donation is pending...', txUrl, true);
 
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been committed!
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl => txNotification('Your donation has been committed!', txUrl);
 
           Modal.confirm({
             title: 'Commit your donation?',
@@ -180,13 +140,7 @@ const MyDonations = () => {
               ),
           });
         })
-        .catch(err => {
-          if (err === 'noBalance') {
-            ErrorHandler(err, 'There is no balance left on the account.');
-          } else if (err !== undefined) {
-            ErrorHandler(err, 'Something went wrong...');
-          }
-        });
+        .catch(err => ErrorHandler(err, 'Something went wrong on getting user balance.'));
     });
   };
 
@@ -197,30 +151,9 @@ const MyDonations = () => {
       }
       checkBalance(balance).then(() => {
         const confirmRefund = () => {
-          const afterCreate = txLink => {
-            React.toast.success(
-              <p>
-                The refund is pending...
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterCreate = txUrl => txNotification('The refund is pending...', txUrl, true);
 
-          // Inform user after the refund transaction is mined
-          const afterMined = txLink => {
-            React.toast.success(
-              <p>
-                Your donation has been refunded!
-                <br />
-                <a href={txLink} target="_blank" rel="noopener noreferrer">
-                  View transaction
-                </a>
-              </p>,
-            );
-          };
+          const afterMined = txUrl => txNotification('Your donation has been refunded!', txUrl);
 
           DonationBlockchainService.refund(donation, userAddress, afterCreate, afterMined, web3);
         };
@@ -262,9 +195,11 @@ const MyDonations = () => {
           <div className="col-md-10 m-auto">
             {(isLoading || (donations && donations.length > 0)) && <h1>My Donations</h1>}
 
-            <ViewNetworkWarning
+            <ActionNetworkWarning
               incorrectNetwork={!isForeignNetwork}
-              networkName={config.foreignNetworkName}
+              switchNetwork={switchNetwork}
+              web3={web3}
+              isInline
             />
 
             <AuthenticationWarning />
@@ -359,7 +294,7 @@ const MyDonations = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                {d.giverAddress}
+                                {shortenAddress(d.giverAddress)}
                               </a>
                             </td>
                           )}
