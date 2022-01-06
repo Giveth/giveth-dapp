@@ -16,7 +16,7 @@
     "@sentry/tracing": "^6.8.0",
     "antd": "^4.12.2",
     "antd-img-crop": "^3.13.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bignumber.js": "^8.1.1",
     "bnc-onboard": "^1.29.0",
     "feathers-hooks-common": "^5.0.5",
