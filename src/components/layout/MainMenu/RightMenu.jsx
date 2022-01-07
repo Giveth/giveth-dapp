@@ -3,7 +3,9 @@ import Avatar from 'react-avatar';
 import { Link, useLocation } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { Menu, Grid } from 'antd';
+import Davatar from '@davatar/react';
 
+import { useENS } from 'hooks/useENS';
 import { Context as UserContext } from '../../../contextProviders/UserProvider';
 import { Context as Web3Context } from '../../../contextProviders/Web3Provider';
 import { Context as WhiteListContext } from '../../../contextProviders/WhiteListProvider';
@@ -45,6 +47,8 @@ const RightMenu = () => {
   const {
     state: { reviewerWhitelistEnabled, delegateWhitelistEnabled, projectOwnersWhitelistEnabled },
   } = useContext(WhiteListContext);
+
+  const { ensName } = useENS(currentUser.address);
 
   const userIsDelegator = currentUser.isDelegator || !delegateWhitelistEnabled;
   const userIsCampaignManager = currentUser.isProjectOwner || !projectOwnersWhitelistEnabled;
@@ -189,12 +193,25 @@ const RightMenu = () => {
 
       {validProvider && (
         <Menu.Item key="userAddress">
-          <button type="button" className="btn btn-outline-success btn-sm" onClick={switchWallet}>
+          <button
+            type="button"
+            className="d-flex btn btn-outline-success btn-sm"
+            onClick={switchWallet}
+          >
             {walletIcon && currentUser.address && (
               <Avatar className="mr-2" size={25} src={walletIcon} />
             )}
             <span>
-              {currentUser.address ? shortenAddress(currentUser.address) : 'Switch Wallet'}
+              {currentUser.address ? (
+                <span className="d-flex align-items-center">
+                  <span className="mr-1">
+                    <Davatar size={20} address={currentUser.address} />
+                  </span>
+                  <div>{ensName || shortenAddress(currentUser.address)}</div>
+                </span>
+              ) : (
+                'Switch Wallet'
+              )}
             </span>
           </button>
         </Menu.Item>

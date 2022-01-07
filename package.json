@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.5.0",
+    "@davatar/react": "^1.8.1",
+    "@ethersproject/providers": "^5.5.2",
     "@feathersjs/authentication-client": "^4.5.11",
     "@feathersjs/feathers": "^4.5.11",
     "@feathersjs/rest-client": "^4.5.11",
