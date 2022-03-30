@@ -21,9 +21,6 @@ const UploadPicture = ({ picture, setPicture, imgAlt, disabled, aspectRatio, lab
     },
     onChange(info) {
       const { status } = info.file;
-      if (status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
       if (status === 'done') {
         console.log('file uploaded successfully.', info.file.response);
         setPicture(info.file.response);
