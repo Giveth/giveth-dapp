@@ -47,6 +47,12 @@ function CreateMilestone(props) {
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
+
     setUserIsOwner(
       campaign &&
         currentUser.address &&

@@ -251,6 +251,11 @@ function EditTraceOld(props) {
   }, [editedForm.token, editedForm.fiatAmount, editedForm.date, editedForm.currency]);
 
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
     if (trace) {
       setUserIsOwner(
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),

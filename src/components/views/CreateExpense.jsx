@@ -77,6 +77,12 @@ function CreateExpense(props) {
   const itemAmountMap = useRef({});
 
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
+
     if (currentUser.address && !expenseForm.recipientAddress) {
       setExpenseForm({
         ...expenseForm,
