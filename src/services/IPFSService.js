@@ -1,7 +1,7 @@
 import config from '../configuration';
 import ImageTools from '../lib/ImageResizer';
-import ErrorPopup from '../components/ErrorPopup';
 import { feathersClient } from '../lib/feathersClient';
+import ErrorHandler from '../lib/ErrorHandler';
 
 class IPFSService {
   /**
@@ -32,11 +32,10 @@ class IPFSService {
     });
 
     try {
-      const result = await feathersClient.service('uploads').create({ uri: reader.result });
-      return result;
+      return await feathersClient.service('uploadByImpactGraph').create({ uri: reader.result });
     } catch (e) {
-      ErrorPopup('Something went wrong with the upload.', 'Upload unsuccessful');
-      throw new Error('IPFS upload unsuccessful', e);
+      ErrorHandler(e, 'Something went wrong with the upload.', true);
+      throw new Error('IPFS upload unsuccessful');
     }
   }
 }
