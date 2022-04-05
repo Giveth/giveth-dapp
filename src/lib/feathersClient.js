@@ -1,6 +1,6 @@
 import localforage from 'localforage';
 import rx from 'feathers-reactive';
-import socketio from 'feathers-socketio/client';
+import socketio from '@feathersjs/socketio-client';
 import * as Sentry from '@sentry/react';
 import config from '../configuration';
 
@@ -28,6 +28,9 @@ socket.on('connect_error', e => {
     console.log('send Feathers connection error to sentry');
   }
 });
+socket.on('disconnect', _e => {
+  console.log('Could not connect to FeatherJS: Disconnect');
+});
 socket.on('connect_timeout', _e => {
   console.log('Could not connect to FeatherJS: Timeout');
 });
@@ -45,9 +48,9 @@ export const feathersRest = feathers()
 export const feathersClient = feathers()
   .configure(
     socketio(socket, {
-      timeout: 30000,
-      pingTimeout: 30000,
-      upgradeTimeout: 30000,
+      timeout: 90000,
+      pingTimeout: 90000,
+      upgradeTimeout: 90000,
     }),
   )
   .configure(auth({ storage: localforage }))
