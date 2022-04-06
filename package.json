@@ -6,10 +6,10 @@
     "@ant-design/icons": "^4.5.0",
     "@davatar/react": "^1.8.1",
     "@ethersproject/providers": "^5.5.2",
-    "@feathersjs/authentication-client": "^4.5.11",
-    "@feathersjs/feathers": "^4.5.11",
-    "@feathersjs/rest-client": "^4.5.11",
-    "@feathersjs/socketio-client": "^4.5.11",
+    "@feathersjs/authentication-client": "^4.5.13",
+    "@feathersjs/feathers": "^4.5.12",
+    "@feathersjs/rest-client": "^4.5.12",
+    "@feathersjs/socketio-client": "^4.5.13",
     "@giveth/bridge-contract": "^1.0.6",
     "@giveth/liquidpledging-contract": "^2.0.0-beta.6",
     "@giveth/lpp-campaign": "^2.0.0-beta.1",
@@ -100,7 +100,7 @@
   "author": {
     "name": "Giveth",
     "email": "info@giveth.io",
-    "url": "http://giveth.io"
+    "url": "https://giveth.io"
   },
   "license": "GPL-3.0",
   "browserslist": {
