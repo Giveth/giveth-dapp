@@ -426,7 +426,7 @@ class TraceService {
         }
       }
       const profileHash = await this.uploadToIPFS(trace);
-      if (!profileHash) return onError();
+      // if (!profileHash) return onError();
 
       // if a proposed or rejected trace, create/update it only in feathers
       if ([Trace.PROPOSED, Trace.REJECTED].includes(trace.status)) {
