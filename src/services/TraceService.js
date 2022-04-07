@@ -608,7 +608,7 @@ class TraceService {
         }
       }
 
-      return await IPFSService.upload(trace.toIpfs());
+      // return await IPFSService.upload(trace.toIpfs());
     } catch (err) {
       if (err != null) {
         ErrorPopup('Failed to upload trace to ipfs');
