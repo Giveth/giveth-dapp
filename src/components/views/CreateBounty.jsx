@@ -44,7 +44,17 @@ function CreateBounty(props) {
   const [loading, setLoading] = useState(false);
   const [userIsCampaignOwner, setUserIsOwner] = useState(false);
 
+  function goBack() {
+    history.goBack();
+  }
+
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
+
     setUserIsOwner(
       campaign &&
         currentUser.address &&
@@ -65,10 +75,6 @@ function CreateBounty(props) {
     handleInputChange({
       target: { name: 'reviewerAddress', value: option.value },
     });
-  }
-
-  function goBack() {
-    history.goBack();
   }
 
   const submit = async () => {

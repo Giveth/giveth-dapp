@@ -69,65 +69,68 @@ const EditCommunity = ({ isNew, match }) => {
   }, []);
 
   useEffect(() => {
-    if (userIsLoading || whitelistIsLoading || !currentUser.address) return () => {};
-
-    if (isNew) {
-      if (!currentUser.isDelegator && projectOwnersWhitelistEnabled) {
-        const modal = Modal.error({
-          title: 'Permission Denied',
-          content: 'You are not allowed to create a Community',
-          closable: false,
-          centered: true,
-          onOk: () => history.replace('/'),
-        });
-
-        return () => {
-          modal.destroy();
-        };
+    const checks = async () => {
+      const authenticated = await authenticateUser(currentUser, false, web3);
+      if (!authenticated) {
+        goBack();
+        return;
       }
 
-      checkProfile(currentUser).then(() => {
-        setCommunity({
-          owner: currentUser,
-          ownerAddress: currentUser.address,
-        });
-        setIsLoading(false);
-      });
-    } else {
-      CommunityService.get(match.params.id)
-        .then(communityItem => {
-          if (isOwner(communityItem.ownerAddress, currentUser)) {
+      if (isNew) {
+        if (!currentUser.isDelegator && projectOwnersWhitelistEnabled) {
+          Modal.error({
+            title: 'Permission Denied',
+            content: 'You are not allowed to create a Community',
+            closable: false,
+            centered: true,
+            onOk: () => history.replace('/'),
+          });
+        } else {
+          checkProfile(currentUser).then(() => {
             setCommunity({
-              title: communityItem.title,
-              description: communityItem.description,
-              communityUrl: communityItem.communityUrl,
-              id: match.params.id,
-              slug: communityItem.slug,
-              reviewerAddress: communityItem.reviewerAddress,
-              ownerAddress: communityItem.ownerAddress,
-              picture: communityItem.image.match(/\/ipfs\/.*/)[0],
+              owner: currentUser,
+              ownerAddress: currentUser.address,
             });
-            communityObject.current = communityItem;
             setIsLoading(false);
-          } else {
-            ErrorHandler({}, 'You are not allowed to edit this Community.');
-            goBack();
-          }
-        })
-        .catch(err => {
-          if (err.status === 404) {
-            history.push('/notfound');
-          } else {
-            setIsLoading(false);
-            ErrorHandler(
-              err,
-              'There has been a problem loading the Community. Please refresh the page and try again.',
-            );
-          }
-        });
-    }
+          });
+        }
+      } else {
+        CommunityService.get(match.params.id)
+          .then(communityItem => {
+            if (isOwner(communityItem.ownerAddress, currentUser)) {
+              setCommunity({
+                title: communityItem.title,
+                description: communityItem.description,
+                communityUrl: communityItem.communityUrl,
+                id: match.params.id,
+                slug: communityItem.slug,
+                reviewerAddress: communityItem.reviewerAddress,
+                ownerAddress: communityItem.ownerAddress,
+                picture: communityItem.image.match(/\/ipfs\/.*/)[0],
+              });
+              communityObject.current = communityItem;
+              setIsLoading(false);
+            } else {
+              ErrorHandler({}, 'You are not allowed to edit this Community.');
+              goBack();
+            }
+          })
+          .catch(err => {
+            if (err.status === 404) {
+              history.push('/notfound');
+            } else {
+              setIsLoading(false);
+              ErrorHandler(
+                err,
+                'There has been a problem loading the Community. Please refresh the page and try again.',
+              );
+            }
+          });
+      }
+    };
 
-    return () => {};
+    if (userIsLoading || whitelistIsLoading || !currentUser.address) return;
+    checks().then();
   }, [userIsLoading, currentUser, whitelistIsLoading]);
 
   // TODO: Check if user Changes (in Class components checked in didUpdate)

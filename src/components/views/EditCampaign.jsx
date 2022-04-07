@@ -68,63 +68,64 @@ const EditCampaign = () => {
   }, []);
 
   useEffect(() => {
-    if (userIsLoading || whitelistIsLoading || !currentUser.address) return () => {};
-
-    if (isNew) {
-      if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
-        const modal = Modal.error({
-          title: 'Permission Denied',
-          content: 'You are not allowed to create a campaign',
-          closable: false,
-          centered: true,
-          onOk: () => history.replace('/'),
-        });
-
-        return () => {
-          modal.destroy();
-        };
+    const checks = async () => {
+      const authenticated = await authenticateUser(currentUser, false, web3);
+      if (!authenticated) {
+        goBack();
+        return;
       }
-
-      checkProfile(currentUser).then(() => {
-        setCampaign({
-          owner: currentUser,
-          ownerAddress: currentUser.address,
-        });
-        setIsLoading(false);
-      });
-    } else {
-      CampaignService.get(campaignId)
-        .then(camp => {
-          if (isOwner(camp.ownerAddress, currentUser)) {
-            const imageIpfsPath = camp.image.match(/\/ipfs\/.*/);
+      if (isNew) {
+        if (!currentUser.isProjectOwner && projectOwnersWhitelistEnabled) {
+          Modal.error({
+            title: 'Permission Denied',
+            content: 'You are not allowed to create a campaign',
+            closable: false,
+            centered: true,
+            onOk: () => history.replace('/'),
+          });
+        } else
+          checkProfile(currentUser).then(() => {
             setCampaign({
-              title: camp.title,
-              description: camp.description,
-              communityUrl: camp.communityUrl,
-              reviewerAddress: camp.reviewerAddress,
-              picture: imageIpfsPath ? imageIpfsPath[0] : camp.image,
+              owner: currentUser,
+              ownerAddress: currentUser.address,
             });
-            campaignObject.current = camp;
             setIsLoading(false);
-          } else {
-            ErrorHandler({}, 'You are not allowed to edit this Campaign.');
-            goBack();
-          }
-        })
-        .catch(err => {
-          if (err.status === 404) {
-            history.push('/notfound');
-          } else {
-            setIsLoading(false);
-            ErrorHandler(
-              err,
-              'There has been a problem loading the Campaign. Please refresh the page and try again.',
-            );
-          }
-        });
-    }
+          });
+      } else {
+        CampaignService.get(campaignId)
+          .then(camp => {
+            if (isOwner(camp.ownerAddress, currentUser)) {
+              const imageIpfsPath = camp.image.match(/\/ipfs\/.*/);
+              setCampaign({
+                title: camp.title,
+                description: camp.description,
+                communityUrl: camp.communityUrl,
+                reviewerAddress: camp.reviewerAddress,
+                picture: imageIpfsPath ? imageIpfsPath[0] : camp.image,
+              });
+              campaignObject.current = camp;
+              setIsLoading(false);
+            } else {
+              ErrorHandler({}, 'You are not allowed to edit this Campaign.');
+              goBack();
+            }
+          })
+          .catch(err => {
+            if (err.status === 404) {
+              history.push('/notfound');
+            } else {
+              setIsLoading(false);
+              ErrorHandler(
+                err,
+                'There has been a problem loading the Campaign. Please refresh the page and try again.',
+              );
+            }
+          });
+      }
+    };
 
-    return () => {};
+    if (userIsLoading || whitelistIsLoading || !currentUser.address) return;
+    checks().then();
   }, [userIsLoading, currentUser, whitelistIsLoading]);
 
   // TODO: Check if user Changes (in Class components checked in didUpdate)

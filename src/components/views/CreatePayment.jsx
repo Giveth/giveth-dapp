@@ -21,7 +21,7 @@ import { Context as UserContext } from '../../contextProviders/UserProvider';
 import { Context as ConversionRateContext } from '../../contextProviders/ConversionRateProvider';
 import { Context as Web3Context } from '../../contextProviders/Web3Provider';
 import { Context as NotificationContext } from '../../contextProviders/NotificationModalProvider';
-import { convertEthHelper, getStartOfDayUTC, ZERO_ADDRESS } from '../../lib/helpers';
+import { convertEthHelper, getStartOfDayUTC, ZERO_ADDRESS, history } from '../../lib/helpers';
 import ErrorHandler from '../../lib/ErrorHandler';
 import { authenticateUser } from '../../lib/middleware';
 import BridgedTrace from '../../models/BridgedTrace';
@@ -108,6 +108,12 @@ function CreatePayment(props) {
   }, []);
 
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
+
     if (currentUser.address && !payment.recipientAddress) {
       setPayment({
         ...payment,

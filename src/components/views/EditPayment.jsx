@@ -111,6 +111,12 @@ function EditPayment(props) {
   };
 
   useEffect(() => {
+    if (currentUser.address) {
+      authenticateUser(currentUser, false, web3).then(auth => {
+        if (!auth) history.goBack();
+      });
+    }
+
     if (trace) {
       setUserIsOwner(
         [campaign.ownerAddress, campaign.coownerAddress].includes(currentUser.address),

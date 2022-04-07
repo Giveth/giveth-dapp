@@ -2,6 +2,7 @@ import { notification } from 'antd';
 import ErrorPopup from '../components/ErrorPopup';
 
 export default (err, message, forcePopup = false, onCancel = () => {}, onError = () => {}) => {
+  console.error(err);
   let _message = '';
   let _description = '';
 
