@@ -103,7 +103,7 @@ function Editor(props) {
         quill.setSelection(range.index + 1);
         quill.disable();
 
-        saveToServer(e.target.result, range);
+        saveToServer(file, range);
         imageUploader.current.value = '';
       };
       reader.readAsDataURL(compressFile);
