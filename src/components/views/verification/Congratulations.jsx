@@ -3,10 +3,11 @@ import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import DescriptionRender from '../../DescriptionRender';
 import { history } from '../../../lib/helpers';
+import config from '../../../configuration';
 
 const Congratulations = ({ campaignSlug, project }) => {
   const backToGiveth = () => {
-    window.location.href = 'https://giveth.io';
+    window.location.href = config.givethUrl;
   };
 
   const goToProject = () => {

@@ -1,0 +1,97 @@
+#splash-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1040;
+  background: #211985;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+  > button:first-child {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    border-color: transparent;
+  }
+  > h2 {
+    font-size: 52px;
+    font-weight: 700;
+    font-family: 'TeX-Gyre-Adventor', sans-serif;
+    margin-bottom: 32px;
+    color: #FFFFFF;
+  }
+  > div:nth-child(3) {
+    font-family: 'Red Hat Text', sans-serif;
+    color: #FFFFFF;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 150%;
+  }
+  > button:last-child {
+    color: #FFFFFF;
+    margin-top: 26px;
+    width: 200px;
+    height: 48px;
+    background: #E1458D;
+    border-radius: 48px;
+    border-color: transparent;
+    font-family: 'Red Hat Text', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .arc-purple {
+    border: 150px solid #3811BF;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: -300px;
+    width: 800px;
+    height: 800px;
+    z-index: -1;
+  }
+  .arc-gray {
+    border: 150px solid #303B72;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    position: absolute;
+    right: -650px;
+    bottom: -650px;
+    width: 1200px;
+    height: 1200px;
+    z-index: -1;
+  }
+  .arc-yellow {
+    border: 80px solid #FED670;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    transform: rotate(-70deg);
+    border-radius: 50%;
+    position: absolute;
+    right: -100px;
+    bottom: -40px;
+    width: 600px;
+    height: 600px;
+    z-index: -1;
+  }
+  .dot-yellow {
+    background: #FED670;
+    border-radius: 50%;
+    position: absolute;
+    right: 420px;
+    bottom: 190px;
+    width: 110px;
+    height: 110px;
+    z-index: -1;
+  }
+}
