@@ -13,6 +13,7 @@ import config from '../configuration';
 import Routes from './Routes';
 import Header from '../components/layout/MainMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SplashPage from '../components/SplashPage';
 
 // context providers
 import UserProvider, { Consumer as UserConsumer } from '../contextProviders/UserProvider';
@@ -69,6 +70,7 @@ const Application = () => {
                               <NotificationModalProvider>
                                 {!hasError && (
                                   <Fragment>
+                                    <SplashPage />
                                     <Header />
                                     <Routes />
                                   </Fragment>

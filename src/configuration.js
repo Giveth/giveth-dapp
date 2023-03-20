@@ -191,5 +191,6 @@ config.donationDelegateCountLimit = REACT_APP_DONATION_DELEGATE_COUNT_LIMIT || 1
 config.projectsUpdatedAtLimitMonth = REACT_APP_HOME_PROJECTS_UPDATED_AT_LIMIT_MONTH || 6;
 config.sendErrors = ['localhost', 'develop', 'release', 'trace'].includes(REACT_APP_ENVIRONMENT);
 config.onboardDappId = '4b28f36b-c725-4475-8cef-af4850473e50';
+config.givethUrl = 'https://giveth.io';
 
 export default config;

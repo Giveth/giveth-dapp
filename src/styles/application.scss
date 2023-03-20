@@ -32,6 +32,7 @@
 @import 'traceConversations';
 @import 'conversationModal.scss';
 @import 'totalGasPaid.scss';
+@import 'splashPage.scss';
 // misc
 @import 'pagination.scss';
 @import 'searchBox';
@@ -50,7 +51,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: $page-background;
-  overflow: auto !important;
+  overflow: auto;
 }
 
 .page-layout {
